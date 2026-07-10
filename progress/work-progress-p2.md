@@ -121,3 +121,89 @@ class="text-t1">` highlights for the numbers and the blog name.
   served CSS bundle (35.8 KB). `color-mix` used 3+ times for the
   tinted node fills. CSS variables (`--border`, `--amber`, `--acc`,
   `--t1`, `--t3`, etc.) referenced throughout.
+
+---
+
+## T2.3 — Deployment Log section
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-10
+
+### What shipped
+
+- **`components/sections/DeployLog.tsx`** — the "01 / DEPLOYMENT LOG"
+  section on `/`. Renders a vertical stack of `EXPERIENCE` entries
+  from `data/experience.ts`. No props — the section is a pure
+  presentational component that owns its data lookup.
+- Each `<ExperienceCard>` shows:
+  - Top row: date range `[May 2026 – Present]` (mono, t3) + company
+    name (semibold, t1, **linked to `entry.url` with `target="_blank"
+rel="noreferrer"`** when present) + `<Badge variant={status}>`.
+    Active gets a `● active` chip; completed gets a muted `completed` pill.
+  - Role line: `text-t3 text-[14px]`, single line.
+  - Bullet list: 5 + 4 + 2 = **11 bullets total** across 3 entries,
+    each prefixed with a `>` marker in `text-acc` (mint green) per
+    master spec. Marker is `<span aria-hidden>` so screen readers
+    don't read "greater than" before every bullet.
+  - Tag chips: every `entry.tags[]` string rendered as a `<Chip>` with
+    color from `chipColor(tag)`. Result: 18 chip instances across 15
+    unique tags (Taply 8, NexBell 6, Innovative 4).
+- **`app/page.tsx`** — appended `<DeployLog />` after `<Hero />`.
+- **Section scroll anchor:** `<section id="log" class="...scroll-mt-20">`
+  so the Navbar's `#log` link smooth-scrolls to the right place and
+  the top doesn't disappear under the sticky navbar.
+
+### Decisions
+
+- **No data props on DeployLog.** Master plan §2.1 specifies the full
+  `/log` page uses the same registry with potentially more layout
+  (education, key achievements). Making the landing version a
+  "narrow" presentational component keeps the option open to either:
+  - reuse it as-is in `/log` (just add the surrounding chrome), or
+  - build a richer variant in Phase 3.
+    Either way the registry is the single source.
+- **Active status uses the bullet (`●`)** in the badge text — matches
+  the flat mockup which shows `● active` rather than just `active`.
+  Completed entries get a plain `completed` pill (no dot, more muted).
+- **Bullet marker is `>` not `•`.** Master spec + flat mockup use a
+  monospace `>` glyph as the bullet character. Implementing it as
+  `<span aria-hidden>&gt;</span>` with `position: absolute` keeps
+  the visual but excludes the symbol from screen-reader output.
+- **`scroll-mt-20` on the section** is the small Tailwind utility that
+  pushes the scroll target down 80px so the sticky navbar doesn't
+  cover the section header after smooth-scrolling. Applies to every
+  section that's a scroll target (T2.4-T2.7 will follow the same
+  pattern).
+
+### Caveats / pending
+
+- The Taply entry has 5 bullets, but `EXPERIENCE[0].bullets.length` is
+  5 in the registry. The flat mockup's Taply entry is shorter (4
+  bullets). I used the registry as the source of truth — the extra
+  bullet ("Integrated Stripe …") is genuinely useful and the master
+  spec confirms it. Phase 3's `/log` page may show all 5 with a
+  collapse if they get too long.
+- The role line for Taply is the registry's "Co-Founder & Backend
+  Engineer" — which renders with an ampersand. The flat mockup uses
+  the same string. No change.
+- Tags are wrapped in a flex-wrap row. On very narrow viewports they
+  may flow to 2 rows; that's expected.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 4 routes, 0 warnings.
+- **Live HTML verification in production build** (curl `/`):
+  - `<section id="log" class="border-border border-t py-[90px] scroll-mt-20">` rendered.
+  - Section header: eyebrow "01 / DEPLOYMENT LOG" + h1 "Where I've shipped" + description present.
+  - All 3 companies rendered: Taply (linked to `https://gettaply.me` with `target="_blank" rel="noreferrer"`), NexBell Inc., Innovative IT.
+  - All 3 date ranges present: "May 2026 – Present", "Nov 2024 – Jun 2026", "Sept 2023 – Oct 2024".
+  - 1 active + 2 completed badges rendered (matches `EXPERIENCE[].status`).
+  - 11 bullet markers rendered (5 + 4 + 2 = 11).
+  - 18 tag chips rendered, with `chipColor()` correctly assigning colors per the T1.2 coverage check.
+- **Live CSS verification:** 36.7 KB CSS bundle, all 4 chip-color
+  CSS vars (`--chip-sage`, `--chip-slate`, `--chip-amber`, `--chip-mauve`)
+  used 4× each (one per chip instance). `.text-acc` utility present
+  for the `>` marker.

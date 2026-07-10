@@ -2,24 +2,21 @@
  * app/page.tsx — Landing page (Phase 2 composition)
  *
  * Composes the full landing-page section stack from components/sections/.
- * Phases 2.1 → 2.8 each add a section; this file gets a new line per task.
+ * Each Phase 2 task (T2.1 → T2.7) appends one section here.
  *
- * Sections (top → bottom):
- *   Hero (T2.1) · DeployLog (T2.3) · Projects (T2.4) · SkillGraph (T2.5)
- *   · Blog (T2.6) · Contact (T2.7)
- *
- * The current state is: Hero is shipped, the rest still need their
- * section components. Each anchor id matches the Navbar links so smooth
- * scrolling works.
+ * Current: Hero (T2.1+T2.2) + DeployLog (T2.3). T2.4 → T2.7 land next.
  */
 
 import { Hero } from "@/components/sections/Hero";
+import { DeployLog } from "@/components/sections/DeployLog";
 
 export default function Home() {
   return (
     <>
       <Hero />
-      {/* T2.3 → T2.7 sections append here in subsequent tasks. */}
+      <DeployLog />
+      {/* T2.4 Projects · T2.5 SkillGraph · T2.6 Blog · T2.7 Contact
+          append here in subsequent tasks. */}
     </>
   );
 }
