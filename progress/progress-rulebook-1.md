@@ -11,12 +11,19 @@
 
 ```
 progress/
-├── progress-rulebook.md     ← this file (read first in every session)
+├── progress-rulebook-1.md   ← this file (read first; "1" is the rule version)
+├── progress-rulebook-2.md   ← next revision, if rules change
 ├── T1.1.md  T1.2.md  T1.3.md  T1.4.md  T1.5.md   ← Phase 1 tasks
 ├── T2.1.md  T2.2.md  T2.3.md  T2.4.md  T2.5.md   ← Phase 2 tasks
 ├── T3.1.md  …                                  ← Phase 3 tasks
 └── …
 ```
+
+**Rulebook naming:** the rulebook itself uses a numbered suffix
+(`progress-rulebook-N.md`) so revisions are versioned. The **current**
+rulebook is always the highest-numbered file in the directory. Cold-start
+always reads the highest first; older rulebooks stay in git history as the
+audit trail of how the process evolved.
 
 One **file per task ID** (T1.1, T1.2 …). The number of files per phase scales
 with the actual task list — never pre-create empty files. Add new task files
@@ -57,8 +64,13 @@ at the top of the phase when starting the next batch.
 - pnpm typecheck / pnpm build / pnpm lint / pnpm dev / browser check.
 ```
 
-**Word count target per file:** 100–200 words body, plus headers. Go over only
-if a real decision needs more context — never pad.
+**Word count per file:** **100–200 words is the default**, but the ceiling is
+flexible. **300, 400, 500+ words are all fine when the task demands it** —
+e.g. a task with several non-obvious decisions, an architectural pivot, or a
+phase handoff deserves more room. **Never pad for length**, but never truncate
+a real decision to fit an arbitrary cap. A good test: if a new agent started
+cold, would they have all the context they need to continue? If yes, the
+length is right.
 
 ## 4. Commit order (strict)
 
@@ -95,7 +107,8 @@ The user only ever sees this short block. Full detail lives in the
 
 At the start of every new session, the agent must:
 
-1. Read `progress/progress-rulebook.md` (this file).
+1. List `progress/` and find the **highest-numbered** `progress-rulebook-*.md`
+   — that is the current rulebook. Read it.
 2. `ls progress/` to see every task file.
 3. `grep -l "Status: in-progress" progress/*.md` to find the active task.
 4. Read every `Status: done` file in order (T1.1, T1.2, …) to rebuild context.
@@ -106,7 +119,31 @@ At the start of every new session, the agent must:
 This is the contract. The user will not re-explain anything if the progress
 files are kept up to date.
 
-## 7. Anti-patterns
+## 7. Updating the rulebook itself
+
+When the rules change (e.g. the user just asked for flexible word counts):
+
+1. Create a new file: **`progress/progress-rulebook-N+1.md`** where N is the
+   current highest number. **Do not edit the old one in place** — keep the
+   full history of how the process evolved.
+2. Copy the old file, apply the change, and bump the version metadata.
+3. In the new file, add a **Change log** at the top:
+   ```markdown
+   # Rulebook revision 2
+   **Supersedes:** progress-rulebook-1.md (2026-07-10)
+   **Date:** 2026-07-10
+   **Changed by:** session <N>
+   **What changed:** 1-line summary each.
+   ```
+4. Update §1 references (`progress-rulebook.md` → `progress-rulebook-1.md`)
+   everywhere they appear.
+5. Commit just the rulebook change as its own commit, so the audit trail is
+   clean: `docs(progress): rulebook v2 — flexible word count`.
+
+Cold-start always reads the **highest-numbered** rulebook, so future sessions
+automatically pick up the new rules without anyone having to "remember."
+
+## 8. Anti-patterns
 
 - ❌ Skipping the progress file because the task felt "small" — every task
       gets one, no exceptions.
