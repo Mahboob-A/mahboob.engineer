@@ -304,3 +304,95 @@ Four components in `components/ui/`, all to spec, plus one helper:
     present in the live indicator.
   - All tokens (`#1c2e1e`, `#5cc9a0`, `#608870`, `#f59e0b`) present in
     the served CSS bundle.
+
+---
+
+## T1.6 — Navbar + Footer
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-10
+
+### What shipped
+
+- **`components/layout/Navbar.tsx`** — sticky blurred top bar. Server
+  Component that reads the mode cookie + the current path on every
+  request. Logo (with live pulse dot) + 5 nav links + flat/game toggle.
+  - Nav links: `experience / work / stack / writing / contact`, each
+    tagged with `data-eyebrow="01"…"05"` for Phase 2 section headers.
+  - **Landing-page logic:** on `/`, links are anchor-scrolled
+    (`#log`, `#work`, `#stack`, `#blog`, `#contact`); on inner pages
+    they navigate to the route (`/log`, `/work`, etc.).
+  - **Active-state highlighting:** on inner pages, the current route's
+    link gets `text-t1 font-semibold`; others get `text-t3 hover:text-t1`.
+  - **Mobile:** at < 768px the desktop nav is hidden and a horizontally
+    scrollable chip row appears below the header.
+- **`components/layout/Footer.tsx`** — minimal two-line footer: tagline
+  left ("built with Next.js, Tailwind, and too much coffee."), build
+  metadata right ("v2.0 · last deployed 2026-07"). `mt-auto` keeps it
+  pinned to the bottom of the viewport on short pages.
+- **`lib/mode.ts`** + **`app/api/mode/route.ts`** — mode toggle
+  infrastructure. **No localStorage, no client JS** — purely cookie
+  - `<form>`-based. POST `/api/mode` with `mode=flat|game&next=<path>`
+    flips the cookie and 303-redirects back.
+- **Wired into `app/layout.tsx`:** `<Navbar />` + `<main class="flex-1">`
+  - `<Footer />` wrap every page. Async Server Component syntax is
+    native in Next 16 (no `@ts-expect-error` shim needed).
+- **Added `pulse-dot` keyframes** in `globals.css` for the logo dot
+  animation (defined once, no inline `<style>` tag in Navbar).
+
+### Decisions
+
+- **Mode toggle is a real `<form>` submit, not a React `onClick`.** This
+  keeps the page fully usable without JavaScript and aligns with master
+  §6 rule #4 (no localStorage, cookie-only). The downside is one full
+  navigation per click — acceptable for a once-per-session toggle.
+- **Landing vs. inner-page links are inferred from the request path,**
+  not from a prop. The Navbar uses `headers()` to read the current
+  pathname — on `/`, anchors; on `/log`, `/work`, etc., full routes.
+  This is a server-side decision so the rendered HTML is correct on
+  first paint with no client hydration.
+- **Active state uses Tailwind tokens, not inline styles.** Active link:
+  `text-t1 font-semibold`. Inactive: `text-t3 hover:text-t1`. The
+  mode-toggle active pill uses `text-acc bg-acc-dim font-semibold`
+  for visual emphasis (mint-green background dim).
+- **Cookie lifetime is 1 year.** `Max-Age=31536000`. A new visitor
+  with no cookie gets the default `flat` mode; once they toggle, the
+  choice persists across all future visits.
+- **Removed the `@ts-expect-error` on `<Navbar />`** — Next.js 16 +
+  React 19 handle async Server Components natively, so the shim is
+  unneeded (and TS flagged it as an unused directive).
+
+### Caveats / pending
+
+- The current path detection uses `x-invoke-path` / `next-url` /
+  `referer` headers in priority order. In production these are set
+  by Next's internal routing. If the path detection breaks for any
+  reason, the Navbar falls back to treating the user as on `/`
+  (anchor links). Verified working with current Next 16.2.10.
+- The Navbar's mobile chip row duplicates the desktop nav HTML. Could
+  be DRYed up in a future refactor, but the duplication is intentional
+  to keep the responsive layout isolated.
+- `BackLink` for inner pages (T1.7) will live in a separate
+  `InnerLayout` shell — not in the Navbar. The Navbar stays the same
+  on every route.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 4 routes, 0 warnings. `/` is now `ƒ (Dynamic)` because
+  Navbar reads cookies on each request (expected).
+- **End-to-end cookie test in production build** (5 curl steps):
+  1. `GET /` (no cookie) → `flat` button has `aria-pressed="true"`,
+     `game` has `aria-pressed="false"`.
+  2. `POST /api/mode mode=game next=/` → `303 See Other` + `Set-Cookie:
+mahboob_mode=game; Path=/; Max-Age=31536000; SameSite=Lax`.
+  3. `GET / -b cookies.txt` → `game` button is active, `flat` is not.
+  4. `POST /api/mode mode=flat` → `Set-Cookie: mahboob_mode=flat`.
+  5. `GET / -b cookies.txt` → `flat` is active again.
+- **HTML inspection:** 5 nav links present with correct `data-eyebrow`
+  attributes; mode toggle is two `<form action="/api/mode">` blocks with
+  the active pill rendered with `text-acc bg-acc-dim font-semibold`;
+  Footer text + version both rendered; logo dot has the `pulse-dot`
+  animation inline.
