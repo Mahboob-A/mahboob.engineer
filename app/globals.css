@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Design Tokens — single source of truth
+   All hex values mirror data/tokens.ts (master doc §0.3)
+   ============================================================ */
+:root {
+  /* Surfaces */
+  --bg: #172318;
+  --surface: #1c2e1e;
+  --card: #223626;
+  --elev: #2a4030;
+  --active: #1e3828;
+
+  /* Borders */
+  --border: #334e3c;
+  --border-strong: #406050;
+
+  /* Text */
+  --t1: #d8eee2;
+  --t2: #9ac0a0;
+  --t3: #608870;
+
+  /* Accent */
+  --acc: #5cc9a0;
+  --acc-dim: #1e3828;
+
+  /* AI surfaces */
+  --ai-bg: #263e2e;
+  --ai-bd: #3a5844;
+
+  /* Misc */
+  --amber: #f59e0b;
+  --amber-dim: #2a1f06;
+  --code-bg: #0d1511;
+}
+
+/* Tailwind v4 theme bridge — every utility like bg-bg / text-t1 /
+   border-border resolves to the CSS variables above. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-elev: var(--elev);
+  --color-active: var(--active);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-t1: var(--t1);
+  --color-t2: var(--t2);
+  --color-t3: var(--t3);
+  --color-acc: var(--acc);
+  --color-acc-dim: var(--acc-dim);
+  --color-ai-bg: var(--ai-bg);
+  --color-ai-bd: var(--ai-bd);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-code-bg: var(--code-bg);
+
+  --font-display: var(--font-display), "Space Grotesk", system-ui, sans-serif;
+  --font-body: var(--font-body), Inter, system-ui, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--t1);
+}
+
+/* Selection */
+::selection {
+  background: var(--acc-dim);
+  color: var(--t1);
+}
+
+/* Smooth anchor scrolling for in-page nav */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Native focus ring — accessible without being loud */
+*:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
