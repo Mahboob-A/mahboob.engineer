@@ -65,3 +65,55 @@
 .alg-packet-acc {
   fill: var(--acc);
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   Mini diagrams (used in /work project cards on the landing page)
+   Same token-driven colors, scaled down to 280x200 viewBox.
+   ────────────────────────────────────────────────────────────────── */
+
+.alg-mini-edge {
+  stroke: var(--border);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.alg-mini-node {
+  stroke-width: 1.5;
+  rx: 5;
+}
+
+/* base = neutral surface + border stroke */
+.alg-mini-base {
+  fill: var(--code-bg);
+  stroke: var(--border);
+}
+
+/* queue = amber stroke + tint */
+.alg-mini-queue {
+  fill: color-mix(in srgb, var(--amber) 6%, var(--code-bg));
+  stroke: var(--amber);
+}
+
+/* judge = accent stroke + tint */
+.alg-mini-judge {
+  fill: color-mix(in srgb, var(--acc) 7%, var(--code-bg));
+  stroke: var(--acc);
+}
+
+/* data = border-strong stroke + t2 tint */
+.alg-mini-data {
+  fill: color-mix(in srgb, var(--t2) 5%, var(--code-bg));
+  stroke: var(--border-strong);
+}
+
+/* mauve = mauve stroke + tint (used for DRM/protocol nodes) */
+.alg-mini-mauve {
+  fill: color-mix(in srgb, var(--t2) 5%, var(--code-bg));
+  stroke: var(--border-strong);
+}
+
+.alg-mini-label {
+  fill: var(--t1);
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+}

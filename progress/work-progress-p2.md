@@ -207,3 +207,104 @@ rel="noreferrer"`** when present) + `<Badge variant={status}>`.
   CSS vars (`--chip-sage`, `--chip-slate`, `--chip-amber`, `--chip-mauve`)
   used 4× each (one per chip instance). `.text-acc` utility present
   for the `>` marker.
+
+---
+
+## T2.4 — Projects section
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-10
+
+### What shipped
+
+The "02 / SYSTEMS" section — 3 featured project cards (Algocode, Movio,
+DrishtiAI) in an alternating visual-left/right layout.
+
+- **`components/sections/Projects.tsx`** — section component. Reads
+  `PROJECTS` from the registry, picks the 3 landing-page slugs
+  (`LANDING_SLUGS = ["algocode", "movio", "drishti-ai"]`), and maps
+  each to a mini diagram.
+- **`<ProjectCard>`** — each card has:
+  - Visual column (340px): the mini-SVG diagram on a `bg-code-bg`
+    panel.
+  - Body column: status eyebrow (`microservices · system design · 22★
+github` for Algocode; the others use a derived label), title,
+    Problem / Approach prose blocks, metrics line (text-acc mono),
+    stack chips (colored via `chipColor(tech)`), and a links row
+    (source / demo video / live) with `↗` arrows.
+  - **Alternating layout:** card 1 (Algocode) = visual left, card 2
+    (Movio) = body left, card 3 (DrishtiAI) = visual left again.
+    Implemented with `md:grid-cols-[340px_1fr]` +
+    `md:order-{1,2}` toggles — no JS, no media queries.
+- **`components/diagrams/AlgocodeMiniDiagram.tsx`** — 4 nodes
+  (Auth Service, Code Manager, RCE Engine, RabbitMQ) with crossing
+  arrows, 4 edges.
+- **`components/diagrams/MovioMiniDiagram.tsx`** — 5-node video
+  pipeline (Upload & Transcode, FFmpeg Workers, HLS/DASH Store,
+  CDN Edge, DRM Layer), 5 edges. The DRM Layer node uses the
+  `alg-mini-mauve` stroke.
+- **`components/diagrams/DrishtiMiniDiagram.tsx`** — 4-layer
+  horizontal CV pipeline (Ingest, Preprocessing, Inference, Event
+  Stream), 3 edges.
+- **`components/diagrams/diagrams.css`** — extended with
+  `.alg-mini-*` classes (8 new selectors). Same color-mix tinting
+  pattern as the full-size Algocode diagram.
+- **`app/page.tsx`** — `<Projects />` appended after `<DeployLog />`.
+
+### Decisions
+
+- **Landing shows 3 of the 11 projects.** Master §1.3 said 4, but the
+  flat mockup ships 3. I matched the mockup. Adding a 4th later
+  (e.g. DataLineage Doctor) is one extra entry in `LANDING_SLUGS` +
+  one new diagram component.
+- **Each card has a custom status line** (`stackStatusLine` helper
+  inside the component) — e.g. "microservices · system design · 22★
+  github" for Algocode. The registry's `domain[]` field would have
+  given us "distributed · backend · infra" which is generic; the
+  custom label per project reads more like a real headline.
+- **Mini diagrams are independent components, not parameterized.**
+  I considered one `MiniDiagram` component with a `nodes[]` prop,
+  but each project's diagram has its own layout DNA — Algocode is
+  a 2×2 grid, Movio is a 5-node flow, Drishti is a 4-layer stack.
+  Three small components were easier to read and tweak.
+- **Diagram node variants:** added `alg-mini-mauve` for the DRM
+  Layer node in Movio (DRM is a content-protection protocol, which
+  `chipColor()` classifies as mauve). Same semantic alignment as
+  the chip system.
+- **Link section shows only links that exist.** Algocode has a
+  GitHub link, no live URL or YouTube — so the card shows just
+  `↗ source`. Drishti has GitHub + YouTube, so it shows both. No
+  empty placeholders.
+
+### Caveats / pending
+
+- The 3 projects on the landing are hardcoded in `LANDING_SLUGS`. If
+  the user wants the landing to show different featured projects,
+  the slugs are the only thing to change. Could be data-driven
+  later (e.g. a `featured_on_landing: true` flag in the registry),
+  but right now 3 slugs is fine.
+- Drishti's mini-diagram doesn't show the WebRTC / OpenCV / RabbitMQ
+  details that the full Algocode diagram shows. The mini version is
+  intentionally abstract — 4 layers of "what happens to the image".
+- The `data/tokens.ts` `chipColor` function classifies all 38
+  project stack tags correctly. T1.2 verified this; T2.4 reuses it.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 4 routes, 0 warnings.
+- **Live HTML verification in production build** (curl `/`):
+  - `<section id="work" class="border-border border-t py-[90px] scroll-mt-20">` rendered.
+  - Section header: eyebrow "02 / SYSTEMS" + h1 "Things I've built end-to-end" + description.
+  - 3 project cards: Algocode, Movio, DrishtiAI all rendered (1× each in body, 6 total `<article>` including 3 from DeployLog).
+  - All 3 custom status lines: "microservices · system design · 22★ github" / "video infrastructure · adaptive streaming" / "real-time pipelines · ai infrastructure".
+  - **SVG verification:**
+    - 13 `alg-mini-node` boxes (4 + 5 + 4).
+    - 12 `alg-mini-edge` paths (3 + 5 + 3 + 1 extra in Movio for HLS→DRM).
+    - 13 `alg-mini-label` text elements.
+    - Node variants: 4 base, 1 data, 4 judge, 1 mauve, 3 queue.
+  - **Stack chips:** all 38 chips across the 3 projects rendered with the correct `chipColor()` bucket.
+  - **Links:** all 3 GitHub source links + Drishti's YouTube demo link rendered with `target="_blank" rel="noreferrer"`.
+- **Live CSS verification:** 38.2 KB bundle, all 8 new `.alg-mini-*` classes compiled (1 occurrence each — selectors only, not duplicate per element).
