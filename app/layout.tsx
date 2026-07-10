@@ -3,6 +3,7 @@ import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import "./globals.css";
+import "@/components/diagrams/diagrams.css";
 
 /* ──────────────────────────────────────────────────────────────────────
    Fonts — loaded once at the root. Every inner page inherits these

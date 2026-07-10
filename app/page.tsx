@@ -1,15 +1,25 @@
-// Landing page placeholder. Replaced in T1.7 / Phase 2 with the
-// full landing composed of <Hero /> <DeployLog /> <Projects /> etc.
+/**
+ * app/page.tsx — Landing page (Phase 2 composition)
+ *
+ * Composes the full landing-page section stack from components/sections/.
+ * Phases 2.1 → 2.8 each add a section; this file gets a new line per task.
+ *
+ * Sections (top → bottom):
+ *   Hero (T2.1) · DeployLog (T2.3) · Projects (T2.4) · SkillGraph (T2.5)
+ *   · Blog (T2.6) · Contact (T2.7)
+ *
+ * The current state is: Hero is shipped, the rest still need their
+ * section components. Each anchor id matches the Navbar links so smooth
+ * scrolling works.
+ */
+
+import { Hero } from "@/components/sections/Hero";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <p className="text-acc font-mono text-sm tracking-widest">MAHBOOB.ENGINEER</p>
-      <h1 className="font-display text-t1 mt-4 max-w-2xl text-4xl leading-tight font-semibold sm:text-5xl">
-        Building the infrastructure layer nobody sees.
-      </h1>
-      <p className="text-t2 mt-6 max-w-lg">
-        Portfolio scaffold ready. Sections arrive in Phase 2.
-      </p>
-    </main>
+    <>
+      <Hero />
+      {/* T2.3 → T2.7 sections append here in subsequent tasks. */}
+    </>
   );
 }

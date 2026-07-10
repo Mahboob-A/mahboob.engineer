@@ -1,0 +1,67 @@
+/**
+ * Styles for the AlgocodeDiagram SVG.
+ *
+ * Inlined here (not in globals.css) because they're scoped to this
+ * single component. Colors come from the CSS variables defined in
+ * globals.css → tokens.ts (no hardcoded hex).
+ */
+
+.alg-edge {
+  stroke: var(--border);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.alg-node {
+  stroke-width: 1.5;
+  rx: 6;
+}
+
+/* Base node (Code Manager) — neutral surface, border-colored stroke */
+.alg-node-base {
+  fill: var(--code-bg);
+  stroke: var(--border);
+}
+
+/* Queue nodes (RabbitMQ) — amber stroke, faint amber tint */
+.alg-node-queue {
+  fill: color-mix(in srgb, var(--amber) 6%, var(--code-bg));
+  stroke: var(--amber);
+}
+
+/* Judge nodes (RCE Engine + Docker Judge) — accent stroke, faint tint */
+.alg-node-judge {
+  fill: color-mix(in srgb, var(--acc) 7%, var(--code-bg));
+  stroke: var(--acc);
+}
+
+/* Data nodes (MongoDB/Redis, Auth Service) — t2 stroke, faint tint */
+.alg-node-data {
+  fill: color-mix(in srgb, var(--t2) 5%, var(--code-bg));
+  stroke: var(--border-strong);
+}
+
+.alg-label {
+  fill: var(--t1);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono), monospace;
+}
+
+.alg-sub {
+  fill: var(--t3);
+  font-size: 9.5px;
+  font-family: var(--font-mono), monospace;
+}
+
+.alg-packet {
+  fill: var(--acc);
+}
+
+.alg-packet-amber {
+  fill: var(--amber);
+}
+
+.alg-packet-acc {
+  fill: var(--acc);
+}
