@@ -396,3 +396,108 @@ mahboob_mode=game; Path=/; Max-Age=31536000; SameSite=Lax`.
   the active pill rendered with `text-acc bg-acc-dim font-semibold`;
   Footer text + version both rendered; logo dot has the `pulse-dot`
   animation inline.
+
+---
+
+## T1.7 — Inner layout shell
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-10
+
+### What shipped
+
+The shared shell every inner page (`/log`, `/work`, `/work/[slug]`, `/stack`,
+`/contact`, `/writing`, `/writing/[slug]`, `/game`) wraps itself in:
+
+- **`components/layout/BackLink.tsx`** — top-left `← home` / `← all work`
+  arrow. `href` and `label` are props so individual pages can customize
+  (e.g. case-study pages use `href="/work" label="← all work"`). The
+  arrow renders as `<span aria-hidden>←</span>` so screen readers only
+  announce "home" / "all work" — not the symbol.
+- **`components/layout/InnerPageHeader.tsx`** — the section header with
+  eyebrow + display title + one-line description. Spec match:
+  - Eyebrow: `text-acc font-mono text-[13px] tracking-[1px]` →
+    `<p ...>01 / DEPLOYMENT LOG</p>`
+  - Title: `font-display text-t1 text-[clamp(28px,4vw,40px)] font-bold
+leading-[1.1] tracking-[-0.5px]`
+  - Description: `text-t2 max-w-[520px] text-[15px]`
+  - Optional `rightSlot` for filter chips, search bars, etc.
+- **`components/layout/InnerLayout.tsx`** — composes BackLink +
+  InnerPageHeader + `<div>{children}</div>` into one wrapper. Props:
+  - `backHref` / `backLabel` — passed to BackLink
+  - `header` — passed to InnerPageHeader (omittable for pages with
+    custom headers like /work/[slug])
+  - Container is `max-w-[1180px] px-6 pt-12 pb-20` to match landing
+    shell rhythm.
+- **`components/layout/index.ts`** — barrel export so Phase 3 pages can
+  `import { InnerLayout, BackLink, InnerPageHeader, Navbar, Footer }
+from "@/components/layout"`.
+
+### Decisions
+
+- **BackLink arrow is a separate `<span aria-hidden>`**, not part of the
+  link label text. Screen readers announce "home" / "all work", not
+  "left arrow home".
+- **InnerLayout's `header` prop is optional.** Phase 3 pages like
+  `/work/[slug]` have their own hero (project name + tagline + metrics)
+  and skip the section header entirely. The wrapper still gives them
+  the BackLink and width container.
+- **`rightSlot` on InnerPageHeader** is a forward-looking hook for
+  the filter-chip row on `/work`. Lets us align chips to the right of
+  the section title without changing the layout pattern.
+- **Barrel file (`index.ts`)** introduced now so Phase 3 doesn't grow
+  4 import lines per page over the codebase.
+
+### Caveats / pending
+
+- `InnerLayout` doesn't yet auto-detect the page's section number from
+  the route — pages must pass `num` and `section` explicitly. If we
+  end up with many pages that share the same section header, a registry
+  could centralize these, but 6–8 unique headers don't justify it yet.
+- The smoke-test page (`app/inner-smoke/`) was used to verify rendered
+  HTML in production build, then deleted — same pattern as T1.5.
+
+### Verified
+
+- `pnpm typecheck` → clean (after clearing `.next` cache from the smoke
+  route deletion).
+- `pnpm lint` → clean.
+- `pnpm build` → 4 routes, 0 warnings.
+- **Live HTML/CSS verification in production build** (`/inner-smoke`
+  page, deleted after):
+  - BackLink default: `<a href="/" aria-label="Back — home">← home</a>`
+    rendered.
+  - BackLink custom: `<a href="/work">← all work</a>` rendered.
+  - Eyebrow: `<p class="text-acc font-mono text-[13px] tracking-[1px]">01 / DEPLOYMENT LOG</p>`
+    — exact spec match.
+  - Title: `<h1 class="font-display text-t1 ... font-bold ...">The full record</h1>`.
+  - Description: `<p class="text-t2 mt-3 max-w-[520px] text-[15px]">Every role...</p>` —
+    t2 color, 15px, 520px max-width, all per spec.
+  - InnerLayout wraps children correctly for both "with header" and
+    "no header" variants.
+
+---
+
+## Phase 1 wrap-up
+
+All 7 tasks in Phase 1 are complete. The portfolio now has:
+
+- **Bootstrap** — Next.js 16 + React 19 + TypeScript strict + Tailwind v4.
+- **Design system** — `data/tokens.ts` is the single source of truth;
+  every component imports colors from there (no hex outside the token
+  file).
+- **Content registries** — 11 projects, 3 experiences, 2 educations,
+  3 blog posts, 25 stack items — all typed, all with lookup helpers.
+- **Shared UI** — Chip, Badge, StatRow, DiagramPanel + TerminalBlock
+  (deferred to T2.7).
+- **Site chrome** — Navbar (with cookie-backed mode toggle), Footer,
+  InnerLayout + BackLink + InnerPageHeader shell.
+- **Verified end-to-end** — every component was loaded into a
+  production build and grep'd against the served HTML/CSS for the
+  exact spec match.
+
+Phase 2 (landing page assembly) is the next milestone. 8 tasks:
+T2.1 → T2.8 covering Hero, animated Algocode diagram, DeployLog,
+Projects (with mini-diagrams per project), SkillGraph, Blog, Contact
+terminal, and `app/page.tsx` composition.
