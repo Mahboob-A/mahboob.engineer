@@ -154,3 +154,59 @@ Master plan tasks in this phase (T1.1 → T1.7):
 - Top 5 heaviest stack edges are `django↔drf`, `django↔redis`,
   `celery↔redis`, `django↔celery`, `django↔postgresql` — matches
   intuition (these are the most co-deployed tools).
+
+---
+
+## T1.4 — Root layout verification
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-10
+
+### What shipped
+- Audited the root `app/layout.tsx` against the 10 layout contracts from
+  master §6. Caught and fixed **two real issues**:
+  - **Hardcoded hex in body class.** Was `bg-[#172318] text-[#D8EEE2]`;
+    now `bg-bg text-t1` — uses tokens via Tailwind v4 `@theme inline`.
+  - **Deprecated metadata fields.** Next.js 16 deprecated `viewport`,
+    `themeColor`, and `colorScheme` inside `metadata` — moved to a
+    dedicated `viewport` export (clean build, no warnings).
+- Added `lib/metadata.ts` — three typed helpers so every inner page
+  builds metadata without copy-paste:
+  - `pageMetadata(title, description)` — for /log, /work, /stack, etc.
+  - `projectMetadata({name, tagline, slug, status})` — for /work/[slug].
+  - `blogMetadata({title, excerpt, slug, readMin})` — for /writing/[slug].
+  - Plus `siteConstants` (URL, name, description) for shared use.
+- Hardened `app/layout.tsx`: explicit `googleBot` robots directive,
+  comment explaining each font slot, `suppressHydrationWarning` on
+  `<html>` to keep dev tools clean when browser extensions tweak markup.
+
+### Decisions
+- Didn't pull hex from `data/tokens.ts` into a Tailwind class string at
+  render time — Tailwind v4's `@theme inline` already bridges every token
+  to utility classes (`bg-bg`, `text-t1`, `border-border`), so layout
+  reads naturally without an import.
+- Used `viewport` as a separate named export per Next 16 semantics —
+  builds lint clean.
+- `lib/metadata.ts` helpers all share a common `SITE_URL` constant
+  (`https://mahboob.engineer`) so the source-of-truth lives in one file.
+
+### Caveats / pending
+- `themeColor: "#172318"` is duplicated between the two style sources
+  (CSS var in globals.css + `Viewport.themeColor` here). If we ever
+  change `colors.bg`, both must change. Will revisit if we add more
+  theme-color signals.
+- Phase 6 polish will replace the placeholder `/favicon.ico` and add
+  a proper manifest + OG image generation.
+
+### Verified
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 4 static pages, **no warnings** (was 2).
+- Live `pnpm dev` + `curl http://localhost:3000/`:
+  - `<html lang="en" class="...space_grotesk_... inter_... jetbrains_mono_... h-full antialiased" style="color-scheme:dark">` — all three fonts loaded, lang + dark scheme set.
+  - `<body class="font-body bg-bg text-t1 flex min-h-full flex-col">` — tokens applied, no hardcoded hex.
+  - `<title>Mahboob Alam — Co-Founder & Backend Engineer</title>` — title template resolves.
+  - `<meta property="og:title" content="Mahboob Alam — Co-Founder & Backend Engineer">` — OG present.
+  - `<meta name="twitter:card" content="summary_large_image">` — Twitter card set.
+  - `<meta name="theme-color" content="#172318">` — matches `colors.bg`.
+  - Page weight: 16.4 KB (reasonable for a placeholder landing).

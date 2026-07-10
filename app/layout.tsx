@@ -1,8 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-// Display font — used for h1/h2/section titles
+/* ──────────────────────────────────────────────────────────────────────
+   Fonts — loaded once at the root. Every inner page inherits these
+   via the CSS variables below. NEVER add a `<link rel="stylesheet">`
+   for fonts anywhere — that's the master §6 rule #10.
+   ────────────────────────────────────────────────────────────────────── */
+
+// Display font — h1/h2/section titles ("DEPENDENCY GRAPH", "Backend City", etc.)
 const display = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
@@ -10,7 +16,7 @@ const display = Space_Grotesk({
   display: "swap",
 });
 
-// Body font — used for paragraphs, lists, general text
+// Body font — paragraphs, lists, general prose
 const body = Inter({
   variable: "--font-body",
   subsets: ["latin"],
@@ -18,7 +24,7 @@ const body = Inter({
   display: "swap",
 });
 
-// Mono font — used for code, terminal blocks, chips, badges, KWs
+// Mono font — code blocks, chips, terminal, eyebrow labels, KWs
 const mono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -26,6 +32,14 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+/* ──────────────────────────────────────────────────────────────────────
+   Root metadata
+   - Default title for the landing page.
+   - Title template `"%s — Mahboob Alam"` is auto-applied by every
+     child page's `generateMetadata()` (Phase 3+).
+   - Open Graph + Twitter defaults so any page that doesn't override
+     still gets a sensible share card.
+   ────────────────────────────────────────────────────────────────────── */
 export const metadata: Metadata = {
   metadataBase: new URL("https://mahboob.engineer"),
   title: {
@@ -63,7 +77,25 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: { index: true, follow: true },
   },
+  // Icons — placeholder, Phase 6 will swap for proper OG/manifest.
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
+
+/**
+ * Next.js 16 splits viewport out of metadata — export it separately so the
+ * warning "Unsupported metadata viewport" goes away. Matches the colors.bg
+ * token from data/tokens.ts.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#172318",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -76,10 +108,9 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
       style={{ colorScheme: "dark" }}
+      suppressHydrationWarning
     >
-      <body className="font-body flex min-h-full flex-col bg-[#172318] text-[#D8EEE2]">
-        {children}
-      </body>
+      <body className="font-body bg-bg text-t1 flex min-h-full flex-col">{children}</body>
     </html>
   );
 }
