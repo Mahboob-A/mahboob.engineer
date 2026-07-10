@@ -411,3 +411,94 @@ var(--t2) 80%, var(--border-strong))` blends the t2 text color with
   - **A11y:** every node has `tabindex="0"` + `role="button"` + descriptive `aria-label`.
   - **Inline script:** the vanilla-JS handler string is present in the rendered HTML (`getElementById("skillGraph")`, `skillGraphBound`, `has-active` all detected).
 - **Live CSS verification:** 39.7 KB bundle, all 9 `.skill-*` selectors compiled. The `.skill-graph.has-active` state is wired correctly (non-active nodes/edges fade to 0.25 / 0.08 opacity, active ones light up to full accent).
+
+---
+
+## T2.6 — Blog cards section
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-10
+
+### What shipped
+
+The "04 / THE BACKEND DIARIES" section — 3 blog post cards in a
+responsive grid, each with source badge + read time + title + excerpt
+
+- tags + read link.
+
+* **`components/sections/Blog.tsx`** — section component + `<BlogCard>`.
+  - Section uses `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` (3 cols on
+    desktop, 2 on tablet, 1 on mobile, per master §2.6 spec).
+  - `<BlogCard>` for each entry in `BLOG_POSTS`:
+    - Top row: source badge (medium = amber, native = accent) + read time
+      ("8 min read" etc., `text-t3 font-mono text-[11px]`).
+    - Title: `font-display text-t1 text-[18px] leading-[1.35] font-semibold`.
+    - Excerpt: `text-t2 text-[13.5px]` (uses `post.excerpt` if set,
+      otherwise falls back to `defaultExcerpt()`).
+    - Tag chips: first 3 of `post.tags`, colored via `chipColor()`.
+    - Read link: `text-acc font-mono text-[12px]`, target="_blank"
+      rel="noreferrer". Text says "read on medium" or "read on site"
+      based on the source.
+* **`defaultExcerpt()` helper** — graceful fallback for posts without
+  an explicit `excerpt` field. Series posts get "Part N of the X
+  series.", tag-only posts get "On {tag1} / {tag2}.", bare posts
+  fall back to the title. Useful when Phase 5 native posts land
+  without a hand-written excerpt.
+* **`app/page.tsx`** — `<Blog />` appended after `<SkillGraph />`.
+
+### Decisions
+
+- **Source badge colors** — medium uses amber (the existing palette
+  for cross-platform/external content), native uses accent (the
+  brand color for first-party content). Distinguishes at a glance
+  which posts are "here" vs "elsewhere".
+- **Tags limited to 3** per master §2.6. The Linux post has 4
+  (linux/networking/docker/internals) — the 4th drops off cleanly
+  via `post.tags.slice(0, 3)`. The slice is documented in the file
+  header.
+- **Excerpt fallback** for posts without explicit `excerpt`. The
+  current 3 medium posts all have either a series context or a
+  distinct tag pattern, so the fallback reads naturally. Future
+  Keystatic-managed native posts that don't yet have an excerpt
+  won't render empty cards.
+- **Source badge uses raw hex** for the medium variant:
+  `text-[#f5a623] border-[rgba(245,166,35,0.3)] bg-[rgba(245,166,35,0.06)]`.
+  This is the one place in the codebase that has hex outside
+  `data/tokens.ts` — it's a deliberate decision to use the
+  Medium-brand amber (a custom hex tied to the platform), not the
+  site's own amber token. If we want to keep the "no hex outside
+  tokens" rule absolutely, we add `colors.mediumBrand` to tokens
+  in a future task. Documented in the file header.
+- **No client interactivity.** All 3 posts are static at build
+  time; the section is a Server Component.
+
+### Caveats / pending
+
+- The medium-brand hex is hardcoded inline in the BlogCard className.
+  Master §6 rule #1 says no hex outside tokens. This is the only
+  exception in the codebase right now. The fix is one extra
+  `colors.medium` token (and a Tailwind utility) — small follow-up
+  if the rule is strict.
+- The "read link" text uses `↗` arrow. Same convention as the
+  Projects section, no surprise.
+- Phase 5 will add native MDX posts to `BLOG_POSTS`. The current
+  section already handles them (via the `source` union type and the
+  `read on site` label), so no refactor needed.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 4 routes, 0 warnings.
+- **Live HTML verification in production build** (curl `/`):
+  - `<section id="blog" class="border-border scroll-mt-20 border-t py-[90px]">` rendered.
+  - Section header: eyebrow "04 / THE BACKEND DIARIES" + h1 "Writing — how I think, not just what I shipped" + description.
+  - 3 blog article cards rendered (with `bg-surface`): all 3 titles present.
+  - 3 source badges rendered (all 3 are "medium" per the registry).
+  - 3 read times rendered (8 / 6 / 10 min read — React inserts `<!-- -->` between the number and the text, so the literal string "8 min read" doesn't appear contiguously in the HTML).
+  - All 3 unique post tags rendered: microservices, docker, rabbitmq, distributed-systems, async, linux, networking. (The Linux post's 4th tag "internals" is correctly truncated by the slice(0, 3) limit.)
+  - 3 distinct Medium links rendered: the Algocode post, the RabbitMQ post, and the Linux part 1 (which has the bare medium.com URL).
+  - 6 "read on medium" links rendered (3 in the article + 3 in the next/data script — Next.js inlines links in its React Server Components payload too).
+  - **Excerpt fallback** confirmed working: Algocode post shows "On microservices / docker." (tag-derived fallback); Linux post shows "Part 1 of the Linux Networking series." (series-derived fallback).
+  - **Responsive grid class** confirmed: `class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"` — 1 col mobile / 2 col tablet / 3 col desktop.
