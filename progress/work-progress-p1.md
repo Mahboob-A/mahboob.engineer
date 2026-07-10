@@ -1,11 +1,16 @@
 # Phase 1 — Foundation
 
 **Phase:** 1 — Foundation
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-10
+**Date finished:** 2026-07-10
 **Goal:** Project boots, design system is locked, data is in TypeScript, shared
 components exist. Phase 1 ends when every component in `components/ui/` and
 `components/layout/` is built and `pnpm dev` shows a styled placeholder page.
+**Result:** All 7 tasks complete. `/` renders the placeholder inside
+`<Navbar /> + <main> + <Footer />` on a dark forest-green background with the
+live logo dot, 5 anchor links, and a cookie-backed flat/game toggle.
+Inner-layout shell is ready for Phase 3 inner pages to drop in.
 
 Master plan tasks in this phase (T1.1 → T1.7):
 
