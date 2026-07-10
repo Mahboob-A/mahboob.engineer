@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import "./globals.css";
 import "@/components/diagrams/diagrams.css";
+import "@/components/sections/skill-graph.css";
 
 /* ──────────────────────────────────────────────────────────────────────
    Fonts — loaded once at the root. Every inner page inherits these

@@ -1,0 +1,79 @@
+/**
+ * components/sections/skill-graph.css
+ *
+ * Styles for the SkillGraph landing section. Per master §2 + flat
+ * mockup lines 859–880. All colors come from data/tokens.ts via
+ * CSS variables — no hardcoded hex.
+ *
+ * Hover behavior (driven by the inline script in SkillGraph.tsx):
+ *   - SVG gets `has-active` class on hover.
+ *   - All nodes/edges that AREN'T connected to the hovered node fade
+ *     to opacity 0.25.
+ *   - The hovered node + its connections become "active" (highlighted).
+ */
+
+.skill-node circle {
+  fill: var(--code-bg);
+  stroke-width: 2;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.skill-node text {
+  fill: var(--t1);
+  font-size: 11px;
+  font-family: var(--font-mono), monospace;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Backend = accent green stroke */
+.skill-node.backend circle {
+  stroke: var(--acc);
+}
+
+/* Infra = amber stroke */
+.skill-node.infra circle {
+  stroke: var(--amber);
+}
+
+/* Data = slate stroke */
+.skill-node.data circle {
+  stroke: color-mix(in srgb, var(--t2) 80%, var(--border-strong));
+}
+
+/* Learning = muted dashed stroke */
+.skill-node.learning circle {
+  stroke: var(--t3);
+  stroke-dasharray: 4 3;
+}
+.skill-node.learning text {
+  fill: var(--t3);
+}
+
+.skill-edge {
+  stroke: var(--border);
+  stroke-width: 1.2;
+  fill: none;
+  transition: all 0.2s;
+}
+
+/* ─── Hover state ─────────────────────────────────────────────── */
+.skill-graph.has-active .skill-node:not(.active) {
+  opacity: 0.25;
+}
+.skill-graph.has-active .skill-edge:not(.active) {
+  opacity: 0.08;
+}
+.skill-graph.has-active .skill-edge.active {
+  stroke: var(--acc);
+  opacity: 1;
+}
+.skill-node.active circle {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--acc) 40%, transparent));
+}
+.skill-node.active text {
+  fill: var(--t1);
+  font-weight: 600;
+}

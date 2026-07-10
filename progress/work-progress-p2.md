@@ -308,3 +308,106 @@ github` for Algocode; the others use a derived label), title,
   - **Stack chips:** all 38 chips across the 3 projects rendered with the correct `chipColor()` bucket.
   - **Links:** all 3 GitHub source links + Drishti's YouTube demo link rendered with `target="_blank" rel="noreferrer"`.
 - **Live CSS verification:** 38.2 KB bundle, all 8 new `.alg-mini-*` classes compiled (1 occurrence each — selectors only, not duplicate per element).
+
+---
+
+## T2.5 — Skill Graph section
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-10
+
+### What shipped
+
+The "03 / DEPENDENCY GRAPH" section — a static SVG of 18 curated tech
+nodes connected by 20 dependency edges, with vanilla-JS hover
+dim/highlight. Per master §2 + flat mockup §03 (lines 840–948).
+
+- **`components/sections/SkillGraph.tsx`** — the section component
+  plus a small inline-script component (`<SkillGraphScript>`).
+  - Hand-tuned `NODES` array (18 entries) with the same layout as the
+    flat mockup: Django at center (450, 250), DRF top-left, Celery
+    bottom-left, Docker right-center, AWS right-bottom, etc.
+  - Hand-tuned `EDGES` array (20 pairs) with the same connection
+    diagram from the mockup: `django↔drf`, `django↔celery`,
+    `django↔postgresql`, `docker↔aws`, `aws↔nginx`, etc.
+  - Domain breakdown: 6 backend + 4 infra + 4 data + 4 learning —
+    matches the master spec's 4 buckets exactly.
+  - All nodes carry `data-id` (for the hover lookup) + `data-rel`
+    (the comma-separated adjacency list) + `tabindex="0"` +
+    `role="button"` + `aria-label="X — connected to Y"` so screen
+    readers announce both the node and its connections.
+  - All edges carry `data-edge="from,to"` so the hover handler can
+    quickly check whether each edge touches the active node.
+- **`<SkillGraphScript>`** — a separate component that emits a tiny
+  inline `<script>` tag (no React state, no client component). On
+  `DOMContentLoaded` it attaches `mouseenter`/`mouseleave`/`focus`/
+  `blur` handlers to every `.skill-node`. On enter:
+  - Adds `has-active` to the SVG.
+  - Adds `active` to the hovered node + every node in `data-rel`.
+  - Adds `active` to every edge whose `data-edge` contains either
+    endpoint.
+    On leave, all classes are cleared. Bounds the SVG via
+    `__skillGraphBound` to avoid double-attaching on hot-reload.
+- **`components/sections/skill-graph.css`** — 9 selectors with
+  `.skill-node` (4 domain variants), `.skill-edge`, and the
+  `.skill-graph.has-active` state. Active nodes get a drop-shadow
+  glow in accent color via `color-mix` so the hex stays bound to
+  `colors.acc`.
+- **`app/layout.tsx`** — imports `skill-graph.css` globally.
+- **`app/page.tsx`** — `<SkillGraph /> + <SkillGraphScript />` appended.
+
+### Decisions
+
+- **Vanilla JS, no React state, no D3.** Master §2.5 explicitly calls
+  for vanilla JS for the landing version; D3 is reserved for the
+  full force graph at `/stack` (T3.4). The script is ~25 lines of
+  IIFE inside one `<script dangerouslySetInnerHTML>`. Event delegation
+  on the SVG `<g>` elements is enough since there are only 18 nodes.
+- **Curated 18-node subset, not the full 25-item STACK registry.**
+  The flat mockup ships 20-node layouts (some are repeated/derived).
+  I matched its visual rhythm with 18 nodes. The full 25-item
+  registry will render in `/stack` via the D3 force-directed graph.
+  Either way `STACK` is the long-term source of truth.
+- **Hover handling for keyboard users too.** Each node has
+  `tabindex="0"` + `role="button"` and the script also listens for
+  `focus`/`blur` events. Tabbing through the nodes produces the
+  same dim/highlight effect as mouse hover.
+- **Aria labels include the connectivity.** `aria-label="Django —
+connected to drf, celery, postgresql, sysdesign"` is much more
+  useful than just "Django" — screen-reader users get the same
+  context a sighted hover-user gets.
+- **`color-mix` for the data-node stroke.** `color-mix(in srgb,
+var(--t2) 80%, var(--border-strong))` blends the t2 text color with
+  the border-strong color for a soft slate that reads as "data layer"
+  without needing a hardcoded hex.
+
+### Caveats / pending
+
+- The vanilla script is a one-off at landing time. If the user
+  wanted the same effect re-usable, the script could be extracted to
+  a custom hook (`useSkillGraphHover`) — but T3.4 builds the same
+  effect from a D3 force graph, so the duplication is acceptable.
+- The 18 nodes use hand-tuned coordinates. If a new tech is added
+  to STACK, the curator needs to add a corresponding `NODES` entry
+  here OR opt out (let the full registry render only at `/stack`).
+  Documented in the file header comment.
+- The hover handler doesn't yet support touch events. On mobile,
+  hovering is replaced by tapping the node — but the visual effect
+  will only persist as long as the touch is held. Acceptable for v1.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 4 routes, 0 warnings.
+- **Live HTML verification in production build** (curl `/`):
+  - `<section id="stack" class="border-border scroll-mt-20 border-t py-[90px]">` rendered.
+  - Section header: eyebrow "03 / DEPENDENCY GRAPH" + h1 "How the stack connects" + description.
+  - 4 legend items rendered: backend / infra / platform / data layer / currently leveling up.
+  - **Graph nodes:** 18 unique `data-id` attributes + 18 `<g class="skill-node ...">` elements + 18 `<circle>` elements + matching `<text>` labels.
+  - **Domain distribution:** 6 backend + 4 infra + 4 data + 4 learning = 18 total.
+  - **Edges:** 20 `<line data-edge="X,Y">` elements with the correct connectivity pattern.
+  - **A11y:** every node has `tabindex="0"` + `role="button"` + descriptive `aria-label`.
+  - **Inline script:** the vanilla-JS handler string is present in the rendered HTML (`getElementById("skillGraph")`, `skillGraphBound`, `has-active` all detected).
+- **Live CSS verification:** 39.7 KB bundle, all 9 `.skill-*` selectors compiled. The `.skill-graph.has-active` state is wired correctly (non-active nodes/edges fade to 0.25 / 0.08 opacity, active ones light up to full accent).
