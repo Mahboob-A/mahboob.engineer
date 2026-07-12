@@ -16,9 +16,5 @@
     { "name": "right", "start": 12, "end": 15 }
   ],
 
-  "rowsAlternate": [
-    { "_comment": "If 'up' and 'down' rows are reversed in the source image, swap these with rows[]. Verified by visual inspection of the source PNG: row 0 is labeled DOWN (facing camera), row 1 is UP (facing away), row 2 is LEFT, row 3 is RIGHT." }
-  ],
-
   "idleFrame": 1
 }

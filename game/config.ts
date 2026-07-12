@@ -37,13 +37,24 @@ export const WORLD_HEIGHT = 50 * TILE_SIZE; // 1600 px
    `this.load.spritesheet()` / `this.load.tilemapTiledJSON()` in
    PreloadScene (T4.3) and WorldScene (T4.4). Centralized here so
    the contract is documented in one place and T4.3 doesn't have
-   to hardcode paths. T4.1 chose ChatGPT tileset + sprite. */
+   to hardcode paths. T4.1 chose ChatGPT tileset + sprite.
+   Nested shape: each entry groups PNG + JSON siblings so future
+   asset groups (audio, multiple enemy spritesheets) can extend
+   without naming collisions. */
 export const PHASER_ASSETS = {
-  TILESET_PNG: "/assets/tilesets/backend-city.png",
-  TILESET_JSON: "/assets/tilesets/backend-city.json",
-  SPRITE_PNG: "/assets/sprites/developer.png",
-  SPRITE_JSON: "/assets/sprites/developer.json",
-  // T4.2: TILEMAP_JSON = "/assets/maps/backend-city.json",
+  tileset: {
+    png: "/assets/tilesets/backend-city.png",
+    json: "/assets/tilesets/backend-city.json",
+  },
+  sprite: {
+    png: "/assets/sprites/developer.png",
+    json: "/assets/sprites/developer.json",
+  },
+  // T4.2:
+  // tilemap: { json: "/assets/maps/backend-city.json" },
+  // T5.x (audio, additional sprites):
+  // audio:   { bgm: "...", sfx: { ... } },
+  // enemies: { grumpy: { png, json }, ... },
 } as const;
 
 /** Build a fresh Phaser game config. Called once per mount. */
