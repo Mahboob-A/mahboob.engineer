@@ -369,3 +369,83 @@ Master plan tasks in this phase (T3.1 → T3.7):
     `Blog.tsx` (T2.6 caveat, untouched here).
   - The new `--color-tier-founder` resolves through existing
     `--amber` + `--card` via `color-mix` — no hex leaked into JS.
+
+---
+
+## T3.3 — `/work/[slug]` case-study pages
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-12
+
+### What shipped
+
+12 case-study pages — one per project in `PROJECTS` (the original 11 + the new ProStream entry). Per master §2.3.
+
+- **`data/projects.ts`** — extended schema:
+  - `ProjectItem` gained `notes?: string` (4-paragraph build prose, lifecycle arc) and `youtube_extra?: string[]` (additional YouTube URLs beyond the canonical one).
+  - `algocode.youtube_extra`: 2 more videos ("Judge internals", "system design").
+  - `movio.youtube_extra`: 2 more videos ("system design", "watch in action").
+  - **New ProStream entry** (12th project): slug `prostream`, tier `showcase`, year 2023. GitHub + 2 YouTube URLs from the user. Built around "Twitch-inspired, Agora-backed, tip-economy enabled" with stack of `['Django', 'DRF', 'React', 'PostgreSQL', 'WebSocket', 'Route53', 'AWS', 'Agora', 'SSLCommerz']`.
+  - All 12 projects now have a `notes` block — 4-paragraph prose in the voice the user described (simple, human, lifecycle arc: how idea formed → how problem framed → what was built → how tested/deployed/next).
+
+- **`data/blog.ts`** — added a new Medium post:
+  - `drishti-ai-eye-screening-agent` → maps to `projects: ['drishti-ai']`, `stack: ['Django', 'FastAPI', 'WebRTC', 'Gemini']`. So `/work/drishti-ai` now has 1 related post.
+
+- **5 new full-size architecture diagrams** + 1 placeholder, all under `components/diagrams/`:
+  - `MovioDiagram.tsx` — 14 nodes across 3 columns (Public / Processing / Delivery). Auth, API, Worker, RabbitMQ, FFmpeg, Lambda, S3, Gcore CDN, Postgres, Elasticsearch, Redis, DRM. Reuses `.alg-mini-*` styles.
+  - `DrishtiAIDiagram.tsx` — Android ASHA app + Nginx + FastAPI with the 5-layer AI pipeline (MediaPipe → OpenCV → Roboflow → Moondream → Gemini) + Django + Postgres + Celery + Redis + Prometheus + Grafana. 14 nodes. Voice feedback path drawn back to the client.
+  - `DatalineageDoctorDiagram.tsx` — OpenMetadata → webhook → FastAPI → Celery → RCA agent → 5 tools (lineage, DQ history, pipeline status, blast radius, incident history) via the OM httpx client. Closes the loop with `Incident API` writeback to OpenMetadata. Postgres + Slack notifier side. 12 nodes.
+  - `AirpassDiagram.tsx` — triangular P2P layout. Heavy accent arrow between Browser A → Browser B (the actual file path). Thin dashed arrow through FastAPI signaling (metadata only). 64KB chunking + AES-256-GCM + bcrypt password detail block below. 4 nodes + annotations.
+  - `DiagramPlaceholder.tsx` — single helper for the 5 showcase projects. `bg-code-bg` panel with project name + tagline + "Detailed architecture diagram coming soon" sub-label.
+  - Reused existing `TaplyDiagram.tsx`, `UnthinkDiagram.tsx`, `AlgocodeDiagram.tsx` for the remaining 3 cases (these already existed from T3.2 + T2.2).
+
+- **`app/work/[slug]/page.tsx`** — Server Component. 12 static paths via `generateStaticParams()`. `generateMetadata()` uses `projectMetadata()` from `lib/metadata.ts`. Page composes 7 file-local section helpers:
+  1. `<Hero>` — status badge + year + name (display 32→52px clamp) + tagline + 2-col grid (problem + built text left, diagram right).
+  2. `<MetricsRow>` — 4-up grid (2-up mobile) with mono amber numbers + t3 labels. Splits each metric on first space for the headline.
+  3. `<BuildNotes>` — splits `project.notes` on `\n\n`, renders each as a `<p>`. Fallback to `problem + built` if notes missing.
+  4. `<StackBreakdown>` — groups `techsByProject(slug)` into 4 display buckets (Backend | Infrastructure | Data layer | AI / special). Plus a `CatchAllStack` for project-stack entries that aren't in the STACK registry (e.g. "Stripe", "Agora", "SSLCommerz").
+  5. `<LinksRow>` — chip-style buttons for GitHub, demo, live, YouTube + YouTube extras, backend/client repos (Pulumi).
+  6. `<RelatedWriting>` — only rendered if `postsByProject(slug)` is non-empty. Renders as a list of post titles + meta.
+  7. `<RelatedStack>` — chip grid linking each tech to `/stack#tech-id` (T3.4 will resolve).
+
+- **`pickDiagram()` helper** — maps project slug to the right full-size diagram component. Falls back to `<DiagramPlaceholder>` for showcase projects.
+
+### Decisions
+
+- **`notes` is a single string** (Option C from earlier discussion) — split on `\n\n` at render time. Each project's notes is 4 paragraphs totaling ~280-440 words of original prose in the user-requested voice.
+- **`youtube_extra[]` is additive** — keeps backward compatibility with single-video projects. The links row handles both: primary `↗ video`, extras `↗ video 2`, `↗ video 3` etc.
+- **ProStream is tier `showcase`** — year 2023, status complete, follows master's chronological ordering.
+- **Catch-all stack block** — non-zero number of project `.stack[]` entries (Stripe, Agora, SSLCommerz, TOTP 2FA, NFC, QR, vCard, Django-Q2, etc.) don't have a corresponding `STACK_BY_ID` entry. Rather than drop them, the `CatchAllStack` renders them as ungrouped chips in a fifth card next to the bucket grid. Keeps the case study honest about which tech is in play.
+- **7 real diagrams, 5 placeholders** — exactly the projects the user named for real diagrams. Showcase-tier placeholders are forward-compatible.
+- **Apostrophe escape** — caught and fixed one `react/no-unescaped-entities` lint error on the "what's next" eyebrow copy.
+- **Build prose is one-shot** — I wrote all 12 projects' notes from the README + Medium + my-resources source material I fetched. Author can revise later by editing `data/projects.ts`. No special tooling.
+- **Server Component end-to-end** — case-study page is pure SSR; the only client code in the chain is `Navbar` reading `headers()` (T1.6 design, keeps all routes as `ƒ`).
+- **Stack chips link to `/stack#tech-id`** — T3.4 will resolve the 404s. Forward-compatibility pattern as agreed.
+
+### Caveats / pending
+
+- **"/stack#tech-id" links 404 until T3.4 ships** — every case study's related-stack chips forward to a route T3.4 is about to build. Same pattern as `/work/unthink` 404 in T3.1.
+- **Build prose, all 12** — written once from source material. Author should review each project's `notes` field for tone accuracy; some projects (Taply, UnThink) are written from first-person knowledge and read naturally, others (ProStream, Load Balancer) are written from README summary + a bit of inference. All in the simple/human voice the user requested.
+- **Stack groups** — the 9-domain `STACK` registry maps to 4 display buckets per master §2.3. `async|auth|payment` → Backend. `video` → Infrastructure (since ffmpeg/HLS/CDN are infra-ish). `learning` → AI / special. This grouping isn't a 1:1 reverse — any future project can override by adding new domains.
+- **YouTube video labels** — `↗ video`, `↗ video 2`. If the user wants descriptive labels ("system design", "judge internals") later, we can change `youtube_extra?: string[]` to `youtube_extra?: Array<{ url: string; label: string }>`.
+- **Related writing URL preservation** — post links go to external Medium URLs (`target="_blank" rel="noreferrer"`). When native posts land in Phase 5, this same section will need to handle internal `/writing/[slug]` links too.
+- **DiagramPlaceholder** — visually consistent with `<DiagramPanel>` (T1.5) but a custom component, not the panel itself. The placeholder has its own `min-h-[260px]` so case-study heroes stay balanced regardless of project. The other 2-col hero content (problem + built left) keeps height.
+- **Git author identity** — per standing instruction, all commits use `connect.mahboobalam@gmail.com` via per-commit `GIT_AUTHOR_*` env vars.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean (caught and fixed one `react/no-unescaped-entities` error on the first pass; clean on re-run).
+- `pnpm build` → 19 static pages (the 7 framework/landing/log/work routes + 12 case-study paths under `/work/[slug]`). 0 warnings. `/work/[slug]` shows as `ƒ (Dynamic)` because Navbar reads headers per request (T1.6 design) but the underlying content is statically generated at build time for all 12 slugs.
+- **Live HTML verification** (curl each `/work/[slug]`):
+  - `/work/taply` — title `Taply — Mahboob Alam`, h1 `Taply`, status badge `● live`, year 2026, tagline, `bg-code-bg` diagram panel with `<TaplyDiagram>`, 4 metrics (`<100ms profile load`, `4 subscription tiers`, `11 profile section types`, `1 enterprise customer live`), 4-paragraph build notes, stack buckets (Backend | Infrastructure | Data layer | Also used), links row (live, demo), related-stack chips for 13 techs (`/stack#django` etc.). 62813 bytes.
+  - `/work/unthink` — same shape, status `building`, `<UnthinkDiagram>`, dual-backend layout, 2 metrics shown (the rest truncated by the 4-cap), notes ~310 words. 54453 bytes. **Closes the T3.1 `/work/unthink` 404.**
+  - `/work/algocode` — status `complete` → `shipped` badge, full `<AlgocodeDiagram>` (animated SVG request trace), 5 metrics, related-writing section with 2 Medium posts (My Experience Building + Message Queue 101), links row with `↗ source` + 2 YouTube videos, stack chips for 9 techs. 70291 bytes.
+  - `/work/movio` — `<MovioDiagram>` (3-col layout), YouTube primary + 2 extras, 4 metrics, related writing empty (correct). 65113 bytes.
+  - `/work/drishti-ai` — `<DrishtiAIDiagram>` with 5-layer pipeline shown vertically, related-writing section now shows the new DrishtiAI Medium post. 62988 bytes.
+  - `/work/datalineage-doctor` — `<DatalineageDoctorDiagram>` with RCA agent + 5 tools, 3 metrics, complete related stack chips. 54132 bytes.
+  - `/work/airpass` — `<AirpassDiagram>` with the P2P heavy arrow + signaling thin dashed arrow, related-stack chips. 49266 bytes.
+  - `/work/cutetube`, `/work/pulumi-infra`, `/work/imgtwist`, `/work/load-balancer`, `/work/prostream` — each shows the `<DiagramPlaceholder>` block ("Detailed architecture diagram coming soon"), correct project name + tagline rendered, project-specific metrics, project-specific build notes.
+- **Title template** — every page resolves its title via the root layout template `'<page> — Mahboob Alam'`. Verified for `/work/algocode`, `/work/taply`, `/work/unthink`, `/work/drishti-ai`.
+- **CSS verification** (50.2 KB bundle): all token classes present including `bg-code-bg`, `bg-tier-founder`, `text-amber`, `border-border`, `font-display`, `font-mono`. No leaked hex outside the token values (the Medium-brand amber from `Blog.tsx` is the single non-token exception).

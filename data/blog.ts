@@ -89,6 +89,17 @@ export const BLOG_POSTS: BlogPostItem[] = [
     part: 1,
     stack: ["Linux", "Docker"],
   },
+  {
+    slug: "drishti-ai-eye-screening-agent",
+    title:
+      "DrishtiAI: Building an AI Eye-Screening Agent for Rural India in 7 Days",
+    source: "medium",
+    url: "https://imehboob.medium.com/drishti-ai-building-an-ai-eye-screening-agent-for-rural-india-in-7-days-2fc3d4ccc1fe",
+    tags: ["ai", "computer-vision", "webrtc", "mobile"],
+    readMin: 10,
+    projects: ["drishti-ai"],
+    stack: ["Django", "FastAPI", "WebRTC", "Gemini"],
+  },
 ];
 
 /* ===========================================================================
