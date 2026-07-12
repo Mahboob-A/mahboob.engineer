@@ -33,7 +33,8 @@ export type ProjectDomain =
   | "ai"
   | "distributed"
   | "video"
-  | "infra";
+  | "infra"
+  | "observability";
 
 /** Game-mode map district — where this project's building sits in Backend City. */
 export type GameDistrict =
@@ -260,7 +261,7 @@ export const PROJECTS: ProjectItem[] = [
     github: "https://github.com/Mahboob-A/datalineage-doctor",
     demo: null,
     youtube: "https://youtu.be/p9yGq0KsWhw",
-    domain: ["ai", "platform", "backend"],
+    domain: ["ai", "platform", "backend", "observability"],
     stack: [
       "Python",
       "LLM (OpenAI/Gemini)",
@@ -450,7 +451,7 @@ export const PROJECTS: ProjectItem[] = [
     github: "https://github.com/Mahboob-A/Load-Balancer-Nginx-Docker",
     demo: null,
     youtube: null,
-    domain: ["infra", "platform"],
+    domain: ["infra", "platform", "backend"],
     stack: ["Nginx", "Docker", "Docker Compose", "Shell scripting"],
     metrics: [
       "round-robin LB",

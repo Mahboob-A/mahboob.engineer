@@ -56,6 +56,11 @@
   --color-amber-dim: var(--amber-dim);
   --color-code-bg: var(--code-bg);
 
+  /* Founder tier — a soft amber/card blend for cards visually elevated
+     above the rest of /work. Defined here so /work founder cards can use
+     bg-tier-founder without an inline hex. */
+  --color-tier-founder: color-mix(in srgb, var(--amber) 4%, var(--card));
+
   --font-display: var(--font-display), "Space Grotesk", system-ui, sans-serif;
   --font-body: var(--font-body), Inter, system-ui, sans-serif;
   --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
