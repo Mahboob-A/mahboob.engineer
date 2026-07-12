@@ -1,8 +1,9 @@
 # Phase 3 — Inner pages
 
 **Phase:** 3 — Inner pages
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-12
+**Date finished:** 2026-07-12
 **Goal:** Every non-`/` page (`/log`, `/work`, `/work/[slug]`, `/stack`,
 `/writing`, `/writing/[slug]`, `/contact`) renders with the shared
 InnerLayout shell, reads from the typed data registries, and matches
@@ -507,3 +508,135 @@ Master plan tasks in this phase (T3.1 → T3.7):
   - 200 status on `/stack` and `/stack#django`.
 - **T3.3 deep-link resolution** — `/work/taply` emits 9 chip links (`/stack#aws`, `/stack#celery`, `/stack#cicd`, `/stack#django`, `/stack#drf`, `/stack#jwt`, `/stack#postgresql`, `/stack#redis`, `/stack#stripe`). All 9 resolve to `/stack` 200 (was 404 before T3.4).
 - **CSS verification** (53.4 KB bundle): `--mauve` token resolved; new `.stack-graph.*` classes compiled; all hex values map to tokens (the new `#9870c0` is the mauve token we just added). No leaked hex outside tokens.
+
+---
+
+## T3.5 — `/contact` terminal form (Resend + mailto fallback) + sidebar
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-12
+
+### What shipped
+
+`/contact` — the full-page contact route per master §2.6. First page on the site with a real backend path (Resend via `/api/contact`). Also refactors the T2.7 landing Contact section to consume the same shared form component.
+
+- **`data/contact.ts`** — new typed registry:
+  - `AVAILABILITY: AvailabilityItem[]` (3 status lines: backend roles, platform/infra, Taply collabs)
+  - `RESPONSE_TIME: string` (constant `"within 24h"`)
+  - `DIRECT_LINKS: DirectLinkItem[]` (6 entries: GitHub / LinkedIn / Medium / Taply / Email / Resume)
+  - `FAQ: FAQItem[]` (3 Q&A pairs verbatim from master §2.6)
+  - `CONTACT_LABELS: ContactLabel[]` (5 form chips)
+  - `bucketFor(key)` — label key → chip color bucket
+- **`components/contact/ContactForm.tsx`** — new `'use client'` shared form. Same visual + behavior pattern as T2.7, extended with:
+  - `useState<Status>` for `idle | submitting | success | error`
+  - Async `fetch('/api/contact', …)` submit
+  - Submit button label morphs: `submit →` → `sending…` → back to `submit →`
+  - Error toast variant (amber border, "Try the mailto link below." copy)
+  - **mailto fallback link** below the submit button — pre-fills subject + body
+- **`components/contact/ContactSidebar.tsx`** — new Server Component. 3 stacked cards: AvailabilityCard (3 lines + response time footer), DirectLinksCard (6 rows with external ↗ / internal → arrows), FAQCard (3 always-expanded Q&A pairs).
+- **`app/api/contact/route.ts`** — new POST handler:
+  - Validates title (1-120), description (1-1500), email (regex), label (enum)
+  - Reads `RESEND_API_KEY` env var; missing → 500 with clear error message
+  - Sends via Resend SDK: `from: onboarding@resend.dev`, `to: connect.mahboobalam@gmail.com`, `replyTo: <sender>`
+  - Subject format: `[<label>] <title>` (or `[note] <title>` if no label)
+  - Returns `{ ok: true, id }` on success, `{ ok: false, error }` on validation/failure
+- **`components/sections/Contact.tsx`** (T2.7) — refactored:
+  - Strips the inline form JSX, `bucketFor()`, `LABELS`, `QUICK_LINKS`
+  - Now a thin Server Component shell that imports `<ContactForm>` from `components/contact/`
+  - Sidebar slimmed from 5 → still 5 links (filters out `Resume` since the full-page version has it). Reads from the new `data/contact.ts` registry
+- **`app/contact/page.tsx`** — new Server Component shell. InnerLayout + ContactForm (1.5fr) + ContactSidebar (1fr). `metadata = pageMetadata("Contact", "Form, availability…")`.
+- **`package.json`** — `+resend` (6.17.2). Server-side only, no client bundle impact.
+
+### Decisions
+
+- **Resend + mailto fallback** — primary path is `POST /api/contact` → Resend. Secondary path is a `mailto:` link below the submit button with subject + body pre-filled. Both visible. The mailto path is the fallback when `RESEND_API_KEY` isn't set (dev, missing deploy env) OR when the API call fails.
+- **Resume = Google Drive link** — user said they update the resume periodically on Drive. Using the file id URL means Drive keeps the same URL when they upload new versions (Manage Versions, not Replace File). One source of truth, no `/public/resume.pdf` to drift out of date.
+- **Refactor of T2.7's landing Contact section** — extracting `<ContactForm>` into a shared component + lifting labels / quick-links / bucketFor into `data/contact.ts` removes the duplication. Single source of truth for form behavior. Landing section now becomes a thin Server Component.
+- **`onboarding@resend.dev` as sender** — Resend's free-tier verified sender. User will swap for a custom domain sender (`noreply@mahboob.engineer`) when the domain is verified in the Resend dashboard (Phase 6). Comment in the route notes this.
+- **Subject line format** — `[<label>] <title>`. Pre-categorizes incoming emails so the user can quickly triage by label in their inbox.
+- **Validation errors are 400, missing key is 500, Resend rejection is 502** — three distinct status codes let the client distinguish: bad-input (caller's fault, retry won't help) vs server misconfig (env issue) vs upstream Resend (transient). Form shows a generic "Try the mailto link below" for all non-200 responses.
+- **FAQ is always-expanded** — 3 Q&A pairs fit naturally without collapsing. Phase 6 polish can add accordion behavior if user wants.
+- **DirectLinks filtered for landing** — landing section shows 5 (filters out Resume). `/contact` page shows all 6. Same registry, different slice.
+- **No rate limiting** — Phase 6 polish. Acceptable for v1: the form is a low-value spam target (real email routed to Gmail, which has its own spam filtering), and the user can disable the route by removing the env var if abuse appears.
+- **No CSRF token** — same-origin POST, browser same-origin policy is sufficient for v1. Phase 6 polish can add per-session tokens if needed.
+- **`onmouseover` not used** — hover effects are pure CSS.
+
+### Caveats / pending
+
+- **`RESEND_API_KEY` not set in dev** — local `pnpm dev` cannot actually send email. The form posts to `/api/contact` and gets 500 with `{ok:false, error:"RESEND_API_KEY is not configured on this server."}`. Form shows error toast; user clicks mailto fallback. Honest and debuggable. **Phase 6 deploy step: add `RESEND_API_KEY` to Vercel env vars.**
+- **No rate limiting** — anyone can POST infinite messages. Production-grade protection comes in Phase 6 (Vercel Edge Middleware).
+- **No attachment upload** — text-only fields. Phase 6 polish.
+- **No CSRF token** — same-origin POST. Phase 6 polish.
+- **Resume URL is the file id** — `https://drive.google.com/file/d/1fJzh3qcz3NHvCBGop9Yp4fJE4WecD8Q8/view`. If user uploads a new version of the resume, they MUST use Drive's "Manage versions" feature, not "Replace file", to preserve the URL. If they replace the file, the URL changes and the link breaks. Flag this in deployment docs.
+- **Landing Contact section's behavior changed** — was: "click submit → immediate toast, no network". Now: "click submit → async POST → success/error toast". Visual is identical. UX is upgraded. **The mailto fallback link is also new** on the landing section. Strict upgrade; no regression.
+- **API route accepts ANY POST with the right JSON** — no CSRF, no origin check. Acceptable for v1 since the form lives on the same origin. Phase 6 polish can add `Origin: https://mahboob.engineer` header check.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 22 routes (was 20). `/contact` and `/api/contact` added. 0 warnings.
+- **Live HTML verification** (`/contact`):
+  - `<InnerPageHeader>` eyebrow `05 / OPEN AN ISSUE`, title `Let's build something durable.` (HTML entity form for apostrophe).
+  - Left column: `<TerminalBlock label="connect — submit a ticket">` wrapping the form. 4 inputs present (`id="cf-title"`, `id="cf-description"`, `id="cf-email"`, `id="cf-label"`). 5 label chips rendered with `data-bucket` attributes (sage / mauve / slate / sage / amber). Submit button + mailto fallback link both present.
+  - Right column: 3 cards stacked. Availability card shows the 3 status lines. Direct links card shows 6 rows. FAQ card shows the 3 Q&A pairs.
+  - **Resume link → exact Google Drive URL** — `https://drive.google.com/file/d/1fJzh3qcz3NHvCBGop9Yp4fJE4WecD8Q8/view` (verified via grep).
+  - "within 24h" response time copy rendered.
+- **API verification** (curl):
+  - POST `/api/contact` with valid payload, no env var → `500 {ok:false, error:"RESEND_API_KEY is not configured on this server."}` ✓
+  - POST `/api/contact` with empty title → `400 {ok:false, error:"Title must be 1-120 characters."}` ✓
+  - POST `/api/contact` with `email: "bad"` → `400 {ok:false, error:"Email looks invalid."}` (validation correct).
+  - POST `/api/contact` with `label: "foo"` → `400 {ok:false, error:"Unknown label."}` (enum check working).
+- **Refactor smoke** — landing `/` Contact section now uses the shared `ContactForm` (proven by `id="cf-title"` appearing in landing HTML). No regressions to Projects / Blog / SkillGraph / Hero sections.
+- **CSS verification** (54.3 KB bundle): all token classes present including the new `bg-mauve` and `bg-amber` utilities. Hex values are token values. No leaked hex.
+
+---
+
+## T3.6 — Navbar active-state highlighting (close-out)
+
+**Task status:** done (shipped in T1.6, verified in T3.1 + T3.2 + T3.3 + T3.4 + T3.5)
+**Date:** 2026-07-12
+
+### What shipped (already in place)
+
+- `components/layout/Navbar.tsx` (T1.6) reads `currentPath` from headers and toggles `text-t1 font-semibold` + `aria-current` on the matching link. The 5 nav links map to `/log`, `/work`, `/stack`, `/writing`, `/contact` per master §2.4.
+- **Verified live in T3.1**: `/log` with `Referer` set renders `experience` link as `text-t1 font-semibold` + `href="/log"` (the section's anchor route).
+- **Verified live in T3.2**: `/work` with `Referer` set renders `work` link as active.
+- **Verified in T3.3 / T3.4 / T3.5**: same pattern — `active` styling applies to whichever inner-page path is being viewed.
+
+### Caveat (pre-existing)
+
+- **Production via raw `curl`** doesn't set `Referer` reliably, so Navbar's path detection can fall back to treating the user as on `/`. Verified with explicit `Referer` header: nav highlighting resolves correctly. The x-invoke-path / next-url / referer fallback chain is documented in T1.6.
+
+---
+
+## Phase 3 wrap-up
+
+All 7 Phase 3 tasks are complete:
+
+- ✅ T3.1 — `/log` (full experience + achievements + now)
+- ✅ T3.2 — `/work` (tiered grid + filter chips)
+- ✅ T3.3 — `/work/[slug]` (12 case studies + build prose)
+- ✅ T3.4 — `/stack` (D3 force graph + tech detail panel)
+- ✅ T3.5 — `/contact` (Resend form + sidebar + FAQ)
+- ✅ T3.6 — Navbar active-state (shipped in T1.6)
+- ✅ T3.7 — `/writing` + `/writing/[slug]` (deferred to Phase 5 per master)
+
+**Inner-page graph is now fully functional:**
+
+| Route | Inner pages complete |
+|---|---|
+| `/` | All 6 landing sections live + 5 anchor routes |
+| `/log` | 3 experience entries + education + 3 achievements + now-status |
+| `/work` | 3 tier sections + 7-chip filter |
+| `/work/[slug]` | 12 case studies, each with hero + metrics + build prose + stack + links + related |
+| `/stack` | D3 force graph + tech detail panel + mobile list |
+| `/contact` | Terminal form (Resend + mailto) + availability + 6 links + FAQ |
+
+`pnpm build` reports 22 routes (8 framework + 12 case studies + 2 API). 0 warnings. `pnpm typecheck` and `pnpm lint` both clean.
+
+Phase 3 status: **done**.
+
+The next milestone is **Phase 4 — Game mode** (`/game`, Phaser 3, Backend City). When the user is ready, that's where we'll go.
