@@ -171,3 +171,115 @@ game/entities/Villain.ts              # Stub — extends Phaser.Physics.Arcade.S
   `[Backend City] Phaser ready` in DevTools console. The bridge
   handshake works: programmatically calling `bridge.openOverlay({slug:'algocode', overlayType:'project'})`
   from the console renders the overlay slot div.)
+---
+
+## T4.1 — Asset decision + slice + frame extraction
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-12
+
+### What shipped
+
+The chosen ChatGPT tileset + ChatGPT dev sprite now live under
+`public/assets/`, ready for T4.3 (PreloadScene) to wire into Phaser.
+
+- **`public/assets/tilesets/backend-city.png`** — copy of
+  `ChatGPT-cyberpunk-city-tileset-layout.png` (1254×1254 px, 2.1 MB).
+- **`public/assets/tilesets/backend-city.json`** — Tiled tileset
+  definition with **42 explicit tiles** (6 buildings + 12 road
+  variants + 12 grass variants + 12 sidewalk variants) covering the
+  major tile regions in the source PNG. Each tile has a named id
+  (`building-server-farm`, `road-straight-h`, `grass-corner-ne`,
+  `sidewalk-t-junction`, etc.) + explicit `(x, y, width, height)`
+  bounding box.
+- **`public/assets/sprites/developer.png`** — copy of
+  `ChatGPT-pixel-art-developer.png` (1024×1536 px, 2.3 MB). 4×4 grid
+  of frames at 256×384 per frame.
+- **`public/assets/sprites/developer.json`** — sprite metadata:
+  `{frameWidth: 256, frameHeight: 384, scale: 0.5, rows: [{down, 0-3}, {up, 4-7}, {left, 8-11}, {right, 12-15}]}`.
+- **`game/config.ts`** — added `PHASER_ASSETS` constant exporting
+  the 4 asset paths. Single source of truth for the Phaser-side
+  loader calls in T4.3.
+
+### Decisions
+
+- **ChatGPT tileset + ChatGPT sprite** — per user direction. The
+  ElevenLabs tileset and Gemini sprite are also at project root but
+  unused in T4.1.
+- **Tileset is a layout reference, not a regular grid** — the
+  ChatGPT tileset shows named tiles scattered across the canvas
+  rather than a uniform `tileWidth × tileHeight` grid. I use Tiled's
+  explicit `tiles[]` array format with `(x, y, width, height)`
+  per tile. Tile sizes vary by region: buildings ~220×260, road/grass
+  ~110-128, sidewalk ~110×60.
+- **Tile coordinates are first-pass estimates** — `backend-city.json`
+  has a `_comment` field at the top stating the coordinates are
+  estimated from visual inspection of the source PNG. T4.2 will
+  refine these via Tiled's "Edit Tileset" panel. The JSON is
+  structured correctly so Tiled + Phaser can both consume it.
+- **Sprite frame size kept at 256×384 (native PNG resolution)** —
+  Phaser renders at any scale via `setScale()` in the Player
+  entity. Display scale of 0.5 (giving 128×192 per frame) is
+  documented in `developer.json`; the master spec asked for 32×48
+  (scale 0.125). The display scale is a T4.5 decision; the JSON
+  exposes it as a hint.
+- **Two PNGs at project root + two copies in `/public/assets/`** —
+  the project-root copies are the source-of-truth (user-managed).
+  The `/public/assets/` copies are what Next.js serves at runtime.
+  Byte-for-byte identical.
+- **8-color palette swatch baked into the source PNG** — flagged in
+  the JSON as `_comment_palette_swatch`. It's a visual reference
+  baked into the image at x=60, y=1080; not a tile.
+- **Right-side "assembled map preview" region** — flagged in the
+  JSON as `_comment_map_preview`. x=620, y=340, ~600×400 region is
+  a "how it looks assembled" preview, not a tile.
+- **`PHASER_ASSETS` constant in `config.ts`** — single source of
+  truth for asset paths. T4.3 will import this and wire the
+  `this.load.image(...)` / `this.load.spritesheet(...)` calls.
+
+### Caveats / pending
+
+- **Tileset coords need T4.2 refinement** — the explicit
+  `(x, y, width, height)` values are eyeballed from inspecting the
+  rendered source PNG. Tiled's "Edit Tileset" panel will be used
+  in T4.2 to lock the exact bounding boxes. The 4-quadrant building
+  layout + grass/road/sidewalk regions are correct in shape; the
+  pixel-level precision will be tightened when Tiled opens the file.
+- **Only 6 buildings** — the tileset has 6 named buildings
+  (Server Farm, Studio, Lab, Newspaper HQ, Office Tower, Exchange).
+  Of the 12 projects in `PROJECTS`, 6 will get a unique building
+  sprite (Taply HQ, UnThink Labs, Algocode Server Farm, Movio
+  Studios, DrishtiAI Vision Lab, etc.). The other 6 projects will
+  reuse the same building sprites (acceptable visually). Future
+  tasks can add more building variants.
+- **Sprite display scale 0.5** — larger than the master spec's
+  32×48 (which would be scale 0.125). The 128×192 display is a
+  deliberate readability choice. T4.5 (Player entity) can adjust
+  `this.setScale(...)` if the user wants a smaller character.
+- **Two extra ChatGPT/ElevenLabs/Gemini assets at project root are
+  unused** — they're outside the deployment surface (not under
+  `/public`) and not committed. Future tasks can swap them in.
+- **Git author identity**: per standing instruction, all commits
+  use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes (no new routes added; assets live under
+  `/public` and are served statically).
+- **Live asset URL smoke** (curl against prod build):
+  - `/assets/tilesets/backend-city.png` → 200, 2,125,406 bytes ✓
+  - `/assets/tilesets/backend-city.json` → 200, 8,569 bytes ✓
+  - `/assets/sprites/developer.png` → 200, 2,380,156 bytes ✓
+  - `/assets/sprites/developer.json` → 200, 1,490 bytes ✓
+- **JSON validity** — both JSON files parse with `python3 -m json.tool`.
+- **File tree check** — `find public/assets/ -type f` returns:
+  - `tilesets/backend-city.png` (2.1 MB)
+  - `tilesets/backend-city.json` (8.5 KB)
+  - `sprites/developer.png` (2.4 MB)
+  - `sprites/developer.json` (1.5 KB)
+- **Image dimensions** — confirmed via `sips`:
+  - Tileset: 1254×1254 px
+  - Sprite: 1024×1536 px

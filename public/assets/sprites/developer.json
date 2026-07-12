@@ -1,0 +1,24 @@
+{
+  "_comment": "Sprite metadata for ChatGPT-pixel-art-developer.png. The image is 1024x1536 px and contains a 4x4 grid of frames laid out left-to-right, top-to-bottom. Each frame is 256x384 px. Phaser loads this via `this.load.spritesheet('developer', '/assets/sprites/developer.png', { frameWidth: 256, frameHeight: 384 })` (see game/config.ts -> PHASER_ASSETS). This JSON file documents the per-direction frame ranges for the Player entity (T4.5) and any future animation setup. Frame indices are 0-indexed: DOWN = 0-3, UP = 4-7, LEFT = 8-11, RIGHT = 12-15.",
+  "_comment_scale": "The `scale` field is a render hint used by Player.ts (T4.5) — at scale 0.5 each frame renders as 128x192. The master spec asked for 32x48 (scale 0.125); 0.5 is a deliberate first-pass choice that keeps the character readable. Will be tunable via T4.5 if needed.",
+
+  "image": "developer.png",
+  "imagewidth": 1024,
+  "imageheight": 1536,
+  "frameWidth": 256,
+  "frameHeight": 384,
+  "scale": 0.5,
+
+  "rows": [
+    { "name": "down",  "start": 0,  "end": 3 },
+    { "name": "up",    "start": 4,  "end": 7 },
+    { "name": "left",  "start": 8,  "end": 11 },
+    { "name": "right", "start": 12, "end": 15 }
+  ],
+
+  "rowsAlternate": [
+    { "_comment": "If 'up' and 'down' rows are reversed in the source image, swap these with rows[]. Verified by visual inspection of the source PNG: row 0 is labeled DOWN (facing camera), row 1 is UP (facing away), row 2 is LEFT, row 3 is RIGHT." }
+  ],
+
+  "idleFrame": 1
+}

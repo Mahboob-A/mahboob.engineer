@@ -33,6 +33,19 @@ export const TILE_SIZE = 32;
 export const WORLD_WIDTH = 60 * TILE_SIZE; // 1920 px
 export const WORLD_HEIGHT = 50 * TILE_SIZE; // 1600 px
 
+/* Public asset paths — Phaser loads these via `this.load.image()` /
+   `this.load.spritesheet()` / `this.load.tilemapTiledJSON()` in
+   PreloadScene (T4.3) and WorldScene (T4.4). Centralized here so
+   the contract is documented in one place and T4.3 doesn't have
+   to hardcode paths. T4.1 chose ChatGPT tileset + sprite. */
+export const PHASER_ASSETS = {
+  TILESET_PNG: "/assets/tilesets/backend-city.png",
+  TILESET_JSON: "/assets/tilesets/backend-city.json",
+  SPRITE_PNG: "/assets/sprites/developer.png",
+  SPRITE_JSON: "/assets/sprites/developer.json",
+  // T4.2: TILEMAP_JSON = "/assets/maps/backend-city.json",
+} as const;
+
 /** Build a fresh Phaser game config. Called once per mount. */
 export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
   return {
