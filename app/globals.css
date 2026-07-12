@@ -33,6 +33,10 @@
   --amber: #f59e0b;
   --amber-dim: #2a1f06;
   --code-bg: #0d1511;
+
+  /* Mauve — exposed as a token so /stack graph nodes can use it
+     without inline hex. Mirrors kwDark[3].text. */
+  --mauve: #9870c0;
 }
 
 /* Tailwind v4 theme bridge — every utility like bg-bg / text-t1 /
@@ -55,6 +59,7 @@
   --color-amber: var(--amber);
   --color-amber-dim: var(--amber-dim);
   --color-code-bg: var(--code-bg);
+  --color-mauve: var(--mauve);
 
   /* Founder tier — a soft amber/card blend for cards visually elevated
      above the rest of /work. Defined here so /work founder cards can use

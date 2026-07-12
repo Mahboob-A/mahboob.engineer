@@ -1,0 +1,185 @@
+/**
+ * components/stack/StackShell.tsx
+ *
+ * Client-side interactive shell for /stack. Owns the activeId
+ * useState, derives the per-tech detail data (projects, posts,
+ * neighbors) eagerly so the TechDetailPanel can be a Server
+ * Component-equivalent pure presentational piece.
+ *
+ * Layout:
+ *   - On lg+ (desktop): 2-col grid — D3 force graph left, detail
+ *     panel right.
+ *   - On <md (mobile): single-col — D3 graph hidden, mobile list
+ *     shown above detail panel. Clicking a list row scrolls the
+ *     detail panel into view.
+ *
+ * Deep-link support: reads window.location.hash on mount and seeds
+ * activeId if a matching tech id is present. Honors T3.3's
+ * /stack#tech-id chip links.
+ */
+
+"use client";
+
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { D3ForceGraph } from "@/components/stack/D3ForceGraph";
+import { TechDetailPanel } from "@/components/stack/TechDetailPanel";
+import { MobileTechList } from "@/components/stack/MobileTechList";
+import {
+  STACK_BY_ID,
+  type StackItem,
+  type StackEdge,
+} from "@/data/stack";
+import { PROJECTS_BY_SLUG } from "@/data/projects";
+import { BLOG_POSTS_BY_SLUG, postsByStack } from "@/data/blog";
+
+export interface StackShellProps {
+  techs: ReadonlyArray<StackItem>;
+  edges: ReadonlyArray<StackEdge>;
+  /** Pre-computed map of techId → project count (for mobile list badge). */
+  projectCountByTech: Readonly<Record<string, number>>;
+}
+
+/* Subscribe to window.location.hash changes — used to honor T3.3's
+   /stack#tech-id chip links. Empty subscribe fn + getServerSnapshot
+   returning '' means SSR sees an empty hash. */
+function subscribeHash(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("hashchange", callback);
+  return () => window.removeEventListener("hashchange", callback);
+}
+function getHashSnapshot(): string {
+  if (typeof window === "undefined") return "";
+  return window.location.hash.replace(/^#/, "");
+}
+function getServerHashSnapshot(): string {
+  return "";
+}
+
+export function StackShell({
+  techs,
+  edges,
+  projectCountByTech,
+}: StackShellProps) {
+  const hash = useSyncExternalStore(subscribeHash, getHashSnapshot, getServerHashSnapshot);
+  const seedId = useMemo(
+    () => (hash && STACK_BY_ID[hash] ? hash : null),
+    [hash],
+  );
+  const [activeId, setActiveId] = useState<string | null>(seedId);
+
+  /* Tech-detail data derivation. */
+  const detail = useMemo(() => {
+    if (!activeId) return null;
+    const tech = STACK_BY_ID[activeId];
+    if (!tech) return null;
+
+    const projects = tech.projects
+      .map((slug) => PROJECTS_BY_SLUG[slug])
+      .filter((p): p is NonNullable<typeof p> => p !== undefined);
+
+    const posts = postsByStack(tech.id);
+    const postsFiltered = posts.filter((p) => BLOG_POSTS_BY_SLUG[p.slug]);
+
+    /* Neighbors: techs that share at least one project with the
+       current tech. Rank by sharedCount desc. */
+    const projectTechCounts = new Map<string, number>();
+    for (const p of projects) {
+      for (const t of techs) {
+        if (t.id === tech.id) continue;
+        if (t.projects.includes(p.slug)) {
+          projectTechCounts.set(t.id, (projectTechCounts.get(t.id) ?? 0) + 1);
+        }
+      }
+    }
+    const neighbors = [...projectTechCounts.entries()]
+      .map(([id, sharedCount]) => ({ tech: STACK_BY_ID[id], sharedCount }))
+      .filter(
+        (n): n is { tech: StackItem; sharedCount: number } => n.tech != null,
+      );
+
+    return { tech, projects, posts: postsFiltered, neighbors };
+  }, [activeId, techs]);
+
+  /* Suggested nodes for the empty state — top-5 most-connected. */
+  const suggested = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of edges) {
+      counts.set(String(e.source), (counts.get(String(e.source)) ?? 0) + 1);
+      counts.set(String(e.target), (counts.get(String(e.target)) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([id, connectionCount]) => ({ tech: STACK_BY_ID[id], connectionCount }))
+      .filter(
+        (s): s is { tech: StackItem; connectionCount: number } => s.tech != null,
+      );
+  }, [edges]);
+
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
+      {/* LEFT — graph (desktop) + list (mobile) */}
+      <div className="space-y-4">
+        {/* Legend */}
+        <Legend />
+
+        <div className="bg-surface border-border relative h-[600px] overflow-hidden rounded-[10px] border lg:h-[680px]">
+          {/* Desktop D3 graph */}
+          <div className="hidden h-full w-full lg:block">
+            <D3ForceGraph
+              techs={techs}
+              edges={edges}
+              activeId={activeId}
+              onSelect={setActiveId}
+              className="h-full w-full"
+            />
+          </div>
+          {/* Mobile fallback list */}
+          <div className="block h-full w-full overflow-y-auto lg:hidden">
+            <MobileTechList
+              techs={techs}
+              projectCountByTech={projectCountByTech}
+              onSelect={setActiveId}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT — detail panel */}
+      <TechDetailPanel
+        tech={detail?.tech ?? null}
+        projects={detail?.projects ?? []}
+        posts={detail?.posts ?? []}
+        neighbors={detail?.neighbors ?? []}
+        onSelect={setActiveId}
+        suggested={suggested}
+      />
+    </div>
+  );
+}
+
+/* ─── Legend — color legend for the graph domains ──────────────────── */
+
+function Legend() {
+  const items: Array<{ color: string; label: string }> = [
+    { color: "var(--acc)", label: "backend" },
+    { color: "var(--amber)", label: "infra / async / payment / video" },
+    { color: "var(--t2)", label: "data layer" },
+    { color: "var(--mauve)", label: "ai / auth" },
+    { color: "var(--t3)", label: "learning" },
+  ];
+
+  return (
+    <div className="text-t3 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[11px]">
+      {items.map((it) => (
+        <span key={it.label} className="inline-flex items-center gap-1.5">
+          <span
+            className="inline-block h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: it.color }}
+          />
+          {it.label}
+        </span>
+      ))}
+    </div>
+  );
+}

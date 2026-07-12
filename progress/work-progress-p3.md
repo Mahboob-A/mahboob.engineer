@@ -449,3 +449,61 @@ Master plan tasks in this phase (T3.1 → T3.7):
   - `/work/cutetube`, `/work/pulumi-infra`, `/work/imgtwist`, `/work/load-balancer`, `/work/prostream` — each shows the `<DiagramPlaceholder>` block ("Detailed architecture diagram coming soon"), correct project name + tagline rendered, project-specific metrics, project-specific build notes.
 - **Title template** — every page resolves its title via the root layout template `'<page> — Mahboob Alam'`. Verified for `/work/algocode`, `/work/taply`, `/work/unthink`, `/work/drishti-ai`.
 - **CSS verification** (50.2 KB bundle): all token classes present including `bg-code-bg`, `bg-tier-founder`, `text-amber`, `border-border`, `font-display`, `font-mono`. No leaked hex outside the token values (the Medium-brand amber from `Blog.tsx` is the single non-token exception).
+
+---
+
+## T3.4 — `/stack` D3 force graph + tech detail panel
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-12
+
+### What shipped
+
+`/stack` — the canonical tech-stack view per master §2.4. First page on the site that uses real D3 (the landing's `SkillGraph` is hand-rolled SVG from T2.5).
+
+- **`package.json`** — added 3 modular D3 packages (`d3-force`, `d3-selection`, `d3-drag`) + types. NOT the full `d3` package (master §6 rule #5 + bundle discipline). Total payload ~30 KB minified.
+- **`app/globals.css`** — added `--mauve: #9870c0` token (mirrors `kwDark[3].text`) so `/stack` graph nodes can reference `var(--mauve)` for the AI/auth domain stroke without inline hex. Exposed as Tailwind utility via `--color-mauve: var(--mauve)` in the `@theme inline` block.
+- **`components/stack/stack-graph.css`** — new. Mirrors `skill-graph.css` conventions (T2.5) but adds 5 new domain strokes for `async | auth | payment | ai | video`. Hover/active dimming rules identical to the landing version.
+- **`components/stack/D3ForceGraph.tsx`** — `'use client'` D3 force-directed graph. Mounted in `useEffect` per master §6 rule #5 (D3 never in JSX). Renders an initial SVG scaffold server-side so static HTML is meaningful. Force simulation: `forceLink` (distance 70), `forceManyBody` (-240 charge), `forceCenter` (760×600), `forceCollide` (32). Tick handler updates `<circle>` + `<text>` positions. Drag, hover, click all wired. Active class state lifted to parent via `activeId` prop — uses d3-selection for class toggling, doesn't rebuild the simulation.
+- **`components/stack/TechDetailPanel.tsx`** — presentational panel. Server Component. Shows: tech name (display font), domain badge, "used in N projects" with /work/[slug] links, "mentioned in N posts" with blog links, "shares projects with" neighbor chip list (clickable, sets parent activeId), depth % for learning domain. Empty state shows suggested most-connected techs.
+- **`components/stack/MobileTechList.tsx`** — Server Component. Flat list grouped by `StackDomain`, visible on `<md`. Each row has a project-count badge and fires `onSelect(techId)` + smooth-scrolls to the detail panel.
+- **`components/stack/StackShell.tsx`** — `'use client'` shell. Owns `useState<activeId>`. Uses `useSyncExternalStore` to subscribe to `window.location.hash` for `/stack#tech-id` deep links from T3.3 chips. Computes per-tech detail data (projects, posts, neighbors) in `useMemo`. Hosts the desktop graph + mobile list + detail panel in a 2-col grid (1.6fr/1fr) on lg+, single-col on mobile.
+- **`app/stack/page.tsx`** — Server Component shell. Composes `InnerLayout` + `StackShell`. `metadata = pageMetadata("Stack", "Every tech I've shipped with…")`. Pre-computes `PROJECT_COUNT_BY_TECH` once at module load for the mobile list badge.
+
+### Decisions
+
+- **D3 is modular, not full package** — `d3-force` + `d3-selection` + `d3-drag` only. Bundle stays lean (30 KB minified). Master §6 rule #5 + bundle discipline.
+- **`useSyncExternalStore` for hash deep-linking** — replaced an early `useEffect + setState` approach that tripped the React 19 `react-hooks/set-state-in-effect` lint rule. The store pattern is the canonical way to subscribe to browser-only state from a Client Component.
+- **`useMemo` for detail derivation** — projects, posts, neighbors all derived eagerly when `activeId` changes. DetailPanel stays a pure presentational Server-Component-equivalent that re-renders on prop change without owning state.
+- **D3 drag positions aren't persisted** — per master rule #3 (no localStorage). Drag releases release the fx/fy pins and the simulation re-settles. Refresh resets positions.
+- **Suggested nodes in empty state** — top 6 by edge count. Computed once in `useMemo`, passed to the panel as a prop. Avoids an empty default panel.
+- **Domain → color mapping** — 8-tone palette. `backend → acc`, `infra/async/payment/video → amber`, `data → t2`, `auth → t1`, `ai → mauve`, `learning → t3 dashed`.
+- **Mobile fallback = list, not graph** — master §2.4 explicitly says mobile shows a list. The D3 graph `<div>` is hidden via CSS at `<lg`; the list fills the same column. Both views are driven by the same `techs` array.
+- **No animation on initial layout** — the simulation runs immediately and settles within ~300ms. No "explode from center" entrance. Phase 6 polish territory.
+- **Detail panel `id="tech-detail-panel"`** — the mobile list uses this id for `scrollIntoView({behavior:'smooth'})` when a row is clicked. Lets mobile and desktop share the same right-side panel without duplicating content.
+
+### Caveats / pending
+
+- **Hash deep-link reactivity is one-shot** — `useSyncExternalStore` subscribes to `hashchange` events, so navigating from `/stack` → `/stack#python` *within* the same session does update the panel. But navigation *into* `/stack#django` from another route (the T3.3 case-study chip case) is handled by the initial render reading the current hash. Both paths work.
+- **D3 simulation mounts only once per `techs`/`edges` shape change** — the `useEffect` deps array ensures the simulation rebuilds only when the data shape genuinely changes. Filter changes (not currently in v1) would rebuild.
+- **No URL-state filters yet** — v1 has no filter bar (only the legend for color reference). Phase 6 polish can add URL-state filters (e.g. `?domain=backend`).
+- **No entrance animation** — the simulation settles within ~300ms but doesn't draw attention to the cluster of "what you should look at first". Phase 6 polish can highlight the activeId node on mount.
+- **`getBoundingClientRect` for sizing** — the SVG sizing depends on its parent container's measured width. The hard-coded 760×600 viewBox works at all desktop sizes via `preserveAspectRatio`. On very wide screens (>1600px) the graph is visually smaller than the column; on narrow screens (<700px) the graph column itself becomes awkwardly small. Phase 6 polish can make the simulation's `forceCenter` reactive to `ResizeObserver` measurements.
+- **Tech detail panel "shares projects with"** — currently counts how many projects a neighbor tech shares with the active tech, but it doesn't filter by domain. Some neighbors may visually appear weird (e.g. "Stripe" sharing projects with "AWS" through Taply). Acceptable for v1.
+- **Bundle added ~30 KB minified** — d3 modular. Acceptable for an inner-page deep-dive. No impact on landing or other inner pages.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean (caught + fixed one `react-hooks/set-state-in-effect` error and one unused-import warning on the first pass; clean on re-run).
+- `pnpm build` → 20 routes (was 19). `/stack` added. 0 warnings. Static generation includes all 12 case studies + `/stack` server-component shell.
+- **Live HTML verification** (`/stack`):
+  - `<InnerPageHeader>` rendered: eyebrow `03 / DEPENDENCY GRAPH`, title `How the stack connects`, description copy.
+  - Detail panel default state: "Hover or click a node to inspect it." + "Most connected" suggested techs section.
+  - SVG scaffold: `<svg viewBox="0 0 760 600" class="stack-graph" aria-label="Stack dependency graph…">`. Empty after SSR (D3 simulation mounts client-side).
+  - Legend chips: backend / infra-async / data layer / ai-auth / learning.
+  - 200 status on `/stack` and `/stack#django`.
+- **T3.3 deep-link resolution** — `/work/taply` emits 9 chip links (`/stack#aws`, `/stack#celery`, `/stack#cicd`, `/stack#django`, `/stack#drf`, `/stack#jwt`, `/stack#postgresql`, `/stack#redis`, `/stack#stripe`). All 9 resolve to `/stack` 200 (was 404 before T3.4).
+- **CSS verification** (53.4 KB bundle): `--mauve` token resolved; new `.stack-graph.*` classes compiled; all hex values map to tokens (the new `#9870c0` is the mauve token we just added). No leaked hex outside tokens.

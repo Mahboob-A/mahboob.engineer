@@ -1,0 +1,127 @@
+/**
+ * components/stack/stack-graph.css
+ *
+ * Styles for the D3 force graph on /stack. Mirrors the convention
+ * established by components/sections/skill-graph.css (T2.5) — same
+ * dimming rules, same active-state visual language — but adds the new
+ * StackDomain buckets (async | auth | payment | ai | video).
+ *
+ * All colors come from CSS variables in app/globals.css → data/tokens.ts.
+ * No hardcoded hex.
+ *
+ * Conventions:
+ *   - Graph gets `has-active` class on the SVG when an activeId is set.
+ *   - Non-active nodes/edges fade to opacity 0.18.
+ *   - Active node + its connections highlight (glow + thicker stroke).
+ *   - Learning domain gets dashed stroke + muted text.
+ */
+
+.stack-graph {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--code-bg);
+  border-radius: 10px;
+}
+
+.stack-graph circle {
+  fill: var(--code-bg);
+  stroke-width: 2;
+  transition:
+    stroke-width 0.2s,
+    opacity 0.2s,
+    filter 0.2s;
+  cursor: pointer;
+}
+
+.stack-graph text {
+  fill: var(--t1);
+  font-size: 11px;
+  font-family: var(--font-mono), monospace;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.stack-graph line {
+  stroke: var(--border);
+  transition:
+    stroke 0.2s,
+    opacity 0.2s,
+    stroke-width 0.2s;
+  fill: none;
+}
+
+/* ─── Domain strokes ─────────────────────────────────────────────── */
+
+/* backend — accent green */
+.stack-graph.backend circle {
+  stroke: var(--acc);
+}
+
+/* infra — amber */
+.stack-graph.infra circle {
+  stroke: var(--amber);
+}
+
+/* data — slate (t2 darkened) */
+.stack-graph.data circle {
+  stroke: color-mix(in srgb, var(--t2) 80%, var(--border-strong));
+}
+
+/* async — amber (queues, brokers) */
+.stack-graph.async circle {
+  stroke: var(--amber);
+}
+
+/* auth — bright text */
+.stack-graph.auth circle {
+  stroke: var(--t1);
+}
+
+/* payment — amber (Stripe etc) */
+.stack-graph.payment circle {
+  stroke: var(--amber);
+}
+
+/* ai — mauve */
+.stack-graph.ai circle {
+  stroke: var(--mauve);
+}
+
+/* video — amber */
+.stack-graph.video circle {
+  stroke: var(--amber);
+}
+
+/* learning — muted dashed */
+.stack-graph.learning circle {
+  stroke: var(--t3);
+  stroke-dasharray: 4 3;
+}
+.stack-graph.learning text {
+  fill: var(--t3);
+}
+
+/* ─── Hover/active dimming ───────────────────────────────────────── */
+
+.stack-graph.has-active circle:not(.active),
+.stack-graph.has-active text:not(.active) {
+  opacity: 0.18;
+}
+.stack-graph.has-active line:not(.active) {
+  opacity: 0.08;
+}
+.stack-graph.has-active line.active {
+  stroke: var(--acc);
+  opacity: 1;
+}
+.stack-graph circle.active {
+  stroke-width: 2.5;
+  filter: drop-shadow(
+    0 0 6px color-mix(in srgb, var(--acc) 35%, transparent)
+  );
+}
+.stack-graph text.active {
+  fill: var(--t1);
+  font-weight: 600;
+}
