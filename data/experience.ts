@@ -168,3 +168,79 @@ export const EXPERIENCE_BY_ID: Readonly<Record<string, ExperienceItem>> =
       return acc;
     }, {}),
   );
+
+/* ===========================================================================
+   KEY_ACHIEVEMENTS — cross-role metrics for /log
+   Master §2.1 "KEY ACHIEVEMENTS ACROSS ALL ROLES" — 3 metric cards. Each
+   entry maps back to a bullet somewhere in EXPERIENCE (so the data is
+   derived, not invented). Content here is editable in one place.
+   =========================================================================== */
+export interface AchievementItem {
+  /** Big amber mono number — e.g. "35%", "17%", "1". */
+  num: string;
+  /** Headline label below the number. */
+  label: string;
+  /** Optional supporting line for context (e.g. "across 50+ stores"). */
+  context?: string;
+}
+
+export const KEY_ACHIEVEMENTS: AchievementItem[] = [
+  {
+    num: "35%",
+    label: "AWS cloud-cost reduction",
+    context: "at NexBell — idle → reserved + autoscaling",
+  },
+  {
+    num: "17%",
+    label: "query execution time cut",
+    context: "across 50+ multi-vendor MySQL store deployments",
+  },
+  {
+    num: "1",
+    label: "enterprise customer closed",
+    context: "Taply's first paying enterprise account",
+  },
+];
+
+/* ===========================================================================
+   NOW_STATUSES — "What I'm doing now" section on /log
+   Master §2.1 — 2-col row. One entry per active/building project.
+   Sources:
+     - Taply: status pulled from EXPERIENCE[0]; liveUrl is the personal
+       Taply profile demo.
+     - UnThink: status pulled from PROJECTS.unthink.tagline + .built;
+       liveUrl is null until v1 ships (target Aug 2026 per master).
+   =========================================================================== */
+export type NowStatusKind = "active" | "building";
+
+export interface NowStatusItem {
+  /** Display name (e.g. "Taply"). */
+  name: string;
+  /** Project slug — for /work/[slug] link + future PROJECTS lookups. */
+  slug: string;
+  /** Exactly 2 sentences per master spec. */
+  status: string;
+  /** Live product URL; null when the project hasn't shipped yet. */
+  liveUrl: string | null;
+  /** Drives the badge variant on the card. */
+  statusKind: NowStatusKind;
+}
+
+export const NOW_STATUSES: NowStatusItem[] = [
+  {
+    name: "Taply",
+    slug: "taply",
+    status:
+      "Co-founder + backend engineer. Shipping the profile system, NFC/QR sharing layer, real-time analytics, and team management console on Django 5.1 + DRF — daily.",
+    liveUrl: "https://gettaply.me/p/mehboob",
+    statusKind: "active",
+  },
+  {
+    name: "UnThink",
+    slug: "unthink",
+    status:
+      "Building a fragment-first knowledge base for engineers. AI classifies every save, browser extension as the primary capture interface. Targeting an August 2026 release.",
+    liveUrl: null,
+    statusKind: "building",
+  },
+];
