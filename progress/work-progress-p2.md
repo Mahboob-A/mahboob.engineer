@@ -1,8 +1,9 @@
 # Phase 2 — Landing page
 
 **Phase:** 2 — Landing page
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-10
+**Date finished:** 2026-07-12
 **Goal:** `/` matches the flat mockup. The 5 sections (Hero / DeployLog /
 Projects / SkillGraph / Blog / Contact) plus the animated Algocode
 architecture diagram from T1.5. Phase 2 ends when scrolling `/` from top
@@ -502,3 +503,196 @@ responsive grid, each with source badge + read time + title + excerpt
   - 6 "read on medium" links rendered (3 in the article + 3 in the next/data script — Next.js inlines links in its React Server Components payload too).
   - **Excerpt fallback** confirmed working: Algocode post shows "On microservices / docker." (tag-derived fallback); Linux post shows "Part 1 of the Linux Networking series." (series-derived fallback).
   - **Responsive grid class** confirmed: `class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"` — 1 col mobile / 2 col tablet / 3 col desktop.
+
+---
+
+## T2.7 — Contact section + TerminalBlock + Toast
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-12
+
+### What shipped
+
+The "05 / OPEN AN ISSUE" landing section, plus two reusable UI primitives:
+
+- **`components/ui/TerminalBlock.tsx`** — terminal shell (T1.5's deferred
+  primitive). `bg-code-bg` panel with mac-style traffic-light dots
+  (red/amber/green, all driven by tokens or inline CSS vars — no hex
+  outside `data/tokens.ts`), centered mono label, body with a `$`
+  prompt glyph on the left of every line. Props: `label`, `children`,
+  optional `prompt`, optional `className`. Reusable in `app/contact`
+  (Phase 3 T3.7) without changes.
+- **`components/ui/Toast.tsx`** — `'use client'` toast with auto-dismiss
+  (`setTimeout`-driven, default 3.2s). Parent owns visibility — accepts
+  `message + onClose`. Fixed bottom-right card with `bg-elev` and an
+  accent dot. Uses a `polite` live region.
+- **`components/sections/Contact.tsx`** — the section. `'use client'`
+  (form has state + submit handler). 2-column grid on `lg+`:
+  - **Left (1.7fr):** `<TerminalBlock label="connect — submit a ticket">`
+    wrapping the form. Three fields (`title`, `description`, `email`)
+    styled as bottom-border underline inputs that turn `border-acc` on
+    focus. Five label chips (`hiring | taply-collab | consulting |
+    open-source | just-saying-hi`) using `data-bucket` to drive
+    bucket-specific active styling (sage / mauve / slate / sage / amber).
+    Submit button: `bg-acc text-bg` with a small `~ average reply:
+    within 24h` hint on the left.
+  - **Right (1fr):** "FIND ME ELSEWHERE" card with 5 quick-link rows
+    (Email / GitHub / LinkedIn / Medium / Taply). All external links
+    carry `target="_blank" rel="noreferrer"`. Email uses `mailto:` and
+    doesn't open in a new tab. Each row has a hover state (`hover:border-
+    acc/40 hover:bg-card/40`) and an `↗` arrow that turns accent on
+    hover. Below the list: "Based in Bangalore / Chennai. Open to
+    remote-first roles globally."
+  - On submit: `e.preventDefault()`, set `submitted=true`, clear form,
+    fire `<Toast message="Message received. I'll reply within 24h.">`
+    → toast auto-closes after 3.2s.
+
+### Decisions
+
+- **Form is a static demo.** No backend — submit just acknowledges
+  and resets. The full `/contact` page (Phase 3 T3.7) will wire the
+  same form to a real POST target. The token CSS classes + form
+  markup are intentionally identical so the migration is a
+  one-liner.
+- **Label chips use `data-bucket`, not the `chipColor()` helper.**
+  `chipColor()` returns one of 4 chip colors; the bucketing here is
+  per-label, hand-tuned (e.g. `taply-collab` → mauve even though
+  `chipColor("taply-collab")` would return sage by default). Bucket
+  map lives at the top of `Contact.tsx`, easy to tweak.
+- **`bucketFor()` is its own function** (not imported from
+  tokens). Same destination as `chipColor()` for sage/slate/amber
+  buckets, but a deliberate override path for `taply-collab` →
+  mauve. Keeps `data/tokens.ts` the source of chip colour rules
+  while letting the Contact section make its own classification.
+- **`TerminalBlock` traffic-light dot reds are inline CSS vars.**
+  Tokens file doesn't define a "red/amber traffic-light" palette —
+  it'd be a dead token with one use site. Inline `--dot-red` and
+  `--dot-amber` vars keep the hex out of the className string
+  proper. The green dot uses the existing `bg-acc` token.
+- **No `'use client'` on `TerminalBlock`.** It's a Server Component —
+  the only interactive piece in this section is the form inside it.
+  Putting `'use client'` on the section file (not the wrapper) keeps
+  RSC bundling lean. Reusing the block in `app/contact` later won't
+  force a client boundary for any sibling server content.
+- **`text-t2 mt-3 max-w-[520px] text-[15px]` description matches
+  the T2.3–T2.6 section header rhythm.** Same pattern, copy-localised
+  to the contact intent: "Hiring, consulting, a partnership, or just
+  a hello — pick a label and tell me what you're working on."
+
+### Caveats / pending
+
+- The first build failed CSS verification: I used `bg-codeBg` (camel)
+  but `globals.css` registers the token as `--color-code-bg` (kebab)
+  per the Tailwind v4 `@theme inline` convention used everywhere
+  else on the site. Existing components use `bg-code-bg` (Projects.tsx
+  line 102). Fixed by switching `bg-codeBg` → `bg-code-bg` and
+  `bg-amberDim` → `bg-amber-dim` and `border-borderS` →
+  `border-border-s`. No more mismatches in this section.
+- The toast renders with `position: fixed` directly on `<body>` —
+  if any ancestor ever sets `overflow:hidden`, the toast can be
+  clipped. Currently no such ancestor exists. If one is added
+  later, port the toast into a `createPortal(…, document.body)`
+  mount.
+- The form has no real validation beyond `required` + `type="email"`.
+  HTML5 validation only — no JS pattern check. Acceptable for v1;
+  Phase 6 polish can add inline error states.
+- The label chips' active styling uses `data-bucket="…"` as a hook
+  but the active classes are still inline per bucket. Could move
+  to a global CSS rule in `globals.css` later but the current
+  approach is grep-friendly.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean (caught and fixed one `bg-codeBg` /
+  `bg-amberDim` casing issue on the first pass).
+- `pnpm build` → 4 routes, 0 warnings. `/` still `ƒ (Dynamic)` —
+  expected because Navbar reads the mode cookie on every request.
+- **Live HTML verification in production build** (curl `/`):
+  - `<section id="contact" class="border-border scroll-mt-20 border-t py-[90px]">` rendered as the last `<section>`.
+  - Eyebrow `05 / OPEN AN ISSUE` present.
+  - Title `Let&#x27;s build something durable.` (HTML entity form of apostrophe).
+  - Description copy `Hiring, consulting, a partnership` present.
+  - TerminalBlock label `connect — submit a ticket` present.
+  - All 3 inputs present with `id="contact-title"`, `id="contact-description"`, `id="contact-email"`.
+  - All 5 label chips rendered once each with the expected `data-bucket`: sage/mauve/slate/sage/amber.
+  - All 5 quick-links present; 4 external URLs (`https://github.com/Mahboob-A` etc.) plus 1 `mailto:`.
+  - 12 `target="_blank"` instances across the page (matches what DeployLog + Projects + Footer emit, plus the 4 external contact links).
+  - Submit button text `submit →` rendered; rate-limit hint `~ average reply: within 24h` rendered.
+  - No `role="status"` on first render → toast is correctly NOT mounted until submit fires.
+- **Live CSS verification** (43.8 KB bundle):
+  - `bg-code-bg`, `bg-amber-dim`, `bg-acc-dim`, `border-amber`, `border-acc` all compiled.
+  - All hex values in the bundle map back to tokens (`#0d1511` = `code-bg`, `#f59e0b` = amber, `#5cc9a0` = acc, etc.). The only "non-token" hex is `#f5a623` from `Blog.tsx`'s Medium-brand tag (T2.6 caveat, untouched here).
+  - `border-border-s` is NOT compiled because no element renders with that class at initial state (only when a non-hiring, non-amber label is selected) — Tailwind v4's `@theme inline` registers the token but doesn't emit the selector until it's actually used. Same dynamic Tailwind behaviour every other late-bound utility on the site relies on; works correctly at runtime.
+
+---
+
+## T2.8 — Final `app/page.tsx` composition
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-12
+
+### What shipped
+
+- **`app/page.tsx`** — appended `<Contact />` after `<Blog />`. Removed
+  the placeholder comment `/* T2.7 Contact appends here in the final task. */`.
+  Updated the file header docstring to reflect "all 6 sections are
+  now live" and remove the in-flight status note.
+- The landing page now composes six sections in order:
+  1. `<Hero />` (T2.1+T2.2)
+  2. `<DeployLog />` (T2.3)
+  3. `<Projects />` (T2.4)
+  4. `<SkillGraph />` + `<SkillGraphScript />` (T2.5)
+  5. `<Blog />` (T2.6)
+  6. `<Contact />` (T2.7)
+- `<Navbar />` and `<Footer />` continue to wrap the whole stack via
+  `app/layout.tsx` (T1.6).
+
+### Decisions
+
+- **T2.8 was incrementally done as sections shipped.** Each prior
+  task (T2.3 → T2.6) appended one section to `app/page.tsx` in the
+  same commit as the section itself. The remaining work for T2.8
+  was just the final `<Contact />` import + drop the placeholder
+  comment, which lives in T2.7's commit.
+- **Section ordering matches master plan** (`#log → #work → #stack →
+  #blog → #contact`). The Navbar anchor links scroll to these in
+  the same order.
+- **Composition has no client-side JS** outside the existing
+  `<SkillGraphScript>` inline script and the (lazy) Toast mount
+  triggered only on form submit. Everything else stays a Server
+  Component.
+
+### Caveats / pending
+
+- None. The landing now matches the flat mockup end-to-end.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 4 routes (`/`, `/_not-found`, `/api/mode`), 0 warnings.
+- `curl http://localhost:3000/` → all 6 sections present in DOM order:
+  `#top` (Hero), `#log`, `#work`, `#stack`, `#blog`, `#contact`.
+
+---
+
+## Phase 2 wrap-up
+
+All 8 tasks in Phase 2 are complete. The landing page now composes:
+
+- **Hero** (T2.1+T2.2) with the animated Algocode request-trace diagram.
+- **DeployLog** (T2.3) with 3 experience cards + status badges + chips.
+- **Projects** (T2.4) with 3 featured cards + mini-diagrams (Algocode, Movio, DrishtiAI).
+- **SkillGraph** (T2.5) with 18-node curated dependency graph + vanilla-JS hover.
+- **Blog** (T2.6) with 3 post cards + source-badge + tag chips.
+- **Contact** (T2.7) with terminal form + quick-links sidebar + toast.
+
+`pnpm build` reports 4 routes (the 3 framework routes + the landing), 0 warnings, `pnpm typecheck` and `pnpm lint` both clean. Every section is verified end-to-end via `curl http://localhost:3000/` against a production build.
+
+Phase 3 — Inner pages — is the next milestone: `/log`, `/work`, `/work/[slug]`, `/stack`, `/writing`, `/writing/[slug]`, and `/contact` (the standalone page, built on the same primitives T2.7 just established).
+
+Phase 2 status: **done**.
+
