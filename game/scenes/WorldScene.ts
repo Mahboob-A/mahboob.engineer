@@ -74,6 +74,10 @@ export class WorldScene extends Phaser.Scene {
   /** Currently-overlapping Building zone (for hint show/hide). */
   private currentZone: Building | null = null;
 
+  /** T4.5: WASD/arrow-key bindings — populated by createCursorKeys()
+   *  in create(). Passed into player.updateMovement() each frame. */
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+
   constructor() {
     super({ key: "WorldScene" });
   }
@@ -83,6 +87,7 @@ export class WorldScene extends Phaser.Scene {
    *   1. BGM playback (T4.3)
    *   2. Bridge event subscriptions for overlay ducking (T4.3)
    *   3. Map + entities + camera + input (T4.4)
+   *   4. Player animations + cursor keys + building colliders (T4.5)
    */
   create(): void {
     this.startBGM();
@@ -91,6 +96,12 @@ export class WorldScene extends Phaser.Scene {
     this.createEntities();
     this.createCamera();
     this.setupInput();
+    /* T4.5: movement wiring. createAnimations registers the 4 walk
+       anims; cursors are the WASD/arrow keys; createColliders makes
+       buildings solid walls so the player can't walk through them. */
+    if (this.player) this.player.createAnimations();
+    this.cursors = this.input.keyboard!.createCursorKeys();
+    this.createColliders();
   }
 
   /* ─────────────────────────────────────────────────────────────────────
@@ -303,16 +314,36 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /**
-   * Per-frame loop. Tracks which Building zone the player is
-   * currently overlapping and emits the appropriate bridge event
-   * (SHOW_INTERACTION_HINT on enter, HIDE on exit). Phaser 4 has no
-   * "on-overlap-exit" callback, so we compute it manually each tick.
+   * T4.5: collider between the Player and every Building zone. The
+   * Building zone is a static physics body (set in T4.4's
+   * createBuildings with `physics.add.existing(b, true)`), so the
+   * collider is enough to make buildings solid walls. The player
+   * still has 20-px room inside the zone to trigger the E-key
+   * overlay.
+   */
+  private createColliders(): void {
+    if (!this.player) return;
+    for (const b of this.buildings) {
+      this.physics.add.collider(this.player, b);
+    }
+  }
+
+  /**
+   * Per-frame loop:
+   *   - T4.5: drives player movement from the cursor keys.
+   *   - T4.4: tracks which Building zone the player is currently
+   *     overlapping and emits SHOW_INTERACTION_HINT / HIDE on
+   *     enter/exit.
    */
   update(_time: number, _delta: number): void {
     void _time;
     void _delta;
     if (!this.player) return;
 
+    /* T4.5: movement + animation switching. */
+    this.player.updateMovement(this.cursors);
+
+    /* T4.4: hint show/hide. */
     const nextZone =
       this.buildings.find((b) => this.physics.overlap(this.player!, b)) ??
       null;

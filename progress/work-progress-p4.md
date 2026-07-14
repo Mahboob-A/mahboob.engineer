@@ -460,3 +460,60 @@ The chosen ChatGPT tileset + ChatGPT dev sprite now live under
   - `/assets/tilesets/backend-city.png` → 200
   - `/assets/sprites/developer.png` → 200
 - **Bundle smoke** — `WorldScene`, `findObject`, `"developer"`, `"backend-city"`, `"tileset"`, and the entity class names all present in the Phaser dynamic chunks. The runtime is wired.
+
+---
+
+## T4.5 — Player movement + walk-cycle animations
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-14
+
+### What shipped
+
+The player walks. WASD / arrow keys move the player at 160 px/sec (master §5.5 default), normalized for diagonals. Walk animations play per dominant direction; idle snaps to frame 1 of the last facing pose. Buildings act as solid walls.
+
+**`game/entities/Player.ts` — full rewrite:**
+- Constants: `PLAYER_SPEED = 160`, `WALK_FRAME_RATE = 10`, `ROWS` (per-direction sprite-sheet ranges), `IDLE_FRAME_OFFSET = 1`.
+- Exported `PLAYER_ANIMS` — `{walkDown, walkUp, walkLeft, walkRight}` keys.
+- New `public facing: Facing = "down"` field — last direction; used by idle frame pick.
+- `public createAnimations()` — registers 4 walk animations (down/up/left/right), each 4 frames at 10fps, looped.
+- `public updateMovement(cursors)` — reads WASD/arrow keys, normalizes diagonals, sets velocity + animation, calls `stopMoving()` when velocity is zero.
+- `public stopMoving()` — zeros velocity, stops the running walk animation, pins frame to `ROWS[facing].start + 1` (the canonical "hands on laptop" pose).
+
+**`game/scenes/WorldScene.ts` — small additions:**
+- New `private cursors` field — populated by `createCursorKeys()` in `create()`.
+- `create()` now also calls `player.createAnimations()` + `createColliders()` after `setupInput()`.
+- New `private createColliders()` method — `physics.add.collider(player, building)` for every Building zone. The zone's static body (set in T4.4) acts as a wall.
+- `update()` now calls `player.updateMovement(cursors)` first, then the T4.4 hint-tracking logic.
+
+### Decisions
+
+- **Idle = `anims.stop()` + `setFrame()`** — no separate idle animation. A single still frame doesn't need an animation key. `anims.stop()` halts the walk cycle; `setFrame(<facing idle index>)` pins the pose.
+- **Diagonal normalization** — `vx *= (PLAYER_SPEED / len)` where `len = Math.sqrt(vx² + vy²)`. Without it, diagonals feel too fast.
+- **Dominant-direction animation pick** — if `|vx| ≥ |vy|`, play horizontal; else vertical. Prevents flip-flopping when the player mostly moves up while holding A.
+- **Player-vs-building collider** — buildings act as solid walls. The T4.4 20-px zone inset gives the player room to step into the zone for the E-key overlay.
+- **`physics.add.collider` is for any `GameObject`** — Building extends `Phaser.GameObjects.Zone`, which qualifies. Setup is one line per building; 15 colliders total.
+- **`createCursorKeys()` is Phaser's idiomatic WASD/arrow wrapper** — `cursors.up/down/left/right` map to `↑/↓/←/→` + `W/S/A/D` automatically.
+
+### Caveats / pending
+
+- **Player-vs-building corner snags** — physics.arcade handles rectangle-vs-rectangle collisions. The player can slide along edges; at corners, running into the building's diagonal may produce minor "stuck" frames. Out of scope; future polish if it feels weird.
+- **Facing direction is sticky across stops** — if the player walks up-right then stops, facing stays "right" (horizontal dominated). Future polish: track last-key-pressed separately from velocity.
+- **Frame rate hardcoded at 10 fps** — adjustable via `WALK_FRAME_RATE` constant. 10 fps = 400ms per cycle ≈ natural walking pace.
+- **Camera bounds 1920×1600** — player can walk to the edges; camera stops there. World is finite.
+- **Villains don't move** — T4.7. Player only collides with buildings.
+- **No NPC dialogue / cutscenes** — out of scope. E-key just opens overlays.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live URL smoke** — `/game` → 200.
+- **Bundle smoke** — T4.5 code present in the Phaser dynamic chunk:
+  - `createCursorKeys` (string literal) ✓
+  - `generateFrameNumbers` (Phaser API call) ✓
+  - `160` (PLAYER_SPEED constant) ✓
+  - Other T4.5 method names (`updateMovement`, `stopMoving`, `createColliders`) minified by the production build but logically present in the source.
