@@ -283,3 +283,60 @@ The chosen ChatGPT tileset + ChatGPT dev sprite now live under
 - **Image dimensions** — confirmed via `sips`:
   - Tileset: 1254×1254 px
   - Sprite: 1024×1536 px
+
+---
+
+## T4.3 — PreloadScene + WorldScene BGM/ducking
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-14
+
+### What shipped
+
+- **`game/audio/registry.ts`** (new) — single source of truth for audio assets.
+  - `SFX: { footstep, zone-enter, overlay-open, overlay-close, villain-bump, ui-click }` — typed object literal.
+  - `BGM_TRACKS: readonly string[]` — 8 mp3 paths.
+  - `BGM_VOLUME: { base: 0.25, ducked: 0.08 }` — ducking spec.
+  - `SfxKey = keyof typeof SFX` — union type for consumers.
+- **`game/scenes/PreloadScene.ts`** — full rewrite (was a stub).
+  - Loads tileset PNG + dev sprite (4×4 at 256×384) + 6 SFX + 8 BGM.
+  - Progress bar: 320×6 rect at canvas 70% vertical, accent fill, border bg.
+  - Status text: "loading… {pct}%" above the bar.
+  - On COMPLETE: logs `[Backend City] assets ready` + transitions to WorldScene.
+- **`game/scenes/WorldScene.ts`** — full rewrite (was a stub).
+  - `startBGM()`: picks random track via `Phaser.Math.RND.pick(BGM_TRACKS)`, derives buffer key from filename, calls `this.sound.add(key, {loop, volume})` then `sound.play()`. Stores sound for ducking.
+  - `wireBridgeDuck()`: subscribes to OPEN_OVERLAY → setVolume(0.08), CLOSE_OVERLAY → setVolume(0.25).
+  - On SHUTDOWN: bridge.off + stopAll + clear refs.
+  - `toggleMute()`: flips isMuted + calls `this.sound.setMute(boolean)` — for UIScene pause menu (T4.11).
+- **`game/index.tsx`** — swapped BootScene → PreloadScene at runtime.
+- **`game/scenes/BootScene.ts`** — deleted. The "console shows ready" verification moved to PreloadScene as "assets ready".
+
+### Decisions
+
+- **Phaser 4's `SoundManager.play()` returns `boolean`, not the sound** — to get a reference to the active sound for ducking/muting, use `this.sound.add(key, config)` (returns `BaseSound`), then `.play()` on that instance. This pattern stores the sound and lets us call `setVolume` later.
+- **BGM key derived from filename** — `bgm-1.mp3` → `bgm-1`. Same convention in PreloadScene (loader) and WorldScene (picker) keeps the relationship symmetric.
+- **`Phaser.Math.RND.pick(BGM_TRACKS as unknown as string[])`** — `BGM_TRACKS` is a readonly literal tuple; Phaser's API expects `unknown[]`. Cast is necessary; safe at runtime because every entry is a string.
+- **Ducking via `setVolume()` on the active sound, not `this.sound.volume = ...`** — the latter would affect all sounds (BGM + SFX). Per-sound ducking keeps SFX loud when an overlay opens.
+- **`SFX` keys as `string` literals** (with `SfxKey` type alias) — `Object.entries(SFX)` in the preload loop gives `[key, path]` tuples; the key becomes the audio buffer name in Phaser.
+- **`COLOR_BG` and `COLOR_TEXT` removed** — declared but unused (background comes from Phaser config; text uses CSS color string). Cleaned up to keep ESLint clean.
+
+### Caveats / pending
+
+- **BGM doesn't auto-resume after browser autoplay-block** — Phaser's audio context may need a user gesture. If BGM doesn't start, click anywhere on the canvas — the `RESUME_GAME` bridge event from T4.0's original wiring should unblock. T4.4 will formally wire this if needed.
+- **`BaseSound` cast for `setVolume`** — documented in source. Both WebAudioSound + HTML5AudioSound implement `setVolume`/`setMute` at runtime; cast is safe.
+- **BGM random selection per-mount** — `Phaser.Math.RND.pick` is non-deterministic. Each page reload picks a new track. If you want a deterministic first track per session, seed via URL param (out of scope; violates master §6 rule #3 if session storage is used).
+- **No tilemap load yet** — PreloadScene loads images + audio only. When T4.2 ships, add `this.load.tilemapTiledJSON('backend-city', PHASER_ASSETS.tilemap.json)` to the preload loop. Progress bar continues to cover it.
+- **Bridge subscriptions only unsubscribe on `SHUTDOWN`** — if the scene gets paused+resumed (tab visibility, future pause menu), subscriptions stay alive. Correct behavior; T4.11 will add explicit pause/resume for the pause menu.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean. (Initial pass had 3 errors: `Phaser.Math.RND.pick` readonly tuple incompatibility, `trackPath: unknown` flow, and `boolean` not assignable to `BaseSound | null`. Fixed by casting the readonly tuple and using the `add() + play()` pattern instead of `play()`-returns-sound.)
+- `pnpm lint` → clean. (Initial pass had 2 unused-color warnings on `COLOR_BG` + `COLOR_TEXT`. Removed.)
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live asset URL smoke** (curl against prod build):
+  - 6 SFX URLs → 200, sizes 1.6 KB to 20.5 KB.
+  - 8 BGM URLs → 200, sizes 4.7 MB to 8.3 MB.
+  - Tileset + sprite URLs → 200.
+  - `/game` HTTP 200, renders loader placeholder.

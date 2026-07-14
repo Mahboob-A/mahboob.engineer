@@ -24,7 +24,7 @@ import { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import { bridge } from "@/game/EventBridge";
 import { createPhaserConfig } from "@/game/config";
-import { BootScene } from "@/game/scenes/BootScene";
+import { PreloadScene } from "@/game/scenes/PreloadScene";
 import type { OverlayPayload } from "@/game/types";
 
 export default function GameRoot() {
@@ -37,10 +37,11 @@ export default function GameRoot() {
     if (gameRef.current) return;
 
     const config = createPhaserConfig();
-    /* Register BootScene at runtime. Later tasks (T4.3+) will
-       append PreloadScene / WorldScene / UIScene here. */
+    /* Register the entry scene. PreloadScene (T4.3+) loads assets,
+       logs "[Backend City] assets ready" once done, then transitions
+       to WorldScene. UIScene is launched in parallel by WorldScene. */
     if (Array.isArray(config.scene)) {
-      (config.scene as Phaser.Scene[]).push(new BootScene());
+      (config.scene as Phaser.Scene[]).push(new PreloadScene());
     }
     gameRef.current = new Phaser.Game(config);
 
