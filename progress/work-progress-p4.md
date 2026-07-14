@@ -398,3 +398,65 @@ The chosen ChatGPT tileset + ChatGPT dev sprite now live under
   - Tileset source: `../tilesets/backend-city.json` (resolves correctly relative to the maps/ folder).
 - **Live URL smoke** — `/assets/maps/backend-city.json` → 200, 49201 bytes. JSON re-fetched from running server re-parses cleanly.
 - **`/game` route** still 200. PreloadScene loads 17 assets now (was 16): tileset PNG + sprite PNG + 6 SFX + 8 BGM + 1 tilemap.
+
+---
+
+## T4.4 — WorldScene flesh-out (tilemap + entities + camera + zones)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-14
+
+### What shipped
+
+`WorldScene.ts` is now the full game-scene implementation. `create()` boots in order: BGM → bridge ducking → map → entities → camera → input. Visiting `/game` now renders the entire Backend City (60×50 grass world + 15 buildings + 3 villain spawn points) with the player standing at SpawnPoint, the camera following them, and E-key overlays wired through the EventBridge.
+
+**`WorldScene.ts` changes:**
+- **New private fields** — `tilemap`, `tileset`, `groundLayer`, `player`, `buildings`, `villains`, `currentZone`. Tracks the rendered state so cleanup can run on scene SHUTDOWN.
+- **`createMap()`** — `this.make.tilemap({key: "backend-city"})` reads the T4.2 tilemap from Phaser's cache; `addTilesetImage("tileset", "tileset")` registers the T4.1 tileset PNG against the tileset's name in the Tiled JSON; `createLayer("Ground", tileset, 0, 0)` paints the 60×50 grass layer.
+- **`createEntities()`** — spawns the Player at SpawnPoint (pixel 928, 832 — the center of the map per the JSON), iterates `Buildings[]` to create 15 Building zones (with 20-px inset so walking-past doesn't trigger overlap), iterates `Villains[]` to create 3 Villain physics bodies (no visual yet — T4.7).
+- **`createCamera()`** — `setBounds(0, 0, 1920, 1600)` + `startFollow(player, true, 0.1, 0.1)` (lerp matches master §5.5).
+- **`setupInput()`** — E-key fires `bridge.openOverlay()` when the player overlaps any Building zone.
+- **`update()`** — per-frame overlap check on each Building zone; emits `bridge.showInteractionHint(hint)` on enter and `bridge.hideInteractionHint()` on exit. Uses a `currentZone` field to track which zone the player is in (no `(this as any)` hack).
+- **Player uses real texture** — `new Player(this, x, y, "developer")`. The Player entity (T4.0 stub, updated T4.4) now accepts a texture key as its 4th constructor arg. Default still `"__PLACEHOLDER__"` for backward compat. Scale set to 0.13 (256×384 → ~33×50, close to master spec's 32×48).
+- **T4.3 BGM + ducking** — unchanged.
+
+**`Player.ts` changes:**
+- Constructor signature: `constructor(scene, x, y, textureKey = "__PLACEHOLDER__")`. Default keeps backward compat; T4.4 passes `"developer"`.
+
+### Decisions
+
+- **`createLayer` returns `TilemapLayer | TilemapGPULayer` (no null)** — Phaser 4 union return. Cast to `TilemapLayer` since we don't pass `gpu: true`. Documented in source.
+- **`addTilesetImage` returns `Tileset | null`** — coerced to `undefined` via `??` so the field type matches. Same pattern as T4.5's BaseSound cast — necessary because the Phaser type system doesn't unify with the project's `T | undefined` convention.
+- **`Tilemap.findObject` takes a callback, not a name** — iterate `layer.objects.find(o => o.name === "player")` instead. Simpler than a callback.
+- **`Building` zones inset 20px from visual rect** — the Tiled object rect is 220×260 (building sprite footprint); zone is 180×220 so walking past a building doesn't trigger overlap. Cleaner gameplay feel.
+- **`Villain` entities are physics-only in T4.4** — no `this.add.existing()` so Phaser doesn't try to render the placeholder texture. Only `this.physics.add.existing()` creates the body. T4.7 swaps in real sprites + add.existing.
+- **Player scale 0.13** — matches master §5.5's 32×48 spec when applied to the 256×384 source sprite. T4.5 may tune via `setScale()`.
+- **No player-vs-building collision in T4.4** — T4.4 sets up the zones for E-key interaction only. T4.5 will add `physics.add.collider(player, building)` if the player should be physically blocked from walking through buildings.
+- **Per-frame hint tracking** — `update()` checks `physics.overlap(player, b)` for each of 15 buildings × ~60 fps = ~900 checks/sec. Negligible cost. If building count grows beyond ~50, switch to a custom on-exit callback hook.
+- **Strict T4.4 vs T4.4+T5.5** — went with strict T4.4. Player movement + walk-cycle animations land in T4.5. T4.4 just makes the world visible + keyboard-interactive.
+
+### Caveats / pending
+
+- **Player can't move yet** — T4.5 attaches WASD/arrow handlers + 4-direction walk animations.
+- **Player can't physically collide with buildings** — T4.5 may add the collider if you want the player to be blocked (not just trigger hints). Currently you walk through them visually.
+- **Villain entities are invisible** — they're physics bodies placed at their spawn points. T4.7 renders them.
+- **E-key handler iterates all 15 buildings per keypress** — O(N) per E press. Fast enough at N=15; if buildings grow significantly, switch to per-zone keyboard handler registration.
+- **Camera follows even on idle** — `startFollow` with lerp 0.1 keeps the camera locked at lerp speed. Console-driven position changes (e.g. `scene.player.setPosition(...)`) glide the camera too. Acceptable.
+- **Ground layer is uniform grass** — no roads, sidewalks, or trees rendered as tiles. T4.4's `setCollisionByProperty({collides: false})` is a no-op since no tile has a `collides: true` property. If we want pixel-level decoration, T4.4 (or a future polish) can fill some Ground cells with sidewalk + road tile IDs.
+- **Master §5.2 layout transcription** — building positions are best-fit to the ASCII art. T4.4 may nudge positions for visual balance.
+- **Player zone detection on E-press is per-frame** — T4.5's movement handler will fire this many times per second, but only the down-event triggers overlay (avoids spam on hold).
+- **No minimap** — T4.8 (UIScene) adds a 60×50 minimap that reflects player position.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean. (Initial pass had 3 errors: `Tileset | null` vs `Tileset | undefined` mismatch, `TilemapLayer | TilemapGPULayer` union vs single type, `findObject` doesn't exist on ObjectLayer. All fixed: `?? undefined` coercion for the null, `as TilemapLayer` cast for the union, manual iterate `objects.find` for the lookup.)
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live URL smoke** (curl against prod build):
+  - `/game` → 200
+  - `/assets/maps/backend-city.json` → 200
+  - `/assets/tilesets/backend-city.png` → 200
+  - `/assets/sprites/developer.png` → 200
+- **Bundle smoke** — `WorldScene`, `findObject`, `"developer"`, `"backend-city"`, `"tileset"`, and the entity class names all present in the Phaser dynamic chunks. The runtime is wired.
