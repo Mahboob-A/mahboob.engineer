@@ -80,21 +80,29 @@ export class WorldScene extends Phaser.Scene {
    * Subscribe to bridge OPEN_OVERLAY / CLOSE_OVERLAY events for
    * BGM ducking. The listeners are unsubscribed on scene shutdown
    * to prevent memory leaks if the user navigates away and back.
+   *
+   * Cast note: Phaser 4 declares `setVolume` only on the concrete
+   * `WebAudioSound` and `HTML5AudioSound` subclasses — not on the
+   * `BaseSound` supertype. Both implementations add it at runtime,
+   * so the cast is safe regardless of which audio backend
+   * Phaser picks. Centralized here so callers don't repeat the
+   * cast inline.
    */
+  private setBgmVolume(volume: number): void {
+    if (!this.bgm) return;
+    (this.bgm as Phaser.Sound.WebAudioSound).setVolume(volume);
+  }
+
   private wireBridgeDuck(): void {
     const onOpen = (): void => {
-      if (this.bgm && !this.isDucked) {
-        (this.bgm as Phaser.Sound.WebAudioSound).setVolume(
-          BGM_VOLUME.ducked,
-        );
+      if (!this.isDucked) {
+        this.setBgmVolume(BGM_VOLUME.ducked);
         this.isDucked = true;
       }
     };
     const onClose = (): void => {
-      if (this.bgm && this.isDucked) {
-        (this.bgm as Phaser.Sound.WebAudioSound).setVolume(
-          BGM_VOLUME.base,
-        );
+      if (this.isDucked) {
+        this.setBgmVolume(BGM_VOLUME.base);
         this.isDucked = false;
       }
     };
