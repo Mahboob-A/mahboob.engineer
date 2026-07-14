@@ -7,15 +7,15 @@
  * Responsibilities:
  *   - Create the Phaser.Game instance on mount (effect-guarded so
  *     React strict-mode double-invoke doesn't spawn two games).
- *   - Inject BootScene into the scene list at runtime so Phaser
- *     doesn't try to load stub classes here.
+ *   - Register PreloadScene at runtime so Phaser doesn't try to
+ *     load stub classes here.
  *   - Listen on the EventBridge for OPEN_OVERLAY / CLOSE_OVERLAY
  *     events and toggle the overlay slot.
  *   - On unmount: tear down the game cleanly + unsubscribe.
  *
- * T4.0 stub: the overlay slot is just a placeholder div. T4.6 will
- * swap the slot for the real `<ProjectOverlay>` / `<VillainOverlay>`
- * components, keyed by `overlay.overlayType`.
+ * T4.6: the overlay slot is now a typed dispatcher (<OverlaySlot>)
+ * that renders <ProjectOverlay> / <VillainOverlay> based on
+ * `overlay.overlayType`. The placeholder div from T4.0 is gone.
  */
 
 "use client";
@@ -25,7 +25,9 @@ import Phaser from "phaser";
 import { bridge } from "@/game/EventBridge";
 import { createPhaserConfig } from "@/game/config";
 import { PreloadScene } from "@/game/scenes/PreloadScene";
-import type { OverlayPayload } from "@/game/types";
+import { ProjectOverlay } from "@/game/scenes/overlays/ProjectOverlay";
+import { VillainOverlay } from "@/game/scenes/overlays/VillainOverlay";
+import type { OverlayPayload, VillainId } from "@/game/types";
 
 export default function GameRoot() {
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -75,35 +77,73 @@ export default function GameRoot() {
       <div id="phaser-root" className="h-full w-full" />
 
       {overlay ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-bg/80 p-6 backdrop-blur-sm">
-          {/* T4.0 stub: T4.6 will swap this div for the typed
-              <ProjectOverlay> / <VillainOverlay> components. */}
-          <div className="bg-surface border-acc/40 flex max-w-[640px] flex-col gap-3 rounded-[12px] border p-8">
-            <p className="text-acc font-mono text-[11px] tracking-[1.5px] uppercase">
-              {overlay.overlayType}
-            </p>
-            <h2 className="font-display text-t1 text-[24px] font-bold tracking-[-0.3px]">
-              Overlay slot: {overlay.slug}
-            </h2>
-            <p className="text-t3 font-mono text-[12px]">
-              T4.6 will replace this with a full{" "}
-              {overlay.overlayType === "project"
-                ? "<ProjectOverlay>"
-                : overlay.overlayType === "villain"
-                  ? "<VillainOverlay>"
-                  : "special overlay"}
-              .
-            </p>
-            <button
-              type="button"
-              onClick={() => bridge.closeOverlay()}
-              className="bg-acc text-bg mt-2 self-start rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold"
-            >
-              close →
-            </button>
-          </div>
-        </div>
+        <OverlaySlot overlay={overlay} onClose={() => bridge.closeOverlay()} />
       ) : null}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   OverlaySlot — type-dispatching overlay renderer.
+   ───────────────────────────────────────────────────────────────────── */
+
+/**
+ * Dispatches on `overlay.overlayType` to render the right component.
+ * Falls back to a temporary placeholder for `special` overlays
+ * (T4.12 will route them to /writing, /stack, /contact).
+ *
+ * Also registers a window-level Escape key listener so users can
+ * dismiss the overlay without aiming for the close button.
+ */
+function OverlaySlot({
+  overlay,
+  onClose,
+}: {
+  overlay: OverlayPayload;
+  onClose: () => void;
+}) {
+  /* Escape closes the overlay. Window-level listener because Phaser's
+     keyboard plugin only listens when the canvas has focus — Escape
+     via the document body should still work. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-bg/80 p-6 backdrop-blur-sm">
+      {overlay.overlayType === "project" ? (
+        <ProjectOverlay slug={overlay.slug} onClose={onClose} />
+      ) : overlay.overlayType === "villain" ? (
+        <VillainOverlay
+          villainId={overlay.slug as VillainId}
+          onClose={onClose}
+        />
+      ) : (
+        /* T4.12 placeholder — special slugs (Backend Diaries HQ,
+           Skills Academy, Contact Bureau) will route to /writing,
+           /stack, /contact. For now show a clear fallback so the
+           slot isn't broken. */
+        <div className="bg-surface border-acc/40 flex flex-col gap-3 rounded-[12px] border p-8 text-center">
+          <p className="text-acc font-mono text-[11px] tracking-[1.5px] uppercase">
+            Special
+          </p>
+          <p className="text-t1 font-mono text-[14px]">{overlay.slug}</p>
+          <p className="text-t3 font-mono text-[12px]">
+            T4.12 will wire this.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="bg-acc text-bg mt-3 self-start rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold"
+          >
+            close
+          </button>
+        </div>
+      )}
     </div>
   );
 }

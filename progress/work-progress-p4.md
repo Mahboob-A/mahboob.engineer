@@ -517,3 +517,71 @@ The player walks. WASD / arrow keys move the player at 160 px/sec (master §5.5 
   - `generateFrameNumbers` (Phaser API call) ✓
   - `160` (PLAYER_SPEED constant) ✓
   - Other T4.5 method names (`updateMovement`, `stopMoving`, `createColliders`) minified by the production build but logically present in the source.
+
+---
+
+## T4.6 — React overlays (ProjectOverlay + CaseStudyOverlay wiring)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-14
+
+### What shipped
+
+The player → content loop is closed. Pressing E inside Taply HQ now opens the Taply case-study overlay (status badge, year, name, tagline, diagram, 4 metrics, first 2 paragraphs of build notes, link buttons). Same shape works for every other project building — `ProjectOverlay` looks up `PROJECTS_BY_SLUG[slug]` and delegates to the shared `<CaseStudyOverlay>` component.
+
+**`components/overlay/CaseStudyOverlay.tsx` (new — ~150 lines):**
+- `'use client'` (used inside `game/index.tsx` which is itself `'use client'`).
+- Header: Badge (status) + year + name + tagline.
+- 2-col body: first 2 paragraphs of `project.notes` (left) + project-specific diagram (right). Diagram picker mirrors `app/work/[slug]/page.tsx` — TaplyDiagram, UnthinkDiagram, AlgocodeDiagram, MovioDiagram, DrishtiAIDiagram, DatalineageDoctorDiagram, AirpassDiagram for the 7 dedicated slugs; `DiagramPlaceholder` for the 5 showcase projects.
+- Metrics row: 4-up grid with amber mono numbers + t3 labels.
+- Links row: external anchor chips (live, demo, source, video) — only renders links the project actually has.
+- Footer: `<Link>` to `/work/${slug}` for the full case study + `close ↩` button.
+- `max-h-[90vh] overflow-y-auto` so long-content projects (Algocode, AirPass) scroll instead of overflowing the canvas.
+
+**`game/scenes/overlays/ProjectOverlay.tsx` (modify — ~55 lines, was stub):**
+- Signature changed: `slug: string` instead of `project: ProjectItem`. The bridge's `OPEN_OVERLAY` payload carries `{slug, overlayType}`; this component does the `PROJECTS_BY_SLUG[slug]` lookup.
+- Delegates to `<CaseStudyOverlay>` so the layout is single-sourced.
+- Slug-not-found safety: if `PROJECTS_BY_SLUG[slug]` is undefined, fire `bridge.closeOverlay()` and return null. Prevents a broken overlay with "?" name.
+- The close handler chains: parent's `onClose` (if any) → `bridge.closeOverlay()`.
+
+**`game/scenes/overlays/VillainOverlay.tsx` (no change — still stub):**
+- T4.7 fleshes this out. T4.6 only routes by `overlay.overlayType`.
+
+**`game/index.tsx` (modify — ~50-line additions):**
+- New imports: `ProjectOverlay`, `VillainOverlay`, `VillainId`.
+- `overlay` state still set by `OPEN_OVERLAY` bridge event.
+- Replaced inline placeholder div with new `<OverlaySlot>` component dispatch.
+- New `<OverlaySlot>` component:
+  - Type-dispatches on `overlay.overlayType` (`project | villain | special`).
+  - **Escape key listener** — `window.addEventListener('keydown', ...)` so dismiss works regardless of focus (Phaser's keyboard plugin only listens when the canvas has focus). Cleaned up on unmount.
+  - Special-overlay fallback shows a clear "T4.12 will wire this" message — keeps the slot working without breaking for the 3 special buildings until T4.12.
+
+### Decisions
+
+- **Compact overlay (user direction)** — Hero + 2-paragraph notes + Metrics + Links + Close. Skipped StackBreakdown, RelatedWriting, RelatedStack. ~150 lines vs the full `/work/[slug]`'s ~300.
+- **Include diagram (user direction)** — matches `/work/[slug]`'s diagram set. The overlay slot has `max-h-[90vh] overflow-y-auto` so it scrolls on short screens.
+- **`<CaseStudyOverlay>` at `components/overlay/`** — not under `game/` since it's game-mode-neutral. Future refactor could hoist it to also serve `/work/[slug]` to remove duplication.
+- **`<ProjectOverlay>` is a thin slug-resolver** — single source of project resolution. ~55 lines vs the original stub's ~30.
+- **Slug-not-found safety** — `bridge.closeOverlay()` immediately rather than render a broken overlay.
+- **Esc via window listener** — Phaser's keyboard plugin only listens when canvas has focus; `window.addEventListener('keydown')` catches Esc regardless.
+- **`special` overlayType shows a fallback in T4.6** — T4.12 routes Backend Diaries HQ → `/writing`, Skills Academy → `/stack`, Contact Bureau → `/contact`.
+- **Diagram picker mirrors `/work/[slug]`** — same router, same 7 dedicated diagrams + DiagramPlaceholder fallback for the 5 showcase projects.
+
+### Caveats / pending
+
+- **Full `/work/[slug]` and `<CaseStudyOverlay>` duplicate the Hero/Metrics/BuildNotes patterns** — ~300 lines in `/work/[slug]` overlap with `CaseStudyOverlay`'s ~150. Future refactor: extract `Hero`, `Metrics`, `BuildNotes`, `StackBreakdown`, `LinksRow` into `components/work/` and have both call sites reuse them. Out of scope for T4.6.
+- **Diagram card sized naturally inside its container** — if a diagram is taller than the right column, the overlay scrolls. No explicit scale/fit yet.
+- **`complete` status (from `data/projects.ts`) doesn't match any `BadgeVariant`** — the cast maps to the closest variant and the display string falls through to "shipped" (already the convention used in `/work/[slug]`).
+- **Mobile overlay scroll** — `max-h-[90vh] + overflow-y-auto` works on iOS / Android. Long Algocode notes scroll cleanly.
+- **"Read full case study →" link is a Next.js `<Link>`** — clicking it navigates to `/work/[slug]` which unmounts the React tree, closing the overlay naturally.
+- **No overlay-shown analytics yet** — would go to Vercel Analytics in Phase 6.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live URL smoke** — `/game` → 200.
+- **Bundle smoke** — `CaseStudyOverlay` content (`TaplyDiagram`, `close ↩`, `read full case study`) present in the Phaser dynamic chunk. The whole case-study rendering chain is bundled into the game route's lazy chunk.

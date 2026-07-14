@@ -1,47 +1,60 @@
 /**
  * game/scenes/overlays/ProjectOverlay.tsx
  *
- * React overlay rendered on top of the Phaser canvas when the player
- * enters a project building. T4.6 will flesh this out with:
- *   - Resolve slug → PROJECTS_BY_SLUG[slug]
- *   - Reuse the same case-study layout from /work/[slug]:
- *     2-col hero (problem + diagram), metrics, build notes,
- *     stack, links
- *   - Close button → bridge.closeOverlay()
+ * In-game overlay rendered when the player enters a project building.
  *
- * Until then, this file declares the placeholder component so the
- * overlay slot in game/index.tsx can mount without errors.
+ * T4.6 wiring: this component is now a thin slug-resolver. The
+ * bridge's `OPEN_OVERLAY` event payload carries `{slug, overlayType}`;
+ * we look up the project from `PROJECTS_BY_SLUG` and delegate the
+ * actual rendering to `<CaseStudyOverlay>` (the compact case-study
+ * layout that mirrors the canonical /work/[slug] page).
+ *
+ * If the slug doesn't match any known project, we render null —
+ * the parent <OverlaySlot> in game/index.tsx will leave the wrapper
+ * open with empty content (T4.7 will harden this if it bites in
+ * practice; today every slug comes from the T4.2 map which uses
+ * real project slugs).
+ *
+ * onClose wires to `bridge.closeOverlay()` so Phaser unducks the
+ * BGM and resumes input on the next frame.
  */
 
 "use client";
 
-import type { ProjectItem } from "@/data/projects";
+import { CaseStudyOverlay } from "@/components/overlay/CaseStudyOverlay";
+import { PROJECTS_BY_SLUG } from "@/data/projects";
+import { bridge } from "@/game/EventBridge";
 
 export interface ProjectOverlayProps {
-  project: ProjectItem;
-  onClose: () => void;
+  /** The project slug — comes from the bridge's `OPEN_OVERLAY` event
+   *  payload, originally set as the `slug` property on the
+   *  Buildings[] object layer entry in backend-city.json. */
+  slug: string;
+  /** Optional parent-supplied close handler. If provided, called
+   *  before `bridge.closeOverlay()` so the parent can do its own
+   *  state cleanup. */
+  onClose?: () => void;
 }
 
-export function ProjectOverlay({ project, onClose }: ProjectOverlayProps) {
+export function ProjectOverlay({ slug, onClose }: ProjectOverlayProps) {
+  const project = PROJECTS_BY_SLUG[slug];
+
+  if (!project) {
+    /* Stale slug or future-data mismatch — close immediately rather
+       than render a broken overlay with a "?" name. */
+    if (typeof window !== "undefined") {
+      bridge.closeOverlay();
+    }
+    return null;
+  }
+
   return (
-    <div className="bg-surface border-acc/40 mx-auto flex max-w-[640px] flex-col gap-3 rounded-[12px] border p-8">
-      <p className="text-acc font-mono text-[11px] tracking-[1.5px] uppercase">
-        Project
-      </p>
-      <h2 className="font-display text-t1 text-[28px] font-bold tracking-[-0.5px]">
-        {project.name}
-      </h2>
-      <p className="text-t2 text-[14px]">{project.tagline}</p>
-      <p className="text-t3 font-mono text-[12px]">
-        T4.6 will flesh this out with the full case-study layout.
-      </p>
-      <button
-        type="button"
-        onClick={onClose}
-        className="bg-acc text-bg mt-2 self-start rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold"
-      >
-        close →
-      </button>
-    </div>
+    <CaseStudyOverlay
+      project={project}
+      onClose={() => {
+        if (onClose) onClose();
+        bridge.closeOverlay();
+      }}
+    />
   );
 }
