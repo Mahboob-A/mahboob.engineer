@@ -39,14 +39,29 @@ export class WorldScene extends Phaser.Scene {
 
   /**
    * Set up BGM playback + bridge listeners for ducking. T4.4 will
-   * expand this with createMap / createPlayer / createColliders /
-   * createZones / createCamera / setupInput.
+   * expand `createMap()` with the actual tilemap rendering.
    */
   create(): void {
     this.startBGM();
     this.wireBridgeDuck();
+    this.createMap();
+  }
 
-    /* T4.4+ expand: tilemap, player, zones, camera. */
+  /**
+   * T4.2 placeholder. T4.4 will:
+   *   - this.make.tilemap({ key: "backend-city" }) → Phaser.Tilemaps.Tilemap
+   *   - this.tilemap.addTilesetImage("tileset", "tileset")
+   *   - create Ground layer (this.tilemap.createLayer("Ground", tileset, 0, 0))
+   *   - loop Buildings object layer → create Building zones per rect
+   *   - loop Villains object layer → place Villain entities
+   *   - read SpawnPoint object layer → spawn Player at (x, y)
+   *   - this.cameras.main.setBounds(0, 0, 1920, 1600)
+   *   - this.cameras.main.startFollow(player, true, 0.1, 0.1)
+   *   - this.physics.world.setBounds(0, 0, 1920, 1600)
+   */
+  private createMap(): void {
+    // No-op for T4.2; the JSON loads into Phaser's cache via
+    // PreloadScene, but actual rendering lands in T4.4.
   }
 
   /**

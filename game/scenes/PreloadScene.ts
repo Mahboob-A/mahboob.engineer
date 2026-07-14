@@ -82,6 +82,12 @@ export class PreloadScene extends Phaser.Scene {
       this.load.audio(key, path);
     }
 
+    /* 5. Tilemap (Tiled JSON). WorldScene (T4.4) reads the cached key
+         "backend-city" via `this.make.tilemap({key: "backend-city"})`.
+         T4.2 verifies the JSON parses + the asset loads; T4.4 builds
+         the actual map. */
+    this.load.tilemapTiledJSON("backend-city", PHASER_ASSETS.tilemap.json);
+
     /* ─── Progress bar UI ──────────────────────────────────────────
        Three Phaser.GameObjects laid over the canvas:
          - status text caption ("loading… 0%")

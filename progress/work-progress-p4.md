@@ -340,3 +340,61 @@ The chosen ChatGPT tileset + ChatGPT dev sprite now live under
   - 8 BGM URLs → 200, sizes 4.7 MB to 8.3 MB.
   - Tileset + sprite URLs → 200.
   - `/game` HTTP 200, renders loader placeholder.
+
+---
+
+## T4.2 — Tiled map (`backend-city.json`)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-14
+
+### What shipped
+
+`public/assets/maps/backend-city.json` — the spatial backbone of `/game`. 60×50 tile grid at 32×32, with 4 layers:
+
+- **`Ground`** (tilelayer) — 3000 cells, all tile id 50 (`grass-plain` from the tileset). Uniform green base; T4.4 can decorate further.
+- **`Buildings`** (objectgroup) — 15 rectangles:
+  - 12 projects placed per master §5.2 layout (Taply + UnThink in saas_quarter, Algocode + DataLineage in systems_district, Pulumi in cloud_ridge, Movio + CuteTube + ProStream in media_row, AirPass + ImgTwist + LB in protocol_street, DrishtiAI in vision_lab)
+  - 3 special buildings (Backend Diaries HQ, Skills Academy, Contact Bureau) in the center
+  - Each object has `slug` + `district` + `type` properties (T4.4 reads these to build Building zones)
+- **`Villains`** (objectgroup) — 3 spawn points (gopher-king, terraform-titan, ebpf-phantom) in the Learning Grounds (center-south)
+- **`SpawnPoint`** (objectgroup) — 1 player start at tile (29, 26), mid-canvas, with `type: "player"` property
+
+**Other changes:**
+- `game/config.ts` — `PHASER_ASSETS.tilemap = { json: "..." }` now resolves to the real path (placeholder comment removed).
+- `game/scenes/PreloadScene.ts` — `preload()` now calls `this.load.tilemapTiledJSON("backend-city", ...)` after the audio loaders.
+- `game/scenes/WorldScene.ts` — `create()` calls `this.createMap()`; the method is a placeholder (no-op) until T4.4 fleshes it out. The placeholder doc-string lists every step T4.4 needs to take.
+
+### Decisions
+
+- **6 districts, not 5** — `GameDistrict` enum has 6 values; the master spec's "5 districts" is off-by-one. We use all 6 to match the data.
+- **Hardcoded building positions** — buildings are placed by hand per master §5.2 ASCII layout. Drift risk if a project is added later (positions need manual update). Trade-off: deliberate city layout vs. auto-placement. Future tasks can add auto-placement if needed.
+- **Uniform grass Ground layer** — the tileset has 12 road variants + 12 grass variants + 12 sidewalk variants, but painting a complex road/grass/sidewalk grid by hand would require per-cell tile-id selection. For v1 the Ground is uniform grass; T4.4 can layer road/sidewalk tiles in specific cells if the user wants more visual depth.
+- **Special buildings in the Buildings layer with `_special:` prefixed slugs** — distinguishes them from project slugs. T4.12 will route their overlays (`backend-diaries` → `/writing`, etc.).
+- **Object id sequencing** — buildings 100–114, villains 200–202, spawn 19. Lower numbers reserved for layer ids.
+- **`PHASER_ASSETS.tilemap` as sibling group** — reviewer's T4.1 fixup established the nested pattern; followed it.
+- **Tile-size mismatch deferred to T4.4** — buildings are 220×260 in the source tileset, but the map is 32×32 tiles. The Tiled object rect uses 220×260 (the visual footprint). T4.4 will use `setScale()` on the building sprite to fit the visual.
+
+### Caveats / pending
+
+- **Tile-size mismatch** — buildings 220×260 vs map tiles 32×32. T4.4 renders the building sprite at scale ~0.6 (220×32/220 ≈ 0.6 to fit 7 tiles wide, 260/32 ≈ 8 tall) so the visual matches the Tiled object rect.
+- **Master §5.2 layout transcription** — pixel coords are best-fit. T4.4 may nudge positions for visual balance.
+- **No visual decorations** — Ground is uniform grass. No roads, sidewalks, trees. T4.4 (or a future polish task) can add them.
+- **No camera bounds yet** — T4.4 sets `this.cameras.main.setBounds(0, 0, 1920, 1600)`.
+- **The 3 villain spawn points** are placed at fixed positions; their actual visual sprites + animations land in T4.7.
+- **T4.4 (WorldScene flesh-out)** is now unblocked. It will: read the cached tilemap, add tileset image, build layers, spawn Player at SpawnPoint, create Building zones per `Buildings[]`, place Villain entities, set camera bounds + follow + lerp 0.1, WASD/arrow input.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings.
+- **JSON validity** — `python3 -m json.tool` parses cleanly.
+- **Map structure** (programmatic):
+  - 60×50 dimensions, 32×32 tile size, orthogonal orientation, type "map".
+  - 4 layers: Ground (3000 tiles, all grass id 50), Buildings (15 objects), Villains (3 objects), SpawnPoint (1 object with `type: "player"`).
+  - Tileset source: `../tilesets/backend-city.json` (resolves correctly relative to the maps/ folder).
+- **Live URL smoke** — `/assets/maps/backend-city.json` → 200, 49201 bytes. JSON re-fetched from running server re-parses cleanly.
+- **`/game` route** still 200. PreloadScene loads 17 assets now (was 16): tileset PNG + sprite PNG + 6 SFX + 8 BGM + 1 tilemap.

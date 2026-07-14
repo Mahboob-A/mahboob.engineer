@@ -50,8 +50,9 @@ export const PHASER_ASSETS = {
     png: "/assets/sprites/developer.png",
     json: "/assets/sprites/developer.json",
   },
-  // T4.2:
-  // tilemap: { json: "/assets/maps/backend-city.json" },
+  tilemap: {
+    json: "/assets/maps/backend-city.json",
+  },
   // T5.x (audio, additional sprites):
   // audio:   { bgm: "...", sfx: { ... } },
   // enemies: { grumpy: { png, json }, ... },
