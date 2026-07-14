@@ -78,6 +78,14 @@ export class WorldScene extends Phaser.Scene {
    *  in create(). Passed into player.updateMovement() each frame. */
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
+  /** T4.7: encounter-active guard. The player-villain overlap fires
+   *  on every frame the player is inside the zone; we want the
+   *  overlay to open only on the first overlap. Set to true on
+   *  encounter start (fires bridge.openOverlay), reset to false on
+   *  bridge CLOSE_OVERLAY (overlay closed → player can re-trigger
+   *  by walking back into the zone). */
+  private villainEncounterActive = false;
+
   constructor() {
     super({ key: "WorldScene" });
   }
@@ -92,6 +100,7 @@ export class WorldScene extends Phaser.Scene {
   create(): void {
     this.startBGM();
     this.wireBridgeDuck();
+    this.wireEncounterHandlers();
     this.createMap();
     this.createEntities();
     this.createCamera();
@@ -280,6 +289,57 @@ export class WorldScene extends Phaser.Scene {
       this.physics.add.existing(villain);
       this.villains.push(villain);
     }
+
+    /* T4.7: wire overlap detection. Per-frame callback guarded by
+       `villainEncounterActive` so the encounter fires only on first
+       contact. We use `add.overlap` (not `add.collider`) so villains
+       don't block the player — they're interaction zones, not walls. */
+    if (this.player) {
+      for (const villain of this.villains) {
+        this.physics.add.overlap(
+          this.player,
+          villain,
+          (_player, v) => this.onVillainContact(v as Villain),
+        );
+      }
+    }
+  }
+
+  /**
+   * T4.7: player touched a villain. Stop the player, set the
+   * encounter-active guard, and fire `bridge.openOverlay` so
+   * VillainOverlay mounts in the React tree.
+   */
+  private onVillainContact(villain: Villain): void {
+    if (this.villainEncounterActive) return;
+    this.villainEncounterActive = true;
+    if (this.player) {
+      this.player.setVelocity(0, 0);
+    }
+    bridge.openOverlay({
+      slug: villain.villainId,
+      overlayType: "villain",
+    });
+  }
+
+  /**
+   * T4.7: subscribe to bridge CLOSE_OVERLAY to reset the
+   * encounter-active guard. When the player closes the villain
+   * overlay, they can walk back into the zone to re-trigger the
+   * encounter. Distinct from `wireBridgeDuck` (which handles audio)
+   * because the concerns are separate — this could in principle
+   * be wired in a different scene or moved to UIScene later.
+   */
+  private wireEncounterHandlers(): void {
+    bridge.on("CLOSE_OVERLAY", () => {
+      this.villainEncounterActive = false;
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      bridge.off("CLOSE_OVERLAY", () => {
+        this.villainEncounterActive = false;
+      });
+      this.villainEncounterActive = false;
+    });
   }
 
   /**

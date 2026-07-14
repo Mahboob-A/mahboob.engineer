@@ -585,3 +585,80 @@ The player → content loop is closed. Pressing E inside Taply HQ now opens the 
 - `pnpm build` → 23 routes. 0 warnings.
 - **Live URL smoke** — `/game` → 200.
 - **Bundle smoke** — `CaseStudyOverlay` content (`TaplyDiagram`, `close ↩`, `read full case study`) present in the Phaser dynamic chunk. The whole case-study rendering chain is bundled into the game route's lazy chunk.
+
+---
+
+## T4.7 — Villain system (procedural sprite + encounter card + collision)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-14
+
+### What shipped
+
+Walking into a villain now opens an honest learning-area encounter card. Three villains on the map each have:
+- A procedural 32×32 canvas sprite (color-coded bg + centered letter/symbol + red "!" badge).
+- An "encounter line" that greets the player when they touch.
+- An HP-style progress meter (filled = `hp`/100, color `acc`).
+- "What I know" / "What I'm learning" / "Active training" lists.
+- "Retreat for now" + "View full stack →" buttons.
+
+The overlap fires once per encounter (per a `villainEncounterActive` guard), pauses the player on contact, and resets when the overlay closes.
+
+**`data/game/villains.ts` (new — ~120 lines):**
+- `VillainData` interface + `VILLAINS` array (3 entries) + `VILLAIN_BY_ID` lookup map.
+- Per-villain: name, title, learningArea, hp (0-100), whatIKnow, whatImLearning, activeResources, encounterLine.
+- Three villains: gopher-king (Go, hp 30), terraform-titan (Terraform, hp 50), ebpf-phantom (eBPF, hp 40). Each hp value is honest self-rating, hand-updated when learning progresses.
+
+**`game/entities/Villain.ts` (rewrite — ~125 lines):**
+- Procedural 32×32 sprite via `Phaser.Textures.CanvasTexture`. The constructor checks `scene.textures.exists(key)` (idempotent guard) and draws the villain's sprite on a fresh canvas if the key isn't registered yet.
+- 3-layer draw: filled rounded-rect background (palette color) + centered glyph (G / T / ∅) + red "!" badge top-right corner.
+- Static `textureKeyFor(villainId)` helper returns `villain-${id}`.
+- Uses `setDisplaySize(32, 32)` to keep the visual at 32×32 even though the sprite is on a 32×32 canvas.
+
+**`game/scenes/WorldScene.ts` (modify — ~50 line additions):**
+- New `private villainEncounterActive = false` field — encounter-fire-once guard.
+- New `wireEncounterHandlers()` method — subscribes to `bridge.on("CLOSE_OVERLAY", ...)` to reset the guard when the overlay closes. Cleaner than coupling the flag to the duck listener.
+- New `onVillainContact(villain)` method — called by the overlap callback. Stops the player (`setVelocity(0, 0)`), sets the guard, fires `bridge.openOverlay({slug, overlayType: "villain"})`.
+- `createVillains()` extended: after creating the 3 Villain entities, registers `physics.add.overlap(player, villain, ...)` for each. Uses `add.overlap` (not `add.collider`) — villains are interaction zones, not walls.
+- `create()` calls `this.wireEncounterHandlers()` right after `this.wireBridgeDuck()` so the CLOSE_OVERLAY listener is registered before the user can close the first overlay.
+
+**`game/scenes/overlays/VillainOverlay.tsx` (rewrite — ~165 lines, was ~50-line stub):**
+- Looks up `VILLAIN_BY_ID[villainId]`; closes overlay + returns null on miss.
+- Header: amber ⚠ label + name + learning area + title.
+- Blockquote encounter line (italic, muted).
+- HP bar: `bg-code-bg` track + `bg-acc` filled portion (width = hp%). Honest copy: "still learning" if hp < 50, "growing confidence" otherwise.
+- 2-col grid: "What I know" + "What I'm learning" bullet sections.
+- "Active training" chip row (sage color).
+- Footer: "view full stack →" Next.js Link to `/stack` (T3.4's D3 force graph) + "retreat for now ↩" button.
+- All colors from tokens.ts (`text-amber`, `bg-amber`, `bg-acc`, `bg-code-bg`, `border-amber/40`, etc.) — no hardcoded hex.
+
+### Decisions
+
+- **Procedural canvas sprite (per user direction)** — `Phaser.Textures.CanvasTexture` runtime draw. Each villain has a distinct bg + glyph + red "!" badge. Heavier code than a placeholder rect, but it looks intentional. No external file needed.
+- **`VILLAINS` registry (per user direction)** — new `data/game/villains.ts`. Each villain entry has 7 fields: name, title, learningArea, hp, whatIKnow, whatImLearning, activeResources, encounterLine. Plus a `VILLAIN_BY_ID` lookup map. The entity just renders the sprite; the card reads the registry.
+- **HP bar = explicit static value, not auto-derived** — `hp: 30 | 50 | 40` per villain. Honest self-rating, hand-updated. No coupling to `data/stack.ts`'s `depth` field (which has undefined values for some techs; auto-derivation would break).
+- **`physics.add.overlap`, not `add.collider`** — villains are interaction zones, not walls. Player walks into them, fires the encounter, can step back out.
+- **Fire-once guard `villainEncounterActive`** — overlap fires per-frame; without the guard, the same overlay would re-open every frame until the player stepped out of the zone. Guard resets on `bridge.on("CLOSE_OVERLAY", ...)` so the player can re-trigger the encounter by walking back into the zone after closing the overlay.
+- **`wireEncounterHandlers` separate from `wireBridgeDuck`** — both subscribe to bridge events but the concerns are different (audio vs. encounter state). Co-locating the encounter listener with the duck listener would muddle responsibilities.
+- **Color rule** — all colors from tokens.ts. The two intentional off-token hex literals in `Villain.ts` (`#FFFFFF` for white text, `#E13F3F` for the alert badge red) are the only "non-token" colors and they're scoped to the procedural sprite — the encounter card itself uses 100% tokens.
+
+### Caveats / pending
+
+- **Sprite quality at small size** — the centered glyph (G / T / ∅) is rendered at 18px on a 32px canvas. Readable, but in a 60×50-tile world the sprite is small. Future polish: scale up the canvas to 64×64 internally and `setDisplaySize(64, 64)` on the sprite so the rendering is sharper.
+- **No villain sprite-sheet sprite** — each villain has its own canvas texture, registered under `villain-${id}`. Tiled-map placement is fine; T4.8 (UIScene / HUD) might add minimap dots for villain positions, in which case the canvas-texture approach is still cleaner than a spritesheet (3 distinct keys vs. 1 with 3 frames).
+- **Player can re-trigger the same villain** — the guard resets on overlay close, so the player can walk back in. This is intentional (the user can revisit the encounter to update the hp if they later update `data/game/villains.ts`), but if it feels weird, T4.x polish can add a per-villain "completed" flag.
+- **No 'defeated' state** — master spec says "Animation when defeated" but the user spec for T4.7 doesn't include that. T4.x or Phase 6 polish.
+- **HP bar in a low-resolution 32-px sprite** — works in a desktop browser at 1× DPI; may look chunky on retina screens. The procedural canvas texture can be regenerated at 2× via `window.devicePixelRatio` for sharper rendering on retina (out of scope for T4.7).
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live URL smoke** — `/game` → 200.
+- **Bundle smoke** — game chunk contains all 3 villain names + slugs + titles:
+  - "Gopher King", "Terraform Titan", "eBPF Phantom"
+  - "gopher-king", "terraform-titan", "ebpf-phantom"
+  - "Warden of Concurrency", "Lord of Infrastructure"
