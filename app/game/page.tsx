@@ -25,6 +25,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { GameLoader } from "@/components/game/GameLoader";
 import { GameGate } from "@/components/game/ModeSelector";
+import { DesktopOnlyGate } from "@/components/game/DesktopOnlyGate";
 
 const GameRoot = dynamic(
   () => import("@/game").then((m) => m.default),
@@ -50,19 +51,25 @@ export default function GamePage() {
           bump into villains, find out what I&apos;m working on.
         </p>
       </header>
-      {/* T4.10 polish: GameGate reads `?entered=1` via useSearchParams.
-         Next.js 16 requires any component using useSearchParams to
-         be wrapped in a Suspense boundary at the page level — the
-         boundary lets the page prerender with the rest of the
-         static content while the gate streams in. */}
-      <Suspense fallback={<GameLoader />}>
-        {/* GameGate holds the selector open until the user clicks
-            "Enter Game". GameRoot is the dynamic-imported Phaser game —
-            not in the React tree until the gate opens. */}
-        <GameGate>
-          <GameRoot />
-        </GameGate>
-      </Suspense>
+      {/* T6.7: DesktopOnlyGate wraps the game UI. On viewports <md
+         (767 px and below) the gate swaps in a "best on desktop" card
+         so the Phaser chunk doesn't even download on mobile. On md+,
+         children render unchanged (ModeSelector → GameRoot). */}
+      <DesktopOnlyGate>
+        {/* T4.10 polish: GameGate reads `?entered=1` via useSearchParams.
+           Next.js 16 requires any component using useSearchParams to
+           be wrapped in a Suspense boundary at the page level — the
+           boundary lets the page prerender with the rest of the
+           static content while the gate streams in. */}
+        <Suspense fallback={<GameLoader />}>
+          {/* GameGate holds the selector open until the user clicks
+              "Enter Game". GameRoot is the dynamic-imported Phaser game —
+              not in the React tree until the gate opens. */}
+          <GameGate>
+            <GameRoot />
+          </GameGate>
+        </Suspense>
+      </DesktopOnlyGate>
     </div>
   );
 }

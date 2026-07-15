@@ -585,3 +585,78 @@ breakpoints. Decisions:
 - **`docs/DEPLOY.md`** — 10 sections, walks through the entire
   deploy including GitHub OAuth setup. Linked from the runtime
   error message so the user lands on the right docs.
+
+---
+
+## T6.7 — `/game` desktop-only gate
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`components/game/DesktopOnlyGate.tsx`** (new, ~110 lines) —
+  `'use client'` viewport gate. Uses `window.matchMedia('(max-width:
+  767px)')` in a `useEffect`. On mobile (≤767 px) renders a centered
+  "Backend City is best on desktop" card with a CTA back to the flat
+  portfolio (`/`). On `md+` (768 px and up) renders `{children}`
+  (the existing `<Suspense>` + `<GameGate>` + `<GameRoot>` chain).
+- **`app/game/page.tsx`** (modify) — wraps the existing `<Suspense>`
+  chain in `<DesktopOnlyGate>`. No other changes; the
+  `?entered=1` flag still works inside the gate's children.
+
+### Decisions
+
+- **`window.matchMedia` over `useMediaQuery` libraries.** ~15 lines
+  of code, zero new deps, browser-native.
+- **Block at `<md` (767 px and below)** per user direction.
+  Tablets in portrait (768 px+) get the full game. Landscape phones
+  (667 px wide) are blocked, which is the right call — the canvas
+  is unreadable either way.
+- **SSR default = "not mobile"** so the SSR'd HTML matches the
+  desktop experience. The gate re-evaluates after hydration. On a
+  real mobile device, the gate swaps in within ~50ms of hydration.
+  No flash on desktop (gate never fires).
+- **No localStorage persistence** (master §6 rule #3). The user can
+  rotate to landscape; the gate's `matchMedia` listener dismisses
+  the fallback live.
+- **No "I've dismissed this before" cookie** — would also violate
+  the no-browser-storage rule, and the gate is cheap to evaluate.
+- **Gate re-uses the visual family** of `ModeSelector` (T4.10) and
+  `PauseMenu` (T4.11): `bg-bg/85 backdrop-blur-sm` backdrop + `bg-surface
+  border-acc/40` card. Same visual language, less cognitive load.
+- **Phaser chunk doesn't download on mobile.** `<GameRoot>` is
+  behind the gate; on mobile, the gate renders `<MobileFallback />`
+  instead. The dynamic-import chunk (1.37 MB minified) only fetches
+  when the user is on `md+` and clicks "Enter Game".
+
+### Caveats / pending
+
+- **Landscape phones are blocked.** 667 × 375 = 667 px wide; gate
+  fires. Acceptable — the canvas is unreadable at that aspect
+  ratio anyway.
+- **First-paint flash possible for real mobile users.** The SSR'd
+  HTML shows the desktop UI; the gate swaps to mobile ~50ms after
+  hydration. Acceptable. Future polish: a per-request cookie could
+  detect mobile on the server side, but that violates the no-storage
+  rule.
+- **No focus trap on the mobile fallback.** User can Tab away;
+  acceptable for v1.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes. 0 warnings. (Unchanged from T6.6.)
+- **Code-level audit**:
+  - `DesktopOnlyGate` is `'use client'`; uses `useEffect` for the
+    `matchMedia` listener.
+  - Listens for `change` events so live resizes / rotations update
+    the gate state.
+  - Falls back to legacy `addListener` / `removeListener` for
+    Safari < 14 (defensive).
+  - `MobileFallback` renders a Next.js `<Link href="/">` for the CTA.
+- **Manual smoke** would need a real browser at multiple viewports;
+  deferred to T6.9 Playwright run.
