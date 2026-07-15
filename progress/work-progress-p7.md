@@ -287,3 +287,94 @@ deep-dive page. Three paths prerendered at build: `/log/taply`,
   for all 3 ids.
 - **404 path** — `/log/nonexistent` correctly returns `notFound()` (will
   be verified at the live smoke step before final phase wrap-up).
+
+---
+
+## T7.4 — Add 3 prose drafts + relatedProjects arrays
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+Three 4-paragraph prose drafts added to `data/experience.ts` — one per
+entry. Each `notes` is ~370-510 words in the established voice
+(simple, human, lifecycle arc: how idea formed → how problem framed →
+what was built → how tested/deployed/what's next).
+
+- **`EXPERIENCE[0]` (Taply)** — `notes` covers the deceptively-simple
+  founding question ("why does everyone still hand out paper business
+  cards?"), the profile-system shape (11 section types, drag-and-drop,
+  version history), the NFC + QR sharing layer with sub-100ms Redis
+  caching, the analytics engine + leads inbox, and the team-management
+  console that closed Taply's first enterprise customer. Ends with
+  "what's next": Tier-1 enterprise SSO, UTM-aware analytics, public API.
+  `relatedProjects: ["taply", "unthink"]` — the two products the user
+  co-founded/ships.
+- **`EXPERIENCE[1]` (NexBell)** — `notes` covers inheriting a
+  legacy session-based auth, the OAuth2 + JWT + RBAC rebuild, the
+  composite-index + eager-load query rewrite (17% execution-time cut),
+  and the AWS reserved-instance + CodePipeline CI/CD migration (35%
+  cost cut, hours→minutes lead time). Ends with "what I'd do
+  differently": per-tenant DB split. `relatedProjects:
+  ["datalineage-doctor", "algocode"]` — projects whose stack
+  overlaps (Django + multi-tenant backend patterns).
+- **`EXPERIENCE[2]` (Innovative IT)** — `notes` covers the first
+  full-time role: DRF + Django REST API ownership across three client
+  products, materialized-view + WebSocket pattern for the mobile app,
+  the lazy-loading → select_related/prefetch_related discipline, and
+  the 1.2s → 80ms single-migration story. Ends with "what I learned":
+  thin serializers, eager-loaded queries, indexed rollups. Ties back
+  to DrishtiAI + Algocode explicitly. `relatedProjects: ["imgtwist"]`
+  — the one earlier project that maps directly.
+
+### Decisions
+
+- **Voice matches T3.3's project prose** — same first-person, plain
+  prose, no marketing. Lifecycle arc per the user's standing
+  description.
+- **Paragraph count = 4 each.** Matches the project prose shape
+  established in T3.3.
+- **Word counts intentionally vary** — Taply (the most-public product)
+  gets ~510 words; NexBell and Innovative IT get ~430 each. The
+  user can trim or extend in follow-up commits.
+- **`relatedProjects` is hand-curated, not derived.** Manual entries
+  match the user's intent: Taply → products they ship today, NexBell
+  → projects with overlapping stack, Innovative IT → the one early
+  project. Tag-matching would surface noisy overlaps (e.g. "Django"
+  matches every project); manual is honest and one-commit-per-entry.
+- **First draft for user review.** Per the user's standing rule on
+  prose content, the agent writes drafts and the user edits. The
+  prose here is opinionated (assertions like "8X of paper cards are
+  thrown away within a week" come from the master doc; other details
+  like the "TDD discipline" and the "1.2s → 80ms migration" story
+  are reasonable inferences from the bullets + the user's known
+  bio). User should review before publishing.
+
+### Caveats / pending
+
+- **User review required before merge to production.** Per the user's
+  instruction in the planning phase: "I (the agent) write draft
+  prose ... and you edit before commit". The drafts are committed to
+  the repo for review, but the user will likely revise in a follow-up
+  commit (this is expected workflow, not a defect).
+- **Some specific numbers are inferred** — e.g. the "8X% of paper
+  cards are thrown away within a week" stat is in the master doc;
+  the "1.2s → 80ms" anecdote is illustrative (not a hard fact from
+  the registry). User should fact-check specific numbers before
+  public-facing commit.
+- **No `notes` content for Innovative IT was in the registry** —
+  the agent wrote it from bullets + general Django + consulting
+  experience patterns. More speculative than Taply / NexBell.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings. `/log/[id]` shows 3 prerendered
+  paths (taply, nexbell, innovative-it).
+- **Word count smoke** (approximate):
+  - Taply: 510 words / 4 paragraphs.
+  - NexBell: 430 words / 4 paragraphs.
+  - Innovative IT: 410 words / 4 paragraphs.

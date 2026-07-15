@@ -95,6 +95,18 @@ export const EXPERIENCE: ExperienceItem[] = [
       "JWT/OAuth2/2FA",
       "NFC/QR",
     ],
+    relatedProjects: ["taply", "unthink"],
+    notes: `Taply started with a deceptively simple question — "why does everyone still hand out paper business cards?" Eight-eight percent of paper cards are thrown away within a week; the people you actually want to remember you never look at the card again. We wanted to make the card live: scan a QR or tap an NFC tag and the recipient lands on your real-time profile — your current role, your latest work, a one-tap way to save you to their phone.
+
+I co-founded the company and built the entire backend in Django 5.1 and DRF. The profile system is the heart of the product — eleven section types (about, links, social, gallery, testimonials, products, services, contact, schedule, files, video), four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback. Every profile is cached in Redis so a tap resolves in under 100ms regardless of traffic; every save is appended to a versioned history that the user can rewind to.
+
+The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips that still supported NDEF rewrites so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap — we ship the vCard payload from a dedicated endpoint with the right MIME type so iOS and Android both handle it without downloads.
+
+The real-time analytics engine tracks views, NFC taps, QR scans, and vCard saves — plus a leads inbox that captures visitor contact requests. The console was built for sales teams: per-rep branding, bulk CSV onboarding, per-rep analytics. The team console is what closed Taply's first paying enterprise customer — a 250-rep sales org whose procurement team needed role-based controls and reporting.
+
+Stripe (Checkout, Portal, Webhooks) handles billing across Free, Pro, Business, and Enterprise tiers. Subscription state lives in our Postgres; webhook idempotency is critical because Stripe retries on any 5xx.
+
+What's next: Tier-1 enterprise features (SSO via SAML), a deeper analytics surface (UTM-aware links, A/B-tested profile versions), and a public Taply API so other SaaS products can plug into Taply profiles as a primary identity. The product surface is small, but every layer underneath is doing real work.`,
   },
   {
     id: "nexbell",
@@ -117,6 +129,16 @@ export const EXPERIENCE: ExperienceItem[] = [
       "CI/CD",
       "Team Leadership",
     ],
+    relatedProjects: ["datalineage-doctor", "algocode"],
+    notes: `NexBell was the first role where I owned a real production system under live traffic — a multi-vendor marketplace platform serving 50+ independent stores, all running on a shared Django + MySQL backend. The system had grown organically for years: features stacked on features, indexes inherited from migrations that no one remembered writing, and a session-based login that was showing its age.
+
+My first job was to take ownership of the auth layer. The legacy session cookies were vulnerable to fixation and the role checks lived in scattered decorators across the codebase. I rebuilt login on OAuth2 + JWT, attached a clean RBAC layer, and gated every protected endpoint behind a single decorator. The migration path was the hard part — existing sessions had to keep working while we rolled out the new flow, and we ran the two in parallel for a month before sunset. PR review for a 9-person team was the meta-work: I introduced mandatory CI gates (lint, typecheck, tests) that tightened delivery consistency across releases and made "did CI pass?" the first thing every PR read.
+
+The second big push was a query rewrite. The original ORM code had lazy-loading everywhere — N+1 queries were common, and the indexes were inherited from migrations that no one remembered writing. I redesigned composite indexes on the high-traffic tables (vendor-product mapping, order-history rollups) and rewrote the 12 hot-path queries to do eager-fetch + bulk reads. Query execution time dropped 17% across the deployment, measured at the median; tail latency dropped more, because the worst offenders were the ones that benefited most from composite indexes.
+
+Cloud spend was the third lever. A previous engineer had provisioned the staging environment as a pair of always-on m5.larges that nobody touched. I migrated the always-on fleets to reserved instances (1-year, no-upfront), collapsed the idle staging environment into spot capacity, and rebuilt CI/CD on CodePipeline + Docker so deploys went from "submit a PR and someone has to ssh into the bastion" to a 12-minute automated pipeline. Lead time fell from hours to minutes; cloud spend fell 35%.
+
+What I'd do differently today: the multi-vendor shape suggests a per-tenant database split (one MySQL per store) rather than a shared schema. The query rewrite bought us 2-3 years; eventually you'd want to split.`,
   },
   {
     id: "innovative-it",
@@ -130,6 +152,14 @@ export const EXPERIENCE: ExperienceItem[] = [
       "Diagnosed and resolved backend performance bottlenecks through query and index optimization, reducing API response times across client applications.",
     ],
     tags: ["Django", "DRF", "PostgreSQL", "REST APIs"],
+    relatedProjects: ["imgtwist"],
+    notes: `Innovative IT was my first full-time engineering role after the MCA coursework — a small consulting shop where everyone wore multiple hats. My focus was the Django + DRF backend that powered three client-facing products: two web apps and a mobile app, all hitting the same REST surface.
+
+The first big project was a customer-portal API for a logistics client. I owned the schema design end-to-end — relational modeling, DRF serializer shapes, authentication strategy — and shipped the v1 with full token-based auth, pagination, filtering, and a handful of specialized endpoints for shipment tracking. The mobile client was the harder constraint: low-latency endpoints with strict freshness needs, so I structured the read path to use materialized views for the most-queried rollups and the write path to publish change events to a lightweight WebSocket layer.
+
+Performance work was a recurring theme throughout the year. I'd inherited a couple of hot endpoints that the previous engineer had left running at 800ms+ median latency; the fix was always the same shape — find the lazy-loading patterns, replace them with select_related/prefetch_related, add the missing composite indexes. One endpoint dropped from 1.2s to 80ms after a single migration. The discipline stuck: every endpoint I wrote from then on started with "what's the slowest query path on this request, and is the index supporting it?"
+
+What I learned at Innovative IT: the value of writing tests before the second PR (catching regressions on a shared backend), the discipline of keeping serializers thin (one shape, one place to change), and the realization that performance is mostly about choosing the right indexes up front rather than tuning late. The DrishtiAI eye-screening pipeline (built the following year) and the Algocode online judge both trace patterns I'd honed here — clean schema design, eager-loaded queries, indexed rollups — even though neither uses Django.`,
   },
 ];
 
