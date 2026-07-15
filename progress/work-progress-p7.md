@@ -554,3 +554,137 @@ command chip. The RAG-LLM upgrade is documented in
   on first paint.
 - **The typewriter behavior** requires a real browser to confirm
   visually. Out of scope for curl smoke.
+
+---
+
+## T7.7 — RAG terminal runbook + `.env.example` keys
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+The v2 upgrade runbook for the HeroTerminal RAG-LLM path. v1 ships
+static; v2 is documented here for the user to enable later (when the
+API key + vector store + content reindex are ready).
+
+- **`docs/RAG_TERMINAL.md`** (new, ~140 lines) — full upgrade runbook:
+  - **Why RAG** — the rationale and forward-compatibility note.
+  - **Stack** — Vercel AI SDK + OpenAI gpt-4o-mini + text-embedding-3-small
+    + Upstash Vector.
+  - **New env vars** — `OPENAI_API_KEY`, `UPSTASH_VECTOR_REST_URL`,
+    `UPSTASH_VECTOR_REST_TOKEN`. Documented with provider URLs +
+    cost analysis.
+  - **New deps** — `ai`, `@ai-sdk/openai`, `@upstash/vector`. Server-only.
+  - **`app/api/rag/route.ts`** — full implementation snippet
+    (`streamText` + `Index.query()` + context assembly).
+  - **`scripts/rag-reindex.mjs`** — Idempotent reindex script using
+    `text-embedding-3-small` + Upstash Vector. Tagged with a content
+    hash to skip no-op reindexes.
+  - **Swap path** in `HeroTerminal.tsx` — replaces `buildPayload()`
+    with a streaming fetch; chip keys become the question prompts.
+  - **Cost analysis** — ~$0.017/mo at portfolio traffic (100
+    queries/month). Negligible.
+  - **Open questions** — streaming vs. batch, freeform text input,
+    rate-limiting, caching.
+  - **Rollout checklist** — 6 steps from env-vars to Vercel.
+- **`.env.example`** — added the 3 future keys with explanatory
+  comments. The vars are intentionally empty (no API keys in source);
+  the user fills them in `.env.local` for local dev and in Vercel
+  for production.
+
+### Decisions
+
+- **Markdown-only deliverable**. No new code ships. The user explicitly
+  said the v2 RAG upgrade should be a *documented follow-up* — this
+  task ships the runbook so the future work is well-scoped.
+- **OpenAI + Upstash chosen as defaults**. Alternatives considered:
+  Anthropic (Claude) — more expensive; Google Gemini (vertex-ai) —
+  less mature streaming SDK; Pinecone — more expensive at small scale;
+  Vercel KV with raw embeddings — no built-in vector search. OpenAI +
+  Upstash is the cheapest + most-streamlined combo compatible with
+  the Vercel AI SDK.
+- **`gpt-4o-mini` chosen over `gpt-4o`** — for RAG over a constrained
+  context window, 4o-mini is ~30x cheaper with comparable quality.
+  Upgrade to 4o only if visitors report poor answers.
+- **`text-embedding-3-small` (1536 dims)** — sufficient for Q&A
+  retrieval at this corpus size (~12 projects + 3 experiences + 3+
+  blog posts). Larger embeddings are not worth the storage cost.
+- **No new deps installed** — the runbook mentions `ai`,
+  `@ai-sdk/openai`, `@upstash/vector` but doesn't add them to
+  `package.json`. The user opts in when they're ready.
+- **Content-hash reindex is recommended, not required** — cheap
+  insurance for cost but not a v2 blocker.
+- **Streaming over batch** is recommended; rationale documented.
+- **Chips-only for v2** (no freeform input). Freeform input adds UI
+  surface area + abuse risk; chips cover the most common questions
+  with curated prompts.
+
+### Caveats / pending
+
+- **No code ships in this task.** Just docs + `.env.example` keys.
+- **The 3 keys are blank by design.** The user adds them locally
+  (`.env.local`) and in Vercel. They MUST NOT be committed.
+- **`docs/RAG_TERMINAL.md` is the source of truth** for v2 — any
+  future PR that touches `app/api/rag/` should cross-link to this
+  doc and update the rollout checklist.
+- **No reindex script yet.** `scripts/rag-reindex.mjs` ships when v2
+  lands.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings. (No new routes — docs + env
+  vars don't change the build.)
+- **Markdown validity** — `docs/RAG_TERMINAL.md` reads cleanly; the
+  code snippets are illustrative (not load-bearing; the actual v2
+  PR will import-from-this-doc).
+- **`.env.example` audit** — all 3 future keys present with
+  explanatory comments; all 6 existing keys preserved.
+- **`docs/RAG_TERMINAL.md` cross-links** — referenced in T7.6's file
+  header and in this phase file. Future agents find the runbook
+  without needing to grep.
+
+---
+
+## Phase 7 wrap-up
+
+All 7 Phase 7 tasks complete:
+
+- ✅ T7.1 — Schema extension + phase file
+- ✅ T7.2 — DeployLog card-wrap + chip-link wiring
+- ✅ T7.3 — `/log/[id]` deep-dive route
+- ✅ T7.4 — 3 prose drafts + `relatedProjects`
+- ✅ T7.5 — Sitemap + cross-link to /work
+- ✅ T7.6 — `HeroTerminal` v1 (static + chips + typewriter)
+- ✅ T7.7 — RAG runbook + `.env.example` keys
+
+**End state:**
+
+| Route | Status |
+|---|---|
+| `/` | DeployLog cards now link to `/log/<id>`; chip tags now link to `/stack#<id>`; hero has interactive terminal under the Algocode diagram. |
+| `/log` | Unchanged — same experience timeline. |
+| `/log/[id]` | NEW. Three prerendered paths (taply, nexbell, innovative-it). Each with Hero, BuildNotes, TagChips (resolvable → /stack#), RelatedProjects (when set), RelatedWriting (matched via tag/project overlap), CaseStudyCrossLink. |
+| `/sitemap.xml` | Now includes 3 new `/log/<id>` URLs. |
+| `.env.example` | 3 new keys for v2 RAG upgrade (blank). |
+| `docs/RAG_TERMINAL.md` | NEW. Full v2 runbook. |
+
+`pnpm build` reports 19 routes (was 18 before Phase 7; +1 for `/log/[id]`).
+`pnpm typecheck` and `pnpm lint` clean (lint errors pre-existing in
+Blog.tsx + Hero.tsx are unchanged; new code adds 0 errors / 0 warnings).
+
+**Open follow-ups (next phase candidates):**
+
+1. **RAG-LLM terminal upgrade (T7.7 path)** — implement v2 once
+   `OPENAI_API_KEY` + Upstash Vector are provisioned.
+2. **User-edited prose for the 3 experience entries** (T7.4 drafts
+   are committed for review — user may revise in follow-up commits).
+3. **Phase 6 pre-existing lint fixes** — Blog.tsx (setState in effect)
+   + Hero.tsx (unescaped apostrophe) are minor; clean them up when
+   the user touches those files next.
+
+Phase 7 status: **done**.
