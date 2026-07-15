@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ogUrlFor, ogConstants } from "@/lib/og-helpers";
 import "./globals.css";
 import "@/components/diagrams/diagrams.css";
 import "@/components/sections/skill-graph.css";
@@ -72,21 +73,44 @@ export const metadata: Metadata = {
     title: "Mahboob Alam — Co-Founder & Backend Engineer",
     description:
       "Distributed systems, async pipelines, and infrastructure. Co-founder at Taply. Building UnThink.",
+    images: [
+      {
+        url: ogUrlFor({
+          title: "Mahboob Alam",
+          description:
+            "Distributed systems, async pipelines, and infrastructure.",
+        }),
+        width: ogConstants.width,
+        height: ogConstants.height,
+        alt: "Mahboob Alam — Backend Engineer",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Mahboob Alam — Co-Founder & Backend Engineer",
     description:
       "Distributed systems, async pipelines, and infrastructure. Co-founder at Taply.",
+    images: [
+      ogUrlFor({
+        title: "Mahboob Alam",
+        description:
+          "Distributed systems, async pipelines, and infrastructure.",
+      }),
+    ],
   },
   robots: {
     index: true,
     follow: true,
     googleBot: { index: true, follow: true },
   },
-  // Icons — placeholder, Phase 6 will swap for proper OG/manifest.
+  // Icons — the Next.js metadata file convention generates an SVG monogram
+  // from `app/icon.tsx` (T6.5). The legacy `favicon.ico` URL is kept as a
+  // fallback for crawlers / older browsers.
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon",
   },
 };
 

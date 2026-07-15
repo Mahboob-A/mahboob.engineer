@@ -10,6 +10,10 @@
  *   - The full title uses the root layout's template: "%s — Mahboob Alam"
  *     so calling `pageMetadata("Log")` produces "Log — Mahboob Alam".
  *
+ * Phase 6 (T6.1): every metadata helper populates `openGraph.images` with
+ * a query-param-driven OG card. The renderer lives at `/opengraph-image`;
+ * the URL builder lives in `lib/og-helpers.ts`.
+ *
  * Usage:
  *   // app/work/page.tsx
  *   export const metadata = pageMetadata("Work", "All systems, end-to-end");
@@ -22,11 +26,28 @@
  */
 
 import type { Metadata } from "next";
+import { ogUrlFor, ogConstants } from "@/lib/og-helpers";
 
-const SITE_URL = "https://mahboob.engineer";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://mahboob.engineer";
 const SITE_NAME = "mahboob.engineer";
-const DEFAULT_DESCRIPTION =
-  "Co-Founder & Backend Engineer building distributed systems, async pipelines, and infrastructure.";
+const DEFAULT_DESCRIPTION = ogConstants.defaultDescription;
+
+/**
+ * Base OG image entry shared by all three helpers. The URL is built by
+ * `ogUrlFor({ title, description })` so a single helper file owns the
+ * query-string contract (T6.1).
+ */
+function ogImage(title: string, description: string) {
+  return [
+    {
+      url: ogUrlFor({ title, description }),
+      width: ogConstants.width,
+      height: ogConstants.height,
+      alt: `${title} — ${SITE_NAME}`,
+    },
+  ];
+}
 
 /* ──────────────────────────────────────────────────────────────────────
    pageMetadata — for simple pages (e.g. /log, /stack, /contact, /writing)
@@ -44,11 +65,13 @@ export function pageMetadata(
       url: SITE_URL,
       siteName: SITE_NAME,
       type: "website",
+      images: ogImage(title, description),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ogImage(title, description).map((i) => i.url),
     },
   };
 }
@@ -75,11 +98,13 @@ export function projectMetadata(args: {
       url: `${SITE_URL}${path}`,
       siteName: SITE_NAME,
       type: "article",
+      images: ogImage(title, description),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ogImage(title, description).map((i) => i.url),
     },
     alternates: {
       canonical: path,
@@ -108,11 +133,13 @@ export function blogMetadata(args: {
       url: `${SITE_URL}${path}`,
       siteName: SITE_NAME,
       type: "article",
+      images: ogImage(args.title, description),
     },
     twitter: {
       card: "summary_large_image",
       title: args.title,
       description,
+      images: ogImage(args.title, description).map((i) => i.url),
     },
     alternates: {
       canonical: path,
