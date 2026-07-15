@@ -1,19 +1,55 @@
+"use client";
+
 /**
  * components/sections/Blog.tsx
  *
  * The "04 / THE BACKEND DIARIES" section on `/`. Per master §2 +
- * flat mockup §04 (lines 951–1001): 3 blog post cards in a
- * responsive 3-column grid (2-col on tablet, 1-col on mobile).
+ * flat mockup §04: blog post cards in a responsive 1/2/3-col grid.
+ *
+ * Phase 6 (T7): collapse-after-6 with `?all=1` URL state. Shows
+ * the first 6 cards by default; "Show N more" reveals the rest. URL
+ * flag survives refresh + supports direct-link sharing. The toggle
+ * uses `router.replace` so the back button skips the toggle state.
  *
  * Card rendering lifted to components/writing/BlogCard (T5.4).
- * This file is just the section chrome + grid.
  */
 
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BLOG_POSTS } from "@/data/blog";
 import { BlogCard } from "@/components/writing/BlogCard";
 import { FadeUp } from "@/components/motion";
 
+const COLLAPSE_AT = 6;
+
 export function Blog() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  /* URL-seeded initial state. Reading once on mount via lazy init. */
+  const [expanded, setExpanded] = useState<boolean>(
+    () => searchParams.get("all") === "1",
+  );
+
+  /* If the user navigates between / and /?all=1, sync state from
+     the URL (e.g. opened a deep link). One-shot on each searchParams
+     change — no infinite loop. */
+  useEffect(() => {
+    setExpanded(searchParams.get("all") === "1");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const toggle = () => {
+    const next = !expanded;
+    setExpanded(next);
+    router.replace(next ? "/?all=1" : "/", { scroll: false });
+  };
+
+  const visible = expanded
+    ? BLOG_POSTS
+    : BLOG_POSTS.slice(0, COLLAPSE_AT);
+  const remaining = BLOG_POSTS.length - COLLAPSE_AT;
+
   return (
     <FadeUp
       as="section"
@@ -35,12 +71,33 @@ export function Blog() {
           </p>
         </div>
 
-        {/* 3-column grid → 2 on tablet → 1 on mobile */}
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {BLOG_POSTS.map((post) => (
+        {/* 1-col → 2-col → 3-col grid. id="blog-list" so the toggle's
+            aria-controls can point at it for assistive tech. */}
+        <div
+          id="blog-list"
+          className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {visible.map((post) => (
             <BlogCard key={post.slug} post={post} />
           ))}
         </div>
+
+        {/* Collapse toggle. Hidden entirely when the registry fits in
+            COLLAPSE_AT cards (defensive — guards future growth). */}
+        {remaining > 0 && (
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={toggle}
+              aria-expanded={expanded}
+              aria-controls="blog-list"
+              className="border-border text-t1 hover:border-acc hover:text-acc inline-flex items-center gap-2 rounded-md border px-5 py-2.5 font-mono text-[12px] font-medium transition-colors"
+            >
+              {expanded ? "Show fewer" : `Show ${remaining} more`}
+              <span aria-hidden>{expanded ? "↑" : "↓"}</span>
+            </button>
+          </div>
+        )}
       </div>
     </FadeUp>
   );

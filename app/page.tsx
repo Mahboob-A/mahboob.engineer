@@ -4,10 +4,14 @@
  * Composes the full landing-page section stack from components/sections/.
  * Each Phase 2 task (T2.1 → T2.7) appends one section here.
  *
- * All 6 sections are now live. Phase 2 wraps up once T2.7 (Contact)
- * verifies end-to-end.
+ * Phase 6 (T7): <Blog /> uses useSearchParams (collapse-after-6
+ * with ?all=1 URL state) and Next.js 16 requires any component
+ * using useSearchParams to be wrapped in a Suspense boundary at
+ * the page level. The boundary lets the page prerender the static
+ * sections while the Blog streams in.
  */
 
+import { Suspense } from "react";
 import { Hero } from "@/components/sections/Hero";
 import { DeployLog } from "@/components/sections/DeployLog";
 import { Projects } from "@/components/sections/Projects";
@@ -23,7 +27,9 @@ export default function Home() {
       <Projects />
       <SkillGraph />
       <SkillGraphScript />
-      <Blog />
+      <Suspense>
+        <Blog />
+      </Suspense>
       <Contact />
     </>
   );
