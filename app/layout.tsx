@@ -50,11 +50,11 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mahboob.engineer"),
   title: {
-    default: "Mahboob Alam — Co-Founder & Backend Engineer",
+    default: "Mahboob Alam | Backend Engineer & Co-Founder ",
     template: "%s — Mahboob Alam",
   },
   description:
-    "Co-Founder & Backend Engineer building distributed systems, async pipelines, and infrastructure. Creator of Taply and UnThink. Writes The Backend Diaries.",
+    "Co-Founder & Backend Engineer building distributed systems, async pipelines, and infrastructure. Builder of Taply and UnThink. Writes The Backend Diaries.",
   keywords: [
     "Mahboob Alam",
     "Backend Engineer",
