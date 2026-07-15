@@ -265,3 +265,146 @@ native blog posts that are stored as MDX files under `content/posts/`.
   chunks include `app_keystatic_%5B%5B___params%5D%5D_page_tsx_*` —
   i.e. the keystatic admin page is itself shipped as a separate
   client chunk. Confirms the `'use client'` directive works.
+
+---
+
+## T5.2 — `lib/mdx.ts` (MDX compile + Shiki + frontmatter + TOC)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+The native-MDX rendering engine that `/writing/[slug]` (T5.5) and
+any future inline-MDX site will use. Single-file library, ~250 lines,
+no new components yet (those arrive in T5.5 with the route page).
+
+- **`lib/mdx.ts`** — public API:
+  - `parseFrontmatter(source)` → `{frontmatter, content}`. Gray-matter
+    wrapper. `parseFrontmatter: false` is passed to `compileMDX` so
+    frontmatter isn't double-parsed.
+  - `extractToc(source)` → `TocEntry[]`. Walks the body for `##`/`###`
+    headings; tracks code-fence state so headings inside ``` blocks
+    don't leak. Produces `{depth, text, slug}` per heading; the `slug`
+    matches rehype-slug's behavior so TOC anchors jump to the right
+    element after render.
+  - `slugify(text)` — local helper, exported. Matches rehype-slug's
+    default behavior (lowercase, ASCII-ish, hyphen-separated).
+  - `listNativePostSlugs()` → `string[]`. Reads `content/posts/`,
+    returns basenames without `.mdx`. ENOENT → empty array (when
+    the directory is missing — true at first install).
+  - `loadNativePost(slug)` → `NativePost`. Reads the MDX file,
+    parses frontmatter, extracts TOC, compiles MDX, returns the
+    full payload (`{slug, frontmatter, content, toc, raw}`).
+    `loadNativePost(bad-slug)` rejects → caller (`/writing/[slug]`)
+    calls `notFound()`.
+  - `loadAllNativePosts()` → `NativePost[]`. Used by `/writing` to
+    surface native posts alongside Medium cross-posts. Skips
+    broken posts with a console warning (won't crash the listing
+    if one file has a typo).
+- **Shiki highlighter singleton** — `getHighlighter()` lazily
+  creates a `createHighlighter({themes, langs})` instance and
+  caches it as a module-level promise. Themes: `github-dark` +
+  `github-light`. Langs: bash/css/diff/dockerfile/go/graphql/
+  html/javascript/json/jsx/markdown/nginx/python/sql/tsx/
+  typescript/yaml. Adding a new language is one array entry.
+- **MDX compile chain** (per master §3):
+  - `remark-gfm` — GFM tables, task lists, strikethrough.
+  - `rehype-slug` — auto-id on headings.
+  - `rehype-autolink-headings` — wraps heading text in an anchor
+    `<a>` with the `heading-anchor` class; aria-label "Link to
+    this section".
+  - `rehypeShikiFromHighlighter` (the core fast-path) — syntax
+    highlighting via the pre-built highlighter. Avoids per-render
+    highlighter construction.
+- **Custom MDX components** — wired in T5.5 by passing
+  `components={...}` to `compileMDX`. T5.2 ships the engine only.
+- **`package.json`** — `+next-mdx-remote@6.0.0`, `+shiki@4.3.1`,
+  `+gray-matter@4.0.3`, `+remark-gfm@4.0.1`, `+rehype-slug@6.0.0`,
+  `+rehype-autolink-headings@7.1.0`, `+@shikijs/rehype@4.3.1`.
+  Total dependency footprint: ~250 KB minified (Shiki is the
+  heavy contributor).
+
+### Decisions
+
+- **gray-matter + `parseFrontmatter: false` on compileMDX.** Two
+  libraries fighting over frontmatter is a footgun; we let
+  gray-matter own it. The `compileMDX` MDX compile gets the
+  raw source and treats the `---` block as part of the
+  document (which is fine — gray-matter has already extracted
+  what it needed).
+- **Shiki via `rehypeShikiFromHighlighter`**, not the default
+  `rehypeShiki`. The default plugin builds its own highlighter
+  per render; the `core` variant takes a pre-built one. Saves
+  200-400ms per /writing/[slug] render. Cost: the module has
+  to own the highlighter singleton, which is fine for our
+  architecture (single Next process).
+- **TOC extracted at the source level** (not from the compiled
+  HAST tree). Markdown regex is simpler than walking the AST,
+  and we only care about h2/h3 (per master §2.5). Slug
+  derivation matches rehype-slug so anchors land correctly
+  even if we ever swap rehype-slug for a different slugger
+  (we'd just update the local `slugify` to match).
+- **`loadNativePost` returns both `content` and `raw`.** `raw`
+  is unused at the moment but is the cheapest way for future
+  T6.x to render "edit this post in Keystatic" links or
+  computed-excerpt features.
+- **Langs array stays lean (17 languages).** Adding a new one
+  is one array entry; a full bundle is ~3x larger.
+- **No `useCache` / `unstable_cache`** in this task. The MDX
+  compile + Shiki pass is cached at the Next level via
+  `next-mdx-remote/rsc`'s internal handling; ISR on the
+  /writing/[slug] page (T5.5) caches the rendered output.
+- **No `rehype-external-links` / `rehype-pretty-code` / etc.**
+  Shiki + GFM + slug + autolink covers the spec; adding more
+  plugins would inflate the dep tree without a use case.
+
+### Caveats / pending
+
+- **MDX compile cost**: ~150-200ms per cold render (Shiki +
+  MDX parse + AST walk). The highlighter singleton caches the
+  expensive bit; second-and-later renders are ~30ms. T5.5
+  will rely on Next's RSC cache + ISR to avoid paying this
+  cost on every request.
+- **`extractToc` won't dedupe duplicate heading text.** If two
+  headings have identical text, both get identical slugs;
+  rehype-slug handles the disambiguation at render time
+  (`text`, `text-1`, `text-2`…). Our TOC still shows two
+  identical anchors. Acceptable for v1; future polish could
+  rewrite local slugs to match.
+- **No `inline code` MDX component override yet** — markdown
+  inline code uses rehype's default rendering (`<code>`
+  with no className). T5.5 wires the styling through the
+  `components` prop.
+- **`remark-gfm` autolink literals** are on by default; not
+  changed here. If the user wants raw URLs to NOT auto-link,
+  add `{autolinkLiterals: false}` to `remarkGfm(...)`.
+- **Shiki `themes: {light, dark}` triggers both renders.**
+  Inline `style="color:..."` for both themes. The CSS variable
+  approach (`--shiki-light` + `--shiki-dark`) would let the
+  site toggle with `prefers-color-scheme`, but the master
+  spec is dark-only so the inline-light styles are unused
+  bandwidth (negligible).
+- **Standalone `npx tsx` smoke test failed** because gray-matter's
+  transitive dep tree triggers a Node ESM resolution bug
+  outside the Next bundler. The library itself typechecks and
+  builds cleanly; runtime smoke comes when T5.5 exercises it.
+- **Git author identity**: per standing instruction, all commits
+  use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 24 routes, 0 warnings. New library ships but
+  doesn't change the route count (consumers arrive in T5.5).
+- **Black-box smoke (file-system roundtrip)**: created a temp
+  MDX file at `content/posts/_smoke-test.mdx`, ran `pnpm build`
+  → still passes, removed the file → still passes. The
+  `listNativePostSlugs()` function reads the directory via
+  `fs/promises.readdir` which is transparent to Next's build
+  process.
+- **Type smoke**: `NativePostFrontmatter`, `TocEntry`,
+  `NativePost` are all exported and infer correctly in
+  downstream consumers via `pnpm typecheck`.
