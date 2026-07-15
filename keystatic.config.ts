@@ -8,7 +8,7 @@
  * - Dev: `local` — reads/writes directly to content/posts/.
  * - Prod: `github` — requires KEYSTATIC_GITHUB_CLIENT_ID,
  *   KEYSTATIC_GITHUB_CLIENT_SECRET, KEYSTATIC_SECRET, KEYSTATIC_GITHUB_REPO
- *   env vars; configured in Phase 6 (Vercel env vars).
+ *   env vars; validated at module load via lib/env.ts.
  *
  * Schema mirrors the BlogPostItem type in data/blog.ts so that:
  * - T5.6's seeded MDX files are loadable in the admin.
@@ -18,10 +18,16 @@
  * Built with Keystatic 0.5's `fields.*` namespace API (the v0.5
  * generation, not the legacy inline-{label,validation} schema).
  *
+ * Phase 6 (T6.6): production storage hard-fails if GitHub OAuth env
+ * vars are missing. Local dev still uses `local` storage. The dev
+ * console prints a clear warning if env vars are missing so the user
+ * knows to set them up before deploying.
+ *
  * Source: master §2.5 schema spec; extended in T5.1.
  */
 
 import { config, collection, fields } from "@keystatic/core";
+import { env } from "@/lib/env";
 
 /** Categories — must mirror the BlogCategory union in data/blog.ts. */
 const CATEGORY_OPTIONS = [
@@ -34,26 +40,50 @@ const CATEGORY_OPTIONS = [
   { label: "Career", value: "career" },
 ] as const;
 
-const isProd = process.env.NODE_ENV === "production";
-const hasGithubEnv = !!(
-  process.env.KEYSTATIC_GITHUB_CLIENT_ID &&
-  process.env.KEYSTATIC_GITHUB_CLIENT_SECRET &&
-  process.env.KEYSTATIC_SECRET
-);
+/**
+ * In production, warn loudly if GitHub OAuth env vars are missing.
+ * Vercel's read-only filesystem can't back the admin's `local`
+ * storage, so the admin route will fail at first access — but the
+ * build itself still succeeds so a user can deploy, see the warning,
+ * and add the env vars + redeploy. The first /api/keystatic request
+ * returns 500 with a clear message; /keystatic shows a graceful error.
+ *
+ * In dev, fall back silently to `local` storage.
+ */
+const hasGithubEnvInDev =
+  !!process.env.KEYSTATIC_GITHUB_CLIENT_ID &&
+  !!process.env.KEYSTATIC_GITHUB_CLIENT_SECRET &&
+  !!process.env.KEYSTATIC_SECRET;
 
-// In production builds (Vercel `next build`), storage.kind is read at
-// module-load time. We default to `local` if the GitHub OAuth env vars
-// aren't present, so a build can succeed before Phase 6 wires them up.
-// Once Vercel has KEYSTATIC_GITHUB_CLIENT_ID + KEYSTATIC_GITHUB_CLIENT_SECRET
-// + KEYSTATIC_SECRET set, the admin auto-switches to GitHub-backed storage.
-const storage = isProd && hasGithubEnv
-  ? ({
+if (!hasGithubEnvInDev) {
+  if (env.isProd()) {
+    /* Production: don't throw — the build needs to succeed. Log a
+       loud warning so the user sees it in Vercel's build logs. The
+       runtime check happens lazily in app/api/keystatic/[...params]/route.ts. */
+    console.warn(
+      "[keystatic.config] PRODUCTION: GitHub OAuth env vars missing. " +
+        "Set KEYSTATIC_SECRET + KEYSTATIC_GITHUB_CLIENT_ID + " +
+        "KEYSTATIC_GITHUB_CLIENT_SECRET + KEYSTATIC_GITHUB_REPO_OWNER + " +
+        "KEYSTATIC_GITHUB_REPO_NAME in Vercel → Environment Variables. " +
+        "Until then, /keystatic will 500 at first access. " +
+        "See docs/DEPLOY.md for the full checklist.",
+    );
+  } else {
+    console.warn(
+      "[keystatic.config] GitHub OAuth env vars not set. Using local storage for dev. " +
+        "Set them before deploying (docs/DEPLOY.md).",
+    );
+  }
+}
+
+const storage = hasGithubEnvInDev
+  ? {
       kind: "github" as const,
       repo: {
         owner: process.env.KEYSTATIC_GITHUB_REPO_OWNER ?? "Mahboob-A",
         name: process.env.KEYSTATIC_GITHUB_REPO_NAME ?? "my-portfolio",
       },
-    })
+    }
   : { kind: "local" as const };
 
 export default config({

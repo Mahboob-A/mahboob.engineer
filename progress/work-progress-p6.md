@@ -494,3 +494,94 @@ breakpoints. Decisions:
     `/stack`. Continues with all 12 projects + 3 native posts.
   - `GET /icon` → 200, content-type `image/png` (verified via
     `curl -sI` headers; magic bytes from the @vercel/og response).
+
+---
+
+## T6.6 — Keystatic GitHub OAuth wiring
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`lib/env.ts`** (new, ~75 lines) — typed env-var accessor. Single
+  source of truth for `process.env` access.
+  - `env.required(name)` — throws in production if missing.
+  - `env.optional(name, fallback)` — returns fallback if missing.
+  - `env.isProd()` — `NODE_ENV === "production"` check.
+  - `env.requireGithubKeystatic()` — explicit check for the full
+    OAuth matrix. Throws in prod, warns in dev.
+  - Module is server-only (throws if imported in the browser).
+- **`keystatic.config.ts`** (modify) — softens the T5.1 logic.
+  Storage now defaults to `local` in dev (with a console warning)
+  OR when GitHub env vars are missing in production (also with a
+  console warning so it surfaces in Vercel's build logs). The
+  hard-fail moved from build-time to runtime (see API route below).
+- **`app/api/keystatic/[...params]/route.ts`** (modify) — wraps the
+  Keystatic `GET` / `POST` handlers in a runtime guard. If any of
+  the 5 OAuth env vars are missing in production, the route returns
+  `500 { ok: false, error: "..." }` with a clear message pointing at
+  `docs/DEPLOY.md`. The build itself still succeeds so the user can
+  deploy, see the warning, set env vars, redeploy.
+- **`.env.example`** (new) — documents every env var with comments.
+  `NEXT_PUBLIC_SITE_URL`, `RESEND_API_KEY`, the 5 `KEYSTATIC_*` vars.
+  Includes the exact GitHub OAuth callback URL the user needs.
+- **`docs/DEPLOY.md`** (new, ~150 lines) — the production deploy
+  runbook. 10 numbered sections covering pre-deploy sanity, push,
+  Vercel import, env vars, GitHub OAuth app setup, domain attach,
+  post-deploy verification, Resend domain verification, rollback,
+  troubleshooting.
+
+### Decisions
+
+- **Soft-fail at build, hard-fail at runtime.** Initial attempt
+  hard-failed at module load via `env.requireGithubKeystatic()`.
+  This broke `pnpm build` locally without env vars set, which would
+  also break Vercel's first build before the user has set env vars.
+  Moved the hard-fail into the API route so the build succeeds; the
+  user gets a clear 500 + warning instead of a build error.
+- **Console warning, not throw, in production.** Loud warnings
+  surface in Vercel's build logs so the user sees them. Throwing
+  would block the deploy until the env vars are set, which is
+  friction we don't need — the runtime guard catches the bad state
+  when the admin is actually accessed.
+- **Single `lib/env.ts` for all env access.** T6.1's `lib/og-helpers.ts`
+  reads `NEXT_PUBLIC_SITE_URL` directly via `process.env`. Phase 7
+  follow-up: route that through `lib/env.ts` too. Not a v1 blocker.
+- **`docs/DEPLOY.md` is the source of truth** for the deploy steps.
+  Doesn't try to replicate Vercel's docs; just points at the right
+  screens + env var matrix.
+- **GitHub OAuth app callback URL uses the production domain.**
+  Set up *after* the domain attaches, not before. Documented in
+  step 6 of `docs/DEPLOY.md`.
+
+### Caveats / pending
+
+- **OAuth callback URL must match exactly.** If the user sets up the
+  GitHub OAuth app *before* attaching the domain, the callback URL
+  won't match. `docs/DEPLOY.md` documents the workaround (use the
+  Vercel preview URL temporarily).
+- **No `RESEND_API_KEY` runtime guard.** The contact API route
+  (T3.5) already returns 500 with a clear message if it's missing.
+  No need to double up.
+- **No `.env` file committed.** Only `.env.example`. Real secrets
+  live in Vercel + the user's local `.env.local` (gitignored).
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes (unchanged). Build succeeds with NO env
+  vars set (production console warning fires but build completes).
+- **Runtime guard** (verified at code review):
+  - `GET /api/keystatic/...` in production without env vars →
+    returns `500 { ok: false, error: "Keystatic GitHub OAuth env vars
+    are not configured on this server..." }`.
+  - In dev with no env vars → falls back to local storage (works).
+- **`.env.example`** — covers every env var in the codebase. Easy
+  audit target for missing values.
+- **`docs/DEPLOY.md`** — 10 sections, walks through the entire
+  deploy including GitHub OAuth setup. Linked from the runtime
+  error message so the user lands on the right docs.
