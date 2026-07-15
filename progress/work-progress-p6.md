@@ -660,3 +660,71 @@ breakpoints. Decisions:
   - `MobileFallback` renders a Next.js `<Link href="/">` for the CTA.
 - **Manual smoke** would need a real browser at multiple viewports;
   deferred to T6.9 Playwright run.
+
+---
+
+## T6.8 — Push to GitHub + Vercel import + domain attach
+
+**Task status:** pending user action
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What ships
+
+- **`git push origin main`** — all T6.1 → T6.7 commits land on
+  GitHub. The remote is `git@github.com:Mahboob-A/mahboob.engineer.git`
+  (SSH). Standing git identity env vars set on the push.
+- **Vercel import** — user-driven (Vercel UI requires the user's
+  Vercel account). Runbook: `docs/DEPLOY.md`.
+- **Domain attach** — user-driven. DNS records at the user's
+  registrar; up to 48h propagation.
+- **GitHub OAuth app for Keystatic** — user-driven. Setup steps in
+  `docs/DEPLOY.md` step 6.
+
+### Decisions
+
+- **The Bash tool runs `git push`.** Vercel UI interactions
+  (project import, env var entry, domain attach, OAuth app setup)
+  require the user's accounts. `docs/DEPLOY.md` is the runbook.
+- **No GitHub Actions / CI.** Vercel handles build + deploy on push.
+  No separate CI to configure.
+- **No staging branch.** The user can configure branch protection
+  on `main` in Vercel if they want preview deploys gated.
+
+### Caveats / pending
+
+- **DNS propagation takes up to 48h.** `mahboob.engineer` may not
+  resolve immediately. Vercel preview URL works in the meantime.
+- **OAuth app callback URL needs the real domain.** Set up the
+  GitHub OAuth app *after* the domain attaches (or use the preview
+  URL temporarily). Documented in `docs/DEPLOY.md` step 6.
+- **First deploy needs the env vars.** Without `RESEND_API_KEY` +
+  the 5 `KEYSTATIC_*` vars, the contact form returns 500 and
+  `/keystatic` returns 500 (both with clear messages thanks to
+  T6.6's runtime guard). The site still serves all other routes.
+- **`docs/DEPLOY.md` is the source of truth** for the manual steps.
+  The user follows it; the agent verifies the steps work in their
+  environment.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes. 0 warnings.
+- **Git status**: clean working tree (all T6.x commits pushed-ready).
+- **Git remote**: `git@github.com:Mahboob-A/mahboob.engineer.git` (SSH).
+- **Push executed**: `<pending>` — the user must run the actual
+  push via `git push origin main` (with the standing identity env
+  vars set) or the agent can run it on request.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes. 0 warnings.
+- **Git status**: clean working tree (all T6.x commits pushed-ready).
+- **Git remote**: `git@github.com:Mahboob-A/mahboob.engineer.git` (SSH).
+- **Push executed**: `git push origin main` succeeded — `9531433..674109a
+  main -> main`. Remote `main` is at `674109a` (T6.7).
+- **GitHub side**: user runs the Vercel import + env-var setup +
+  domain attach per `docs/DEPLOY.md` steps 4 + 5 + 7.
