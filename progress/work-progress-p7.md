@@ -441,3 +441,116 @@ what was built → how tested/deployed/what's next).
   "Taply, UnThink, and ..." text expected. For `/log/innovative-it`
   (1 related project): "ImgTwist" singular text expected.
   Live verification pending — to be confirmed in T7 wrap-up smoke.
+
+---
+
+## T7.6 — HeroTerminal v1 (static + chips + typewriter)
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+The interactive terminal under the Hero's Algocode diagram on the
+landing page. v1 ships in **static mode** — pre-canned payloads per
+command chip. The RAG-LLM upgrade is documented in
+`docs/RAG_TERMINAL.md` for a future task.
+
+- **`components/hero/HeroTerminal.tsx`** — `'use client'` component
+  (~280 lines). Wraps `<TerminalBlock label="terminal — click a command">`
+  from `components/ui/TerminalBlock.tsx` (T2.7 Server Component).
+  - **6 chip buttons**: `[whoami]`, `[projects]`, `[stack]`,
+    `[latest]`, `[contact]`, `[help]`. Active chip: `bg-acc-dim
+    text-acc border-acc/40`. Inactive: `text-t2 hover:border-acc/40
+    hover:text-acc`.
+  - **Typewriter effect** — 12ms/char via `setTimeout`, walks the
+    joined payload. Blinking `█` cursor via CSS keyframes.
+  - **`useReducedMotion()`** from framer-motion — with reduced motion,
+    results snap in fully rendered; cursor is hidden via CSS media query.
+  - **Esc listener** within the component — clears the active chip +
+    result.
+  - **"Clear ×"** button appears when a chip is active; resets state.
+  - **`buildPayload()`** is a pure function — given `ChipKey`, returns
+    an array of strings (one per terminal line). All data is read
+    from existing registries (`PROJECTS`, `STACK`, `ACTIVE_EXPERIENCE`,
+    `COMPLETED_EXPERIENCE`, `BLOG_POSTS`). No new data files.
+  - **Per-chip payloads:**
+    - `whoami` — name + currently shipping (Taply / UnThink) + last role
+      (NexBell) + location + open-to work.
+    - `projects` — top 3: 1 live + 1 building + 1 most-starred (≥20
+      GitHub stars), formatted as `01  live    taply                NFC business cards`.
+    - `stack` — top 5 STACK items by project count, formatted as a
+      numbered list.
+    - `latest` — top 5 native blog posts by `BLOG_POSTS.filter(s => s.source === "native")`.
+    - `contact` — every direct link + a Next.js `<Link href="/lets-connect">`.
+    - `help` — chip-row description + legend.
+- **`components/hero/HeroTerminal.css`** — scoped stylesheet
+  (~25 lines). `.hero-terminal-cursor` blink animation
+  (`@keyframes hero-terminal-blink` — `visibility: hidden` toggle at
+  1s steps(2, start)). Honors `prefers-reduced-motion: reduce`.
+- **`components/sections/Hero.tsx`** — added `import { HeroTerminal }`
+  + inserted `<HeroTerminal />` directly below `<DiagramPanel>` inside
+  the right-column `<div className="self-start">`. `mt-6` separates
+  the diagram from the terminal. On `lg+` the terminal fills the dead
+  vertical space below the Algocode diagram. On mobile the terminal
+  stacks naturally (grid is `grid-cols-1`).
+
+### Decisions
+
+- **Static payloads (v1) per the user's plan-approved scope.** No LLM,
+  no backend. Every chip click resolves deterministically.
+- **RAG upgrade is documented in T7.7**, not implemented. The chip →
+  payload contract stays identical in v2; only the `buildPayload`
+  switch becomes `fetch('/api/rag', { question: chipKey })`.
+- **Typewriter at 12ms/char** — slow enough to read, fast enough that
+  the longest payload (~280 chars for `whoami`) finishes in ~3.4s.
+  Tested via timer math.
+- **`useMemo` on payload** — derived state from `activeKey`. The
+  `useEffect` that walks the typewriter depends on `payload` so the
+  animation re-runs cleanly when the chip changes.
+- **`onMouseDown` is not used** — chip click handler is `onClick` only.
+  No conflict with the underlying `<TerminalBlock>` (which has no
+  click handlers).
+- **Contact chip's `/lets-connect` link** is rendered inline at the
+  bottom of the contact result block, not as the chip itself. The
+  user clicks `[contact]` to surface the result text + the link.
+- **Help chip dynamically filters out itself** from the listed
+  commands — so it lists the other 5 with their blurbs.
+- **`useReducedMotion` is the only "SSR-stable" concern** — the
+  typewriter effect is purely client-side; SSR shows the chip row +
+  the empty-state "Click a chip above" hint. Hydration runs the
+  typewriter after first interaction.
+
+### Caveats / pending
+
+- **Initial SSR'd HTML for the terminal is just the chip row + the
+  empty hint** — `activeKey = null` initially. This is correct
+  behavior (the typewriter is interaction-triggered). Lighthouse SEO
+  isn't affected — the chip labels are SSR-visible.
+- **No `<noscript>` fallback** — users with JS disabled see the chip
+  row but nothing happens on click. Acceptable for a v1; the rest of
+  the landing page works without JS.
+- **The `latest` chip shows native posts only** — if T7.4 hadn't
+  shipped, it would fall back to "No native posts yet. /writing has
+  Medium cross-posts." Once T7.4 ships, native posts surface here.
+- **`buildPayload` is a function inside the component file** —
+  small enough to inline; lift to `data/hero-payloads.ts` later if
+  reuse grows.
+- **No analytics on chip clicks** — T6.x Vercel Analytics territory.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Smoke (build output)** — HeroTerminal chunk included in `/` bundle
+  (no separate route, so no route count change). The chip row +
+  initial state are SSR-visible.
+- **HTML inspection (via grep)** — terminal block label `terminal —
+  click a command` renders. 6 chip buttons present with `aria-pressed`.
+  Empty-state hint `Click a chip above to run a command.` renders
+  on first paint.
+- **The typewriter behavior** requires a real browser to confirm
+  visually. Out of scope for curl smoke.

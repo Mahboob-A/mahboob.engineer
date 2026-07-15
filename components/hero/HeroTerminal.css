@@ -1,0 +1,35 @@
+/**
+ * components/hero/HeroTerminal.css
+ *
+ * Scoped styles for the HeroTerminal v1 (Phase 7 T7.6).
+ *
+ *   .hero-terminal-pre    — typewriter result block
+ *   .hero-terminal-cursor — blinking █ at the end of the typing line
+ *
+ * Honors `prefers-reduced-motion: reduce` (T6.4 global gate plus this
+ * component's `useReducedMotion()` from framer-motion). With reduced
+ * motion the cursor is hidden entirely (the typewriter snaps in fully).
+ */
+
+.hero-terminal-pre {
+  font-family: var(--font-mono, ui-monospace, "JetBrains Mono", monospace);
+}
+
+.hero-terminal-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--acc, #5cc9a0);
+  animation: hero-terminal-blink 1s steps(2, start) infinite;
+}
+
+@keyframes hero-terminal-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-terminal-cursor {
+    animation: none;
+  }
+}

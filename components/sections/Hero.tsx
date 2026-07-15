@@ -29,6 +29,7 @@ import Link from "next/link";
 import { StatRow } from "@/components/ui/StatRow";
 import { DiagramPanel } from "@/components/ui/DiagramPanel";
 import { AlgocodeDiagram } from "@/components/diagrams/AlgocodeDiagram";
+import { HeroTerminal } from "@/components/hero/HeroTerminal";
 import { FadeUp } from "@/components/motion";
 
 const STATS = [
@@ -100,7 +101,8 @@ export function Hero() {
             <StatRow stats={[...STATS]} className="mt-12" />
           </div>
 
-          {/* Right column: animated Algocode diagram inside a DiagramPanel */}
+          {/* Right column: animated Algocode diagram inside a DiagramPanel
+              + an interactive terminal underneath (Phase 7 T7.6). */}
           <div className="self-start">
             <DiagramPanel
               title="algocode — distributed online judge"
@@ -109,6 +111,7 @@ export function Hero() {
             >
               <AlgocodeDiagram />
             </DiagramPanel>
+            <HeroTerminal />
           </div>
         </div>
       </div>
