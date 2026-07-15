@@ -36,7 +36,12 @@ const LINKS: readonly NavLink[] = [
   { label: "work", href: "/work", anchor: "work", eyebrow: "02" },
   { label: "stack", href: "/stack", anchor: "stack", eyebrow: "03" },
   { label: "writing", href: "/writing", anchor: "blog", eyebrow: "04" },
-  { label: "contact", href: "/contact", anchor: "contact", eyebrow: "05" },
+  /* Post-Phase 6 bug fix: route renamed /contact → /lets-connect.
+     Label updated to match the new framing; the landing-section
+     `anchor` remains "contact" so the #contact scroll-on-landing
+     still works for users who navigate to mahboob.engineer/#contact
+     from an external link. */
+  { label: "let's connect", href: "/lets-connect", anchor: "contact", eyebrow: "05" },
 ] as const;
 
 export async function Navbar() {
@@ -47,7 +52,6 @@ export async function Navbar() {
   // used by Next.js internally.
   const fullPath = h.get("x-invoke-path") ?? h.get("next-url") ?? h.get("referer") ?? "/";
   const currentPath = new URL(fullPath, "http://x").pathname;
-  const isLanding = currentPath === "/";
 
   return (
     <nav
@@ -77,8 +81,12 @@ export async function Navbar() {
         {/* ─── Nav links ────────────────────────────────────────────── */}
         <ul className="hidden items-center gap-8 md:flex">
           {LINKS.map((l) => {
-            const target = isLanding ? `#${l.anchor}` : l.href;
-            const isActive = !isLanding && currentPath.startsWith(l.href);
+            /* Post-Phase 6 bug fix: navlinks always navigate to the
+               inner route. Active-state highlighting still uses
+               currentPath (no change). The `anchor` field is kept for
+               legacy direct-link scrolls (e.g. mahboob.engineer/#log). */
+            const target = l.href;
+            const isActive = currentPath.startsWith(l.href);
             return (
               <li key={l.href}>
                 <Link
@@ -123,8 +131,9 @@ export async function Navbar() {
           bg-bg per T6.9 contrast fix. */}
       <ul className="border-border bg-bg flex items-center gap-5 overflow-x-auto border-t px-6 py-2 md:hidden">
         {LINKS.map((l) => {
-          const target = isLanding ? `#${l.anchor}` : l.href;
-          const isActive = !isLanding && currentPath.startsWith(l.href);
+          /* Same post-Phase 6 bug fix as desktop navlinks above. */
+          const target = l.href;
+          const isActive = currentPath.startsWith(l.href);
           return (
             <li key={l.href}>
               <Link

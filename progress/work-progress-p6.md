@@ -894,3 +894,49 @@ Remote `main` now at `2e68b84` (T6.9). All Phase 6 commits shipped.
 
 - `pnpm typecheck` → clean.
 - `pnpm build` → clean. No React duplicate-key warnings.
+
+---
+
+## Bug 2 — Navbar links go to `/#anchor` instead of inner routes
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`components/layout/Navbar.tsx`** — removed `isLanding` branch
+  from the nav-link target computation. Links now always navigate
+  to the inner route (`/log`, `/work`, `/stack`, `/writing`,
+  `/lets-connect`). Active-state highlighting still uses
+  `currentPath.startsWith(...)` (unchanged).
+- **`components/sections/Hero.tsx`** — CTAs switched from
+  `#work / #blog / #contact` anchors to `/work`, `/writing`,
+  `/lets-connect`. The "Open an issue" label is now "Let's
+  connect" to match the new framing.
+
+### Decisions
+
+- **Always navigate to inner routes.** User-confirmed (bug c):
+  clicking the same navbar link from `/` should land on `/log`,
+  not scroll to `/#log`. The section anchors remain in the DOM
+  for external links (`mahboob.engineer/#log` still scrolls).
+- **`anchor` field on `NavLink` kept.** It only documents the
+  landing-section id; not used for navigation. Future links
+  needing anchor-scroll can opt in explicitly.
+- **`isLanding` removed.** No remaining usages. Simplifies
+  path-detection logic.
+- **`Open an issue` → `Let's connect`.** User-confirmed (bug d).
+  Matches the new navbar label.
+
+### Caveats / pending
+
+- **Landing section anchor-scroll is no longer reachable from
+  the navbar.** Users can still get there via direct URL
+  (`/#log`, `/#work`, etc.).
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean.

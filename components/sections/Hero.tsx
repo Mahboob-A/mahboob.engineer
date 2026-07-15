@@ -72,23 +72,28 @@ export function Hero() {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3.5">
+              {/* Post-Phase 6 bug fix: CTAs point at the inner routes
+                  (was #work / #blog / #contact anchors). Section-scroll
+                  on landing is still possible via direct URL
+                  (mahboob.engineer/#work) but the CTAs themselves
+                  navigate. */}
               <Link
-                href="#work"
+                href="/work"
                 className="bg-acc text-bg hover:bg-acc/90 inline-flex items-center gap-2 rounded-md px-5 py-3 font-mono text-[13px] font-semibold transition-colors"
               >
                 View systems →
               </Link>
               <Link
-                href="#blog"
+                href="/writing"
                 className="border-border text-t1 hover:border-acc hover:text-acc inline-flex items-center gap-2 rounded-md border px-5 py-3 font-mono text-[13px] font-medium transition-colors"
               >
                 Read the writing
               </Link>
               <Link
-                href="#contact"
+                href="/lets-connect"
                 className="border-border text-t1 hover:border-acc hover:text-acc inline-flex items-center gap-2 rounded-md border px-5 py-3 font-mono text-[13px] font-medium transition-colors"
               >
-                Open an issue
+                Let's connect
               </Link>
             </div>
 
