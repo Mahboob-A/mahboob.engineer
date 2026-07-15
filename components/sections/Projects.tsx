@@ -98,8 +98,12 @@ function ProjectCard({ project, diagram, visualOnLeft }: ProjectCardProps) {
   return (
     <article className="bg-surface border-border overflow-hidden rounded-[10px] border">
       <div
-        className={`grid grid-cols-1 md:grid-cols-[340px_1fr] ${
-          visualOnLeft ? "" : "md:grid-cols-[1fr_340px]"
+        /* Phase 6 (T7): widened visual column from 340px → 420px so
+           the full case-study diagrams (up to 980px viewBox for
+           Algocode) render comfortably with the package chrome.
+           DiagramPanel's overflow-x-auto handles narrow viewports. */
+        className={`grid grid-cols-1 md:grid-cols-[420px_1fr] ${
+          visualOnLeft ? "" : "md:grid-cols-[1fr_420px]"
         }`}
       >
         {/* Visual (SVG diagram) */}

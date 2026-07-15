@@ -2,7 +2,9 @@
  * components/diagrams/MovioDiagram.tsx
  *
  * Full architecture diagram for Movio (3-service VoD platform).
- * Used in /work/movio case study. 12 nodes laid out across 3 columns:
+ * Used in /work/movio case study + the landing's Projects section
+ * (via the re-export in MovioMiniDiagram.tsx). 12 nodes laid out
+ * across 3 columns:
  *
  *   COL 1 (Public)  COL 2 (Processing)          COL 3 (Delivery)
  *   ──────────     ───────────────               ─────────────
@@ -16,8 +18,11 @@
  * to S3, Lambda picks up subtitle uploads, CDN fronts S3, Postgres
  * holds metadata, Elasticsearch powers search.
  *
- * Static SVG, no JS. Color-codes per diagrams.css .alg-mini-* classes.
+ * Animated packets ride the request flow (Phase 6 T7) — amber for
+ * upload + transcode, accent for delivery. Pure SVG + SMIL, no JS.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function MovioDiagram() {
   return (
@@ -80,15 +85,15 @@ export function MovioDiagram() {
         <path className="alg-mini-edge" d="M70 114 V140" />
 
         {/* API <-> RabbitMQ */}
-        <path className="alg-mini-edge" d="M130 157 H170" />
+        <path id="mov-p1" className="alg-mini-edge" d="M130 157 H170" />
         {/* Auth <-> RabbitMQ */}
         <path className="alg-mini-edge" d="M130 217 H170" />
 
         {/* RabbitMQ -> Worker */}
-        <path className="alg-mini-edge" d="M235 54 V80" />
+        <path id="mov-p2" className="alg-mini-edge" d="M235 54 V80" />
 
         {/* Worker -> FFmpeg */}
-        <path className="alg-mini-edge" d="M235 114 V140" />
+        <path id="mov-p3" className="alg-mini-edge" d="M235 114 V140" />
 
         {/* Worker -> Lambda (subtitle) */}
         <path className="alg-mini-edge" d="M235 114 Q210 160 235 200" />
@@ -97,13 +102,13 @@ export function MovioDiagram() {
         <path className="alg-mini-edge" d="M235 114 V260" />
 
         {/* Worker -> S3 */}
-        <path className="alg-mini-edge" d="M300 97 H340" />
+        <path id="mov-p4" className="alg-mini-edge" d="M300 97 H340" />
 
         {/* Lambda -> S3 */}
         <path className="alg-mini-edge" d="M300 217 Q330 130 340 36" />
 
         {/* S3 -> CDN */}
-        <path className="alg-mini-edge" d="M405 54 V80" />
+        <path id="mov-p5" className="alg-mini-edge" d="M405 54 V80" />
 
         {/* Worker -> Postgres */}
         <path className="alg-mini-edge" d="M300 97 H340" />
@@ -112,7 +117,7 @@ export function MovioDiagram() {
         <path className="alg-mini-edge" d="M130 157 Q230 140 340 157" />
 
         {/* CDN -> Browser */}
-        <path className="alg-mini-edge" d="M340 97 Q200 90 130 97" />
+        <path id="mov-p6" className="alg-mini-edge" d="M340 97 Q200 90 130 97" />
 
         {/* Search: API <-> Elasticsearch */}
         <path className="alg-mini-edge" d="M130 157 Q230 200 340 217" />
@@ -123,6 +128,18 @@ export function MovioDiagram() {
         {/* DRM -> S3 */}
         <path className="alg-mini-edge" d="M405 260 Q380 130 405 54" />
       </g>
+
+      {/* ─── Animated packets — Phase 6 T7 ─────────────────────── */}
+      <AnimatedPackets
+        groups={[
+          /* Upload + transcode flow: API → RabbitMQ → Worker →
+             FFmpeg → S3. Amber packets signal in-flight transcode. */
+          { edges: ["mov-p1", "mov-p2", "mov-p3", "mov-p4"], color: "amber", count: 4 },
+          /* Delivery flow: S3 → CDN → Browser. Accent packets signal
+             the request-served path. */
+          { edges: ["mov-p5", "mov-p6"], color: "acc", count: 3 },
+        ]}
+      />
     </svg>
   );
 }

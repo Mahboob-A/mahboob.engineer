@@ -1,15 +1,23 @@
 /**
  * components/diagrams/DrishtiAIDiagram.tsx
  *
- * Full architecture diagram for the DrishtiAI case study. Shows the
- * 4-service monorepo + the 5-layer AI pipeline streaming in real time.
+ * Full architecture diagram for the DrishtiAI case study + the
+ * landing's Projects section (via the re-export in
+ * DrishtiMiniDiagram.tsx). Shows the 4-service monorepo + the 5-layer
+ * AI pipeline streaming in real time.
  *
  * Layout: Android/Web client (left) connects via WebRTC to FastAPI's
  * Vision Agent, which runs MediaPipe Face Mesh → OpenCV color → Roboflow
  * classification → Moondream VQA → Gemini synthesis → voice feedback
  * to the client. Django + Postgres sits below as the relational side.
  * PHC dashboard reads aggregated results via Django admin API.
+ *
+ * Animated packets ride the request flow (Phase 6 T7) — amber for
+ * client → inference → response; accent for the relational write.
+ * Pure SVG + SMIL, no JS.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function DrishtiAIDiagram() {
   return (
@@ -81,15 +89,15 @@ export function DrishtiAIDiagram() {
 
         {/* ───── Edges ───── */}
         {/* Android -> Nginx */}
-        <path className="alg-mini-edge" d="M122 37 H144" />
+        <path id="drishti-p1" className="alg-mini-edge" d="M122 37 H144" />
         {/* Web -> Nginx */}
-        <path className="alg-mini-edge" d="M122 85 H144" />
+        <path id="drishti-p2" className="alg-mini-edge" d="M122 85 H144" />
         {/* Nginx -> FastAPI (WebRTC) */}
-        <path className="alg-mini-edge" d="M232 56 Q240 50 248 32" />
+        <path id="drishti-p3" className="alg-mini-edge" d="M232 56 Q240 50 248 32" />
         {/* Nginx -> Django */}
-        <path className="alg-mini-edge" d="M232 70 Q280 60 400 32" />
+        <path id="drishti-p4" className="alg-mini-edge" d="M232 70 Q280 60 400 32" />
         {/* Voice feedback -> Android */}
-        <path className="alg-mini-edge" d="M248 264 Q170 280 122 37" />
+        <path id="drishti-p5" className="alg-mini-edge" d="M248 264 Q170 280 122 37" />
         {/* FastAPI -> Django (write results) */}
         <path className="alg-mini-edge" d="M378 32 H400" />
         {/* Django -> Postgres */}
@@ -101,6 +109,20 @@ export function DrishtiAIDiagram() {
         {/* Prometheus -> Django / FastAPI */}
         <path className="alg-mini-edge" d="M400 178 Q340 100 270 50" />
       </g>
+
+      {/* ─── Animated packets — Phase 6 T7 ─────────────────────── */}
+      <AnimatedPackets
+        groups={[
+          /* Real-time pipeline: Android → Nginx → FastAPI (WebRTC),
+             plus Web → Nginx. Amber packets signal live eye-screening
+             frames in flight. */
+          { edges: ["drishti-p1", "drishti-p2", "drishti-p3"], color: "amber", count: 4 },
+          /* Relational write + voice response: Nginx → Django, then
+             voice feedback → Android. Accent packets signal the
+             outcome / response flow. */
+          { edges: ["drishti-p4", "drishti-p5"], color: "acc", count: 3 },
+        ]}
+      />
     </svg>
   );
 }

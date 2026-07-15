@@ -20,7 +20,11 @@
  *
  * All colors come from data/tokens.ts via the CSS variables in
  * globals.css (`--bg`, `--border`, `--text-t1`, etc.).
+ *
+ * Phase 6 (T7) — packet markup extracted to <AnimatedPackets>.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function AlgocodeDiagram() {
   return (
@@ -203,43 +207,19 @@ export function AlgocodeDiagram() {
       </g>
 
       {/* ─── Animated packets ────────────────────────────────────── */}
-      <g aria-hidden>
-        <circle className="alg-packet" r={4}>
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="0s">
-            <mpath href="#alg-p1" />
-          </animateMotion>
-        </circle>
-        <circle className="alg-packet" r={4}>
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="0.4s">
-            <mpath href="#alg-p2" />
-          </animateMotion>
-        </circle>
-        <circle className="alg-packet alg-packet-amber" r={4}>
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="0.9s">
-            <mpath href="#alg-p3" />
-          </animateMotion>
-        </circle>
-        <circle className="alg-packet alg-packet-amber" r={4}>
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="1.4s">
-            <mpath href="#alg-p4" />
-          </animateMotion>
-        </circle>
-        <circle className="alg-packet alg-packet-acc" r={4}>
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="1.9s">
-            <mpath href="#alg-p5" />
-          </animateMotion>
-        </circle>
-        <circle className="alg-packet alg-packet-acc" r={4}>
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="2.4s">
-            <mpath href="#alg-p6" />
-          </animateMotion>
-        </circle>
-        <circle className="alg-packet alg-packet-acc" r={4}>
-          <animateMotion dur="3.2s" repeatCount="indefinite" begin="2.8s">
-            <mpath href="#alg-p7" />
-          </animateMotion>
-        </circle>
-      </g>
+      <AnimatedPackets
+        groups={[
+          /* 2 muted packets: client → code manager, code manager →
+             submit queue (the "ingress" flow). */
+          { edges: ["alg-p1", "alg-p2"], color: "t1", count: 2 },
+          /* 2 amber packets: submit queue → rce → judge (the "request
+             in flight" stage). */
+          { edges: ["alg-p3", "alg-p4"], color: "amber", count: 2 },
+          /* 3 accent packets: judge → result queue → code manager →
+             mongo (the "result back" stage). */
+          { edges: ["alg-p5", "alg-p6", "alg-p7"], color: "acc", count: 3 },
+        ]}
+      />
     </svg>
   );
 }
