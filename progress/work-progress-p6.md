@@ -1030,3 +1030,20 @@ Remote `main` now at `2e68b84` (T6.9). All Phase 6 commits shipped.
 - `curl /sitemap.xml` → 1 `lets-connect` URL, no `contact`.
 - Hero CTAs: `href="/work"`, `href="/writing"`, `href="/lets-connect"`.
 - Navbar links: all 5 inner routes, no `contact`.
+
+---
+
+## Bug 1-4 → push to remote
+
+`git push origin main` — 4 bug-fix commits land on remote.
+
+```
+9df7bb5  (HEAD -> main) Bug 4
+99c4c5d  Bug 2 — Nav links always go to inner routes (no anchor-scroll)
+22f43fd  Bug 3 — Project headlines link to /work/[slug]
+ac591c1  Bug 1 — Suffix Medium slugs to dedupe landing Blog keys
+add4648  (HEAD before push) Bug 4 — Rename /contact to /lets-connect
+4b6401b  (previous Phase 6 wrap)
+```
+
+Phase 6 + post-Phase 6 bug-fix status: **done**.
