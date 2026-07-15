@@ -8,6 +8,13 @@
  * time, so SSR would break). The actual GameRoot is loaded
  * asynchronously; <GameLoader /> renders while the bundle arrives.
  *
+ * T4.10: GameGate is the mode-selector entry. While `accepted` is
+ * false, the selector renders and `<GameRoot />` is not in the React
+ * tree — so the dynamic-imported Phaser game doesn't mount even
+ * after the chunk loads. After the user clicks "Enter Game", the
+ * selector unmounts and the children mount. The click is also the
+ * user gesture that unblocks the browser's audio context.
+ *
  * Master §6 rule #5: "Game mode is client-only. 'use client' +
  * dynamic(() => import(...), { ssr: false })."
  */
@@ -16,6 +23,7 @@
 
 import dynamic from "next/dynamic";
 import { GameLoader } from "@/components/game/GameLoader";
+import { GameGate } from "@/components/game/ModeSelector";
 
 const GameRoot = dynamic(
   () => import("@/game").then((m) => m.default),
@@ -41,7 +49,12 @@ export default function GamePage() {
           bump into villains, find out what I&apos;m working on.
         </p>
       </header>
-      <GameRoot />
+      {/* GameGate holds the selector open until the user clicks
+          "Enter Game". GameRoot is the dynamic-imported Phaser game —
+          not in the React tree until the gate opens. */}
+      <GameGate>
+        <GameRoot />
+      </GameGate>
     </div>
   );
 }

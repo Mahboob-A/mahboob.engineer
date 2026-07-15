@@ -735,3 +735,68 @@ The HUD layer runs in parallel with WorldScene. Visiting `/game` now shows:
   - `UIScene` class identifier
   - `computeDistrictLabel` method (private method name preserved by Turbopack)
 - **Visual verify** (real browser): not run in this session due to no display — but the string presence in the Phaser chunk + clean typecheck + clean build is the structural verification. End-to-end browser testing is the user's call.
+
+---
+
+## T4.10 — `/game` mode selector / entry screen
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+Visiting `/game` now shows a centered entry card over a `bg-bg/85` full-bleed backdrop with `backdrop-blur-sm`. Card shows:
+- "GAME MODE" eyebrow (`text-acc font-mono text-[11px] tracking-[1.5px] uppercase`)
+- "Backend City" title (`font-display text-t1 text-[28px] font-bold`)
+- Description paragraph
+- "Enter Game →" primary CTA (`bg-acc text-bg hover:bg-t1`)
+- "← back to flat portfolio" secondary link (`text-t3 hover:text-t1`)
+- "(Audio starts on click — browser autoplay policy.)" caption
+
+Clicking "Enter Game" unmounts the selector and mounts the dynamic-imported `<GameRoot />` for the first time. The Phaser game starts; BGM can now play (click was the user gesture). Clicking "← back" calls `router.back()` to return to wherever the user came from.
+
+**`components/game/ModeSelector.tsx` (new, ~95 lines):**
+- `'use client'` — uses `useState` + `useRouter`.
+- `GameGate({ children })` — single-component gate. Holds `accepted` boolean state. Conditionally renders `<SelectorCard />` or `children` based on state.
+- `SelectorCard` — internal component with the full-screen overlay + centered card. Internal so the parent doesn't thread props through two layers.
+- `SelectorCard` uses `router.back()` for the secondary action — preserves browser history.
+
+**`app/game/page.tsx` (modify):**
+- Imports `GameGate` + wraps `<GameRoot />` with it. The page header (eyebrow + h1 + description) stays in place above the gate.
+- Net effect: `<GameRoot />` is in the React tree but not mounted (because `accepted = false` → children of GameGate unmount). The dynamic-import chunk loads in the background; when the user clicks "Enter Game", the chunk renders.
+
+### Decisions
+
+- **Single self-contained `GameGate` component** — internal `SelectorCard` for the visual. ~95 lines. No separate `ModeSelector` and `GameGate` split; the parent doesn't need to thread props through two layers.
+- **`router.back()` for the back button** — preserves browser history. Cleaner than hard-coding `"/"`. If the user navigated directly to `/game` (no history), `router.back()` is a no-op (future polish: fallback to `router.push("/")` if `window.history.length <= 1`).
+- **No fade-out animation** — the gate is unmounted in a single frame. The Phaser canvas paints over the now-unrendered selector instantly. A true fade-out would need to delay the game mount by ~200ms — adds complexity for marginal UX gain.
+- **Header stays in `app/game/page.tsx`** — the eyebrow + h1 + description provide SEO + pre-game context (the user sees "06 / GAME MODE — Backend City — Top-down pixel-art city..." even before the selector card appears). The selector card is a second-layer intro.
+- **No "flat vs game" mode toggle** — the entry screen is a single "Enter Game" button. The flat-vs-game toggle is the Navbar's existing pill (`/api/mode`). One decision, one button.
+- **Audio unblock** — the click on "Enter Game" is the user gesture. Phaser's audio context unblocks automatically. The "(Audio starts on click — browser autoplay policy.)" caption is honest documentation of the constraint.
+- **`fixed inset-0 z-50`** — the selector covers the whole viewport including the page header. If the user scrolls, the header scrolls but the gate stays. Acceptable: the page is in a fixed-size container (`max-w-[1180px]`).
+- **`bg-bg/85 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm`** — full-bleed dark backdrop with subtle blur. Same visual language as the project's existing overlay pattern (`CaseStudyOverlay` uses `bg-bg/80 ... backdrop-blur-sm` in `game/index.tsx`).
+- **Header in `app/game/page.tsx` is `h1` "Backend City" + the card is `h2` "Backend City"** — slight SEO duplication. The page header is for crawlers; the card is the human intro. Future polish: align content (one describes, the other doesn't repeat).
+- **No persistent "I've entered the game before" preference** — every visit to `/game` shows the selector. Master spec doesn't mention persisting this state. Local storage violates master §6 rule #3. A URL flag `?entered=1` is the only persistence option without localStorage.
+- **No keyboard shortcut for "Enter Game"** — the user must click. Future polish: focus the button on mount and listen for "Enter" / "Space" keydowns.
+
+### Caveats / pending
+
+- **No fade-out animation** — the selector unmounts in a single frame. T6.x polish: 200ms CSS transition before unmount.
+- **No persistent "I've entered the game before" preference** — URL flag option exists (`?entered=1`); localStorage violates master §6 rule #3.
+- **No keyboard shortcut for "Enter Game"** — must click. Future polish: focus the button + listen for Enter/Space.
+- **`router.back()` is a no-op for direct visits to `/game`** — future polish: fallback to `router.push("/")` if `window.history.length <= 1`.
+- **The selector is a `fixed` overlay, not a `dialog` with backdrop** — semantically similar but doesn't trap focus or block Tab. Acceptable for v1.
+- **No analytics on the "Enter Game" click** — T6.x Vercel Analytics.
+- **Selector styling is non-responsive to small screens** — fixed `max-w-[520px]`; on a 320 px-wide phone the card is full-width with `p-6` instead of `p-8`. Future polish: smaller card on `md:hidden` viewport.
+- **No analytics on the back button** — same as above.
+- **The audio-context hint copy is hard-coded English** — same as the rest of the codebase. No i18n yet.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live URL smoke** — `/game` → 200. SSR-rendered HTML contains all 6 selector strings: "Backend City", "Enter Game", "GAME MODE", "Game mode", "back to flat portfolio", "browser autoplay policy".
+- **Bundle smoke** — `GameGate` component string present in client chunk `0k_1chwp74l-h.js`. The selector renders on the server for SEO + pre-game context.
