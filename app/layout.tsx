@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/motion";
 import { ogUrlFor, ogConstants } from "@/lib/og-helpers";
 import "./globals.css";
 import "@/components/diagrams/diagrams.css";
@@ -141,7 +142,9 @@ export default function RootLayout({
     >
       <body className="font-body bg-bg text-t1 flex min-h-full flex-col">
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
       </body>
     </html>

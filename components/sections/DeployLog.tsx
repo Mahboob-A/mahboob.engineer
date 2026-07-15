@@ -26,10 +26,15 @@ import { Chip } from "@/components/ui/Chip";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { EXPERIENCE, type ExperienceItem } from "@/data/experience";
 import { chipColor } from "@/data/tokens";
+import { FadeUp } from "@/components/motion";
 
 export function DeployLog() {
   return (
-    <section id="log" className="border-border scroll-mt-20 border-t py-[90px]">
+    <FadeUp
+      as="section"
+      className="border-border scroll-mt-20 border-t py-[90px]"
+      id="log"
+    >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Section header */}
         <div className="mb-12">
@@ -52,7 +57,7 @@ export function DeployLog() {
           ))}
         </div>
       </div>
-    </section>
+    </FadeUp>
   );
 }
 

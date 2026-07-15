@@ -11,10 +11,15 @@
 
 import { BLOG_POSTS } from "@/data/blog";
 import { BlogCard } from "@/components/writing/BlogCard";
+import { FadeUp } from "@/components/motion";
 
 export function Blog() {
   return (
-    <section id="blog" className="border-border scroll-mt-20 border-t py-[90px]">
+    <FadeUp
+      as="section"
+      className="border-border scroll-mt-20 border-t py-[90px]"
+      id="blog"
+    >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Section header */}
         <div className="mb-12">
@@ -37,6 +42,6 @@ export function Blog() {
           ))}
         </div>
       </div>
-    </section>
+    </FadeUp>
   );
 }

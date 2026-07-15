@@ -19,6 +19,7 @@
 
 import { ContactForm } from "@/components/contact/ContactForm";
 import { DIRECT_LINKS } from "@/data/contact";
+import { FadeUp } from "@/components/motion";
 
 export function Contact() {
   /* The landing version shows 5 quick-links (GitHub / LinkedIn / Medium /
@@ -29,9 +30,10 @@ export function Contact() {
   );
 
   return (
-    <section
-      id="contact"
+    <FadeUp
+      as="section"
       className="border-border scroll-mt-20 border-t py-[90px]"
+      id="contact"
     >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Section header */}
@@ -92,6 +94,6 @@ export function Contact() {
           </aside>
         </div>
       </div>
-    </section>
+    </FadeUp>
   );
 }

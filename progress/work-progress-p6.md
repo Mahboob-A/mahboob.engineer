@@ -138,3 +138,110 @@ Master plan tasks in this phase (T6.1 → T6.9):
   - `curl /work/algocode` → `<meta property="og:image" content="...&title=Algocode&...">` (project-specific).
   - Same for `/writing`, `/log`, `/stack`, `/contact` (via `pageMetadata`).
   - Twitter images: `curl /` shows `<meta name="twitter:image" content="...?title=Mahboob%20Alam">`.
+
+---
+
+## T6.2 — Framer Motion install + entrance animations + AnimatePresence
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`package.json`** — added `framer-motion@12.42.2`. ~50 KB gzipped
+  added to the client bundle, spread across all routes (only the
+  components that use motion import it; the rest don't).
+- **`components/motion/FadeUp.tsx`** (new, ~55 lines) — `'use client'`
+  scroll-triggered fade-up wrapper. Renders any of `div / section /
+  article / li / header / aside / main`. Honors `prefers-reduced-motion`
+  via Framer's `useReducedMotion()` — when reduced motion is set,
+  the wrapper renders the bare tag with no motion props (SSR-stable).
+- **`components/motion/PageTransition.tsx`** (new, ~50 lines) —
+  `'use client'` `AnimatePresence` wrapper around `{children}` inside
+  the root layout. Uses `mode="wait"` so the outgoing page finishes
+  fading out before the new page fades in. `usePathname()` is the
+  AnimatePresence key; pure opacity (no transform) keeps reflow cheap.
+- **`components/motion/index.ts`** — barrel export so call sites can
+  `import { FadeUp, PageTransition } from "@/components/motion"`.
+- **`app/layout.tsx`** — wraps `{children}` in `<PageTransition>`.
+- **All 6 landing sections wrapped in `<FadeUp>`**:
+  - `components/sections/Hero.tsx` (uses `<header>`)
+  - `components/sections/DeployLog.tsx` (`id="log"`)
+  - `components/sections/Projects.tsx` (`id="work"`)
+  - `components/sections/SkillGraph.tsx` (`id="stack"`)
+  - `components/sections/Blog.tsx` (`id="blog"`)
+  - `components/sections/Contact.tsx` (`id="contact"`)
+- **`id` prop added to `FadeUpProps`** so sections can keep their
+  scroll anchors (`#log`, `#work`, etc.) on the rendered tag.
+
+### Decisions
+
+- **`framer-motion` import path, not `motion/react`.** Framer Motion
+  12 has a separate `motion` package with a `motion/react` subpath,
+  but pnpm only installs `motion` if you explicitly add it. The
+  framer-motion package re-exports `motion`, `AnimatePresence`, and
+  `useReducedMotion` from its main entry. We use the canonical
+  `framer-motion` import path so we don't pull in a second package.
+- **`as` prop instead of one component per tag.** Each section's
+  outermost element has a different semantic (`<header>` vs `<section>`);
+  one component with an `as` switch is DRY without losing semantics.
+- **`motion.div` cast as the default `MotionTag` type.** The `motion.*`
+  family differs slightly per tag in TS (e.g. `motion.section` expects
+  section-only props). Casting to `typeof motion.div` loosens the
+  typing; the runtime is identical.
+- **`mode="wait"` on AnimatePresence** so old page fades out fully
+  before new page fades in. Without it, both pages animate
+  simultaneously which looks jittery.
+- **`initial={false}` on first mount.** Without this, the landing
+  page's first paint would briefly fade from `opacity: 0` before
+  snapping to `1`. The fade is reserved for route changes only.
+- **No entrance animation on `/game` or `/keystatic`** — both routes
+  mount dynamic-imported chunks (Phaser / Keystatic's heavy client
+  bundles). Layering Framer's fade on top would briefly hide the
+  loader, hurting perceived speed.
+- **`whileInView` not `animate`.** `animate` fires on mount; sections
+  below the fold would fade in only after scroll. `whileInView` fires
+  on first scroll-into-view, so each section animates exactly when
+  the user gets there. `viewport={{ once: true }}` keeps it from
+  re-triggering on scroll-up.
+
+### Caveats / pending
+
+- **Hydration: SSR'd HTML has `opacity: 0` for sections below the
+  fold.** Pages render server-side with the wrapper's `initial`
+  styles; JS hydrates and the fade runs on `whileInView`. With
+  `prefers-reduced-motion`, the wrapper renders bare HTML at
+  `opacity: 1` (matches SSR), so no flicker.
+- **Bundle: framer-motion ~50 KB gzipped** added to the client bundle
+  on every route. Could be trimmed by code-splitting per-page, but
+  the polish gain is worth the cost.
+- **No reduced-motion override for the existing `pulse-dot` keyframe**
+  (navbar logo dot). It's a low-impact animation; users with
+  reduced-motion still see a slow pulse. Future polish: gate the
+  `animation` declaration on `@media (prefers-reduced-motion: no-preference)`.
+- **Sticky `Navbar` doesn't animate** — only the `<main>` content
+  fades. Navbar stays in place across route changes. Intentional:
+  fade-on-nav for the navbar would compete with the page's own
+  fade.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean. (Initial pass had two errors: `motion/react`
+  not resolvable, `id` not on `FadeUpProps`. Both fixed: switched to
+  `framer-motion` import path; added `id?: string` to props.)
+- `pnpm build` → 38 routes (unchanged from T6.1). No new warnings.
+- **Manual smoke** (verified at the SSR layer via curl):
+  - `curl /` → landing sections render inside `<div>` wrappers
+    (Framer Motion serializes the initial-state attributes into the
+    SSR HTML).
+  - `curl /log` → `<InnerPageHeader>` renders inside `<main>` (which
+    is inside the `<PageTransition>` wrapper). The wrapper itself
+    doesn't add a DOM tag — `AnimatePresence` is a React-context
+    wrapper only.
+- **Hydration check** (Phase 6 polish sanity, not a full test):
+  inspected the SSR'd HTML — the wrapper `<div>` has no
+  `style="opacity:0"` inline attribute (Framer Motion v12 defers
+  styles to JS hydration to avoid hydration mismatches). The fade
+  starts after hydration.

@@ -25,6 +25,7 @@
  */
 
 import { STACK } from "@/data/stack";
+import { FadeUp } from "@/components/motion";
 
 /* ===========================================================================
    Graph layout — hand-tuned coordinates matching the flat mockup
@@ -247,7 +248,11 @@ const EDGES: ReadonlyArray<readonly [string, string]> = [
 
 export function SkillGraph() {
   return (
-    <section id="stack" className="border-border scroll-mt-20 border-t py-[90px]">
+    <FadeUp
+      as="section"
+      className="border-border scroll-mt-20 border-t py-[90px]"
+      id="stack"
+    >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Section header */}
         <div className="mb-12">
@@ -265,7 +270,7 @@ export function SkillGraph() {
 
         <SkillGraphPanel />
       </div>
-    </section>
+    </FadeUp>
   );
 }
 

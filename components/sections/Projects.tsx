@@ -35,6 +35,7 @@ import { chipColor } from "@/data/tokens";
 import { AlgocodeMiniDiagram } from "@/components/diagrams/AlgocodeMiniDiagram";
 import { MovioMiniDiagram } from "@/components/diagrams/MovioMiniDiagram";
 import { DrishtiMiniDiagram } from "@/components/diagrams/DrishtiMiniDiagram";
+import { FadeUp } from "@/components/motion";
 
 /* The 3 projects shown on the landing page. Indexed by PROJECTS slug
  * so changes to the registry ordering don't break the section. */
@@ -51,7 +52,11 @@ export function Projects() {
   const projects = LANDING_SLUGS.map((slug) => PROJECTS.find((p) => p.slug === slug)!);
 
   return (
-    <section id="work" className="border-border scroll-mt-20 border-t py-[90px]">
+    <FadeUp
+      as="section"
+      className="border-border scroll-mt-20 border-t py-[90px]"
+      id="work"
+    >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Section header */}
         <div className="mb-12">
@@ -79,7 +84,7 @@ export function Projects() {
           ))}
         </div>
       </div>
-    </section>
+    </FadeUp>
   );
 }
 

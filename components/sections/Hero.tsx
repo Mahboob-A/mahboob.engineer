@@ -29,6 +29,7 @@ import Link from "next/link";
 import { StatRow } from "@/components/ui/StatRow";
 import { DiagramPanel } from "@/components/ui/DiagramPanel";
 import { AlgocodeDiagram } from "@/components/diagrams/AlgocodeDiagram";
+import { FadeUp } from "@/components/motion";
 
 const STATS = [
   { num: "3", label: "production-grade systems shipped" },
@@ -39,7 +40,11 @@ const STATS = [
 
 export function Hero() {
   return (
-    <header id="top" className="border-border relative border-b pt-[100px] pb-20">
+    <FadeUp
+      as="header"
+      className="border-border relative border-b pt-[100px] pb-20"
+      delay={0}
+    >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
@@ -102,6 +107,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-    </header>
+    </FadeUp>
   );
 }
