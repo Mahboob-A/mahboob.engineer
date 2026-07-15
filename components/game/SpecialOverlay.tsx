@@ -45,8 +45,9 @@ const SPECIAL_ROUTES: Record<string, { href: string; label: string }> = {
     label: "Stack graph",
   },
   "contact-bureau": {
-    href: "/contact",
-    label: "Contact form",
+    /* Post-Phase 6 bug fix: route renamed /contact → /lets-connect. */
+    href: "/lets-connect",
+    label: "Let's connect",
   },
 };
 

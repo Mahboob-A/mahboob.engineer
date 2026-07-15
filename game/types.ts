@@ -21,7 +21,7 @@ export type VillainId = "gopher-king" | "terraform-titan" | "ebpf-phantom";
 
 /* The 3 special buildings from master §5.4 (Backend Diaries HQ,
    Skills Academy, Contact Bureau) use the "special" type. They
-   open specific React routes (`/writing`, `/stack`, `/contact`)
+   open specific React routes (`/writing`, `/stack`, `/lets-connect`)
    rather than project case-study overlays. */
 export type OverlayType = "project" | "villain" | "special";
 

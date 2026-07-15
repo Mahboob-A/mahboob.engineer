@@ -16,7 +16,9 @@ import { ContactSidebar } from "@/components/contact/ContactSidebar";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata(
-  "Contact",
+  /* Post-Phase 6 bug fix: route renamed /contact → /lets-connect.
+     Page title and metadata reflect the new framing. */
+  "Let's connect",
   "Form, availability, direct links, and answers to the questions I get asked most.",
 );
 

@@ -976,3 +976,57 @@ Remote `main` now at `2e68b84` (T6.9). All Phase 6 commits shipped.
 - `pnpm build` → clean.
 - **Live HTML** (dev server) — landing's first project card renders
   `<h3><a href="/work/algocode">Algocode — Distributed online judge…</a></h3>`.
+
+---
+
+## Bug 4 — Rename `/contact` → `/lets-connect` site-wide
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`git mv app/contact/ app/lets-connect/`** — directory rename
+  preserves git history. `app/lets-connect/page.tsx` is the same
+  source as the old `app/contact/page.tsx` minus updated metadata
+  title (`Contact` → `Let's connect`).
+- **`app/sitemap.ts`** — sitemap entry updated to `/lets-connect`.
+  No redirect (per user direction).
+- **`components/game/SpecialOverlay.tsx`** — `contact-bureau`
+  mapping: `href: /contact` → `href: /lets-connect`,
+  `label: "Contact form"` → `"Let's connect"`.
+- **`game/types.ts`** — JSDoc comment updated.
+- **`scripts/screenshots.mjs`** — route entry renamed.
+
+### Decisions
+
+- **No redirect from `/contact` → `/lets-connect`** — user-confirmed.
+  Old paths 404.
+- **`components/contact/` directory kept** — the UI component
+  directory is unrelated to the route. `data/contact.ts` is the
+  data registry; also unchanged (data naming, not route naming).
+- **`app/api/contact/` kept** — the API endpoint stays at the same
+  path. Only the page route was renamed.
+
+### Caveats / pending
+
+- **History comments throughout the codebase still say
+  "app/contact/page.tsx"** — `app/lets-connect/page.tsx` line 2
+  has the old docstring. Documented as historical context, not a
+  bug. Future polish can update the comment.
+- **Master doc + prompt-guide references** — `portfolio-master-doc.md`
+  and `prompt-guide.md` still describe the old `/contact` route.
+  Docs are historical artifacts, not deployed; future polish.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean. 38 routes; `/lets-connect` registered, no
+  `/contact`.
+- `curl /lets-connect` → HTTP 200.
+- `curl /contact` → HTTP 404 (as expected).
+- `curl /sitemap.xml` → 1 `lets-connect` URL, no `contact`.
+- Hero CTAs: `href="/work"`, `href="/writing"`, `href="/lets-connect"`.
+- Navbar links: all 5 inner routes, no `contact`.

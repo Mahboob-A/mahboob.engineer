@@ -35,7 +35,7 @@ const ROUTES = [
   { path: "/stack", name: "stack" },
   { path: "/writing", name: "writing" },
   { path: "/writing/linux-networking-part-1", name: "writing-linux" },
-  { path: "/contact", name: "contact" },
+  { path: "/lets-connect", name: "lets-connect" },
   { path: "/game", name: "game" },
   { path: "/keystatic", name: "keystatic" },
 ];
