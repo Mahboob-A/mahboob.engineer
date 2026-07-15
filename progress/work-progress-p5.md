@@ -408,3 +408,151 @@ no new components yet (those arrive in T5.5 with the route page).
 - **Type smoke**: `NativePostFrontmatter`, `TocEntry`,
   `NativePost` are all exported and infer correctly in
   downstream consumers via `pnpm typecheck`.
+
+---
+
+## T5.3 — `lib/medium-rss.ts` (build-time RSS fetcher)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+The build-time Medium feed fetcher. Fetches
+`https://imehboob.medium.com/feed` at module-init time, parses the
+RSS XML, and maps each item to the shared `BlogPostItem` shape used
+by `/writing` (T5.4) and `/writing/[slug]` (T5.5).
+
+- **`lib/medium-rss.ts`** (new, ~210 lines):
+  - `fetchMediumPosts()` → `Promise<{posts, source, error?}>`.
+    - `posts`: `BlogPostItem[]` after deduping + sorting.
+    - `source`: `"rss"` on success, `"fallback"` on fetch failure.
+    - `error`: optional string from the underlying failure.
+  - **Process-level cache** (`cachedPromise`) — first call hits the
+    network; subsequent calls return the same Promise. Safe under
+    React 19's concurrent rendering.
+  - **Next.js fetch cache** — `next: { revalidate: 3600 }` (1-hour
+    ISR) so the feed stays fresh between deploys. Master's §3 stack
+    says "RSS parse at build time"; ISR gives us the same effective
+    staleness bound without re-fetching on every request.
+  - **Static fallback** — when the fetch fails (offline dev, Medium
+    downtime, network block), the function returns the static
+    registry's medium posts (filtered via
+    `BLOG_POSTS.filter((p) => p.source === "medium")`). The catch
+    block logs a warning so the issue is debuggable, but never
+    throws — `/writing` always renders.
+  - `staticMediumPosts()` — synchronous read of the curated static
+    registry's medium entries, used by T5.4 when an async RSS fetch
+    hasn't resolved yet (Suspense boundary optimization).
+- **`inferCategory(tags)`** — picks the best BlogCategory for a Medium
+  post given its tag list. Order matters: distributed > linux >
+  docker > ai > video > career > platform. Lets RSS-fresh posts
+  inherit the right filter chip even when the static registry has
+  no entry.
+- **`slugFromTitle(title)`** — derives a URL slug from the Medium
+  post title, matching Keystatic's default slugifier behavior. If
+  the static registry already has an entry with the same title,
+  the static slug wins (preserve stable URLs across renames).
+- **`mapMediumItem(item)`** — converts a raw `rss-parser` item into
+  a BlogPostItem. Tracks `staticMatch` by title match; if found,
+  carries over `category`, `series`, `part`, `projects`, `stack`,
+  `excerpt` from the curated entry. Otherwise infers them.
+- **`estimateReadMin(snippet)`** — Medium's `contentSnippet` is ~25%
+  of the full body; we inflate × 4 and divide by 200 wpm for a
+  same-scale read time as hand-set native posts.
+- **`import "server-only"`** at the top — guarantees this never
+  gets bundled into client code (the rss-parser dep is server-only
+  by virtue of the `server-only` import, in addition to its size).
+- **`package.json`** — `+rss-parser@3.13.0`. Adds ~20 KB to
+  server-only bundles; zero client impact.
+
+### Decisions
+
+- **Static registry stays canonical** even after T5.3 ships. The
+  RSS feed returns ~10 posts (Medium's RSS service caps at the
+  10 most recent); our static registry carries 13 Medium posts
+  (Linux Networking ×4, PostgreSQL ×3, Redis HA ×2, Algocode,
+  Message Queue 101, AWS Networking 101, DrishtiAI — including
+  older posts that aren't in the live RSS anymore). T5.4 will
+  merge: start from static registry, overlay RSS-sourced
+  `publishedAt` + `contentSnippet` where available, dedupe by slug.
+  Net: every post surfaces reliably even if Medium's RSS churns.
+- **Soft fallback, never throw.** Master §3 says "RSS at build
+  time" but doesn't specify failure handling. `pnpm dev` regularly
+  runs without network access for some workflows; throwing would
+  crash `/writing`. The fetch + static fallback pattern is the
+  closest to "RSS at build time" we can get without a hard
+  dependency on Medium being reachable.
+- **Slug from title** rather than from the GUID/link. Two Medium
+  posts with the same title (rare) would clash; we dedupe by
+  `slug` post-mapping to keep the first seen. Stable + simple.
+- **Sort by `publishedAt` newest-first.** Medium RSS gives dates
+  in `isoDate`; we parse with `Date.parse()` (sufficient for the
+  ISO 8601 format Medium emits). Posts without a date land at the
+  end of the list (treated as undated).
+- **`import "server-only"`** is a 1-line guard that prevents
+  accidental client bundling. The `rss-parser` dep is small but
+  uses Node `Buffer` semantics — it would break in a client
+  bundle.
+- **No dedup by GUID.** Two Medium posts can have the same canonical
+  URL but different titles if the user edited one. We dedupe by
+  derived slug (more stable than GUID across title edits).
+- **No pagination of the RSS feed.** Medium's RSS service caps at
+  the 10 most-recent posts; pagination requires the JSON API (an
+  unauthenticated public endpoint that's been known to break).
+  Acceptable for our use case: the static registry covers the rest.
+- **No build-time cache invalidation hook.** Once fetched, the
+  result lives in memory until the process restarts. That's
+  fine for a serverless deploy (cold start re-fetches once per
+  instance); acceptable for a long-lived Node server too.
+
+### Caveats / pending
+
+- **RSS feed returned 10 posts in the dev smoke test**;
+  static registry has 13. T5.4's merge logic must use the static
+  registry as the base to surface the missing 3 older posts.
+- **No retry on transient fetch failure.** Medium's RSS service
+  occasionally returns 503. Future polish: 1-retry with 100 ms
+  backoff before falling back.
+- **Tags from Medium include the canonical category** ("Postgres"),
+  but the inferer's regex matches `^(postgresql|...)`. Some tags
+  like "sql" don't map to a BlogCategory directly — they end up
+  under `platform` (the default). Acceptable; hand-curated entries
+  in the static registry carry the right category.
+- **Live RSS feed verified at dev time** via a temporary route
+  (`app/z-rss-smoke/page.tsx`, removed before commit). The route
+  exercised both the RSS path (success) and would have surfaced
+  fallback behavior on offline. Removed cleanly; final build
+  shows 24 routes, no smoke-route leakage.
+- **No HTTPS hardening.** `https://imehboob.medium.com/feed` is
+  fetched as-is; if Medium ever flips to HTTP-only or moves the
+  endpoint, the fallback takes over.
+- **Git author identity**: per standing instruction, all commits
+  use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 24 routes, 0 warnings.
+- **Live RSS smoke** (`pnpm dev`, temporary `/z-rss-smoke` route):
+  - `source: rss` ✓
+  - `error: —` ✓
+  - `fetched: 10 posts` (Medium caps RSS at 10 — confirms T5.3's
+    fetch works against the real feed).
+  - `static fallback: 13 posts` (the curated registry has 3 more
+    Medium posts than the live RSS — confirms the merge need).
+  - First 3 titles parsed correctly: PostgreSQL Part 6 (newer),
+    PostgreSQL Part 5, Ecommerce DB Part 4.
+  - Slug derivation working: `[backup-restore-and-disaster-
+    recovery-in-postgresql-the-complete-]` matches the title's
+    slugified form.
+  - First 3 static titles (Linux Networking Parts 1-3) preserved
+    from `data/blog.ts`.
+- **Categorization** — posts with distributed tags (`redis`,
+  `cluster`) correctly classified as `distributed`; Linux
+  networking posts → `linux`; PostgreSQL → `platform`. Default
+  fallback → `platform`.
+- **Smoke route removed** before commit. Final build doesn't
+  include `/z-rss-smoke`.
