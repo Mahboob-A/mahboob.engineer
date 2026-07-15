@@ -19,6 +19,15 @@
  * Section header matches the pattern used by Hero / Projects /
  * SkillGraph / Blog / Contact — eyebrow + title + description
  * inside a `<section>` with id="log".
+ *
+ * Phase 7 (T7.2) — wrapping changes:
+ *   - Each card is wrapped in a Next.js `<Link href="/log/<id>">` so the
+ *     whole block navigates to the new deep-dive page.
+ *   - Each tag chip is wrapped in its own `<Link href="/stack#<slug>">`
+ *     (when `resolveStackSlug` finds a match). Chips use
+ *     `e.stopPropagation()` so clicking a chip navigates to /stack
+ *     without the outer card-link firing.
+ *   - Same chip-pattern as `components/sections/Projects.tsx:163-184`.
  */
 
 import Link from "next/link";
@@ -27,6 +36,7 @@ import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { EXPERIENCE, type ExperienceItem } from "@/data/experience";
 import { chipColor } from "@/data/tokens";
 import { FadeUp } from "@/components/motion";
+import { resolveStackSlug } from "@/data/stack-slug-map";
 
 export function DeployLog() {
   return (
@@ -67,55 +77,80 @@ interface ExperienceCardProps {
 
 function ExperienceCard({ entry }: ExperienceCardProps) {
   return (
-    <article className="bg-surface border-border hover:border-acc/40 rounded-[10px] border p-6 transition-colors md:p-7">
-      {/* Top row: date · company · badge */}
-      <div className="mb-3.5 flex flex-wrap items-center gap-4 font-mono text-[13px]">
-        <span className="text-t3">[{entry.period}]</span>
-        {entry.url ? (
-          <Link
-            href={entry.url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-t1 font-body hover:text-acc text-[15px] font-semibold transition-colors"
-          >
-            {entry.company}
-          </Link>
-        ) : (
-          <span className="text-t1 font-body text-[15px] font-semibold">
-            {entry.company}
-          </span>
-        )}
-        <Badge variant={entry.status as BadgeVariant}>
-          {entry.status === "active" ? "● active" : entry.status}
-        </Badge>
-      </div>
-
-      {/* Role line */}
-      <p className="text-t3 mb-3.5 text-[14px]">{entry.role}</p>
-
-      {/* Bullets */}
-      <ul className="text-t1 mb-3.5 flex flex-col gap-2 text-[14.5px]">
-        {entry.bullets.map((bullet, i) => (
-          <li key={i} className="relative pl-5">
+    <Link
+      href={`/log/${entry.id}`}
+      className="block rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-acc"
+      aria-label={`${entry.company} — experience details`}
+    >
+      <article className="bg-surface border-border hover:border-acc/40 rounded-[10px] border p-6 transition-colors md:p-7">
+        {/* Top row: date · company · badge */}
+        <div className="mb-3.5 flex flex-wrap items-center gap-4 font-mono text-[13px]">
+          <span className="text-t3">[{entry.period}]</span>
+          {entry.url ? (
             <span
-              aria-hidden
-              className="text-acc absolute top-0 left-0 font-mono font-semibold"
+              /* Outer Link navigates to /log/<id>; the company
+                 URL is still discoverable inline. We let the outer
+                 Link win (the chip would otherwise be a nested
+                 <a>); no separate link here. Users land on the
+                 /log/<id> page which surfaces entry.url via the
+                 "Visit company →" CTA in the deep-dive. */
+              className="text-t1 font-body text-[15px] font-semibold"
             >
-              &gt;
+              {entry.company}
             </span>
-            {bullet}
-          </li>
-        ))}
-      </ul>
+          ) : (
+            <span className="text-t1 font-body text-[15px] font-semibold">
+              {entry.company}
+            </span>
+          )}
+          <Badge variant={entry.status as BadgeVariant}>
+            {entry.status === "active" ? "● active" : entry.status}
+          </Badge>
+        </div>
 
-      {/* Tag chips — color computed from each tag via chipColor() */}
-      <div className="flex flex-wrap gap-2">
-        {entry.tags.map((tag) => (
-          <Chip key={tag} color={chipColor(tag)}>
-            {tag}
-          </Chip>
-        ))}
-      </div>
-    </article>
+        {/* Role line */}
+        <p className="text-t3 mb-3.5 text-[14px]">{entry.role}</p>
+
+        {/* Bullets */}
+        <ul className="text-t1 mb-3.5 flex flex-col gap-2 text-[14.5px]">
+          {entry.bullets.map((bullet, i) => (
+            <li key={i} className="relative pl-5">
+              <span
+                aria-hidden
+                className="text-acc absolute top-0 left-0 font-mono font-semibold"
+              >
+                &gt;
+              </span>
+              {bullet}
+            </li>
+          ))}
+        </ul>
+
+        {/* Tag chips — color computed from each tag via chipColor().
+            Each chip that resolves via resolveStackSlug() becomes a
+            clickable deep-link to /stack#<id>. Chips use
+            stopPropagation so the outer card-link doesn't fire. */}
+        <div className="flex flex-wrap gap-2">
+          {entry.tags.map((tag) => {
+            const slug = resolveStackSlug(tag);
+            const chip = <Chip color={chipColor(tag)}>{tag}</Chip>;
+            if (!slug) {
+              return <span key={tag}>{chip}</span>;
+            }
+            return (
+              <Link
+                key={tag}
+                href={`/stack#${slug}`}
+                onClick={(e) => e.stopPropagation()}
+                aria-label={`More about ${tag} on /stack`}
+                className="rounded-[4px]"
+              >
+                {chip}
+              </Link>
+            );
+          })}
+        </div>
+      </article>
+    </Link>
   );
 }
