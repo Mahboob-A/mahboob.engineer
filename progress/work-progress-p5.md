@@ -709,3 +709,150 @@ stub with a working filterable listing of native + Medium posts.
       ...` URL).
   - Empty-state copy not present (because the default filter
     shows all posts — only renders when filter narrows to 0).
+
+---
+
+## T5.5 — `/writing/[slug]` individual post page
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+The per-post page. Native MDX posts render in full; Medium posts
+redirect to the canonical URL with `redirect()` from
+`next/navigation`. The route is the same shape Master §2.5
+specifies.
+
+- **`lib/mdx-components.tsx`** (new, ~155 lines) — MDX component
+  overrides. Custom implementations for: `h1-h4`, `p`, `a`,
+  inline `code`, block `pre`, `blockquote`, `ul/ol/li`, `hr`,
+  `table/th/td`, plus a custom `<Callout type="info|warn">` block.
+  - External links (matched via `^https?://`) auto-open in new tab
+    with `noreferrer`.
+  - Inline code uses `bg-code-bg` + `text-acc` rounded box.
+  - Headings styled with display font + tracked text.
+  - Block code (Shiki) gets rounded borders + padding; Shiki's
+    `class="shiki"` is preserved so its theme styles apply.
+- **`lib/mdx.ts`** (modify) — `loadNativePost` now passes
+  `components: mdxComponents` through to `compileMDX`. Same opts;
+  just the new wiring.
+- **`components/writing/PostHeader.tsx`** (new, ~95 lines):
+  - Back link ("← all posts" → `/writing`).
+  - Eyebrow row: category chip (link to `/writing#category-<id>`) +
+    series/part label + source badge (medium/native).
+  - Title (display, `clamp(32px, 5vw, 52px)`).
+  - Meta row: date · read time · tags (up to 4).
+  - For medium posts: "read on medium ↗" amber CTA at the top.
+- **`components/writing/PostTOC.tsx`** (new, ~45 lines) — sticky
+  right sidebar, hidden `<md`, max-height calc'd so it never
+  overflows the viewport. Returns `null` when toc is empty.
+- **`components/writing/RelatedProjects.tsx`** (new, ~50 lines) —
+  2-col grid of project cards (name + tier + tagline), each
+  linking to `/work/[slug]`. Returns `null` if no projects or if
+  slugs don't resolve.
+- **`components/writing/RelatedStack.tsx`** (new, ~40 lines) —
+  flex-wrap of chips, each linking to `/stack#[tech-id]`. Returns
+  `null` if stack is empty.
+- **`components/writing/SeriesNav.tsx`** (new, ~55 lines) —
+  2-col prev/next for posts in a series. Looks up the adjacent
+  parts by `postsInSeries(post.series).find((p) => p.part ===
+  current ± 1)`. Renders an empty div in the missing direction so
+  the existing post stays at the same side (e.g. part 1 has
+  empty "previous" cell, part 4 has empty "next" cell).
+- **`app/writing/[slug]/page.tsx`** (new, ~165 lines):
+  - `generateStaticParams()` returns all native + Medium slugs
+    (Medium slugs redirect at render time, but they're pre-rendered
+    so the first hit doesn't pay a cold dynamic invocation).
+  - `generateMetadata()` uses `blogMetadata()` for native posts
+    (rich title/description), or builds minimal metadata for
+    Medium posts.
+  - Render flow:
+    1. If slug is in `BLOG_POSTS_BY_SLUG` with `source: "medium"`
+       → `redirect(post.url)` (307).
+    2. Else `loadNativePost(slug)` → if it throws → `notFound()`.
+    3. Else render PostHeader + sticky TOC + MDX content +
+       RelatedProjects + RelatedStack + SeriesNav + edit-in-Keystatic
+       footer link.
+
+### Decisions
+
+- **`redirect()` for Medium posts, not `notFound()`.** A Medium
+  slug that's stale (post was deleted from Medium, but our static
+  registry still has it) should still resolve to the best-known
+  URL. Vercel + Next show a server-side 307, the browser follows
+  it, and if the Medium URL is dead the user sees Medium's own
+  404 page (we don't need to fabricate one here).
+- **`generateStaticParams` includes Medium slugs too.** Even
+  though the page redirects, pre-rendering catches the redirect
+  in the static-rendered HTML — first hit is a `307` rather than
+  a `200 → dynamic → 307` cold path.
+- **`PostHeader` builds a fresh `BlogPostItem`-shaped object**
+  (`headerPost`) instead of re-exporting the native post shape
+  directly. Two reasons: the field set is slightly different
+  (TS-native posts have all fields; MDX-native only those in
+  frontmatter), and we want one stable shape that the header
+  accepts.
+- **TOC scroll-margin handled via CSS** rather than a
+  `scrollIntoView` hook. The `scroll-mt-20` Tailwind utility
+  (already on the master document) offsets the scroll target by
+  80 px so the sticky navbar doesn't cover the heading. (The
+  TOC links to `#<slug>`; the heading carries that id from
+  rehype-slug.)
+- **Sticky TOC max-height** = `calc(100vh - 120px)` so the
+  TOC never overflows the viewport on short screens.
+  Top offset `top-[88px]` aligns with the sticky navbar's
+  64px height plus a 24px breathing gap.
+- **No calls-to-action in the post body.** The Master spec doesn't
+  add anything between content and the related-projects block;
+  the design stays minimal. The edit-in-Keystatic link sits in
+  a footer block, easy to find but not in the way.
+- **No responsive split below `lg`.** On `<lg` the layout flips
+  to single-column — TOC hides (it's empty on mobile by design),
+  and the article body takes full width. Same `<aside>` element
+  is rendered but visually hidden via `hidden md:block` on the
+  TOC nav.
+- **No `OpenGraph` image rendered** for posts — Phase 6 polish.
+  OG + Twitter metadata is already filled via `blogMetadata()`.
+- **API:** the `params` in Next.js 16 is async. We `await params`
+  in both `generateMetadata` and the page body. One-liner cost
+  vs the legacy sync API.
+
+### Caveats / pending
+
+- **Shiki `<pre>` styling tweak is loose.** Shiki emits
+  `<pre class="shiki">` with inline theme styles. Our override
+  adds `bg-code-bg border-border rounded ... p-4`. If Shiki's theme
+  includes its own background color (github-dark does), ours wins
+  via `bg-code-bg`. Acceptable; the rendered look is "dark code
+  panel with light accents" everywhere — which is what we want.
+- **No image handling in MDX.** T5.6's seeded posts won't include
+  inline images. If the user authors a post with `<img src=...>`
+  via Keystatic, it'll be rendered without `next/image`
+  optimization (just a plain `<img>`). Future polish can wire
+  `<Image>` via the components map.
+- **No "Last updated" / modified timestamp.** The `publishedAt`
+  field is the only date shown.
+- **No analytics on scroll depth** — Phase 6 Vercel Analytics.
+- **No comments / reactions.** Out of master scope.
+- **No "Reading progress" bar** — Phase 6 polish.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean. (One error on the page's `header={null}`
+  initially; fixed by omitting the prop entirely.)
+- `pnpm lint` → clean. (Caught one unused `eslint-disable` directive
+  in `mdx-components.tsx`; removed.)
+- `pnpm build` → 36 routes (was 23). The +13 are the Medium slugs
+  pre-rendered for redirect. Native posts don't add any routes yet
+  because T5.6 hasn't shipped — the `nativeSet` is empty, so
+  every BlogPost item's slug becomes a redirect page.
+- **Live redirects smoke** (`pnpm dev`):
+  - `/writing/linux-networking-part-1` → 307 → Medium URL ✓
+  - `/writing/postgresql-part-1` → 307 → Medium URL ✓
+  - `/writing/non-existent-slug` → 404 (Next default 404 page)
+- **Native post path not exercised yet** — T5.6 ships a real
+  native post so we can verify the full MDX render + Shiki +
+  TOC + RelatedProjects/Stack flow end-to-end.

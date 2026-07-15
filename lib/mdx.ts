@@ -28,6 +28,7 @@ import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 import { createHighlighter } from "shiki";
 import remarkGfm from "remark-gfm";
 import matter from "gray-matter";
+import { mdxComponents } from "@/lib/mdx-components";
 
 /* ===========================================================================
    Types
@@ -204,6 +205,7 @@ export async function loadNativePost(slug: string): Promise<NativePost> {
   const highlighter = await getHighlighter();
   const { content } = await compileMDX({
     source: raw,
+    components: mdxComponents,
     options: {
       mdxOptions: {
         remarkPlugins: [remarkGfm],
