@@ -853,3 +853,44 @@ breakpoints. Decisions:
 
 `git push origin main` succeeded — `674109a..2e68b84 main -> main`.
 Remote `main` now at `2e68b84` (T6.9). All Phase 6 commits shipped.
+
+---
+
+## Bug 1 — Landing Blog section had duplicate React keys
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`data/blog.ts`** — two Medium entries renamed to avoid slug
+  collision with native MDX posts:
+  - `linux-networking-part-1` → `linux-networking-part-1-medium`
+  - `message-queue-101` → `message-queue-101-medium`
+- **`lib/medium-rss.ts`** — added `RESERVED_NATIVE_SLUGS` set
+  (3 native slugs). The mapper suffixes any RSS-derived slug
+  that collides with a native slug with `-medium`. Prevents a
+  fresh RSS fetch from re-introducing the same React-key warning.
+
+### Decisions
+
+- **Suffix Medium entries with `-medium`** (user-confirmed).
+  Keeps both posts visible (Medium cross-post + native MDX) and
+  preserves stable URLs for native posts.
+- **Native keeps bare slug.** `/writing/linux-networking-part-1`
+  still renders the native MDX (last-write-wins on
+  `BLOG_POSTS_BY_SLUG`).
+
+### Caveats / pending
+
+- **Medium URLs still point at the bare Medium permalinks.**
+  The Medium cross-post's `url` field is unchanged — readers on
+  Medium still see the original article.
+- **No external link breakage.** Medium permalinks unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean. No React duplicate-key warnings.

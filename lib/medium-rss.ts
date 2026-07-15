@@ -25,6 +25,22 @@ import {
 
 const FEED_URL = "https://imehboob.medium.com/feed";
 
+/**
+ * Slugs reserved by native MDX posts under content/posts/. If a fresh
+ * RSS fetch produces a slug that collides with one of these, the
+ * mapper suffixes it with "-medium" so both render as separate
+ * cards on /writing.
+ *
+ * Post-Phase 6 bug fix — mirrors the suffix scheme in data/blog.ts
+ * for the static Medium entries (linux-networking-part-1-medium,
+ * message-queue-101-medium).
+ */
+const RESERVED_NATIVE_SLUGS = new Set<string>([
+  "linux-networking-part-1",
+  "message-queue-101",
+  "algocode-deep-dive",
+]);
+
 /* ===========================================================================
    rss-parser + types
    =========================================================================== */
@@ -134,7 +150,14 @@ function mapMediumItem(item: MediumItem): BlogPostItem | null {
   const staticMatch = BLOG_POSTS.find(
     (p) => p.source === "medium" && p.title.trim() === title,
   );
-  const slug = staticMatch?.slug ?? slugFromTitle(title);
+  let slug = staticMatch?.slug ?? slugFromTitle(title);
+  /* Post-Phase 6 bug fix: if a fresh RSS fetch produces a slug that
+     collides with a reserved native MDX slug, suffix with "-medium" so
+     both render as separate cards on /writing and the landing Blog
+     section gets unique React keys. */
+  if (!staticMatch && RESERVED_NATIVE_SLUGS.has(slug)) {
+    slug = `${slug}-medium`;
+  }
 
   // Excerpt — prefer the snippet; fall back to a no-frills trim.
   const snippet = (item.contentSnippet ?? item.content ?? "").trim();

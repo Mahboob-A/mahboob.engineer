@@ -92,7 +92,10 @@ export interface BlogPostItem {
 export const BLOG_POSTS: BlogPostItem[] = [
   /* ─── Linux Networking series (4 parts) ─────────────────────────── */
   {
-    slug: "linux-networking-part-1",
+    /* Post-Phase 6 bug fix: native MDX at content/posts/linux-networking-part-1.mdx
+       occupies the bare slug. Suffix this Medium entry so /writing can show
+       both (native wins on /writing/[slug] via last-write-wins). */
+    slug: "linux-networking-part-1-medium",
     title:
       "Linux Networking for Backend Engineers — Part 1: Namespaces & Virtual Interfaces",
     source: "medium",
@@ -270,7 +273,9 @@ export const BLOG_POSTS: BlogPostItem[] = [
       "The full story behind Algocode — microservice boundaries, RabbitMQ coordination, and running untrusted code safely inside sibling Docker containers.",
   },
   {
-    slug: "message-queue-101",
+    /* Post-Phase 6 bug fix: native MDX at content/posts/message-queue-101.mdx
+       occupies the bare slug. Suffix this Medium entry so both can coexist. */
+    slug: "message-queue-101-medium",
     title:
       "Message Queue 101: Your Ultimate Guide to Understanding Message Queues",
     source: "medium",
