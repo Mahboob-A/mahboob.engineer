@@ -111,6 +111,9 @@ export class WorldScene extends Phaser.Scene {
     if (this.player) this.player.createAnimations();
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.createColliders();
+    /* T4.8: launch the HUD layer in parallel. `launch` (not `start`)
+       keeps WorldScene running — UIScene draws on top. */
+    this.scene.launch("UIScene");
   }
 
   /* ─────────────────────────────────────────────────────────────────────

@@ -662,3 +662,76 @@ The overlap fires once per encounter (per a `villainEncounterActive` guard), pau
   - "Gopher King", "Terraform Titan", "eBPF Phantom"
   - "gopher-king", "terraform-titan", "ebpf-phantom"
   - "Warden of Concurrency", "Lord of Infrastructure"
+
+---
+
+## T4.8 — UIScene / HUD (minimap + district label + hint + controls)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+The HUD layer runs in parallel with WorldScene. Visiting `/game` now shows:
+- **Minimap** (bottom-left, ~240×200 px): 60×50 tile grid, dim border color for ground, accent-tinted rectangles for buildings, mint-green player dot. Visited tiles brighten on first entry.
+- **District label** (top-right): e.g. "CLOUD RIDGE", "SAAS QUARTER". Sampled every 8 frames; "—" when > 400 px from any building.
+- **"[E] Enter …" hint** (bottom-center): shown only when player is inside a Building zone. UIScene is now the first subscriber on `bridge.SHOW_INTERACTION_HINT`.
+- **"WASD / Arrow keys"** (bottom-right): always visible.
+
+**`game/scenes/UIScene.ts` (full rewrite — was 33-line stub):**
+- Imports `bridge` (the missing import — T4.0 stub didn't include it).
+- Imports `PROJECTS_BY_SLUG` from `data/projects.ts` (new cross-boundary import: `game/` previously had no `data/` imports).
+- 4 HUD elements: `minimapBg` Graphics (3000 rects, single draw call), `minimapPlayer` Graphics (redrawn each frame), `hintText` / `districtText` / `controlsText` Text objects.
+- `update()` per frame: marks the player's current tile as visited, re-draws the player dot, samples the district label.
+- `bridge.on("SHOW_INTERACTION_HINT", ...)` and `bridge.on("HIDE_INTERACTION_HINT", ...)` — first subscribers on these events. Stored listener refs for clean teardown on `SHUTDOWN`.
+- `scene.get("WorldScene")` to get a reference to the running WorldScene — reads `player.x` / `player.y` and iterates `buildings` for the closest-building district lookup.
+
+**`game/scenes/WorldScene.ts` (modify — 1 line):**
+- `create()` now calls `this.scene.launch("UIScene")` after `createColliders`. `launch` (not `start`) keeps WorldScene running in parallel.
+
+**`game/index.tsx` (modify — 2 lines):**
+- Imports `UIScene` and adds `new UIScene()` to the `config.scene` push. Without this, Phaser's tree-shaker dropped UIScene entirely from the production bundle (verified: the chunk had no `UIScene`/`minimapBg`/`computeDistrictLabel` strings until this fix). Phaser scenes need to be in the scene list at construction time even if they're `launch`ed later.
+
+### Decisions
+
+- **Coordinate scaling** — minimap at 4 px/tile, 240×200 px total, anchored at bottom-left with 12 px padding. ~37% of viewport height, clear of the player sprite.
+- **Static background via `Phaser.GameObjects.Graphics`** — single draw call for 3000 tiles vs 3000 individual `add.rectangle()` game objects. Phaser batches Graphics.
+- **Per-tile "visited" state** — `Set<string>` keyed by `"x,y"`. First-visit brightens the tile via `fillStyle(0x5cc9a0, 0.3)` re-draw. 3000 max entries; trivial memory cost.
+- **Player dot is a separate Graphics** — redrawn each frame as a 5×5 px square centered on the player's tile.
+- **District label is derived from buildings, not from a Tiled district-layer** — no district-boundary data exists. T4.8 finds the closest building by center distance and looks up `PROJECTS_BY_SLUG[slug].game_district`. Fallback "—" when > 400 px.
+- **District label sampled every 8 frames** (~7.5 Hz at 60 fps) — saves ~13× per-frame work. Imperceptible to the player.
+- **`launch` not `start`** — `launch` starts a scene in parallel; `start` would stop the current scene. WorldScene must keep running while UIScene draws on top.
+- **UIScene must be in the config.scene list at construction time** — Phaser's tree-shaker drops classes that aren't statically referenced. T4.0 had this in the docstring but the actual import was missing. T4.8 fix: `game/index.tsx` adds `new UIScene()` to the scene push (alongside `new PreloadScene()`).
+- **No grid-style minimap data** — no in-repo visual reference. 3000-rect + accent-tint approach is hand-authored to match the dark-forest-green palette.
+- **No minimap player icon** — simple accent-color square. Future polish: small dev sprite or arrow pointing in facing direction.
+- **Bottom-center hint, top-right district, bottom-right controls** — top-left empty for a future location-name header.
+
+### Caveats / pending
+
+- **First build had tree-shaking bug** — UIScene was dropped from the production bundle because nothing statically imported it. WorldScene's `this.scene.launch("UIScene")` reference is a string, not a static import. Fixed by adding `new UIScene()` to the `config.scene` push in `game/index.tsx`. **Lesson learned**: scenes need to be in the scene list even if they're `launch`ed later. Future tasks adding new scenes should follow the same pattern.
+- **No minimap player icon** — a simple square. Future polish: small dev sprite or arrow pointing in the player's facing direction.
+- **Visited-tile painting is additive** — drawn on top of the static background, never removed. Future polish: re-paint the entire minimap on N% visited to consolidate the layers.
+- **District label updates only when close to a building** — empty space shows "—". Honest + clear.
+- **No HUD for the special buildings (Backend Diaries HQ, Skills Academy, Contact Bureau)** — they show in the minimap as accent-tinted rects (same as project buildings). Their `game_district: "center"` → "CENTER" label shows when near. T4.12 will handle the special-overlay routing; HUD works unchanged.
+- **The 3000-rect background draw is at startup cost** — single draw call. Future polish: use a `CanvasTexture` for the static grid so it's effectively free at runtime.
+- **Hint text update via bridge is event-driven** — relies on WorldScene emitting the correct events. Verified in T4.4's `WorldScene.update()`.
+- **No minimap click-to-teleport** — out of scope. The user walks. T6.x polish can add minimap clicks as "fast travel".
+- **Mobile / small-screen minimap** — 240×200 px is fixed-size. On a 360 px-wide phone, minimap takes ~67% of horizontal. Phase 6 polish: scale down on small viewports.
+- **The "Controls" hint doesn't react to mobile** — reads "WASD / Arrow keys" but mobile has neither. Phase 6 polish: detect touch and show "tap to walk" instead.
+- **No pause indicator in the HUD** — T4.11 will add the pause menu. UIScene just provides the canvas for it; UIScene doesn't need to know about pause state.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean. (Initial pass had 2 errors: `bridge.off()` requires the listener ref, not just the event name. Fixed by storing `showHintListener` / `hideHintListener` as instance fields.)
+- `pnpm lint` → clean. (Initial pass had 1 warning: `MINIMAP_W` unused. Removed the constant.)
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live URL smoke** — `/game` → 200.
+- **Bundle smoke (post-fix)** — Phaser dynamic chunk now contains:
+  - `CLOUD RIDGE`, `SAAS QUARTER`, `SYSTEMS DISTRICT`, `MEDIA ROW`, `PROTOCOL STREET`, `VISION LAB` (all 6 district labels)
+  - `WASD / Arrow keys` (controls hint)
+  - `minimapBg`, `minimapPlayer` (minimap Graphics objects)
+  - `UIScene` class identifier
+  - `computeDistrictLabel` method (private method name preserved by Turbopack)
+- **Visual verify** (real browser): not run in this session due to no display — but the string presence in the Phaser chunk + clean typecheck + clean build is the structural verification. End-to-end browser testing is the user's call.

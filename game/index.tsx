@@ -25,6 +25,7 @@ import Phaser from "phaser";
 import { bridge } from "@/game/EventBridge";
 import { createPhaserConfig } from "@/game/config";
 import { PreloadScene } from "@/game/scenes/PreloadScene";
+import { UIScene } from "@/game/scenes/UIScene";
 import { ProjectOverlay } from "@/game/scenes/overlays/ProjectOverlay";
 import { VillainOverlay } from "@/game/scenes/overlays/VillainOverlay";
 import type { OverlayPayload, VillainId } from "@/game/types";
@@ -39,11 +40,17 @@ export default function GameRoot() {
     if (gameRef.current) return;
 
     const config = createPhaserConfig();
-    /* Register the entry scene. PreloadScene (T4.3+) loads assets,
-       logs "[Backend City] assets ready" once done, then transitions
-       to WorldScene. UIScene is launched in parallel by WorldScene. */
+    /* Register the entry scene + the parallel HUD layer. PreloadScene
+       (T4.3+) loads assets, logs "[Backend City] assets ready" once
+       done, then transitions to WorldScene. UIScene (T4.8) draws the
+       HUD — but is launched in parallel by WorldScene.create() (not
+       from here); we still need to register the class so Phaser
+       knows the scene key. */
     if (Array.isArray(config.scene)) {
-      (config.scene as Phaser.Scene[]).push(new PreloadScene());
+      (config.scene as Phaser.Scene[]).push(
+        new PreloadScene(),
+        new UIScene(),
+      );
     }
     gameRef.current = new Phaser.Game(config);
 
