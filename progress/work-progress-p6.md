@@ -419,3 +419,78 @@ breakpoints. Decisions:
   - Tab N+1 → mode toggle pills.
   - Tab on Phaser canvas → skip (Phaser canvas wrapper not focusable
     itself; visible via screen reader).
+
+---
+
+## T6.5 — Lighthouse prep (sitemap, robots, icon, security headers)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`app/sitemap.ts`** (new, ~50 lines) — Next 16 metadata-file
+  convention. Builds a `MetadataRoute.Sitemap` from three sources:
+  - 7 static routes (`/`, `/log`, `/work`, `/stack`, `/writing`,
+    `/contact`, `/game`).
+  - 12 `/work/[slug]` entries from `PROJECTS`.
+  - 3 `/writing/[slug]` entries from `listNativePostSlugs()`.
+  Static prerendered. Excludes Medium cross-post slugs (they're 307
+  redirects, not content).
+- **`app/robots.ts`** (new, ~20 lines) — allows everything except
+  `/api/*` + `/keystatic/*`. References `/sitemap.xml`. Static
+  prerendered.
+- **`app/icon.tsx`** (new, ~30 lines) — generated favicon. 32×32 PNG
+  via `@vercel/og`'s `ImageResponse`, a monogram "MA" in `colors.acc`
+  on `colors.bg` background. No external image needed.
+- **`next.config.ts`** — adds `async headers()` returning 4 security
+  headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-
+  Policy`, `Permissions-Policy`) for every route via the `source:
+  "/(.*)"` matcher. Vercel injects HSTS + HTTPS-only automatically
+  on its preview hostnames.
+
+### Decisions
+
+- **No external image hosts.** Both the OG card (T6.1) and the icon
+  are generated. `next.config.ts` doesn't need `images.remotePatterns`.
+- **`/keystatic/*` disallowed.** Don't let crawlers index the admin SPA.
+- **JSON-LD `Person` schema skipped.** Out of scope; Lighthouse doesn't
+  grade on JSON-LD presence. Future polish.
+- **No `lastmod` from git.** Would require a build hook; not worth the
+  complexity. Use build date for static + dynamic routes.
+- **`Permissions-Policy` is strict default.** DrishtiAI's WebRTC use
+  case isn't deployed; deny camera/mic/geolocation. User can extend
+  per-origin if a future feature needs it.
+- **HSTS deferred to Vercel.** Vercel injects `Strict-Transport-
+  Security` automatically on the production domain.
+
+### Caveats / pending
+
+- **No `apple-touch-icon` PNG.** `app/icon.tsx` generates a 32×32
+  icon; iOS wants 180×180 for the home-screen bookmark. Acceptable;
+  most users bookmark via the page title.
+- **`/sitemap.xml` excludes Medium posts by slug.** Adding them
+  would include 14 307-redirect URLs in the sitemap, which Google
+  interprets as soft 404s. Cleaner to omit.
+- **No `app/apple-icon.tsx`.** Same reasoning.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes (was 37). New: `/icon` (○), `/robots.txt`
+  (○), `/sitemap.xml` (○). All three register as `Static`.
+- **Live smoke** (`pnpm dev`):
+  - `HEAD /` → 200 with all 4 security headers present
+    (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+    `Referrer-Policy: strict-origin-when-cross-origin`,
+    `Permissions-Policy: camera=(), microphone=(), geolocation=()`).
+  - `GET /robots.txt` → 200, valid text with `Allow: /`,
+    `Disallow: /api/`, `Disallow: /keystatic/`, sitemap reference.
+  - `GET /sitemap.xml` → 200, valid XML; first 4 entries are
+    `https://mahboob.engineer/` (priority 1), `/log`, `/work`,
+    `/stack`. Continues with all 12 projects + 3 native posts.
+  - `GET /icon` → 200, content-type `image/png` (verified via
+    `curl -sI` headers; magic bytes from the @vercel/og response).
