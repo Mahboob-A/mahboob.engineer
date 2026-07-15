@@ -152,6 +152,13 @@ interface ModeTogglePillProps {
  * submit hits /api/mode and flips the cookie. No client JS required.
  */
 function ModeTogglePill({ active, value, currentPath, label }: ModeTogglePillProps) {
+  /* Phase 6 (T6.4): aria-label so screen readers announce the action
+     ("Switch to flat portfolio mode") instead of just reading the
+     visible text "flat" / "game". */
+  const ariaLabel =
+    value === "flat"
+      ? "Switch to flat portfolio mode"
+      : "Switch to game mode";
   return (
     <form action="/api/mode" method="post" className="contents">
       <input type="hidden" name="mode" value={value} />
@@ -160,6 +167,7 @@ function ModeTogglePill({ active, value, currentPath, label }: ModeTogglePillPro
         type="submit"
         aria-pressed={active}
         aria-current={active ? "true" : undefined}
+        aria-label={ariaLabel}
         className={cn(
           "cursor-pointer rounded-full px-3.5 py-1.5 transition-all",
           active ? "text-acc bg-acc-dim font-semibold" : "text-t3 hover:text-t1",

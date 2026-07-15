@@ -117,7 +117,16 @@ export default function GameRoot() {
       id="phaser-wrapper"
       className="relative h-[640px] w-full overflow-hidden rounded-[10px] border border-border"
     >
-      <div id="phaser-root" className="h-full w-full" />
+      <div
+        id="phaser-root"
+        className="h-full w-full"
+        /* Phase 6 (T6.4): the Phaser canvas isn't focusable itself —
+           keyboard input goes through document-level listeners. But
+           for AT users we expose a descriptive aria-label on the
+           wrapper so screen readers announce what the canvas is. */
+        role="img"
+        aria-label="Backend City game canvas. Use WASD or arrow keys to move, E to enter buildings, Escape to pause."
+      />
 
       {overlay ? (
         <OverlaySlot overlay={overlay} onClose={() => bridge.closeOverlay()} />

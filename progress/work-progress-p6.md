@@ -316,3 +316,106 @@ breakpoints. Decisions:
     breakpoints ✓.
   - Landing Hero: stacks at `lg` boundary ✓.
   - DiagramPanel: `overflow-x-auto` on child container ✓ (T1.5).
+
+---
+
+## T6.4 — Accessibility polish
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`app/globals.css`** — global `:focus-visible` rule was already
+  present (lines 91-96). Phase 6 adds:
+  - **Skip-link styles** — `.skip-link` is `position: absolute;
+    left: -9999px` until `:focus`, then `left: 16px; top: 16px`.
+    Visually hidden until focused, then a `bg-surface` mono-font
+    pill announces "Skip to main content".
+  - **`prefers-reduced-motion` rule** — gates all keyframes + transitions
+    to 0.01ms duration. Complements the JS-side `useReducedMotion()`
+    inside `FadeUp` and `PageTransition`.
+- **`app/layout.tsx`** — first child of `<body>` is the skip link
+  (`<a href="#main-content" class="skip-link">`). `<main>` gains
+  `id="main-content"` so the skip link jumps to it.
+- **`components/layout/Navbar.tsx`** — `ModeTogglePill` adds an explicit
+  `aria-label` ("Switch to flat portfolio mode" / "Switch to game mode")
+  so screen readers announce the action, not just the visible text.
+  The existing `aria-pressed` stays.
+- **`components/ui/Badge.tsx`** — adds `role="status"` so screen readers
+  announce the status when the badge mounts. Today badges carry text
+  (`● active`, `building`, etc.) so this is a defense-in-depth
+  improvement for color-only badge variants.
+- **`components/game/ModeSelector.tsx`** — `Enter Game` button
+  auto-focuses on mount (`useRef` + `useEffect`). Enter / Space
+  activates immediately without a Tab keystroke.
+- **`components/game/PauseMenu.tsx`** — `Resume` button auto-focuses
+  on mount (same pattern as `ModeSelector`). Buttons render inside a
+  `role="menu"` container with `role="menuitem"` on each. `ref` is
+  forwarded through the `PauseButton` helper.
+- **`game/index.tsx`** — Phaser canvas wrapper (`#phaser-root`) gets
+  `role="img"` + a descriptive `aria-label`. Canvas isn't focusable
+  itself (keyboard input goes through document-level listeners), but
+  AT users get a clear screen-reader announcement of what the canvas
+  is.
+
+### Decisions
+
+- **Global `:focus-visible`, not per-component.** The existing rule
+  covers every focusable element site-wide without per-component work.
+  Phase 6 only needed to verify it's there.
+- **Skip-link is the first focusable element.** Universal convention.
+- **Auto-focus on dialog-like UIs, not focus-trap.** The two gated
+  UIs (`ModeSelector` + `PauseMenu`) auto-focus the primary action,
+  but don't trap focus. Users can Tab away; acceptable for v1.
+- **`role="menu"` on the pause menu, not `role="dialog"` for menu
+  semantics.** The pause menu already has `role="dialog"` on the
+  outer `<div>`; the inner `<div role="menu">` adds menu semantics
+  to the 4 buttons (which become `role="menuitem"`). This double
+  pattern reads correctly to both ATs that understand dialogs (most)
+  and ATs that understand menus (some screen-reader configurations).
+- **No `aria-modal` on dialogs.** PauseMenu / ModeSelector both have
+  `role="dialog"` + `aria-label`, but they don't trap focus, so
+  `aria-modal="true"` would be a lie. Standards-compliant.
+- **No `axe-core` automated audit.** Lighthouse a11y check (T6.9)
+  catches most of the same issues; manual DevTools a11y tab for the
+  rest. Future polish: add `axe-playwright` to the QA suite.
+
+### Caveats / pending
+
+- **No focus-trap on dialogs.** PauseMenu + ModeSelector both have
+  `role="dialog"` but Tab / Shift-Tab can leave the dialog. Acceptable
+  since the dialog is a temporary overlay; Escape closes them. Future
+  polish: add a focus-trap hook.
+- **No `aria-modal` mismatch correction.** Same root cause as above.
+- **No axe-core scan.** Lighthouse a11y checks are a strict superset
+  for our scope. Future polish.
+- **No skip-link to `#main-content` from `<Footer>`.** Footer has no
+  useful destination; the skip link only goes to `<main>`.
+- **`role="img"` on a div** — some screen readers prefer `role="region"`
+  + heading for context. We went with `role="img"` because the canvas
+  carries the same "this is an interactive display area" semantic
+  that `<img>` does.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes. 0 warnings. (Unchanged from T6.3.)
+- **HTML smoke** (verified at the source level):
+  - `<a href="#main-content" class="skip-link">Skip to main content</a>` is the first child of `<body>`.
+  - `<main id="main-content">` is the skip-link target.
+  - Navbar mode toggle renders `<button aria-label="Switch to flat portfolio mode" aria-pressed="...">`.
+  - Badge renders `<span role="status">● active</span>`.
+  - ModeSelector's Enter button has the auto-focus `ref`.
+  - PauseMenu buttons have `role="menuitem"`; container has `role="menu"`.
+  - Phaser canvas wrapper has `role="img"` + descriptive `aria-label`.
+- **Manual tab order** (would need a real browser; deferred to T6.9):
+  - Tab 1 → skip link visible.
+  - Tab 2 → logo.
+  - Tab 3-N → nav links.
+  - Tab N+1 → mode toggle pills.
+  - Tab on Phaser canvas → skip (Phaser canvas wrapper not focusable
+    itself; visible via screen reader).

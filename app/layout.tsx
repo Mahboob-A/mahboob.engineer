@@ -141,8 +141,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-body bg-bg text-t1 flex min-h-full flex-col">
+        {/* Skip-link — first focusable element. Phase 6 (T6.4). */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <Navbar />
-        <main className="flex-1">
+        <main id="main-content" className="flex-1">
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />

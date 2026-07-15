@@ -24,7 +24,7 @@
 
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 
@@ -47,6 +47,13 @@ export function PauseMenu({
   flatHref = "/",
 }: PauseMenuProps) {
   const router = useRouter();
+  /* Phase 6 (T6.4): auto-focus the Resume button on mount so Enter /
+     Space resumes immediately. Same pattern as ModeSelector. */
+  const resumeButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    resumeButtonRef.current?.focus();
+  }, []);
+
   return (
     <div
       className="bg-bg/85 fixed inset-0 z-[60] flex items-center justify-center backdrop-blur-sm"
@@ -64,15 +71,22 @@ export function PauseMenu({
           </h2>
         </header>
 
-        {/* 4 button rows */}
-        <div className="flex flex-col gap-2">
-          <PauseButton onClick={onResume} variant="primary">
+        {/* 4 button rows. role="menu" + role="menuitem" on each
+            button for screen-reader semantics. Phase 6 (T6.4). */}
+        <div role="menu" aria-label="Pause actions" className="flex flex-col gap-2">
+          <PauseButton
+            ref={resumeButtonRef}
+            onClick={onResume}
+            variant="primary"
+            role="menuitem"
+          >
             ▶ Resume
           </PauseButton>
 
           <PauseButton
             onClick={() => router.push(flatHref)}
             variant="secondary"
+            role="menuitem"
           >
             View flat portfolio →
           </PauseButton>
@@ -81,6 +95,7 @@ export function PauseMenu({
             onClick={onToggleMute}
             variant="secondary"
             rightLabel={isMuted ? "off" : "on"}
+            role="menuitem"
           >
             Toggle sound
           </PauseButton>
@@ -91,7 +106,11 @@ export function PauseMenu({
           <form action="/api/mode" method="post" className="contents">
             <input type="hidden" name="mode" value="flat" />
             <input type="hidden" name="next" value={flatHref} />
-            <PauseButton type="submit" variant="secondary">
+            <PauseButton
+              type="submit"
+              variant="secondary"
+              role="menuitem"
+            >
               ✕ Exit game mode
             </PauseButton>
           </form>
@@ -109,24 +128,32 @@ export function PauseMenu({
 /* Internal: a button styled for the pause menu's vertical list.
    Supports `type="button"` (default) and `type="submit"` (when nested
    inside a form). `rightLabel` renders a small right-aligned mono
-   indicator — used for the "Sound: ON/OFF" tag. */
-function PauseButton({
+   indicator — used for the "Sound: ON/OFF" tag. `ref` is forwarded
+   so the parent can auto-focus the Resume button on mount
+   (Phase 6 T6.4). */
+const PauseButton = ({
   children,
   onClick,
   variant = "secondary",
   rightLabel,
   type = "button",
+  role,
+  ref,
 }: {
   children: ReactNode;
   onClick?: () => void;
   variant?: "primary" | "secondary";
   rightLabel?: string;
   type?: "button" | "submit";
-}) {
+  role?: "menuitem";
+  ref?: React.Ref<HTMLButtonElement>;
+}) => {
   return (
     <button
+      ref={ref}
       type={type}
       onClick={onClick}
+      role={role}
       className={cn(
         "flex w-full items-center justify-between gap-2 rounded-[6px] border px-4 py-2.5",
         "font-mono text-[13px] font-medium transition-colors",
@@ -143,4 +170,4 @@ function PauseButton({
       ) : null}
     </button>
   );
-}
+};

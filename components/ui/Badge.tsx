@@ -40,6 +40,10 @@ const VARIANT_CLASS: Record<BadgeVariant, string> = {
 export function Badge({ variant, children, className }: BadgeProps) {
   return (
     <span
+      /* Phase 6 (T6.4): `role="status"` adds a polite live region so
+         screen readers announce the status when the badge mounts.
+         Without this, the colored pill is invisible to AT users. */
+      role="status"
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-[10px] py-[3px]",
         "font-mono text-[10px] leading-none font-semibold tracking-[0.5px] uppercase",

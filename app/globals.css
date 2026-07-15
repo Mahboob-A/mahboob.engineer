@@ -95,6 +95,42 @@ html {
   border-radius: 2px;
 }
 
+/* Skip-link — visually hidden until focused. The first focusable
+   element on every page; jumps over Navbar + hero chrome to
+   `<main>`. Phase 6 (T6.4). */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  color: var(--t1);
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 16px;
+  top: 16px;
+}
+
+/* Reduced-motion respect — gates the navbar pulse-dot animation
+   and any future keyframe-based effects. Framer Motion's
+   `useReducedMotion()` handles the JS-side equivalents separately. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Logo dot pulse — defined locally so Navbar (a Server Component) doesn't
    need an inline <style> tag. */
 @keyframes pulse-dot {

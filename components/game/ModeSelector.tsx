@@ -25,7 +25,7 @@
 
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export function GameGate({ children }: { children: ReactNode }) {
@@ -66,6 +66,14 @@ function SelectorCard({
   onEnter: () => void;
   onBack: () => void;
 }) {
+  /* Phase 6 (T6.4): auto-focus the primary "Enter Game" button on
+     mount so Enter / Space activates it without a Tab keystroke.
+     Same pattern as PauseMenu's auto-focus. */
+  const enterButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    enterButtonRef.current?.focus();
+  }, []);
+
   return (
     <div
       className="bg-bg/85 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
@@ -94,6 +102,7 @@ function SelectorCard({
         {/* CTA row */}
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <button
+            ref={enterButtonRef}
             type="button"
             onClick={onEnter}
             className="bg-acc text-bg hover:bg-t1 inline-flex items-center gap-2 rounded-[6px] border border-border px-5 py-2.5 font-mono text-[12px] font-semibold tracking-[0.5px] transition-colors"
