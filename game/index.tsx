@@ -28,11 +28,19 @@ import { PreloadScene } from "@/game/scenes/PreloadScene";
 import { UIScene } from "@/game/scenes/UIScene";
 import { ProjectOverlay } from "@/game/scenes/overlays/ProjectOverlay";
 import { VillainOverlay } from "@/game/scenes/overlays/VillainOverlay";
+import { PauseMenu } from "@/components/game/PauseMenu";
 import type { OverlayPayload, VillainId } from "@/game/types";
 
 export default function GameRoot() {
   const gameRef = useRef<Phaser.Game | null>(null);
   const [overlay, setOverlay] = useState<OverlayPayload | null>(null);
+  /* T4.11 — pause menu state. Toggled by Escape / "Resume" button.
+     Defaults to false; the player has to enter the game first. */
+  const [paused, setPaused] = useState(false);
+  /* Mirror of WorldScene.isMuted — local React state that updates
+     only when the pause-menu's Toggle sound button is clicked. The
+     source of truth is WorldScene; this is a UI-only copy. */
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
     /* React strict-mode safety: the effect runs twice in dev.
@@ -76,6 +84,33 @@ export default function GameRoot() {
     };
   }, []);
 
+  /* T4.11: window-level Escape listener — only opens the pause menu
+     when not already paused (so Escape from "Resume" doesn't
+     immediately re-open). */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !paused) {
+        setPaused(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [paused]);
+
+  /* T4.11: when paused, freeze the WorldScene. Scene.pause() halts
+     update() + physics callbacks but does NOT pause the BGM (the
+     SoundManager is independent of the scene update loop). UIScene
+     keeps running — its minimap dot just sits at the pause position
+     because WorldScene.player.x doesn't change while paused. */
+  useEffect(() => {
+    if (!gameRef.current) return;
+    if (paused) {
+      gameRef.current.scene.pause("WorldScene");
+    } else {
+      gameRef.current.scene.resume("WorldScene");
+    }
+  }, [paused]);
+
   return (
     <div
       id="phaser-wrapper"
@@ -85,6 +120,25 @@ export default function GameRoot() {
 
       {overlay ? (
         <OverlaySlot overlay={overlay} onClose={() => bridge.closeOverlay()} />
+      ) : null}
+
+      {paused ? (
+        <PauseMenu
+          onResume={() => setPaused(false)}
+          onToggleMute={() => {
+            /* Resolve the WorldScene instance at click time via
+               Phaser's scene plugin. Same pattern as UIScene uses
+               in T4.8 (`this.scene.get('WorldScene')`). */
+            const worldScene = gameRef.current?.scene.getScene(
+              "WorldScene",
+            ) as
+              | (Phaser.Scene & { toggleMute: () => void })
+              | undefined;
+            worldScene?.toggleMute();
+            setIsMuted((m) => !m);
+          }}
+          isMuted={isMuted}
+        />
       ) : null}
     </div>
   );

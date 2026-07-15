@@ -800,3 +800,64 @@ Clicking "Enter Game" unmounts the selector and mounts the dynamic-imported `<Ga
 - `pnpm build` → 23 routes. 0 warnings.
 - **Live URL smoke** — `/game` → 200. SSR-rendered HTML contains all 6 selector strings: "Backend City", "Enter Game", "GAME MODE", "Game mode", "back to flat portfolio", "browser autoplay policy".
 - **Bundle smoke** — `GameGate` component string present in client chunk `0k_1chwp74l-h.js`. The selector renders on the server for SEO + pre-game context.
+
+---
+
+## T4.11 — ESC pause menu
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+Pressing Escape during gameplay opens a centered pause menu. The menu has 4 buttons:
+- **▶ Resume** (primary) — closes the menu, resumes the Phaser WorldScene.
+- **View flat portfolio →** — `router.push("/")`. No cookie change.
+- **Toggle sound** with right-aligned `on` / `off` indicator — calls `WorldScene.toggleMute()` and flips the local `isMuted` state.
+- **✕ Exit game mode** (form) — POSTs to `/api/mode` with `mode=flat` + `next=/`. The existing route sets the cookie + 303-redirects.
+
+`WorldScene` is paused via `gameRef.current.scene.pause("WorldScene")` when the menu opens. BGM keeps playing (the SoundManager is independent of the scene update loop; pausing it would be future polish). UIScene continues running — its minimap dot just sits at the pause position because `WorldScene.player.x` doesn't change while paused.
+
+**`components/game/PauseMenu.tsx` (new, ~115 lines):**
+- `'use client'` component. Same visual family as `ModeSelector` (T4.10) and `CaseStudyOverlay` (T4.6): `bg-bg/85 fixed inset-0 z-[60] backdrop-blur-sm` backdrop + `bg-surface border-acc/40 max-w-[440px] rounded-[12px] shadow-2xl` card.
+- 4 `<PauseButton>` rows in a `flex-col gap-2` container. Primary button is `bg-acc text-bg hover:bg-t1`; secondary buttons are `bg-code-bg border-border text-t1 hover:border-acc hover:text-acc`. PauseButton supports a `rightLabel` prop for the "on/off" indicator on the Toggle sound button.
+- "Exit game mode" uses a `<form action="/api/mode" method="post" className="contents">` wrapper. Pattern is copied verbatim from the Navbar's mode pill (`Navbar.tsx:154–172`).
+
+**`game/index.tsx` (modify — 3 additions):**
+- New state: `const [paused, setPaused] = useState(false)` + `const [isMuted, setIsMuted] = useState(false)`.
+- New useEffect: window-level Escape listener that opens pause menu when `!paused`. Guarded so Escape from "Resume" doesn't immediately re-open.
+- New useEffect: scene pause/resume coordination. `gameRef.current.scene.pause("WorldScene")` when `paused = true`; `.resume("WorldScene")` when `false`.
+- New render: `<PauseMenu>` rendered conditionally on `paused`. Toggle sound callback does `gameRef.current?.scene.getScene("WorldScene")?.toggleMute()` + flips `isMuted` state.
+
+### Decisions
+
+- **React-modal in `game/index.tsx`** — reuses the visual family of `ModeSelector` and `CaseStudyOverlay`. Master's parenthetical "not in an overlay" means "not a project/villain/special overlay" — separate UI surface, not a Phaser-scene restriction.
+- **`scene.pause("WorldScene")` / `.resume("WorldScene")`** — Phaser's scene plugin halts the WorldScene's update loop + physics callbacks. UIScene keeps running; its minimap dot just sits at the pause position.
+- **BGM keeps playing during pause** — `Scene.pause()` does not pause the `SoundManager`. User can mute via the "Toggle sound" button. Future polish: pause the BGM too.
+- **"View flat portfolio" uses `router.push(flatHref)`; "Exit game mode" uses `<form action="/api/mode">`** — the two actions differ semantically: "view" = preview the flat portfolio (no cookie change), "exit" = switch out of game mode permanently (cookie + redirect). The form pattern is copied from the Navbar pill (no JS, works without hydration).
+- **Default `flatHref = "/"`** — pause menu's "View" and "Exit" both go to `/`. The form's `next` field hard-codes `/` so both actions land on the same place.
+- **Local `isMuted` state mirrors WorldScene** — `isMuted` is the source of truth in `WorldScene`; the React state is a UI-only copy. The pause menu is the only muter, so they stay in sync. Future polish: emit a `MUTE_TOGGLED` bridge event from `toggleMute()` and subscribe in React.
+- **Window-level Escape listener** — Phaser's keyboard plugin only fires when the canvas has focus. Escape via the document body needs `window.addEventListener`. Same pattern as the existing T4.6 overlay.
+- **Guard `!paused` in the Escape listener** — pressing Escape from "Resume" doesn't immediately re-open the menu. Prevents a no-op toggle.
+- **No fade-out animation** — same as T4.10. The Phaser canvas paints over the now-unrendered modal instantly.
+- **`z-[60]` for the pause menu** (vs `z-50` for the selector) — pause-menu strict precedence over the mode-selector. z-[60] is an arbitrary-value Tailwind class.
+- **No "press Esc to open" alternation** — the hint copy is always "press Esc to resume" (since Esc opens when not paused, closes when paused). Future polish.
+
+### Caveats / pending
+
+- **The "Exit game mode" button's form action** — posts to `/api/mode`. If offline or API errors, the form submission fails silently. User can manually flip the mode in the Navbar pill.
+- **No "Are you sure?" confirmation for "Exit game mode"** — the action is irreversible from the pause menu's perspective. Future polish: a "are you sure?" modal.
+- **No persistence of the pause state across page reloads** — every visit to `/game` shows the mode selector first; the pause state is fresh. T4.10 + T4.11 are independent.
+- **No keybinding customization** — Escape is hard-coded. T6.x polish.
+- **The "isMuted" state in React is one-way (React → WorldScene)** — if some other code path flips `WorldScene.isMuted`, the React state goes stale. Today, the pause menu is the only muter, so this is fine.
+- **BGM doesn't auto-pause on tab blur** — Phaser's `pauseOnBlur` default is `true` but only applies to game loop, not audio. Future polish: subscribe to `visibilitychange` and pause/resume BGM.
+- **No scene.bringToTop on pause** — UIScene stays on top of (paused) WorldScene. No need to reorder; UIScene doesn't get in the way of the pause modal which is `z-60` > UIScene's default depth.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings.
+- **Live URL smoke** — `/game` → 200. All 5 pause-menu strings in the game chunk: `Exit game mode`, `Paused`, `Resume`, `Toggle sound`, `View flat portfolio`. `getScene("WorldScene` is present (the pause/scene-resolve logic).
