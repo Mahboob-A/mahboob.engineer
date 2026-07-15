@@ -29,6 +29,7 @@ import { UIScene } from "@/game/scenes/UIScene";
 import { ProjectOverlay } from "@/game/scenes/overlays/ProjectOverlay";
 import { VillainOverlay } from "@/game/scenes/overlays/VillainOverlay";
 import { PauseMenu } from "@/components/game/PauseMenu";
+import { SpecialOverlay } from "@/components/game/SpecialOverlay";
 import type { OverlayPayload, VillainId } from "@/game/types";
 
 export default function GameRoot() {
@@ -184,26 +185,9 @@ function OverlaySlot({
           onClose={onClose}
         />
       ) : (
-        /* T4.12 placeholder — special slugs (Backend Diaries HQ,
-           Skills Academy, Contact Bureau) will route to /writing,
-           /stack, /contact. For now show a clear fallback so the
-           slot isn't broken. */
-        <div className="bg-surface border-acc/40 flex flex-col gap-3 rounded-[12px] border p-8 text-center">
-          <p className="text-acc font-mono text-[11px] tracking-[1.5px] uppercase">
-            Special
-          </p>
-          <p className="text-t1 font-mono text-[14px]">{overlay.slug}</p>
-          <p className="text-t3 font-mono text-[12px]">
-            T4.12 will wire this.
-          </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="bg-acc text-bg mt-3 self-start rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold"
-          >
-            close
-          </button>
-        </div>
+        /* T4.12: route to the appropriate flat-portfolio page. The
+           SpecialOverlay handles slug-not-found safety internally. */
+        <SpecialOverlay slug={overlay.slug} onClose={onClose} />
       )}
     </div>
   );

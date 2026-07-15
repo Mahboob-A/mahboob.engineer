@@ -908,3 +908,71 @@ Visiting `/game?entered=1` now skips the mode-selector card and mounts the Phase
 - `pnpm lint` → clean.
 - `pnpm build` → 23 routes. 0 warnings. (Initial build failed with "useSearchParams should be wrapped in a suspense boundary" — fixed by wrapping `<GameGate>` in `<Suspense>`.)
 - **Live URL smoke** — `/game` → 200 with selector strings ("Enter Game", "Game mode", "back to flat portfolio") in SSR'd HTML. `/game?entered=1` → 200 with selector strings correctly absent from SSR'd HTML (Suspense streams the gate client-side where the flag is read).
+
+---
+
+## T4.12 — Special buildings routing (Backend Diaries / Skills Academy / Contact Bureau)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2024-08-14
+
+### What shipped
+
+The 3 special buildings in the Backend City map now route to the appropriate flat-portfolio pages when the user clicks "go to … →":
+- **Backend Diaries HQ** → `/writing` (T4.12 stub, Phase 5 fills in)
+- **Skills Academy** → `/stack` (T3.4 D3 force graph)
+- **Contact Bureau** → `/contact` (T3.5 terminal form)
+
+Walking into any of the 3 specials + E-key opens `<SpecialOverlay>` with a header ("Special / Backend diary" / "Stack graph" / "Contact form"), a body paragraph, and a footer with a "← back to game" button + a primary "go to … →" link. The primary link navigates via Next.js `<Link>`; the route change unmounts the `/game` page tree, which destroys the Phaser canvas and the OverlaySlot. No explicit close call is needed.
+
+**`app/writing/page.tsx` (new, ~55 lines):**
+- Minimal stub page. Same `<InnerLayout>` + `<InnerPageHeader>` pattern as `/stack` and `/contact`.
+- `metadata = pageMetadata("Writing", "Backend diary — coming soon...")`.
+- `07 / WRITING — Backend diary — Native posts and long-form breakdowns. Coming soon.` header.
+- Body: a single centered "Coming soon / Phase 5" card with a `← back to home` button.
+
+**`components/game/SpecialOverlay.tsx` (new, ~95 lines):**
+- `'use client'` Client Component. Same visual chrome as `CaseStudyOverlay` (`bg-surface border-acc/40 mx-auto flex max-h-[90vh] w-full max-w-[640px] flex-col gap-4 overflow-y-auto rounded-[12px] border p-6 shadow-2xl`) but a different content shape: just a header + a body + a footer.
+- "Special" eyebrow uses `text-amber` (vs `CaseStudyOverlay`'s `text-acc` for "Project") to signal that this isn't a project case study.
+- Slug → route mapping is a const object literal: `backend-diaries → /writing`, `skills-academy → /stack`, `contact-bureau → /contact`.
+- Slug-not-found safety: if the slug doesn't match a special route, the overlay calls `onClose()` and returns `null` (same pattern as `ProjectOverlay` and `VillainOverlay`).
+- Footer: secondary "← back to game" button (calls `onClose`) + primary "go to … →" link (Next.js `<Link href={route.href}>`).
+
+**`game/index.tsx` (modify — 2 line changes):**
+- Imported `SpecialOverlay` from `@/components/game/SpecialOverlay`.
+- Replaced the existing `else` branch in `<OverlaySlot>` (the "T4.12 will wire this" placeholder div, 22 lines) with `<SpecialOverlay slug={overlay.slug} onClose={onClose} />`.
+
+### Decisions
+
+- **`SpecialOverlay` is a new component** — not a special-case branch in `CaseStudyOverlay`. Different content shapes, same visual chrome.
+- **Slug → route mapping is a const object inside `SpecialOverlay.tsx`** — single source of truth. If a 4th special building is added later, the mapping extends naturally.
+- **Next.js `<Link>` for the primary action** — same pattern as `CaseStudyOverlay`'s "read full case study →" link. The route change unmounts the `/game` page tree, which triggers `gameRef.current?.destroy(true)` cleanup.
+- **Click handler for "back to game" button** — calls `onClose` which fires `bridge.closeOverlay()`. Same pattern as the project overlay's close button.
+- **`/writing` is a stub** — `app/writing/page.tsx` is a minimal `<InnerLayout>` placeholder. Phase 5 (T5.x) replaces the body with a real list of native posts + Medium cross-posts. Today: just a "Coming soon" message + back-to-home link. **Per user's option C: stub it now, fill it in Phase 5.**
+- **No title field population** — `WorldScene.openOverlay` only sends `slug` + `overlayType`. The special overlay derives its own title from the slug → `SPECIAL_ROUTES[slug].label` lookup. No new bridge events needed.
+- **No new bridge events** — T4.12 doesn't touch `EventBridge.ts`. The existing `OPEN_OVERLAY` / `CLOSE_OVERLAY` events cover everything.
+- **"Special" eyebrow uses `text-amber`** — SpecialOverlay is a sibling of `VillainOverlay` (both go to flat pages, not project case studies), so `text-amber` matches the "non-project" semantic. `text-acc` is reserved for project overlays.
+- **Width 640 px** (vs `CaseStudyOverlay`'s 760 px) — SpecialOverlay has less content (header + 1 body paragraph + 2 footer buttons), so the smaller card feels right.
+- **No tests** — same as the rest of the codebase.
+
+### Caveats / pending
+
+- **The `/writing` stub is intentionally minimal** — Phase 5 will replace the body with a real list of native posts + Medium cross-posts. The user's option C choice: stub now, fill in Phase 5.
+- **No new assets** — SpecialOverlay uses the same `bg-surface` card chrome as `CaseStudyOverlay`. No SVG, no PNG, no font.
+- **No analytics** — T6.x.
+- **No i18n** — same as the rest of the codebase.
+- **The placeholder is removed from the OverlaySlot dispatcher** — no fall-through. If the slug doesn't match a special route, SpecialOverlay closes itself. The Tiled map JSON has only 3 special entries; future special buildings would extend `SPECIAL_ROUTES`.
+- **No fallback for "back to game" when the user has navigated away from /game** — the "back to game" button calls `onClose` which fires `bridge.closeOverlay()`. The overlay unmounts; the Phaser canvas stays. Same behavior as the project overlay's close button.
+- **No "favorites" / "recently visited" / navigation history** — special overlay is one-click-and-go.
+- **Phase 4 status: done** — T4.10 polish was optional. T4.9 was folded into T4.8. With T4.12 shipped, Phase 4 is functionally complete. Next: Phase 5 (Blog + CMS) lands T3.7's deferred work.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 24 routes (was 23; +1 for `/writing`). 0 warnings.
+- **Live URL smoke** — `/writing` → 200, `/stack` → 200, `/contact` → 200, `/game` → 200. All 4 URLs return 200.
+- **`/writing` stub copy present** — "Backend diary", "Coming soon", "Phase 5", "back to home" all in the SSR'd HTML.
+- **SpecialOverlay bundled in game chunk** — 3 slugs (`backend-diaries`, `skills-academy`, `contact-bureau`) present in the Phaser dynamic chunk.
