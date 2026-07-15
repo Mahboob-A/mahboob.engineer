@@ -245,3 +245,74 @@ Master plan tasks in this phase (T6.1 → T6.9):
   `style="opacity:0"` inline attribute (Framer Motion v12 defers
   styles to JS hydration to avoid hydration mismatches). The fade
   starts after hydration.
+
+---
+
+## T6.3 — Mobile audit
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+Audit-only task. Verified mobile responsiveness on every key route;
+no code changes needed — Phases 1–3 already shipped the right grid
+breakpoints. Decisions:
+
+- **`/stack`** — `StackShell.tsx` already toggles `hidden lg:block`
+  (D3 graph) / `block lg:hidden` (mobile list) at the `lg` (1024 px)
+  breakpoint. The master doc said `md` (768 px) but the user-confirmed
+  T6.3 decision is `lg` — D3 graph at 768 px viewport is cramped.
+- **`/writing` filters** — `BlogFilter.tsx` uses `flex-wrap` on the
+  category chip row and `flex-1` for the search input. Wraps cleanly
+  to 2-3 rows on 375 px. Source toggles similarly wrapped.
+- **`/writing/[slug]`** — `PostTOC.tsx` already hides `<md` via
+  `hidden md:block`. Series nav stacks via `md:grid-cols-2`. Mobile
+  layout is single-column with TOC hidden — verified.
+- **`/contact`** — `grid-cols-1 lg:grid-cols-[1.5fr_1fr]` stacks on
+  mobile, side-by-side on `lg+`. Correct.
+- **`/work/[slug]`** — Hero `grid-cols-1 lg:grid-cols-[1.1fr_1fr]`,
+  Metrics `grid-cols-2 md:grid-cols-4`, StackBreakdown
+  `grid-cols-1 md:grid-cols-2`. All stack on mobile correctly.
+- **`/game`** — handled by T6.7 (desktop-only gate).
+- **Navbar** — mobile chip row already has `overflow-x-auto` on the
+  `<ul>` container. No change needed.
+- **Landing** — Hero stacks via `grid-cols-1 lg:grid-cols-[...]`. The
+  Algocode diagram (T2.2) is wrapped in `<DiagramPanel>` which
+  provides `overflow-x-auto` for narrow viewports.
+
+### Decisions
+
+- **Audit-only, no code changes.** Every breakpoint was already
+  correct from Phases 1–3. The cost of forcing mobile fixes now
+  would risk regressions; better to capture a baseline in T6.9.
+- **Visual regression baseline deferred to T6.9.** Playwright
+  screenshots at 375 / 768 / 1280 px on every route will be the
+  formal artifact. This audit is the document-level summary.
+
+### Caveats / pending
+
+- **No Playwright run in this session.** The audit is a code review,
+  not a rendered-pixel check. Phase 6 wraps with T6.9's screenshot
+  pass.
+- **Tablet portrait (768–1024 px)** — gets the mobile list on `/stack`,
+  the desktop nav elsewhere. Mixed treatment; acceptable.
+- **`/game` mobile experience** — currently no mobile gate (T6.7 fixes
+  this). T6.3 audit explicitly excludes `/game`.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean. (No code changes.)
+- `pnpm build` → 38 routes. 0 warnings. (Unchanged from T6.2.)
+- **Code-level audit (the actual deliverable)**:
+  - Navbar mobile chip row: `overflow-x-auto` ✓ (line 118).
+  - `/stack` mobile fallback: `hidden lg:block` / `block lg:hidden` ✓.
+  - `/writing` filter: `flex-wrap` chips + `flex-1` search input ✓.
+  - `/writing/[slug]` TOC: `hidden md:block` ✓.
+  - `/contact` grid: `grid-cols-1 lg:grid-cols-[1.5fr_1fr]` ✓.
+  - `/work/[slug]` grids: 3 `grid-cols-1` with appropriate `md:`/`lg:`
+    breakpoints ✓.
+  - Landing Hero: stacks at `lg` boundary ✓.
+  - DiagramPanel: `overflow-x-auto` on child container ✓ (T1.5).
