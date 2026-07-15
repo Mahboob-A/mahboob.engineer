@@ -32,6 +32,7 @@ import Link from "next/link";
 import { Chip } from "@/components/ui/Chip";
 import { PROJECTS, type ProjectItem } from "@/data/projects";
 import { chipColor } from "@/data/tokens";
+import { resolveStackSlug } from "@/data/stack-slug-map";
 import { AlgocodeMiniDiagram } from "@/components/diagrams/AlgocodeMiniDiagram";
 import { MovioMiniDiagram } from "@/components/diagrams/MovioMiniDiagram";
 import { DrishtiMiniDiagram } from "@/components/diagrams/DrishtiMiniDiagram";
@@ -154,13 +155,32 @@ function ProjectCard({ project, diagram, visualOnLeft }: ProjectCardProps) {
             ))}
           </div>
 
-          {/* Stack chips */}
+          {/* Stack chips — each one links to /stack#<id> when
+             resolveStackSlug finds a match. Falls back to a plain
+             (non-link) Chip for unresolvable entries (defensive;
+             shouldn't happen for the 38 known project.stack items
+             but future-proofs against new entries). */}
           <div className="mb-5 flex flex-wrap gap-2">
-            {project.stack.map((tech) => (
-              <Chip key={tech} color={chipColor(tech)}>
-                {tech}
-              </Chip>
-            ))}
+            {project.stack.map((tech) => {
+              const slug = resolveStackSlug(tech);
+              const chip = (
+                <Chip color={chipColor(tech)}>{tech}</Chip>
+              );
+              return slug ? (
+                <Link
+                  key={tech}
+                  href={`/stack#${slug}`}
+                  /* Phase 6 (T7): hover state mirrors the case-study
+                     RelatedStack chips (border + text shift to accent). */
+                  className="border-border text-t2 hover:border-acc hover:text-acc inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium tracking-[0.5px] transition-colors"
+                  aria-label={`More about ${tech} on /stack`}
+                >
+                  {tech}
+                </Link>
+              ) : (
+                <span key={tech}>{chip}</span>
+              );
+            })}
           </div>
 
           {/* Links */}
