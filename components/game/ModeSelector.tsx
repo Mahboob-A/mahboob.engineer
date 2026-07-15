@@ -26,17 +26,30 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function GameGate({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [accepted, setAccepted] = useState(false);
+  const searchParams = useSearchParams();
+  /* T4.10 polish: `?entered=1` URL flag suppresses the selector.
+     Strict equality (the literal string "1") — other values like
+     "true" or "yes" are ignored. Future polish: accept more. */
+  const hasEnteredFlag = searchParams.get("entered") === "1";
+  const [accepted, setAccepted] = useState(hasEnteredFlag);
 
   return (
     <>
       {!accepted && (
         <SelectorCard
-          onEnter={() => setAccepted(true)}
+          onEnter={() => {
+            setAccepted(true);
+            /* Persist "I've entered before" via URL. `router.replace`
+               (not `push`) so the selector doesn't show in the
+               browser's back-button history. The next visit to
+               /game — refresh, new tab, or link click — sees the
+               flag and skips the selector. */
+            router.replace("/game?entered=1");
+          }}
           onBack={() => router.back()}
         />
       )}

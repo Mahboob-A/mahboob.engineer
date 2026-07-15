@@ -21,6 +21,7 @@
 
 "use client";
 
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { GameLoader } from "@/components/game/GameLoader";
 import { GameGate } from "@/components/game/ModeSelector";
@@ -49,12 +50,19 @@ export default function GamePage() {
           bump into villains, find out what I&apos;m working on.
         </p>
       </header>
-      {/* GameGate holds the selector open until the user clicks
-          "Enter Game". GameRoot is the dynamic-imported Phaser game —
-          not in the React tree until the gate opens. */}
-      <GameGate>
-        <GameRoot />
-      </GameGate>
+      {/* T4.10 polish: GameGate reads `?entered=1` via useSearchParams.
+         Next.js 16 requires any component using useSearchParams to
+         be wrapped in a Suspense boundary at the page level — the
+         boundary lets the page prerender with the rest of the
+         static content while the gate streams in. */}
+      <Suspense fallback={<GameLoader />}>
+        {/* GameGate holds the selector open until the user clicks
+            "Enter Game". GameRoot is the dynamic-imported Phaser game —
+            not in the React tree until the gate opens. */}
+        <GameGate>
+          <GameRoot />
+        </GameGate>
+      </Suspense>
     </div>
   );
 }

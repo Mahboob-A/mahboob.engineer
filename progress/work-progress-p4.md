@@ -861,3 +861,50 @@ Pressing Escape during gameplay opens a centered pause menu. The menu has 4 butt
 - `pnpm lint` → clean.
 - `pnpm build` → 23 routes. 0 warnings.
 - **Live URL smoke** — `/game` → 200. All 5 pause-menu strings in the game chunk: `Exit game mode`, `Paused`, `Resume`, `Toggle sound`, `View flat portfolio`. `getScene("WorldScene` is present (the pause/scene-resolve logic).
+
+---
+
+## T4.10 polish — `?entered=1` URL flag for GameGate
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2024-08-14
+
+### What shipped
+
+Visiting `/game?entered=1` now skips the mode-selector card and mounts the Phaser game directly. The flag is set automatically when the user clicks "Enter Game" — `router.replace("/game?entered=1")` swaps the current history entry, so the next visit (refresh, new tab, or link click) shows the no-selector experience.
+
+**`components/game/ModeSelector.tsx` (modify — 5 line changes):**
+- Added `useSearchParams` to the `next/navigation` import.
+- Added `const searchParams = useSearchParams();` at the top of `GameGate`.
+- Changed `useState(false)` to `useState(hasEnteredFlag)` where `hasEnteredFlag = searchParams.get("entered") === "1"`.
+- The Enter click handler now does `setAccepted(true)` + `router.replace("/game?entered=1")` so the flag persists in the URL.
+
+**`app/game/page.tsx` (modify — 1 line change):**
+- Wrapped `<GameGate>` in `<Suspense fallback={<GameLoader />}>` to satisfy Next.js 16's `useSearchParams` requirement (any component using `useSearchParams` in a Client Component must be inside a Suspense boundary at the page level, or the page bails out of static prerender).
+
+### Decisions
+
+- **URL flag pattern, not localStorage** — master §6 forbids browser storage. URL flag is the only client-side persistence option that doesn't violate that rule.
+- **`?entered=1` (literal string "1")** — strict equality, not "true" / "yes". Future polish: accept more.
+- **`router.replace` (not `push`)** — the back button skips the selector (the flag-bearing URL is the current history entry, not a stack frame).
+- **`useState(hasEnteredFlag)` initializer** — read once on mount. Subsequent URL changes re-render but don't reset state, so the gate's "I start accepted" effect persists through the page's lifetime.
+- **Suspense wrapper required by Next.js 16** — `useSearchParams` in any Client Component forces the page to bail out of static prerender. Wrapping `<GameGate>` in `<Suspense fallback={<GameLoader />}>` lets the page prerender the header (which doesn't use `useSearchParams`) while streaming the gate content. Same pattern as the existing `dynamic({ ssr: false, loading: () => <GameLoader /> })` boundary.
+
+### Caveats / pending
+
+- **`?entered=foo` is silently treated as "not entered"** — strict equality. Future polish: accept boolean truthy.
+- **No "I've entered before" indicator** — the URL bar is the only signal. Future polish: a one-time toast.
+- **No automatic appending of the flag to internal links** — internal links to `/game` (e.g. in the Navbar) don't pre-append the flag. Future polish: add the flag to internal links.
+- **The flag is implicit** — no UI control to reset it. Future polish: a "reset" link in the pause menu's "Exit game mode" form.
+- **No validation of the flag value** — `?entered=0` (explicit no-skip) is treated as "not entered". Future polish: only `?entered=1` skips; other values show the selector.
+- **No new components** — single-file change + Suspense wrapper. No new folder entries.
+- **No i18n** — same as the rest of the codebase.
+- **Git author identity**: per standing instruction, all commits use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 23 routes. 0 warnings. (Initial build failed with "useSearchParams should be wrapped in a suspense boundary" — fixed by wrapping `<GameGate>` in `<Suspense>`.)
+- **Live URL smoke** — `/game` → 200 with selector strings ("Enter Game", "Game mode", "back to flat portfolio") in SSR'd HTML. `/game?entered=1` → 200 with selector strings correctly absent from SSR'd HTML (Suspense streams the gate client-side where the flag is read).
