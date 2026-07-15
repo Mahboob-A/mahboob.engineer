@@ -1,0 +1,221 @@
+---
+title: "Message Queue 101: Your Ultimate Guide to Understanding Message Queues"
+excerpt: "RabbitMQ from first principles — what a message queue actually solves, how exchanges and queues connect, and the mental model that makes it click when you're debugging a stuck producer at 2am."
+category: distributed
+tags:
+  - rabbitmq
+  - distributed-systems
+  - async
+projects:
+  - algocode
+stack:
+  - RabbitMQ
+readMin: 7
+publishedAt: "2026-07-15"
+---
+
+Every distributed system eventually grows a queue. Sometimes it's a Redis list, sometimes Kafka, sometimes RabbitMQ — but the shape of the problem is always the same: **two services need to coordinate, but they shouldn't have to be awake at the same time, or move at the same speed, or be healthy together**.
+
+This post is the guide I wish I'd had when I first wired up RabbitMQ for the [Algocode](https://github.com/Mahboob-A/Algocode) judge. We're going to start from "what problem does this even solve", walk through the actual primitives (exchanges, queues, bindings, consumers), and end with the mental model that makes 2am debugging feel mechanical.
+
+## What a message queue actually is
+
+A message queue is a **buffer with rules**. You put a message in. Some consumer, eventually, takes the message out. The rules decide:
+
+- **Who gets each message** (one consumer? a group? everyone?)
+- **What happens if no one is ready** (drop it? hold it? dead-letter it?)
+- **What happens after a consumer takes it** (delete? hold until acknowledged? retry on failure?)
+
+That's it. Everything else — exchanges, routing keys, virtual hosts, federation — is plumbing around this core idea.
+
+The reason this is useful is the **decoupling**. Before queues:
+
+- Service A had to know that Service B was running.
+- A had to retry on B's failures (and decide how long to retry).
+- A had to wait for B's response before continuing.
+
+After queues:
+
+- A drops a message into the queue. Returns immediately.
+- B wakes up whenever it wants. Pulls a message off. Processes it.
+- If B is down, the queue holds the message. When B comes back, it catches up.
+- If B crashes mid-processing, the queue keeps the message. A retry policy handles it.
+
+The cost: **no synchronous answer**. A can't ask B a question and get a reply in one request. That's why queues are great for fire-and-forget work (sending an email, processing a video, judging a code submission) and a bad fit for anything that needs an answer in 100ms.
+
+## The primitive mental model
+
+Three things matter:
+
+1. **Producer** — the code that publishes messages.
+2. **Queue** — the buffer that holds messages until a consumer is ready.
+3. **Consumer** — the code that pulls messages off and processes them.
+
+```
+Producer  ──→  Queue  ──→  Consumer
+```
+
+That's the basic shape. RabbitMQ adds one more concept on top: **exchanges**.
+
+## Exchanges: the routing layer
+
+A producer doesn't publish to a queue directly. It publishes to an **exchange**, and the exchange decides which queue (or queues) the message lands in. This indirection lets you route the same message to multiple consumers without changing the producer.
+
+```python
+# Producer side
+channel.basic_publish(
+    exchange='submissions',
+    routing_key='cpp',
+    body=json.dumps(submission_data),
+)
+```
+
+The exchange `submissions` then applies routing rules and forwards the message to one or more queues. The producer doesn't know — or care — which queues exist.
+
+## The four exchange types
+
+RabbitMQ has four built-in exchange types. Most real systems use one of the first two.
+
+### Direct: routing key match
+
+A direct exchange routes a message to any queue whose **binding key** exactly matches the message's **routing key**. This is the most common pattern:
+
+```python
+# Bindings
+channel.queue_bind(queue='cpp_judge', exchange='submissions', routing_key='cpp')
+channel.queue_bind(queue='python_judge', exchange='submissions', routing_key='python')
+
+# Producer
+channel.basic_publish(exchange='submissions', routing_key='cpp', body=...)  # → cpp_judge
+channel.basic_publish(exchange='submissions', routing_key='python', body=...)  # → python_judge
+```
+
+Use direct exchanges when you know the routing key in advance. This is what Algocode uses to dispatch C++ vs. Python submissions.
+
+### Fanout: broadcast
+
+A fanout exchange ignores the routing key and delivers the message to every queue bound to it. Useful when multiple services need to react to the same event:
+
+```python
+# Both queues get every message
+channel.queue_bind(queue='audit_log', exchange='user_events', routing_key='')
+channel.queue_bind(queue='analytics', exchange='user_events', routing_key='')
+```
+
+### Topic: pattern match
+
+Topic exchanges route on a pattern. Routing keys use dot-separated words (`order.shipped.eu`, `order.cancelled.us`), and bindings are patterns with `*` (one word) and `#` (zero or more words):
+
+```python
+# Bindings
+channel.queue_bind(queue='eu_orders', exchange='orders', routing_key='order.*.eu')
+channel.queue_bind(queue='all_orders', exchange='orders', routing_key='order.#')
+
+# Producers
+channel.basic_publish(exchange='orders', routing_key='order.shipped.eu', ...)  # → both
+channel.basic_publish(exchange='orders', routing_key='order.shipped.us', ...)  # → all_orders only
+```
+
+### Headers: ignore routing key, route on message headers
+
+Headers exchanges route on the message's headers instead of the routing key. Less common; I rarely reach for it.
+
+## Acknowledgments: the consumer's promise
+
+When a consumer pulls a message, RabbitMQ doesn't immediately delete it. It waits for an **acknowledgment** — a signal from the consumer that the message has been processed successfully. If the consumer crashes before acknowledging, RabbitMQ re-queues the message automatically.
+
+```python
+def callback(channel, method, properties, body):
+    try:
+        process(body)
+        channel.basic_ack(delivery_tag=method.delivery_tag)
+    except Exception as e:
+        channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)  # or True to retry
+```
+
+There are three flavors:
+
+- `basic_ack` — done, you can delete the message.
+- `basic_nack(requeue=False)` — failed, send to dead-letter queue (or drop).
+- `basic_nack(requeue=True)` — failed, put it back for another consumer.
+
+This is the part that makes queues **durable in the face of crashes**. As long as your consumer is honest about when it's done with a message, the queue will hold it until then.
+
+## What RabbitMQ doesn't solve
+
+A few things queues are *not* great at:
+
+- **Synchronous RPC** — if you need a reply in 100ms, use a direct HTTP or gRPC call.
+- **Heavy message throughput above ~50k msgs/sec** — that's Kafka territory.
+- **Strong ordering across partitions** — RabbitMQ doesn't preserve order across queues; a single queue does, but a fanout setup doesn't.
+- **Per-message replay across days** — RabbitMQ holds messages until consumed (or until the TTL/queue length limit hits). For long-term event sourcing, Kafka's log model is better.
+
+## When to reach for a queue
+
+You want a queue when:
+
+- The producer and consumer can move at different speeds.
+- The producer doesn't care when the work gets done.
+- Losing a message is worse than processing it twice.
+- You want retries on consumer failure without blocking the producer.
+
+You *don't* want a queue when:
+
+- The user is waiting for an answer.
+- The work needs to happen in a strict order across multiple producers.
+- You're processing 100k events per second and need to replay them next week.
+
+## A complete working example
+
+A minimal RabbitMQ producer + consumer with a direct exchange:
+
+```python
+import pika, json
+
+# Connect
+conn = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+channel = conn.channel()
+
+# Declare the exchange (idempotent)
+channel.exchange_declare(exchange='tasks', exchange_type='direct')
+
+# Declare a queue and bind it
+channel.queue_declare(queue='worker')
+channel.queue_bind(queue='worker', exchange='tasks', routing_key='hello')
+
+# Producer
+channel.basic_publish(
+    exchange='tasks',
+    routing_key='hello',
+    body=json.dumps({'job': 'send-email', 'to': 'user@example.com'}),
+)
+
+# Consumer
+def callback(ch, method, properties, body):
+    print(f"Got: {body}")
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+channel.basic_consume(queue='worker', on_message_callback=callback)
+channel.start_consuming()
+```
+
+That `exchange_declare` → `queue_declare` → `queue_bind` → `basic_publish` sequence is 90% of what you'll ever write against RabbitMQ. The rest is routing keys and consumer reliability.
+
+## The 2am debugging checklist
+
+When the queue is misbehaving:
+
+1. **Is the queue actually receiving messages?** `rabbitmqctl list_queues name messages messages_ready messages_unacknowledged`. If `messages` is climbing, no one is consuming. If it's flat, no one is producing.
+2. **Is the consumer connected?** `rabbitmqctl list_consumers`. An empty list = no one's listening.
+3. **Is the exchange routing correctly?** Bind a temporary queue to the exchange and watch what lands in it.
+4. **Is the consumer crashing silently?** RabbitMQ holds unacked messages until the consumer acks them. A consumer that crashes mid-process leaves the message in the unacknowledged count. Watch that number — if it's growing, your consumer is dying.
+
+## Wrap-up
+
+Message queues are the backbone of async distributed systems. The primitives are small: producers, exchanges, queues, consumers, and acknowledgments. Once you have those, the rest is configuration and policy.
+
+If you're starting a new service and you're not sure whether to use a queue, the rule of thumb I use: if the request can be answered in 200ms or the user is waiting, do it synchronously. Otherwise, drop it on a queue and let a worker handle it.
+
+> **Cross-post note:** This post is also published on [Medium](https://imehboob.medium.com/message-queue-101-your-ultimate-guide-to-understand-message-queue-b2256961ab01). The technical content is identical.
+
+— Mahboob

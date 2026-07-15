@@ -297,6 +297,55 @@ export const BLOG_POSTS: BlogPostItem[] = [
     excerpt:
       "Building a real-time AI eye-screening pipeline for rural India over WebRTC — agent architecture, queue design, and the constraints that shaped every decision.",
   },
+
+  /* ─── Native MDX posts (managed by Keystatic, T5.6) ─────────────── */
+  {
+    slug: "linux-networking-part-1",
+    title:
+      "Linux Networking for Backend Engineers — Part 1: Namespaces & Virtual Interfaces",
+    source: "native",
+    url: "/writing/linux-networking-part-1",
+    tags: ["linux", "networking", "docker", "internals"],
+    readMin: 10,
+    category: "linux",
+    series: "Linux Networking",
+    part: 1,
+    projects: ["unthink"],
+    stack: ["Linux", "Docker"],
+    excerpt:
+      "Starting a hands-on series on the kernel primitives that make container networking work — namespaces, veth pairs, and bridges, explained from the ground up.",
+    publishedAt: "2026-07-15",
+  },
+  {
+    slug: "message-queue-101",
+    title:
+      "Message Queue 101: Your Ultimate Guide to Understanding Message Queues",
+    source: "native",
+    url: "/writing/message-queue-101",
+    tags: ["rabbitmq", "distributed-systems", "async"],
+    readMin: 7,
+    category: "distributed",
+    projects: ["algocode"],
+    stack: ["RabbitMQ"],
+    excerpt:
+      "RabbitMQ from first principles — what a message queue actually solves, how exchanges and queues connect, and the mental model that makes it click when you're debugging a stuck producer at 2am.",
+    publishedAt: "2026-07-15",
+  },
+  {
+    slug: "algocode-deep-dive",
+    title:
+      "How I Built Algocode — A Distributed Online Judge, Microservices to Kernel Isolation",
+    source: "native",
+    url: "/writing/algocode-deep-dive",
+    tags: ["microservices", "docker", "rabbitmq", "distributed-systems", "linux"],
+    readMin: 12,
+    category: "distributed",
+    projects: ["algocode"],
+    stack: ["Django", "RabbitMQ", "Docker"],
+    excerpt:
+      "The full build story behind Algocode — splitting a judge into three independently deployable services, coordinating through RabbitMQ, and running untrusted C++ inside sibling Docker containers with Linux namespaces + cgroups + seccomp enforcing hard resource limits.",
+    publishedAt: "2026-07-15",
+  },
 ];
 
 /* ===========================================================================

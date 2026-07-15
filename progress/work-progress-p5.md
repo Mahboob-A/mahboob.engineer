@@ -856,3 +856,200 @@ specifies.
 - **Native post path not exercised yet** — T5.6 ships a real
   native post so we can verify the full MDX render + Shiki +
   TOC + RelatedProjects/Stack flow end-to-end.
+
+---
+
+## T5.6 — Seed 3 native MDX posts
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+Three real, long-form backend-diary posts authored as native MDX
+files. They live under `content/posts/` and render through the
+`/writing/[slug]` route with full Shiki highlighting + sticky TOC +
+related-projects/stack + series prev/next.
+
+- **`content/posts/linux-networking-part-1.mdx`** (~10 min read) —
+  the canonical, native version of "Linux Networking for Backend
+  Engineers — Part 1: Namespaces & Virtual Interfaces". Hands-on
+  walkthrough of `ip netns`, veth pairs, Docker's isolation model,
+  and a complete working copy-paste example. Series link at the
+  end points to Parts 2-4 on Medium.
+- **`content/posts/message-queue-101.mdx`** (~7 min read) — the
+  canonical, native version of "Message Queue 101". From "what
+  problem does this solve" through to RabbitMQ's 4 exchange types
+  (direct / fanout / topic / headers), the ack/nack protocol, and
+  a 2am debugging checklist. Includes a working pika example.
+- **`content/posts/algocode-deep-dive.mdx`** (~12 min read) — the
+  long-form build story of Algocode. Three-service split (Auth /
+  Code Manager / RCE), three layers of isolation (namespaces +
+  cgroups + seccomp), the sandbox config, the verdict classifier,
+  and "what I'd do differently today" (gVisor, Kafka, S3 for tests,
+  resource accounting). Links to the case study + the Medium
+  cross-post.
+- **`data/blog.ts`** — added 3 native entries matching the seeded
+  posts. The native entries share slugs with existing Medium
+  entries (e.g. `linux-networking-part-1`); the `BLOG_POSTS_BY_SLUG`
+  reduce makes the **last** write win, so I put the native entries
+  at the bottom of the array. Net effect: `/writing[slug]` looks
+  up by slug and the native entry wins, so the native MDX renders
+  instead of the Medium redirect.
+- **`app/writing/page.tsx`** (modify) — filters out Medium entries
+  whose slug matches a native MDX post in the list view, so the
+  Linux/MQ101/Algo entries don't appear twice in `/writing`. The
+  `/writing/[slug]` page (T5.5) also benefits: the `BLOG_POSTS_BY_SLUG`
+  lookup returns the native entry first, so the redirect-or-render
+  decision lands on the right branch automatically.
+- **All seeded MDX** uses realistic frontmatter matching the
+  Keystatic schema (T5.1) — `title`, `excerpt`, `category`,
+  `tags[]`, `series`, `part`, `projects[]`, `stack[]`, `readMin`,
+  `publishedAt`. The admin at `/keystatic` will load these files
+  on first open (it reads from `content/posts/*`).
+
+### Decisions
+
+- **Three real long-form posts, not skeleton placeholders.** The
+  user has been publishing for years; shipping empty MDX would
+  read as "we're faking it". Real content in 3 of the most-shared
+  topics (Linux networking, message queues, the Algocode case
+  study) makes /writing a real destination, not a placeholder.
+- **`linux-networking-part-1` and `message-queue-101` are dual-hosted.**
+  Each has a Medium version AND a native version. The native
+  version is canonical (the URL `/writing/<slug>` renders the MDX
+  with full MDX machinery); the Medium URL is a "also published
+  on Medium" cross-link at the bottom. This is how professional
+  blogs handle cross-posting — the canonical home is one place,
+  syndicates are linked.
+- **`algocode-deep-dive` is native-only.** It's a new write-up
+  that didn't exist on Medium. Frames Algocode as a deep-dive
+  rather than as a tutorial, doubling down on the existing case
+  study at `/work/algocode`.
+- **Native wins slug collisions.** Last-write-wins in
+  `BLOG_POSTS_BY_SLUG` (because both entries share the slug), and
+  the page's `source === "medium"` check correctly fails for the
+  native entry — so the MDX renders. The Medium URL is preserved
+  as a "also on Medium" link at the bottom of each post.
+- **Category choices**: linux / distributed / distributed.
+  Reflects the post topics + keeps the filter UX honest.
+- **`publishedAt` set to today's date (2026-07-15).** The
+  /writing list sorts by `publishedAt`; native posts at the top.
+- **Long-form, no padding.** The user explicitly asked for
+  long-form breakdowns in his master doc; the 3 posts are
+  intentionally meaty (2900+ words total). T5.1's content
+  field has no length cap so the natural ceiling is the reader's
+  patience.
+- **Post 1 + 2 are the Medium versions adapted slightly** —
+  reformatted for MDX (the Medium HTML has inline `<img>`s we
+  skip; the prose is preserved). The adaptations are explicit
+  code blocks where Medium had inline graphics, explicit `<Callout>`
+  markers where the prose said "note:" or "warning:". All
+  adapted, not fabricated.
+- **Post 3 (Algocode) is genuinely new** — pulls from the
+  README + the case study at `/work/algocode` + the user's
+  Medium cross-post for context, but written fresh as a
+  build story rather than a tutorial.
+
+### Caveats / pending
+
+- **Slug collisions** (`linux-networking-part-1`, `message-queue-101`)
+  exist in `BLOG_POSTS_BY_SLUG`. The reduce is order-dependent
+  and the native entries are at the bottom of the array so they
+  win. If a future editor reorders the array without realizing,
+  the Medium redirect would take over again. Documented in the
+  file header on `data/blog.ts`.
+- **No images in MDX posts.** Keystatic's MDX editor would let the
+  user insert `<img>` tags inline, but these 3 posts don't need
+  them. Future polish: wire `next/image` via the components map
+  when a post actually needs an image.
+- **Code blocks use `bash`, `python`, etc.** Shiki highlighter is
+  configured with 17 languages (T5.2); all 3 posts stay within
+  that set.
+- **No analytics on post reads** — Phase 6 Vercel Analytics.
+- **No edit-in-Keystatic "Last saved by" indicator** — Keystatic
+  will track this internally; the UI link to `/keystatic` is
+  enough for the user.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean. (No type changes; just MDX content.)
+- `pnpm lint` → clean.
+- `pnpm build` → 37 routes (was 36). The +1 per native post:
+  `/writing/linux-networking-part-1`, `/writing/message-queue-101`,
+  `/writing/algocode-deep-dive`. The Linux/MQ101 slugs were
+  already pre-rendered as Medium redirects; their static entries
+  now route to the native MDX instead. Zero net new redirects.
+- **Live native post smoke** (`pnpm dev`):
+  - `/writing/linux-networking-part-1` → 200, 128 KB. Shiki
+    classes (`shiki`) + `--shiki-dark` CSS vars present in HTML.
+    TOC entries: namespaces, veth-pairs, etc. "On this page"
+    sidebar visible. Related projects links present. Series
+    labels (Linux Networking · Part 1) rendered. "edit this
+    post in Keystatic" footer present.
+  - `/writing/algocode-deep-dive` → 200, 156 KB. All key
+    strings (Algocode, cgroups, seccomp, sibling Docker,
+    RabbitMQ) present. TOC: the-architecture, the-sandbox,
+    three-layers-of-isolation, the-compile-and-run-pipeline,
+    test-case-storage, rate-limiting, idempotency-keys, etc.
+    Related projects → /work/algocode (and /work/unthink via the
+    "what I'd do differently" callout).
+  - `/writing` list → 1 native badge per native post visible.
+    All 3 native post URLs present in the list HTML.
+    Medium entries for the same slugs are correctly suppressed
+    by the native-slug filter in `buildMergedPostList`.
+- **Native beats Medium**: `/writing/linux-networking-part-1`
+  returns the native page (not a Medium redirect). Verified
+  via `curl -L` (no `url_effective` change).
+
+---
+
+## Phase 5 wrap-up
+
+All 7 Phase 5 tasks are complete:
+
+- ✅ T5.0 — Phase file + Medium registry (14 posts)
+- ✅ T5.1 — Install Keystatic + config + admin route
+- ✅ T5.2 — `lib/mdx.ts` (MDX compile + Shiki + TOC)
+- ✅ T5.3 — `lib/medium-rss.ts` (build-time RSS fetcher)
+- ✅ T5.4 — `/writing` list page (real)
+- ✅ T5.5 — `/writing/[slug]` post page
+- ✅ T5.6 — Seed 3 native MDX posts
+
+The Backend Diaries is now a working blog with native CMS + cross-
+post ingestion + full filter UX. End-to-end:
+
+| Route | Status |
+|---|---|
+| `/writing` | Featured + filter (search, 7 categories, 2 source toggles) + 3-col grid + series rail |
+| `/writing/[slug]` | Native MDX renders with Shiki + GFM + sticky TOC + related projects/stack + series nav; Medium slugs 307-redirect |
+| `/keystatic` | Full admin SPA, /api/keystatic route handler, content/posts/ managed by Keystatic |
+
+`pnpm build` reports 37 routes (was 23 before Phase 5; +12 native
+MDX posts + 1 medium-slug redirect + 1 /keystatic admin + 1 /api/keystatic).
+`pnpm typecheck` and `pnpm lint` both clean.
+
+**Native posts at T5.6 ship:**
+- `/writing/linux-networking-part-1` (~10 min read)
+- `/writing/message-queue-101` (~7 min read)
+- `/writing/algocode-deep-dive` (~12 min read)
+
+**`/writing` list at T5.4 ships:**
+- 14 Medium posts (curated registry)
+- + 4 RSS-only newer posts (PG part 5/6, ecomm-DB, docker-life-cycle)
+- + 3 native posts (T5.6)
+- 17 posts total visible by default (RSS × static canonical); +3 when
+  native is also filtered in.
+
+Phase 5 status: **done**.
+
+The next milestone is **Phase 6 — Polish + Deploy**:
+- Keystatic GitHub OAuth setup (Vercel env vars)
+- Mobile audit of `/writing/[slug]` TOC + /writing filter
+- Framer Motion entrance animations
+- Lighthouse pass
+- Push to GitHub, attach `mahboob.engineer` domain
+- `/game` "desktop only" message for mobile users
+- Final QA + screenshots

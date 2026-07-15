@@ -78,10 +78,15 @@ async function buildMergedPostList(): Promise<MergedPost[]> {
   }));
 
   // Static Medium posts (canonical curated list).
-  const staticMedium: MergedPost[] = staticMediumPosts().map((p) => ({
-    ...p,
-    origin: "static" as const,
-  }));
+  // Skip Medium entries whose slug matches a native MDX post — the
+  // native version is canonical, the Medium entry is a duplicate.
+  const nativeSlugs = new Set(native.map((p) => p.slug));
+  const staticMedium: MergedPost[] = staticMediumPosts()
+    .filter((p) => !nativeSlugs.has(p.slug))
+    .map((p) => ({
+      ...p,
+      origin: "static" as const,
+    }));
 
   // RSS fetch (may fail → fallback).
   const rss = await fetchMediumPosts();

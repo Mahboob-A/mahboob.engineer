@@ -1,0 +1,221 @@
+---
+title: "How I Built Algocode — A Distributed Online Judge, Microservices to Kernel Isolation"
+excerpt: "The full build story behind Algocode — splitting a judge into three independently deployable services, coordinating through RabbitMQ, and running untrusted C++ inside sibling Docker containers with Linux namespaces + cgroups + seccomp enforcing hard resource limits."
+category: distributed
+tags:
+  - microservices
+  - docker
+  - rabbitmq
+  - distributed-systems
+  - linux
+projects:
+  - algocode
+stack:
+  - Django
+  - RabbitMQ
+  - Docker
+readMin: 12
+publishedAt: "2026-07-15"
+---
+
+This is the long-form build story for [Algocode](https://github.com/Mahboob-A/Algocode) — a LeetCode-style online judge I built to learn distributed systems the way they actually break. Three services, two queues, one kernel, and a lot of "why is the judge stuck on this submission" debugging at 1am.
+
+If you just want the architecture diagram, the [case study](/work/algocode) has it. This post is for the "why each decision was made and what I'd do differently" version.
+
+## The problem
+
+LeetCode-style platforms — judge a user's submitted code against hidden test cases, give them a verdict (AC / WA / TLE / MLE / RE) — sound simple until you remember:
+
+1. The submitted code is **untrusted**. It could be malicious. It can try to read the filesystem, fork-bomb, or open a TCP socket to a C2 server.
+2. The code runs for **non-trivial time**. Adding up across all users, you might be running 100+ concurrent executions.
+3. One bad submission **shouldn't kill the others**. If a user's code eats 100% CPU, the next submission shouldn't wait five minutes for its turn.
+
+The naive solution — `exec()` the user's code inside the API process — is wrong in three obvious ways. The right solution is: split the system into independent services that communicate through queues, and run the actual code in a hard-isolated sandbox.
+
+## The architecture
+
+Three services:
+
+1. **Auth service** — Django REST Framework, handles login, sessions, JWT, OAuth. Owns the user database.
+2. **Code Manager** — also Django REST Framework, owns submissions and test cases. Accepts `POST /submissions`, writes to PostgreSQL, drops a "judge this" message on RabbitMQ.
+3. **RCE Engine** — the worker that actually runs the code. Listens to the submit queue, executes the code in a sibling Docker container, writes the verdict back.
+
+```
+                  ┌──────────────────┐
+                  │   Auth Service   │
+                  │  Django + JWT    │
+                  └──────────────────┘
+                           │
+                           │ (inter-service JWT validation)
+                           ▼
+┌─────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│   Client    │───▶│  Code Manager    │───▶│ RabbitMQ submit  │
+│ (browser)   │    │  Django + DRF    │    │     queue        │
+└─────────────┘    └──────────────────┘    └──────────────────┘
+                           ▲                       │
+                           │                       ▼
+                  ┌──────────────────┐    ┌──────────────────┐
+                  │  MongoDB + Redis  │    │     RCE Engine   │
+                  │   (results)      │    │   (consumer)     │
+                  └──────────────────┘    └──────────────────┘
+                                                   │
+                                                   ▼
+                                          ┌──────────────────┐
+                                          │ C++ Judge        │
+                                          │ (sibling Docker) │
+                                          │ namespaces + cgrps│
+                                          └──────────────────┘
+```
+
+Why three services and not one? Two reasons:
+
+- **Independent scaling.** When the API tier is slammed with logins, the judge tier can keep churning through queue messages without slowing down.
+- **Independent failure modes.** The judge engine can crash mid-submission without taking down login or submissions. The user can re-poll the verdict and get it from a fresh judge.
+
+The cost is operational complexity — three deployments, three databases, three logs. For a project that exists to teach me distributed systems, that's the point.
+
+## Service 1: Auth (DRF + JWT + OAuth)
+
+Auth is the boring one. Standard Django user model, custom token view, JWT for stateless API auth, OAuth via Google for social login. Nothing to see here except:
+
+- **Password hashing** uses `argon2id` with sensible defaults. Memory hardness makes bulk offline attack impractical.
+- **JWT rotation:** access token has a 15-minute TTL; refresh token is 7 days. Refresh tokens are stored hashed (so a database leak doesn't give the attacker valid refresh tokens).
+- **TOTP 2FA** is wired but optional. The admin enforces it for accounts with elevated privileges.
+
+## Service 2: Code Manager (DRF + Postgres + RabbitMQ)
+
+The Code Manager is the user-facing service. Endpoints:
+
+- `POST /problems/<slug>/submit` — accepts code, language, optional custom test inputs. Validates the submission, writes to Postgres, drops a `{submission_id, problem_id, language, code}` message on RabbitMQ.
+- `GET /submissions/<id>` — returns the current verdict (pending / AC / WA / TLE / MLE / RE / SE). Polls RabbitMQ-backed result store.
+- `GET /problems`, `GET /problems/<slug>/testcases` — read-only; serves the question bank.
+
+A few non-obvious decisions:
+
+### Idempotency keys
+
+A double-click on the submit button would otherwise create two submissions and judge both. I add an `Idempotency-Key` header to `POST /submit`. Code Manager stores it with the submission. A duplicate request returns the existing submission, not a new one.
+
+### Rate limiting
+
+Token-bucket rate limiting per user. Default is 10 submissions per minute. Past that, Code Manager returns 429 with `Retry-After`. This isn't for security — it's to keep a bored user from flooding the queue.
+
+### Test case storage
+
+Test cases are large (some problems have 50+ test cases per case). Storing them in Postgres works but gets expensive. I store them in a separate `MongoDB` collection keyed by `problem_id`, with only an SHA-256 reference in Postgres. The judge pulls the tests from MongoDB at evaluation time.
+
+<Callout type="info">
+Why two databases? Postgres for the relational submission data; MongoDB for the large semi-structured test cases. Each query hits the right store. If I were starting over today I'd put test cases in S3 (or any object store) and keep the metadata in Postgres. The dual-database setup works, but it adds an operational database to back up.
+</Callout>
+
+## Service 3: RCE Engine (the fun one)
+
+The RCE Engine is a Python worker that consumes from the `cpp_submit_queue`. For each message, it:
+
+1. Reads the submission from Postgres.
+2. Reads the test cases from MongoDB.
+3. Spins up an ephemeral Docker container with the user's code, runs it against each test case, captures the verdict.
+4. Writes the verdict to Redis (the fast-path result store) and MongoDB (the durable record).
+5. ACKs the message.
+
+The Docker container is where the security and reliability live. Let me walk through the isolation:
+
+### The sandbox
+
+```python
+client.containers.run(
+    image="algocode-judge-cpp",
+    command=["./run.sh", "/judge/code.cpp"],
+    volumes={
+        "/tmp/judge": {"bind": "/judge", "mode": "ro"},
+    },
+    network_mode="none",          # No network access
+    pids_limit=64,                # Can't fork-bomb
+    mem_limit="256m",             # Hard memory cap
+    memswap_limit="256m",         # No swap
+    cpuset_cpus="0",              # Pin to one CPU
+    cpu_period=100000,            # CFS scheduler
+    cpu_quota=50000,              # Half a core per judge
+    ulimits=[
+        ulimit("nofile", 64, 64), # Limited FDs
+        ulimit("nproc", 32, 32),  # Limited processes
+        ulimit="fsize",  # File size
+    ],
+    read_only=True,               # Read-only root filesystem
+    tmpfs={"/tmp": "size=64m"},
+    security_opt=["no-new-privileges"],
+    cap_drop=["ALL"],             # No Linux capabilities
+    detach=False,
+    stdout=True,
+    stderr=True,
+    remove=True,
+)
+```
+
+Each submission runs in a **sibling** container — not inside the RCE Engine's own container. This is the key insight: when you run `docker run`, the new container gets its own namespaces; that's the isolation. The trade-off is that `detach=True` + later inspection is one pattern, and `detach=False` + capturing stdout is another. I picked `detach=False` because the timeout-bounded execution model fits a request-response style better.
+
+### Three layers of isolation
+
+I think of the isolation as three concentric rings:
+
+1. **Linux namespaces** — the container has its own PID, mount, UTS, network, IPC namespaces. It cannot see the host's processes or filesystem.
+2. **cgroups** — hard caps on CPU, memory, I/O. The user's code cannot starve the host for resources.
+3. **seccomp** — the container runs with a custom seccomp profile that allows only the syscalls needed for `gcc + run`. (See [profile](https://github.com/Mahboob-A/Algocode/blob/main/judge/seccomp.json) in the repo.)
+
+### Verdict classification
+
+Once the container exits, classify the verdict:
+
+- **AC** (accepted) — exit code 0, output matches expected.
+- **WA** (wrong answer) — exit code 0, output doesn't match.
+- **TLE** (time limit exceeded) — the container was killed by the timeout enforcement.
+- **MLE** (memory limit exceeded) — the kernel OOM-killed the container.
+- **RE** (runtime error) — non-zero exit code, segfault, etc.
+- **SE** (system error) — couldn't even start the judge. This is a bug in my code, not the user's.
+
+The "container died at T=2.1s with OOM" path is the gnarly one. It can be either **MLE** (user wrote memory-hungry code) or **judge misconfiguration** (my fault). The distinguisher is the memswap_limit — if it hit, the user's code asked for more RAM than the limit; that's MLE. Otherwise, it's SE.
+
+### The compile-and-run pipeline
+
+For C++, the container's `run.sh`:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+cd /judge
+g++ -std=c++17 -O2 -Wall code.cpp -o code 2>&1 || exit 1
+echo "----- COMPILED -----"
+./code < test_input.txt
+```
+
+Standard with strict mode. The `2>&1` is so compile errors get captured into stderr and surfaced as RE. If compile fails, we exit with code 1 — which the RCE Engine classifies as RE with stderr attached.
+
+## What I'd do differently
+
+If I were starting over today:
+
+1. **Use a real sandboxing primitive.** Docker's namespace/cgroup/seccomp stack is the right *shape*, but actually running untrusted code without gVisor / Firecracker is "you mostly trust the kernel". The next iteration would use [gVisor](https://gvisor.dev/) for the user-space kernel layer that the user's code can't escape.
+2. **Kafka instead of RabbitMQ.** When submissions run in the hundreds per minute, RabbitMQ's per-message acks become the bottleneck. Kafka's log-shaped model handles backpressure much better.
+3. **No MongoDB.** Put test cases in S3 (or any object store). The data is already immutable; a blob store is the right shape.
+4. **Fix the resource accounting.** I tracked CPU and memory in the verdict but not in the user's profile. Catching patterns like "this user always runs at the CPU quota" would have been useful for debugging edge cases.
+
+## Wrap-up
+
+Algocode is the system I learned distributed systems on. The three-service split + RabbitMQ + sibling Docker containers is the architecture I'd reach for again — for any system where:
+
+- The work is "fire-and-forget" from the user's perspective.
+- The work is potentially expensive (CPU, memory, wall-clock time).
+- The work is potentially adversarial (untrusted input that gets executed).
+
+If you're building something similar, the lessons are:
+
+1. **Split the user-facing API from the worker.** They scale differently and fail differently.
+2. **Acknowledge only after the work is done.** A consumer that crashes mid-process should not lose the message.
+3. **Isolate the dangerous code at multiple layers.** Namespaces + cgroups + seccomp. Each alone is bypassable; together they're a hard wall.
+4. **Test the failure modes, not just the happy path.** What happens when the worker crashes? When the queue is down? When MongoDB is unreachable? The architectures that survive are the ones that were tested for failure.
+
+If you want the same architectural shape but a smaller surface area, [UnThink](/work/unthink) uses the same three-service pattern (extension + Django backend + FastAPI agent) for AI inference instead of code execution. The primitives transfer.
+
+> **Cross-post note:** This is the canonical version. A Medium version is at [imehboob.medium.com](https://imehboob.medium.com/my-experience-building-a-leetcode-like-online-judge-and-how-you-can-build-one-7e05e031455d).
+
+— Mahboob

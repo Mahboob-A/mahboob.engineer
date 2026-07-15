@@ -1,0 +1,141 @@
+---
+title: "Linux Networking for Backend Engineers — Part 1: Namespaces & Virtual Interfaces"
+excerpt: "Starting a hands-on series on the kernel primitives that make container networking work — namespaces, veth pairs, and bridges, explained from the ground up."
+category: linux
+tags:
+  - linux
+  - networking
+  - docker
+  - internals
+series: "Linux Networking"
+part: 1
+projects:
+  - unthink
+stack:
+  - Linux
+  - Docker
+readMin: 10
+publishedAt: "2026-07-15"
+---
+
+If you've ever wondered how Docker actually isolates networking on a Linux host — why a container thinks it owns its own `eth0`, why port 80 in one container doesn't fight port 80 in another, why two containers can talk to each other without leaving the host — the answer is **network namespaces**, plus a few tricks built on top.
+
+This post is **Part 1** of a series on the kernel primitives behind container networking. Today we're starting with namespaces: what they are, how to make one, and how to drop a virtual interface into it.
+
+## What a network namespace actually is
+
+A network namespace is exactly what it sounds like: a private copy of the network stack. Every process on Linux lives inside *some* namespace — usually the default "init" namespace, the one the host uses. When you create a new namespace, you get a fresh slate:
+
+- No interfaces (other than `lo`, which exists but is down).
+- Empty routing tables.
+- Empty iptables rules.
+- Empty socket listing.
+
+A process inside this namespace can `listen()` on port 80 without conflicting with anything in the host's namespace — because to the kernel, the two sockets live in different stacks.
+
+You can see this in action with `ip netns`:
+
+```bash
+sudo ip netns add demo
+sudo ip netns exec demo ip link
+```
+
+That second command shows a single interface: `lo`, in state `DOWN`. No `eth0`, no `wlan0`. The namespace doesn't see any of the host's network devices.
+
+<Callout type="info">
+Namespaces aren't a new feature. They've been in Linux since kernel 2.6.24 (2008), but the userland tools for managing them have evolved a lot. `ip netns` (from `iproute2`) is the modern way; older docs still reference `netns` from the `util-linux` package.
+</Callout>
+
+## A process lives in exactly one namespace per kind
+
+This trips people up. Linux has **several** namespace types — network, mount, PID, UTS, IPC, user, cgroup, time. A process is in exactly one of each. `ip netns exec demo bash` puts `bash` in the `demo` network namespace but doesn't touch any of the others.
+
+That's why Docker can show you a process listing from inside a container (different PID namespace) and network interfaces (different network namespace) and the host's clock (same UTS namespace) — they're independent axes.
+
+## So how does a container get an `eth0`?
+
+This is the part that confused me for a long time. The namespace starts empty. To make it useful, you have to add a network interface to it. But interfaces are hardware or virtual devices — they have to come from *somewhere*.
+
+The answer is **veth pairs**: virtual Ethernet interfaces that come in pairs, like a virtual patch cable. When you create a veth pair, the kernel gives you two endpoints that act exactly like a network cable plugged into both ends. Whatever enters one exits the other.
+
+```bash
+# Create a veth pair: veth-host and veth-ns
+sudo ip link add veth-host type veth peer name veth-ns
+
+# Move one end into the namespace
+sudo ip link set veth-ns netns demo
+
+# Bring them both up
+sudo ip link set veth-host up
+sudo ip netns exec demo ip link set veth-ns up
+sudo ip netns exec demo ip addr add 10.0.0.1/24 dev veth-ns
+```
+
+After this, anything sent on `veth-host` lands on `veth-ns`, and vice versa. The container (or anything in the `demo` namespace) now has a network interface named `veth-ns`, and the host has `veth-host`. They are the same wire, just two ends of it.
+
+This is exactly what `docker run` does behind the scenes. The Docker daemon creates a veth pair, moves one end into the container's namespace, leaves the other end on the host, and wires the host end into a Linux bridge. We'll cover bridges in [Part 3](#).
+
+## Why not just give the container a real interface?
+
+A real `eth0` belongs to the host's physical hardware. It can't be in two places at once. You can't share a single device between two network stacks and expect isolation — both would see the same packets, both could configure the same IP. veth is the kernel's answer to "I want a network cable, but virtual".
+
+Veth interfaces also do the right thing when namespaces are torn down. When the last process leaves a namespace, the kernel deletes it. If the container's end of the veth pair lives in that namespace, it's deleted automatically — no leftover interface on the host, no manual cleanup.
+
+## How Docker uses this
+
+Docker's `bridge` network driver (the default for containers) does almost exactly what we did above, just at scale:
+
+1. On `dockerd` start, create a Linux bridge named `docker0` (in the host namespace).
+2. For each `docker run`, create a veth pair.
+3. Move one end into the container's namespace; the other end gets attached to `docker0`.
+4. Assign the container-side veth an IP from a private subnet (usually `172.17.0.0/16`).
+5. The container's default gateway points at `docker0`.
+
+That's it. Containers can talk to each other because they're all on the same `docker0` bridge. Containers can reach the outside world because the host has IP forwarding + iptables rules that NAT their traffic out the host's real interface.
+
+## What we'll cover next
+
+This post is the foundation. In the next parts we'll:
+
+- **Part 2:** How two namespaces actually exchange packets through a veth pair, with packet captures and a working example.
+- **Part 3:** Linux bridges, default gateways, and the one-way outbound path every container uses to reach the internet.
+- **Part 4:** Source NAT (MASQUERADE) and packet forwarding — the missing link that lets a namespace actually reach public IPs.
+
+By the end of the series, you'll have an end-to-end mental model of container networking that doesn't rely on "Docker does it somehow". You'll be able to debug container network issues from the kernel side, and you'll know exactly what to look at when `kubectl exec ... -- curl ...` doesn't work.
+
+<Callout type="warn">
+The series assumes basic Linux familiarity — you should be comfortable with `ip addr`, `ip route`, and reading routing tables. If any of that is fuzzy, [`iproute2` cheatsheet](https://wiki.linuxfoundation.org/networking/iproute2) is a good refresher before starting.
+</Callout>
+
+## A complete working example
+
+Here's everything above stitched together so you can reproduce it locally:
+
+```bash
+# 1. Create a namespace.
+sudo ip netns add demo
+
+# 2. Create a veth pair, move one end into the namespace.
+sudo ip link add veth-host type veth peer name veth-ns
+sudo ip link set veth-ns netns demo
+
+# 3. Bring both ends up and assign addresses.
+sudo ip link set veth-host up
+sudo ip addr add 10.0.0.100/24 dev veth-host
+
+sudo ip netns exec demo ip link set veth-ns up
+sudo ip netns exec demo ip link set lo up
+sudo ip netns exec demo ip addr add 10.0.0.1/24 dev veth-ns
+
+# 4. Verify connectivity — this should succeed.
+sudo ip netns exec demo ping -c 2 10.0.0.100
+
+# 5. Clean up.
+sudo ip netns del demo
+```
+
+That `ping` is the entire point of the post: two namespaces, one virtual cable, real ICMP packets going back and forth. Nothing about Docker is required.
+
+> **Cross-post note:** This post is the canonical version. A Medium version with the same content is at [imehboob.medium.com](https://imehboob.medium.com/linux-networking-your-hands-on-guide-to-understand-how-docker-works-part-1-fbf2b6cef06f) — Medium may render it slightly differently due to its code block rendering, but the technical content is identical.
+
+— Mahboob
