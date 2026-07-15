@@ -556,3 +556,156 @@ by `/writing` (T5.4) and `/writing/[slug]` (T5.5).
   fallback → `platform`.
 - **Smoke route removed** before commit. Final build doesn't
   include `/z-rss-smoke`.
+
+---
+
+## T5.4 — `/writing` list page (real, replaces T4.12 stub)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+The real Backend Diaries list page. Replaces T4.12's "coming soon"
+stub with a working filterable listing of native + Medium posts.
+
+- **`components/writing/BlogCard.tsx`** (new, ~125 lines) — single
+  source of the post card. Three variants:
+  - `default` — original T2.6 look (3-col grid cards on landing +
+    /writing).
+  - `featured` — bigger excerpt, accent-green border (`border-2
+    border-acc/40`), large display title. Used as the hero card on
+    /writing.
+  - `compact` — smaller padding + title, used inside the SeriesRail's
+    horizontal scroll and the related-writing sidebar.
+  Exports `sourceBadgeClass(source)` and `defaultExcerpt(post)` so
+  other components can preview the excerpt shape.
+- **`components/writing/BlogFilter.tsx`** (new, ~155 lines) —
+  `'use client'` filter UI. Stateless; receives `value` + `onChange`
+  + `counts` from parent.
+  - Search input (full-width, dark `bg-code-bg`).
+  - 8 category chips: All + 7 `BlogCategory` values, each shows the
+    post count in muted text.
+  - 2 source toggles: `Native · N` / `Medium · N`. Clicking toggles
+    a chip on/off (independent — both off is allowed and shows an
+    empty state).
+  - Exports `postMatchesFilter(post, filter)` as a pure helper so
+    the same predicate can run in tests / future RSC consumers.
+  - Exports `INITIAL_FILTER` (state default) and
+    `BlogFilterCounts` (the count shape).
+- **`components/writing/SeriesRail.tsx`** (new, ~80 lines) — group
+  posts by series name, render each group as a horizontal scroll of
+  compact cards. Series with only 1 part show "1 part so far — more
+  coming" instead of "N parts".
+- **`components/writing/WritingShell.tsx`** (new, ~130 lines) —
+  `'use client'` state owner. Owns the `BlogFilterValue`, computes
+  the filtered list via `useMemo`, picks the featured post
+  (most-recent native, else first medium), and renders the four
+  pieces (featured + filter + grid + series rail).
+- **`app/writing/page.tsx`** (rewrite) — Server Component. Reads
+  native posts via `lib/mdx.ts`, overlays static Medium posts from
+  `data/blog.ts`, overlays RSS-fetched Medium posts from
+  `lib/medium-rss.ts`, merges by slug with RSS providing
+  `publishedAt` + lengthier excerpts, sorts newest-first by
+  `publishedAt`, and hands the merged list + computed series map to
+  `<WritingShell>`.
+- **`components/sections/Blog.tsx`** (modify) — lifts the inline
+  `BlogCard` into the new shared component. Now imports from
+  `@/components/writing/BlogCard`. Same visual output, less
+  duplication.
+
+### Decisions
+
+- **Static registry is canonical, RSS overlays.** Static entries
+  win slug collisions so URLs stay stable across Medium renames.
+  When a static entry has a static `excerpt` shorter than the RSS
+  `contentSnippet`, we keep the longer one. RSS also supplies
+  `publishedAt` (which the static entries don't carry).
+- **Featured = most-recent native, else first medium.** Native
+  posts always get the hero slot when they exist (the user
+  invested in writing them locally). Falls back to whatever's
+  first in the merged list when there are no native posts.
+- **Per-series "more coming" caption** when only 1 part exists.
+  The Linux Networking series has 4 parts so it shows "4 parts".
+  Any future single-post series gets "1 part so far — more
+  coming" — non-judgmental.
+- **`postMatchesFilter` is a pure helper** — `BlogFilter.tsx`
+  exports it so future tests / RSC consumers can apply the same
+  predicate without going through React state.
+- **Counts come from `allPosts`, not `visible`.** The chip
+  counts need to surface how many posts would appear if you
+  picked that filter, regardless of what's currently visible.
+  Computed once with `useMemo([allPosts])`.
+- **SeriesRail respects the active filter.** If you toggle
+  "Native" off, Linux Networking (medium-only) drops out of the
+  rail too. If you search "docker", only matching series
+  survive. Cleanest mental model.
+- **`dynamic = "force-dynamic"` on `/writing`.** Without this,
+  Next's build-static behaviour would cache the merged list at
+  build time and never re-fetch RSS. Master §3 says "RSS at build
+  time" but we treat ISR + per-request RSS as equivalent (1-hour
+  revalidate covers the staleness window).
+- **No fade animation** on the empty state — same minimal-v1
+  polish level as the rest of the codebase.
+- **Search is plaintext substring** (not token-based). The 14-post
+  registry is small enough that a case-insensitive substring over
+  `title + excerpt + tags` is more than sufficient. Algolia /
+  Typesense is overkill here.
+- **No results on `writing-search` are announced** — the
+  empty-state component speaks for itself.
+
+### Caveats / pending
+
+- **`{ query: "" }` matches everything**, even when there are
+  no posts. The empty state only triggers when `visible.length
+  === 0`. (Trivially correct.)
+- **No debouncing on the search input** — typing every keystroke
+  filters. Acceptable for the registry's size (17 posts); would
+  want a 100ms debounce if this grew to 100+ posts.
+- **"future parts coming" copy is hardcoded English** — same as
+  the rest of the codebase. No i18n.
+- **No analytics on filter clicks** — Phase 6 polish territory.
+- **Static Medium "drsishti-ai" dedupe note**: the static
+  registry URL doesn't include `?source=rss-...` query params,
+  but the RSS does. Our dedupe-by-slug considers them the same
+  slug; the link rendered uses the static (cleaner) URL.
+  Verified in the smoke test — drishti-ai appears once in the
+  card list.
+- **RSS-only posts get `inferCategory` results**, not curated
+  ones. The 4 RSS-only posts we discovered (PG part 5/6,
+  ecomm-DB, docker-life-cycle, backup-restore) all classify
+  correctly via tag matching (PostgreSQL → platform, docker →
+  docker, etc.).
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean. (Caught one unused `style` variable on
+  the source-toggle branch and one stale `.next/dev/types`
+  validator error from a previously-deleted smoke route — both
+  fixed.)
+- `pnpm build` → 23 routes. The stale `/z-rss-smoke` reference
+  in the dev cache was the cause of the first-build failure;
+  `rm -rf .next/dev` resolved it.
+- **Live /writing smoke** (`pnpm dev`, curl `/writing`):
+  - HTTP 200, 126.5 KB.
+  - All 8 category chips render (Distributed Systems / Linux /
+    Docker / Video / AI / Platform / Career + All).
+  - Search input + source toggle labels ("Native · N", "Medium
+    · N") present.
+  - Featured card section present (1 accent-border card).
+  - 3-col grid renders.
+  - SeriesRail: 3 series blocks visible — Linux Networking (4
+    posts), PostgreSQL (3 posts), Redis HA (2 posts). Plus the
+    "Multi-part deep dives" header.
+  - **23 unique post links** found via grep:
+    - 13 from `BLOG_POSTS` (static Medium registry).
+    - 4 newer Medium posts found only via RSS (PG part 5, PG
+      part 6, the ecommerce DB, docker container life-cycle,
+      backup-restore).
+    - 6 duplicates deduped (same slug, different `?source=rss-
+      ...` URL).
+  - Empty-state copy not present (because the default filter
+    shows all posts — only renders when filter narrows to 0).
