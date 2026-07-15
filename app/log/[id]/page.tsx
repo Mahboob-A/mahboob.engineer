@@ -322,26 +322,32 @@ function CaseStudyCrossLink({
   entry: ExperienceItem;
   projects: ProjectItem[];
 }) {
-  const primary = projects[0];
-  if (!primary) return null;
+  if (projects.length === 0) return null;
+  const others = projects.slice(1);
   return (
     <section>
       <div className="border-border mb-5 flex items-baseline gap-3 border-t pt-6">
         <span className="bg-acc inline-block h-[6px] w-[6px] rounded-full" />
         <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
-          Product case study
+          Product case {projects.length === 1 ? "study" : "studies"}
         </h2>
       </div>
       <p className="text-t2 text-[15px] leading-[1.65]">
         For the architecture deep-dive — three-layer build, isolation
-        strategy, deployment topology — read the{" "}
-        <Link
-          href={`/work/${primary.slug}`}
-          className="text-acc hover:opacity-80 underline"
-        >
-          {primary.name} case study
-        </Link>
-        .
+        strategy, deployment topology — read the case study
+        {others.length > 0 ? "s" : ""}:{" "}
+        {projects.map((p, i) => (
+          <span key={p.slug}>
+            <Link
+              href={`/work/${p.slug}`}
+              className="text-acc hover:opacity-80 underline"
+            >
+              {p.name}
+            </Link>
+            {i < projects.length - 2 ? ", " : i === projects.length - 2 ? ", and " : ""}
+          </span>
+        ))}{" "}
+        on /work.
       </p>
     </section>
   );

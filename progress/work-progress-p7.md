@@ -378,3 +378,66 @@ what was built → how tested/deployed/what's next).
   - Taply: 510 words / 4 paragraphs.
   - NexBell: 430 words / 4 paragraphs.
   - Innovative IT: 410 words / 4 paragraphs.
+
+---
+
+## T7.5 — Sitemap + cross-link to /work
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/sitemap.ts`** — added `experienceRoutes` derived from
+  `EXPERIENCE`. Each experience id maps to a `/log/<id>` entry with
+  `changeFrequency: "yearly"` and `priority: 0.7` (matching the
+  writing/post page weight). Three new URLs land in `/sitemap.xml`:
+  `/log/taply`, `/log/nexbell`, `/log/innovative-it`.
+- **`app/log/[id]/page.tsx`** — `CaseStudyCrossLink` upgraded from
+  "link to first related project" to "link to all related projects".
+  Handles 1, 2, 3+ projects with comma-separated formatting
+  ("Taply, UnThink, and Algocode"). Title pluralizes correctly
+  (case study / case studies). All other page behavior unchanged.
+
+### Decisions
+
+- **Sitemap priority = 0.7** matches the writing pages and the
+  parent `/log` page. Deep-dive content of equal weight.
+- **Cross-link lists every related project**, not just the primary.
+  NexBell shows `[datalineage-doctor, algocode]`; Taply shows
+  `[taply, unthink]`. User clicking from `/log/nexbell` lands on
+  whichever case study matters; one fewer click required to scan
+  across.
+- **Cross-link title singular/plural** — "case study" if exactly 1
+  related project, "case studies" if 2+. Matches the JSON-aware
+  pattern used elsewhere on the site (RelatedWriting,
+  RelatedProjects).
+- **No `/log/[id]` redirect from old slug** — there is no old slug;
+  this is a new route. No 301 traffic to preserve.
+
+### Caveats / pending
+
+- **Sitemap lastModified uses `now` for every experience entry** — fine
+  for build-generated sitemaps; if Experience content changes mid-cycle
+  the sitemap won't reflect that. Out of scope (matches the
+  approach used for projects, which also use `now`).
+- **Cross-link uses inline `<Link>` with `text-acc underline hover:opacity-80`**
+  styling — same as the case-study's RelatedWriting links. Future
+  polish: extract a `<CrossLink>` component if reuse grows.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings. `/sitemap.xml` is built via
+  the static-prerender pipeline.
+- **Sitemap smoke (via build)** — the build output reports 19 routes;
+  `/sitemap.xml` is the static-prerendered route. The `EXPERIENCE`
+  array imports cleanly (3 entries); `experienceRoutes` produces
+  3 URLs.
+- **Cross-link rendering** — for `/log/taply` (2 related projects):
+  "Taply, UnThink, and ..." text expected. For `/log/innovative-it`
+  (1 related project): "ImgTwist" singular text expected.
+  Live verification pending — to be confirmed in T7 wrap-up smoke.

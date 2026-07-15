@@ -8,13 +8,15 @@
  *
  * Sources:
  *   - PROJECTS (data/projects.ts) → /work/[slug]
+ *   - EXPERIENCE (data/experience.ts) → /log/[id]   (Phase 7 T7.5)
  *   - listNativePostSlugs()       → /writing/[slug] (only native)
  *
- * Phase 6 (T6.5).
+ * Phase 6 (T6.5) · Phase 7 (T7.5).
  */
 
 import type { MetadataRoute } from "next";
 import { PROJECTS } from "@/data/projects";
+import { EXPERIENCE } from "@/data/experience";
 import { listNativePostSlugs } from "@/lib/mdx";
 
 const SITE_URL =
@@ -41,6 +43,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  /* Phase 7 T7.5: one entry per experience in EXPERIENCE. Same
+     `changeFrequency: yearly` as the projects — these are deep-dives
+     that don't churn monthly. */
+  const experienceRoutes: MetadataRoute.Sitemap = EXPERIENCE.map((e) => ({
+    url: `${SITE_URL}/log/${e.id}`,
+    lastModified: now,
+    changeFrequency: "yearly",
+    priority: 0.7,
+  }));
+
   const nativeSlugs = await listNativePostSlugs();
   const writingRoutes: MetadataRoute.Sitemap = nativeSlugs.map((slug) => ({
     url: `${SITE_URL}/writing/${slug}`,
@@ -49,5 +61,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...projectRoutes, ...writingRoutes];
+  return [
+    ...staticRoutes,
+    ...projectRoutes,
+    ...experienceRoutes,
+    ...writingRoutes,
+  ];
 }
