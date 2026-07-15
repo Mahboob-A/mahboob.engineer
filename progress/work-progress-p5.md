@@ -126,3 +126,142 @@ Master plan tasks in this phase (T5.0 → T5.6):
   - Redis HA series: 2 posts (parts 1-2) ✓
   - Every Medium post has a real URL (no `imehboob.medium.com` placeholder) ✓
   - Every post has a non-empty `excerpt` ✓
+
+---
+
+## T5.1 — Install Keystatic + config + admin route
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+The CMS is mounted. Visiting `/keystatic` in dev mode loads the full
+Keystatic admin SPA (2.2 MB of chunks including the React-Aria
+UI runtime, slate editor, Y.js collaboration layer, and ProseMirror
+doc engine). The admin UI lets the user create, edit, and delete
+native blog posts that are stored as MDX files under `content/posts/`.
+
+- **`keystatic.config.ts`** (new, ~140 lines) — the keystatic config
+  using the modern Keystatic 0.5 `fields.*` namespace API:
+  - `config({ storage, collections: { posts: collection({...}) } })`
+  - Storage branch: `local` in dev; switches to `github` only when
+    `KEYSTATIC_GITHUB_CLIENT_ID` + `KEYSTATIC_GITHUB_CLIENT_SECRET` +
+    `KEYSTATIC_SECRET` are all present in env (so a build never
+    fails for missing prod config — see Decisions).
+  - Single collection `posts` matching the BlogPostItem schema:
+    `title` (`fields.slug`), `excerpt` (multiline text, max 240),
+    `category` (select from the 7 BlogCategory values),
+    `tags[]`/`projects[]`/`stack[]` (array of short text),
+    `series` (optional text), `part` (optional integer),
+    `readMin` (required integer), `publishedAt` (optional ISO date),
+    `content` (MDX field with the official editor).
+- **`app/keystatic/[[...params]]/page.tsx`** (new) — `'use client'`
+  mount of `makePage(config)` from `@keystatic/next/ui/app`. The
+  catch-all dynamic segment lets the admin serve all internal
+  routes (collection browser, single-entry editor, dashboard).
+- **`app/api/keystatic/[...params]/route.ts`** (new) — App Router
+  GET + POST handlers from `makeRouteHandler({config})` so the
+  admin can read + write collection entries at runtime.
+- **`content/posts/.gitkeep`** — empty placeholder so the directory
+  exists at first install (Keystatic's `path: "content/posts/*"`
+  glob needs the dir to exist). When the user authors the first
+  post via the admin, the MDX file is written here automatically.
+- **`package.json`** — added `@keystatic/core@0.5.51` and
+  `@keystatic/next@5.0.4` (latest stable).
+- **Build output** — `/keystatic/[[...params]]` and
+  `/api/keystatic/[...params]` both registered as new dynamic
+  routes. Total route count went 23 → 24.
+
+### Decisions
+
+- **Keystatic 0.5 fields builder API, not the legacy inline schema.**
+  Keystatic 0.5 introduced the `fields.text({label, validation, ...})`
+  namespace. The legacy `{label, validation: {...}}` shape throws
+  compile-time errors on every field. Master §2.5's schema description
+  was forward-looking — using the new API gets us stricter validation
+  for free.
+- **`fields.slug({name})`** for the title field — generates a URL
+  slug from the title automatically. Used as the `slugField` on the
+  collection so `content/posts/<slug>.mdx` gets a clean URL out of
+  the box.
+- **`'use client'` on the page file.** Without it, Next.js renders
+  the page as a Server Component; `makePage(config)` returns a JSX
+  tree that references a Client Component (`Keystatic`) — which is
+  fine in theory but in practice the Keystatic client chunks didn't
+  ship. Marking the file `'use client'` forces Turbopack to bundle
+  the Keystatic runtime into the page's chunk graph, and the admin
+  UI hydrates correctly. **Verified**: `/keystatic` now ships 2.2 MB
+  of Keystatic-related chunks (`keystatic-core-ui`, `react-aria`,
+  `slate-react`, `yjs`, `prosemirror-view`, etc.) that aren't there
+  without the directive.
+- **`storage` defaults to `local` even in production builds** when
+  the GitHub env vars aren't present. The reasoning: Keystatic throws
+  a hard build error at module-load time if `kind: 'github'` is set
+  but env vars are missing (caught at `pnpm build` while collecting
+  page data — would have broken the prod build even though the
+  admin isn't on the critical path of the landing page). Falling
+  back to `local` lets `pnpm build` succeed; Phase 6 wires GitHub
+  when Vercel env vars land. Note: `local` storage in production
+  requires a writable filesystem, which Vercel doesn't provide —
+  so production with `local` storage will fail at admin-read time.
+  This is acceptable for now: any admin login attempt in this state
+  surfaces a clear filesystem error, which is the right signal to
+  configure the env vars.
+- **No `withKeystatic` wrapper in `next.config.ts`.** Earlier Keystatic
+  versions (≤ 4.x) needed this wrapper. Keystatic 5.x dropped it
+  for App Router — the routes mount directly without any config
+  surgery. Verified by running the build without the wrapper.
+- **Catch-all `[[...params]]` segment.** Keystatic uses internal
+  routes like `/keystatic/collection/posts`, `/keystatic/collection/
+  posts/edit/<slug>`. The optional catch-all segment lets the
+  `makePage` component own all of them.
+- **API route lives at `/api/keystatic/[...params]`, not `[[...params]]`.**
+  Both GET and POST can hit the route; the segments let Keystatic
+  invoke any internal endpoint it needs.
+
+### Caveats / pending
+
+- **Admin renders inside the site's root layout** (Navbar +
+  Footer wrapped around the admin). Keystatic is designed to be
+  its own full-page SPA. In v1 the layout chrome stays because
+  routing out of it adds complexity. If the user prefers a clean
+  full-bleed admin, a route group (`app/(keystatic)/layout.tsx`)
+  can replace the root layout for `/keystatic/**` only — out of
+  scope for v1.
+- **Production build currently uses `local` storage** because no
+  GitHub env vars are set in the deploy preview. Once the user
+  sets `KEYSTATIC_GITHUB_CLIENT_ID` + `KEYSTATIC_GITHUB_CLIENT_SECRET`
+  + `KEYSTATIC_SECRET` + `KEYSTATIC_GITHUB_REPO_*` in Vercel
+  (Phase 6), the config auto-switches to GitHub.
+- **`fields.slug` requires manual entry** — the admin doesn't
+  auto-generate from `title`; the user types both. Acceptable;
+  common pattern.
+- **No i18n** on the admin — English-only UI from Keystatic.
+- **Git author identity**: per standing instruction, all commits
+  use `connect.mahboobalam@gmail.com`.
+
+### Verified
+
+- `pnpm typecheck` → clean. (Initial pass had 12 errors because
+  I used the legacy `{label, validation: {...}}` schema shape; the
+  rewrite to `fields.text()`, `fields.array()`, `fields.select()`,
+  `fields.mdx()` resolved every error.)
+- `pnpm lint` → clean.
+- `pnpm build` → 24 routes (was 23), 0 warnings. Both `/keystatic/
+  [[...params]]` and `/api/keystatic/[...params]` registered.
+- **Live HTML smoke** (dev server, `pnpm dev`):
+  - `/keystatic` → HTTP 200, 39.5 KB served. Response includes
+    Keystatic runtime chunks (2.2 MB across ~15 chunks:
+    `keystatic-core-ui`, `keystatic-core`, `react-aria`,
+    `react-stately`, `slate-react`, `yjs`, `prosemirror-view`).
+    Page title resolves correctly, all 3 fonts load, dark forest-
+    green theme tokens are applied.
+  - `/api/keystatic/[...params]` → compiles cleanly, registered as
+    a route. Smoke-tested via the build output; runtime POST test
+    requires an actual admin session (out of scope for curl).
+- **Bundle smoke**: when `/keystatic` is loaded, the requested JS
+  chunks include `app_keystatic_%5B%5B___params%5D%5D_page_tsx_*` —
+  i.e. the keystatic admin page is itself shipped as a separate
+  client chunk. Confirms the `'use client'` directive works.
