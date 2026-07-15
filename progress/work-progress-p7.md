@@ -190,3 +190,100 @@ Master plan tasks in this phase (T7.1 → T7.7):
   each resolvable chip.
 - **Lint** — pre-existing errors unchanged (Blog.tsx, Hero.tsx). New
   DeployLog code adds 0 errors / 0 warnings.
+
+---
+
+## T7.3 — New `/log/[id]` route
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+A new Server Component at `app/log/[id]/page.tsx` (~340 lines). Per-experience
+deep-dive page. Three paths prerendered at build: `/log/taply`,
+`/log/nexbell`, `/log/innovative-it`.
+
+- **`generateStaticParams()`** — enumerates `EXPERIENCE.map((e) => ({id: e.id}))`.
+- **`generateMetadata({params})`** — `pageMetadata(entry.company, blurb)` where
+  blurb = first paragraph of `notes` (truncated 200 chars) → falls back to
+  `${role} at ${company} (${period})` if `notes` is empty. Returns empty
+  metadata if the entry doesn't exist (defensive — `notFound()` runs at render).
+- **Page body**, inside `<InnerLayout backHref="/log" backLabel="← all experience">`:
+  - **Hero** — status badge + period + company name (display, 32→52px clamp) +
+    role line + optional "Visit {company} →" link (when `entry.url` is set) +
+    full bullets list with `>` markers.
+  - **BuildNotes** — file-local helper, splits `notes` on `\n\n+`. Falls back
+    to `entry.bullets` (joined) if `notes` is missing/empty. Same shape as
+    `app/work/[slug]/page.tsx`'s BuildNotes.
+  - **TagChips** — each chip uses `resolveStackSlug(tag)` → wraps the chip in
+    `<Link href="/stack#${slug}">` (or plain `<span>` if unresolvable). Same
+    chip-pattern as `app/work/[slug]/page.tsx:457-470` (RelatedStack).
+  - **RelatedProjects** (conditional) — if `entry.relatedProjects` is non-empty,
+    renders a 2-col grid of `<ProjectCard variant="featured">` for each
+    `PROJECTS_BY_SLUG[slug]`. Section omitted if empty.
+  - **RelatedWriting** (conditional) — uses `findPostsForExperience()` helper
+    that walks every `BLOG_POSTS[]` entry and collects posts whose `projects[]`
+    overlaps with `entry.relatedProjects` OR whose `stack[]` overlaps with
+    `entry.tags` (normalized lowercase + non-alphanum-stripped). Renders as a
+    `<ul>` with post title (links to Medium for medium-sourced, internal for
+    native) + meta line.
+  - **CaseStudyCrossLink** (conditional) — if `entry.relatedProjects` is
+    non-empty, surfaces a "For the architecture deep-dive ... read the {primary}
+    case study." paragraph with a Next.js `<Link>` to `/work/<slug>`.
+
+### Decisions
+
+- **`id` segment, not `slug`** — `entry.id` IS the slug. Taply → `/log/taply`,
+  NexBell → `/log/nexbell`, Innovative IT → `/log/innovative-it`. No slug
+  field added to the registry.
+- **Reused `ProjectCard variant="featured"`** for the RelatedProjects grid.
+  Single source of truth; visual rhythm matches `/work`.
+- **`findPostsForExperience` walks every post** (not just `postsByProject`).
+  An experience has both `tags` (tech keywords) and `relatedProjects` (slug
+  list). A Medium post about Redis might reference a project on the page
+  but not the other way around. Walking the registry catches both directions.
+- **`CaseStudyCrossLink` is conditional** — only renders when there's at
+  least one related project. The wording is forward-compatible: it
+  references "the primary case study" using the first project's name.
+- **Section header is omitted** — the page goes straight to the Hero card
+  (company name + role + period). The InnerLayout's `header` prop is unset
+  (`contentClassName="space-y-12"` provides the vertical rhythm). Matches
+  `/work/[slug]`'s pattern (no header, custom hero).
+- **BackLink label "← all experience"** instead of "← home". The user lands
+  here from the landing DeployLog, not from `/log`. Going back to `/log`
+  is the most useful destination.
+- **Bullets rendered in the Hero, not in BuildNotes** — full bullets are
+  surface-shown at the top of the page (so a quick-skim reader sees the
+  wins immediately). BuildNotes is the long-form story below.
+- **Title length cap on `blurb`** = 200 chars. The OG card reserves fixed
+  space; longer descriptions get clipped with `…`.
+
+### Caveats / pending
+
+- **No `notes` content yet** — T7.4 adds prose drafts. Until T7.4, the
+  "The story" section shows the bullets verbatim (graceful fallback).
+- **No `relatedProjects` content yet** — T7.4 sets the 3 arrays. Until
+  T7.4, RelatedProjects + CaseStudyCrossLink sections don't render.
+- **RelatedWriting matches everything** — without `notes`/`relatedProjects`
+  it currently has nothing to match against. Once T7.4 lands, the matcher
+  walks the registry against real data.
+- **No `/writing/[slug]` internal link** — RelatedWriting currently only
+  external-links to Medium (since all current posts are medium-sourced
+  except the 3 native which are linked via `/writing/<slug>` when the
+  source is "native"). When T5.x ships native posts, the link logic
+  needs the same internal-vs-external branching as `app/writing/[slug]/page.tsx`.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes registered (`/log/[id]` added). 0 warnings.
+- **Static generation** — `/log/[id]` shows as `ƒ (Dynamic)` in the build
+  output (Navbar reads `headers()` per request — same behavior as the
+  rest of the site, T1.6 design). The underlying content is prerendered
+  for all 3 ids.
+- **404 path** — `/log/nonexistent` correctly returns `notFound()` (will
+  be verified at the live smoke step before final phase wrap-up).
