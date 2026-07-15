@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * components/sections/SkillGraph.tsx
  *
@@ -5,10 +7,13 @@
  * mockup §03 (lines 840–948).
  *
  * A static SVG of hand-laid tech nodes with dependency edges between
- * them. **Vanilla JS** handles the hover dim/highlight effect — no
- * React state, no D3. D3 is reserved for the `/stack` force graph
- * (T3.4); the landing page uses the curated static layout from the
- * master plan for visual rhythm.
+ * them. Hover dim/highlight is wired through React state + native
+ * event handlers on each node — no inline `<script>` tag (React 19
+ * no longer executes scripts rendered as JSX; the previous vanilla-
+ * JS approach is replaced with a simple `'use client'` component).
+ * D3 is reserved for the `/stack` force graph (T3.4); the landing
+ * page uses the curated static layout from the master plan for
+ * visual rhythm.
  *
  * Hover behavior (matched to the flat mockup):
  *   - On hover a node: add `has-active` class to the SVG.
@@ -24,6 +29,7 @@
  *   the D3 force graph at /stack (T3.4).
  */
 
+import { useState, useMemo } from "react";
 import { STACK } from "@/data/stack";
 import { FadeUp } from "@/components/motion";
 
@@ -275,6 +281,37 @@ export function SkillGraph() {
 }
 
 function SkillGraphPanel() {
+  /* Track which node is currently hovered (or focused via keyboard).
+     React 19 + Next 16 no longer execute <script> elements rendered
+     as JSX, so this state replaces the previous vanilla-JS handler
+     approach. The hover/focus behavior is identical. */
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const isHovered = hoveredId !== null;
+
+  /* Set of nodes to highlight: the hovered node + every node in its
+     `rel` adjacency list. */
+  const activeNodeIds = useMemo(() => {
+    if (!hoveredId) return new Set<string>();
+    const active = new Set<string>([hoveredId]);
+    const hovered = NODES.find((n) => n.id === hoveredId);
+    if (hovered) for (const rel of hovered.rel) active.add(rel);
+    return active;
+  }, [hoveredId]);
+
+  /* Set of edge ids to highlight: any edge that touches the hovered
+     node. We key edges by "a,b" (sorted) to match the data-edge
+     attribute the original script used. */
+  const activeEdgeKeys = useMemo(() => {
+    if (!hoveredId) return new Set<string>();
+    const out = new Set<string>();
+    for (const [a, b] of EDGES) {
+      if (a === hoveredId || b === hoveredId) {
+        out.add([a, b].sort().join(","));
+      }
+    }
+    return out;
+  }, [hoveredId]);
+
   return (
     <div className="bg-surface border-border rounded-[10px] border p-6">
       {/* Legend */}
@@ -307,7 +344,10 @@ function SkillGraphPanel() {
         {/* The viewBox matches the flat mockup (900x460). */}
         <svg
           id="skillGraph"
-          className="skill-graph block w-full"
+          /* `has-active` toggles the dim-everything-else CSS rule;
+             per-node `.active` highlights the hovered node + its
+             connections. Both derived from React state. */
+          className={`skill-graph block w-full ${isHovered ? "has-active" : ""}`}
           viewBox="0 0 900 460"
           style={{ minWidth: 760, height: "auto" }}
           role="img"
@@ -315,42 +355,54 @@ function SkillGraphPanel() {
         >
           {/* Edges */}
           <g className="edges">
-            {EDGES.map(([a, b], i) => (
-              <line
-                key={i}
-                className="skill-edge"
-                data-edge={`${a},${b}`}
-                x1={getNode(a).cx}
-                y1={getNode(a).cy}
-                x2={getNode(b).cx}
-                y2={getNode(b).cy}
-              />
-            ))}
+            {EDGES.map(([a, b], i) => {
+              const key = [a, b].sort().join(",");
+              const active = activeEdgeKeys.has(key);
+              return (
+                <line
+                  key={i}
+                  className={`skill-edge ${active ? "active" : ""}`}
+                  data-edge={`${a},${b}`}
+                  x1={getNode(a).cx}
+                  y1={getNode(a).cy}
+                  x2={getNode(b).cx}
+                  y2={getNode(b).cy}
+                />
+              );
+            })}
           </g>
 
-          {/* Nodes */}
+          {/* Nodes — hover/focus handlers attached via React; classes
+             derived from the activeNodeIds Set. */}
           <g className="nodes">
-            {NODES.map((n) => (
-              <g
-                key={n.id}
-                className={`skill-node ${n.domain === "backend" ? "backend" : n.domain === "infra" ? "infra" : n.domain === "data" ? "data" : "learning"}`}
-                data-id={n.id}
-                data-rel={n.rel.join(",")}
-                tabIndex={0}
-                role="button"
-                aria-label={`${n.label}${n.sub ? " " + n.sub : ""} — connected to ${n.rel.join(", ")}`}
-              >
-                <circle cx={n.cx} cy={n.cy} r={n.r} />
-                <text x={n.cx} y={n.cy - (n.sub ? 4 : 0)}>
-                  {n.label}
-                </text>
-                {n.sub ? (
-                  <text x={n.cx} y={n.cy + 12} fontSize={9}>
-                    {n.sub}
+            {NODES.map((n) => {
+              const active = activeNodeIds.has(n.id);
+              return (
+                <g
+                  key={n.id}
+                  className={`skill-node ${n.domain === "backend" ? "backend" : n.domain === "infra" ? "infra" : n.domain === "data" ? "data" : "learning"} ${active ? "active" : ""}`}
+                  data-id={n.id}
+                  data-rel={n.rel.join(",")}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${n.label}${n.sub ? " " + n.sub : ""} — connected to ${n.rel.join(", ")}`}
+                  onMouseEnter={() => setHoveredId(n.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  onFocus={() => setHoveredId(n.id)}
+                  onBlur={() => setHoveredId(null)}
+                >
+                  <circle cx={n.cx} cy={n.cy} r={n.r} />
+                  <text x={n.cx} y={n.cy - (n.sub ? 4 : 0)}>
+                    {n.label}
                   </text>
-                ) : null}
-              </g>
-            ))}
+                  {n.sub ? (
+                    <text x={n.cx} y={n.cy + 12} fontSize={9}>
+                      {n.sub}
+                    </text>
+                  ) : null}
+                </g>
+              );
+            })}
           </g>
         </svg>
       </div>
@@ -366,61 +418,13 @@ function getNode(id: string): SkillNode {
 }
 
 /* ===========================================================================
-   Hover interaction — vanilla JS via dangerouslySetInnerHTML-free script.
-   Uses a <script> tag rendered inside the section; React hydrates nothing
-   here. Hover behavior uses event delegation on the SVG.
+   Hover interaction — wired through React state + native event handlers
+   on each <g class="skill-node"> (see SkillGraphPanel above). The previous
+   vanilla-JS `<script dangerouslySetInnerHTML={...}>` approach was
+   removed because React 19 + Next 16 no longer execute scripts rendered
+   as JSX (a console error surfaces at hydration). The hover/focus
+   behavior is identical.
    =========================================================================== */
-
-declare global {
-  interface Window {
-    __attachSkillGraphHandlers?: () => void;
-  }
-}
-
-export function SkillGraphScript() {
-  const script = `
-(function () {
-  function attach() {
-    var g = document.getElementById("skillGraph");
-    if (!g || g.__skillGraphBound) return;
-    g.__skillGraphBound = true;
-    var nodes = g.querySelectorAll(".skill-node");
-    var edges = g.querySelectorAll(".skill-edge");
-    nodes.forEach(function (node) {
-      function enter() {
-        var id = node.getAttribute("data-id");
-        var rel = (node.getAttribute("data-rel") || "")
-          .split(",").map(function (s) { return s.trim(); }).filter(Boolean);
-        g.classList.add("has-active");
-        nodes.forEach(function (n) {
-          var nid = n.getAttribute("data-id");
-          if (nid === id || rel.indexOf(nid) !== -1) n.classList.add("active");
-        });
-        edges.forEach(function (e) {
-          var pair = (e.getAttribute("data-edge") || "").split(",");
-          if (pair[0] === id || pair[1] === id) e.classList.add("active");
-        });
-      }
-      function leave() {
-        g.classList.remove("has-active");
-        nodes.forEach(function (n) { n.classList.remove("active"); });
-        edges.forEach(function (e) { e.classList.remove("active"); });
-      }
-      node.addEventListener("mouseenter", enter);
-      node.addEventListener("mouseleave", leave);
-      node.addEventListener("focus", enter);
-      node.addEventListener("blur", leave);
-    });
-  }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", attach);
-  } else {
-    attach();
-  }
-})();
-`;
-  return <script dangerouslySetInnerHTML={{ __html: script }} />;
-}
 
 /* Export a tiny type re-export so the section consumer knows the STACK
  * dependency we kept (the registry is referenced for the legend & to

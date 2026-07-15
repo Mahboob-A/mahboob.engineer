@@ -15,7 +15,7 @@ import { Suspense } from "react";
 import { Hero } from "@/components/sections/Hero";
 import { DeployLog } from "@/components/sections/DeployLog";
 import { Projects } from "@/components/sections/Projects";
-import { SkillGraph, SkillGraphScript } from "@/components/sections/SkillGraph";
+import { SkillGraph } from "@/components/sections/SkillGraph";
 import { Blog } from "@/components/sections/Blog";
 import { Contact } from "@/components/sections/Contact";
 
@@ -26,7 +26,6 @@ export default function Home() {
       <DeployLog />
       <Projects />
       <SkillGraph />
-      <SkillGraphScript />
       <Suspense>
         <Blog />
       </Suspense>
