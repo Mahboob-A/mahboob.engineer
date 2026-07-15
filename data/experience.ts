@@ -4,9 +4,13 @@
  * Work history + education. Used by:
  *   - landing page (Deployment Log section)
  *   - /log (full timeline + key achievements)
+ *   - /log/[id] (per-experience deep-dive route — T7.x)
  *   - game mode (district metadata — none yet, but reserved)
  *
- * Source: portfolio-master-doc.md §0.5 — copied verbatim.
+ * Source: portfolio-master-doc.md §0.5 — base entries.
+ * Phase 7 (T7.1, T7.4) added optional `notes` and `relatedProjects` fields
+ * per entry to power the /log/[id] deep-dive route — same shape as
+ * PROJECTS[].notes. Backward-compatible: omitting both is fine.
  *
  * ──────────────────────────────────────────────────────────────────────────
  */
@@ -36,6 +40,17 @@ export interface ExperienceItem {
   bullets: string[];
   /** Tech tag list — rendered as <Chip> components on the page. */
   tags: string[];
+  /**
+   * Optional 4-paragraph prose for the /log/[id] deep-dive page.
+   * Split on `\n\n` at render time. Falls back to bullets-joined if
+   * missing. Same shape as PROJECTS[].notes.
+   */
+  notes?: string;
+  /**
+   * Optional list of PROJECTS slug strings — the projects shipped at
+   * this company. Drives the "Related Projects" grid on /log/[id].
+   */
+  relatedProjects?: string[];
 }
 
 /** A single education / training entry. */
