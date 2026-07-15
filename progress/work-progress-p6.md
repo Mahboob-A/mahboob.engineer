@@ -1047,3 +1047,116 @@ add4648  (HEAD before push) Bug 4 — Rename /contact to /lets-connect
 ```
 
 Phase 6 + post-Phase 6 bug-fix status: **done**.
+
+---
+
+## Polish Round 2 — interactive diagrams, Blog collapse, clickable stack chips
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+3 changes from user QA:
+
+**Change 1 — Animated diagrams on landing Projects section.**
+- New `components/diagrams/DiagramPackets.tsx`:
+  `<AnimatedPackets groups={…} />` renders count-sized `<circle>`
+  packets with staggered `<animateMotion>` on per-group edge
+  IDs. Pure SVG, no JS. Honors `prefers-reduced-motion` via
+  CSS gate (browsers already pause SMIL on the system pref).
+- `AlgocodeDiagram`, `MovioDiagram`, `DrishtiAIDiagram`:
+  dropped inline packet markup in favor of the helper. Added
+  `id="mov-p1..6"` / `id="drishti-p1..5"` on main flow edges.
+- `AlgocodeMiniDiagram`, `MovioMiniDiagram`, `DrishtiMiniDiagram`:
+  converted to thin re-exports of the full diagrams so the
+  `LANDING_SLUGS.map(... DIAGRAMS ...)` mapping in Projects.tsx
+  still works.
+- `Projects.tsx`: visual column 340px → 420px so the wider
+  diagrams have breathing room. `<DiagramPanel>` overflow-x-auto
+  handles narrow viewports.
+- User-confirmed full animation across all 3 cards.
+
+**Change 2 — Landing Blog section: collapse after 6 cards.**
+- `components/sections/Blog.tsx`: `'use client'`. Reads
+  `useSearchParams()` on mount for initial state; toggle
+  handler does `router.replace(next ? "/?all=1" : "/", {
+  scroll: false })`. Default first 6 cards; "Show N more"
+  button under the grid reveals the rest.
+- `app/page.tsx`: wraps `<Blog />` in `<Suspense>` per
+  Next.js 16's `useSearchParams` requirement.
+- a11y: button has `aria-expanded` + `aria-controls="blog-list"`.
+- User-confirmed URL-state survives refresh + supports
+  direct-link sharing.
+
+**Change 3 — Stack chips on Projects link to `/stack#<id>`.**
+- New `data/stack-slug-map.ts`: `resolveStackSlug(display)`
+  returns the longest-matching STACK id via bidirectional
+  substring containment (chip contains id OR id contains chip).
+- `components/sections/Projects.tsx`: chips become
+  `<Link href={`/stack#${slug}`}>` when the slug resolves.
+  Defensive fallback to plain `<Chip>` for unresolvable
+  entries (verified: 24/24 unit-style tests pass; 52/83 real
+  project stack strings resolve, the rest are legitimately
+  not separate stack nodes — e.g. "S3" is covered by "AWS").
+- Hover state mirrors the case-study `RelatedStack` chips.
+
+### Decisions
+
+- **`<AnimatedPackets>` with `groups` prop.** Each group =
+  {edges, color, count}. Per-group color tokens (`amber /
+  acc / t1`) read from `data/tokens.ts` (master §6 #1).
+- **Drop standalone mini variants.** The whole point of
+  "mini" diagrams was to fit 340px; the column is now 420px
+  and the full diagrams breathe. Re-export keeps the LANDING_SLUGS
+  mapping working unchanged.
+- **Case-study diagrams stay static.** Only landing versions
+  animate. User specified the landing.
+- **`<Suspense>` wrap in `app/page.tsx`.** Same pattern as
+  T4.10's `GameGate` — Next.js 16 requires `useSearchParams`
+  consumers to be inside a Suspense boundary at the page level
+  to avoid static-prerender bailout.
+- **`router.replace` (not push) for URL toggle.** Back button
+  skips the toggle state.
+- **Bidirectional substring matching.** Handles "Postgres"
+  → "postgresql" (chip is a prefix) in addition to "Django"
+  → "django" (chip contains id). Verified 24/24 unit cases.
+
+### Caveats / pending
+
+- **CSS `prefers-reduced-motion` gate** is a safety net;
+  Chromium / Firefox already pause SMIL on the system
+  preference automatically. Safari honors it. Belt and braces.
+- **31 of 83 real project stack entries don't resolve** —
+  legitimately. "S3", "EC2", "RDS" are AWS services covered
+  by the "AWS" parent stack entry. "Python" is covered by
+  "Django" / "FastAPI". etc. The defensive fallback to plain
+  `<Chip>` handles this gracefully.
+- **Verbose toggle on landing** — chips render as colored
+  rectangles around text. Matches the existing case-study
+  `RelatedStack` style. Considered keeping the original
+  plain-Chip style with just `aria-label`, but the
+  pointer-cursor affordance matters.
+- **No animations on case-study diagrams.** Only landing.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes. 0 warnings.
+- **Unit-style helper tests** — 24/24 cases for `resolveStackSlug`:
+  `Django 5.1 → django`, `Postgres → postgresql`, `DRF → drf`,
+  `JWT/OAuth2 → jwt`, `Stripe → stripe`, `Next.js 15 → null`
+  (no `nextjs` entry), etc.
+- **Lighthouse regression** — all 8 routes pass Phase 6
+  baseline (perf 96, a11y 96, bp 100, seo 100).
+- **Screenshots** — 33 PNGs captured at 3 viewports.
+- **Manual smoke** (live, before tearing down prod server):
+  - `curl /` → Hero + 6 Projects + SkillGraph + Blog (with
+    toggle button) + Contact.
+  - `curl /?all=1` → toggle button reads "Show fewer",
+    `aria-expanded="true"`.
+  - Each Projects card has chips with `<a href="/stack#…">`.
+

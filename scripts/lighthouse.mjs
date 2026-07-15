@@ -29,7 +29,8 @@ const ROUTES = [
   "/stack",
   "/writing",
   "/writing/linux-networking-part-1",
-  "/contact",
+  /* Post-Phase 6 bug fix: route renamed /contact → /lets-connect. */
+  "/lets-connect",
 ];
 
 const TARGETS = { performance: 90, accessibility: 95, "best-practices": 95, seo: 95 };
