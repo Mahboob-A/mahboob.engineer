@@ -846,3 +846,10 @@ breakpoints. Decisions:
   - **Averages**: perf=95  a11y=96  bp=100  seo=100
 - **D3 fix** verified via Playwright `debug-stack.mjs`: no
   `pageerror` events on `/stack` after the catch was added.
+
+---
+
+## Phase 6 push (T6.8 + T6.9)
+
+`git push origin main` succeeded — `674109a..2e68b84 main -> main`.
+Remote `main` now at `2e68b84` (T6.9). All Phase 6 commits shipped.
