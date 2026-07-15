@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# QA artifacts (Phase 6 T6.9)
+screenshots/
+lighthouse-report.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

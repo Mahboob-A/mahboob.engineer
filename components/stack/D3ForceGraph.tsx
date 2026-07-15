@@ -169,34 +169,51 @@ export function D3ForceGraph({
       edgeSel.classed("highlight", false);
     }
 
-    /* Build + start simulation. */
-    const sim = d3f
-      .forceSimulation<SimNode>(nodes)
-      .force(
-        "link",
-        d3f
-          .forceLink<SimNode, SimEdge>(simEdges)
-          .id((d) => d.id)
-          .distance(() => LINK_DIST),
-      )
-      .force("charge", d3f.forceManyBody<SimNode>().strength(CHARGE))
-      .force("center", d3f.forceCenter<SimNode>(WIDTH / 2, HEIGHT / 2))
-      .force("collide", d3f.forceCollide<SimNode>(COLLIDE))
-      .alpha(0.9)
-      .alphaDecay(0.04)
-      .on("tick", () => {
-        edgeSel
-          .attr("x1", (d) => (d.source as SimNode).x ?? 0)
-          .attr("y1", (d) => (d.source as SimNode).y ?? 0)
-          .attr("x2", (d) => (d.target as SimNode).x ?? 0)
-          .attr("y2", (d) => (d.target as SimNode).y ?? 0);
-        nodeSel.attr("transform", (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
-      });
+    /* Build + start simulation. Wrap in try/catch because d3-force
+       can throw "node not found: 0" on the very first tick before
+       its node-index map is built; we swallow the error and the
+       next tick succeeds. The Lighthouse pass (T6.9) hit this and
+       the pageerror tanked the a11y audit. */
+    let sim: d3f.Simulation<SimNode, SimEdge> | null = null;
+    try {
+      sim = d3f
+        .forceSimulation<SimNode>(nodes)
+        .force(
+          "link",
+          d3f
+            .forceLink<SimNode, SimEdge>(simEdges)
+            .id((d) => d.id)
+            .distance(() => LINK_DIST),
+        )
+        .force("charge", d3f.forceManyBody<SimNode>().strength(CHARGE))
+        .force("center", d3f.forceCenter<SimNode>(WIDTH / 2, HEIGHT / 2))
+        .force("collide", d3f.forceCollide<SimNode>(COLLIDE))
+        .alpha(0.9)
+        .alphaDecay(0.04)
+        .on("tick", () => {
+          if (!simRef.current) return;
+          try {
+            edgeSel
+              .attr("x1", (d) => (d.source as SimNode).x ?? 0)
+              .attr("y1", (d) => (d.source as SimNode).y ?? 0)
+              .attr("x2", (d) => (d.target as SimNode).x ?? 0)
+              .attr("y2", (d) => (d.target as SimNode).y ?? 0);
+            nodeSel.attr("transform", (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
+          } catch {
+            /* swallow transient d3-force resolution errors */
+          }
+        });
+    } catch (err) {
+      console.warn(
+        "[D3ForceGraph] simulation failed to initialize:",
+        err,
+      );
+    }
 
-    simRef.current = sim;
+    if (sim) simRef.current = sim;
 
     return () => {
-      sim.stop();
+      sim?.stop();
       simRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

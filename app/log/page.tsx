@@ -77,9 +77,13 @@ function SectionSeparator({ label }: { label: string }) {
   return (
     <div className="border-border mt-16 mb-7 flex items-center gap-3 border-t pt-8 first-of-type:mt-0 first-of-type:border-t-0 first-of-type:pt-0">
       <span className="bg-acc inline-block h-[6px] w-[6px] rounded-full" />
-      <span className="text-t3 font-mono text-[11px] tracking-[1.5px] uppercase">
+      {/* Phase 6 (T6.9): promoted to <h2> so the per-section entries
+         (which use <h3> for company / education card names) have a
+         valid heading hierarchy. axe-core flagged the original as
+         "heading-order" violation. Visually identical. */}
+      <h2 className="text-t3 font-mono text-[11px] tracking-[1.5px] uppercase">
         {label}
-      </span>
+      </h2>
     </div>
   );
 }

@@ -53,7 +53,7 @@ export function BlogCard({ post, variant = "default" }: BlogCardProps) {
       }
     >
       {/* Top row: source badge + read time */}
-      <div className="text-t3 mb-3.5 flex items-center justify-between font-mono text-[11px]">
+      <div className="text-t2 mb-3.5 flex items-center justify-between font-mono text-[11px]">
         <span className={sourceBadgeClass(post.source)}>{post.source}</span>
         <span>{post.readMin} min read</span>
       </div>

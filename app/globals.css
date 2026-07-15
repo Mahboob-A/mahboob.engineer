@@ -19,7 +19,12 @@
   /* Text */
   --t1: #d8eee2;
   --t2: #9ac0a0;
-  --t3: #608870;
+  /* Phase 6 (T6.9): t3 lightened from #608870 → #60908f to meet
+     WCAG AA contrast on --bg (#172318). Was 4.07:1 → now 4.56:1.
+     Kept in sync with data/tokens.ts (master §6 rule #1 says all
+     colors come from tokens.ts; this CSS-var mirror exists so the
+     @theme inline block can reference them by name). */
+  --t3: #60908f;
 
   /* Accent */
   --acc: #5cc9a0;

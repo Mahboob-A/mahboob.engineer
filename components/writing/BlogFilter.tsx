@@ -157,12 +157,18 @@ function CategoryChip({ label, active, onClick, count }: CategoryChipProps) {
       onClick={onClick}
       aria-pressed={active}
       className={
+        /* Phase 6 (T6.9): inactive pill on bg-surface — text-t3
+           fails WCAG AA (4.0:1). Using text-t2 instead (7.1:1). */
         active
           ? "bg-acc text-bg rounded-full px-3.5 py-1.5 font-mono text-[12px] font-semibold transition-colors"
-          : "border-border text-t3 hover:text-t1 rounded-full border px-3.5 py-1.5 font-mono text-[12px] transition-colors"
+          : "border-border text-t2 hover:text-t1 rounded-full border px-3.5 py-1.5 font-mono text-[12px] transition-colors"
       }
     >
-      {label} <span className="opacity-60">· {count}</span>
+      {label}{" "}
+      {/* Phase 6 (T6.9): the count indicator. Inherits text color from
+         the parent button (text-bg when active, text-t3 when inactive).
+         No opacity dimming — both states meet WCAG AA. */}
+      <span>· {count}</span>
     </button>
   );
 }

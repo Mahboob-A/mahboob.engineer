@@ -14,7 +14,7 @@ export function Footer() {
         <span>
           {siteConstants.name} — built with Next.js, Tailwind, and too much coffee.
         </span>
-        <span className="text-t3/70">v2.0 · last deployed 2026-07</span>
+        <span className="text-t3">v2.0 · last deployed 2026-07</span>
       </div>
     </footer>
   );

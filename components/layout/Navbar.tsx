@@ -51,7 +51,12 @@ export async function Navbar() {
 
   return (
     <nav
-      className={cn("bg-bg/85 border-border sticky top-0 z-50 border-b backdrop-blur-md")}
+      /* Phase 6 (T6.9 follow-up): solid `bg-bg` (was `bg-bg/85`).
+         axe-core flagged `text-t3` on the translucent backdrop as
+         failing WCAG AA contrast (blended backgrounds lower effective
+         contrast). Solid color restores the guaranteed contrast
+         ratio. `backdrop-blur-md` kept for the visual chrome. */
+      className={cn("bg-bg border-border sticky top-0 z-50 border-b backdrop-blur-md")}
     >
       <div className="mx-auto flex h-[62px] max-w-[1180px] items-center justify-between px-6 md:px-8">
         {/* ─── Logo ──────────────────────────────────────────────────── */}
@@ -114,8 +119,9 @@ export async function Navbar() {
         </div>
       </div>
 
-      {/* Mobile nav: scrollable chip row below the header. */}
-      <ul className="border-border bg-bg/85 flex items-center gap-5 overflow-x-auto border-t px-6 py-2 md:hidden">
+      {/* Mobile nav: scrollable chip row below the header. Solid
+          bg-bg per T6.9 contrast fix. */}
+      <ul className="border-border bg-bg flex items-center gap-5 overflow-x-auto border-t px-6 py-2 md:hidden">
         {LINKS.map((l) => {
           const target = isLanding ? `#${l.anchor}` : l.href;
           const isActive = !isLanding && currentPath.startsWith(l.href);
@@ -170,7 +176,10 @@ function ModeTogglePill({ active, value, currentPath, label }: ModeTogglePillPro
         aria-label={ariaLabel}
         className={cn(
           "cursor-pointer rounded-full px-3.5 py-1.5 transition-all",
-          active ? "text-acc bg-acc-dim font-semibold" : "text-t3 hover:text-t1",
+          /* Phase 6 (T6.9): inactive pill is on bg-surface. `text-t3`
+             on bg-surface fails WCAG AA (3.6:1). Using `text-t2` for
+             inactive restores the contrast (7.1:1). */
+          active ? "text-acc bg-acc-dim font-semibold" : "text-t2 hover:text-t1",
         )}
       >
         {label}

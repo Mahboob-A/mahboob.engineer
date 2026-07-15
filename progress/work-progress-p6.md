@@ -728,3 +728,121 @@ breakpoints. Decisions:
   main -> main`. Remote `main` is at `674109a` (T6.7).
 - **GitHub side**: user runs the Vercel import + env-var setup +
   domain attach per `docs/DEPLOY.md` steps 4 + 5 + 7.
+
+---
+
+## T6.9 — Final QA + Lighthouse run
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`package.json`** — added `@playwright/test@1.61.1` (devDep) +
+  `lighthouse@13.4.0` (devDep). Two new scripts: `pnpm screenshot`,
+  `pnpm lighthouse`.
+- **`scripts/screenshots.mjs`** (new, ~95 lines) — Playwright
+  screenshot pass. Hits every key route at 3 viewports (375 / 768 /
+  1280 px), writes PNGs to `screenshots/<viewport>/<route>.png`.
+  Run via `pnpm screenshot`.
+- **`scripts/lighthouse.mjs`** (new, ~110 lines) — Lighthouse audit
+  on 8 representative routes. Writes JSON to `lighthouse-report.json`,
+  prints a summary table. Targets: perf ≥ 90, a11y/best-practices/SEO
+  ≥ 95. Run via `pnpm lighthouse` against a running `pnpm start`.
+- **`scripts/lh-debug.mjs`** + **`scripts/debug-stack.mjs`** (new) —
+  diagnostic helpers used during the Lighthouse debugging pass.
+- **`.gitignore`** — ignores `screenshots/`, `lighthouse-report.json`.
+- **D3 force graph defensive fix** — `components/stack/D3ForceGraph.tsx`
+  wraps the `forceSimulation` initializer + tick handler in try/catch
+  so transient "node not found: 0" errors don't crash the React
+  tree (the root cause of /stack rendering `__next_error__` during
+  the first Lighthouse pass, tanking the a11y audit).
+- **Accessibility polish from QA findings**:
+  - `app/globals.css` + `data/tokens.ts` — `text-t3` lightened from
+    `#608870` → `#60908f` to meet WCAG AA on `bg-bg`. Contrast:
+    4.07:1 → 4.56:1. axe-core was flagging `text-t3` in nav links,
+    mode-toggle pills, footer copy.
+  - `components/layout/Navbar.tsx` — inactive mode pill: `text-t3`
+    → `text-t2` (passes 7.1:1 on `bg-surface`). `<main>` + mobile
+    chip row: `bg-bg/85` → `bg-bg` (translucent bg was failing
+    contrast when blended with content beneath).
+  - `components/writing/BlogFilter.tsx` — inactive pill: `text-t3`
+    → `text-t2`. Count indicator: opacity-70 → inherits text color
+    (passes on both states).
+  - `components/writing/BlogCard.tsx` — top-row meta line: `text-t3`
+    → `text-t2` (passes on `bg-surface`).
+  - `components/writing/WritingShell.tsx` — wrapped empty state +
+    grid in `<section>` with a `<h2 className="sr-only">` heading.
+    Fixes h1 → h3 skip (axe-core heading-order violation).
+  - `components/contact/ContactSidebar.tsx` — FAQ section label
+    promoted from `<p>` to `<h2>`. Fixes the h1 → h3 skip on
+    /contact.
+  - `app/log/page.tsx` — `SectionSeparator` wraps the label in
+    `<h2>`. Fixes the h1 → h3 skip on /log.
+  - `app/work/[slug]/page.tsx` — RelatedStack chip links add
+    `p-1` padding. Hit target size: was 22x18 → now ~32x26.
+  - `components/layout/Footer.tsx` — `text-t3/70` → `text-t3` on the
+    build metadata (alpha-dimmed was 2.56:1).
+
+### Decisions
+
+- **`pnpm start` + headless Chrome for Lighthouse.** The script
+  requires a Chrome instance running on port 9222 (Lighthouse v13
+  no longer auto-launches Chrome). The README explains the setup.
+- **Opposed to automatic runs in CI.** Per the plan, Lighthouse is
+  a manual command. Phase 7+ can wire GitHub Actions.
+- **D3 try/catch is defensive, not a fix.** The "node not found: 0"
+  error appears to be a race between forceLink's first
+  resolve-nodes pass and the simulation's first tick. The catch
+  swallows the first ~ticks; subsequent ticks have all references
+  resolved and succeed. The simulation still renders correctly in
+  the browser (Playwright confirms the SVG renders); the catch
+  just prevents the error from propagating up and breaking the
+  React render.
+- **`text-t3` lightening is the cleanest fix** vs adding per-element
+  color overrides. Master §6 rule #1 says no hex outside tokens.ts;
+  fixing the token brings everything else into compliance.
+- **bg-bg opacity → solid**: the only place `bg-bg/85` was failing
+  contrast was the navbar; switching to solid restores contrast
+  without changing the visual chrome (border + backdrop-blur still
+  present).
+- **T6.10 (post-Lighthouse fixups) folded into T6.9.** This commit
+  records all the QA-driven fixes; they aren't a separate task.
+
+### Caveats / pending
+
+- **No D3 root-cause fix.** The try/catch is defensive; if d3-force
+  ever ships a fix for the resolve-nodes race, the catch becomes a
+  no-op. Future polish: investigate further or pin d3-force
+  version.
+- **No `pnpm dev` Lighthouse runs.** Dev mode is slower (Turbopack
+  on-the-fly compile); the script targets `pnpm start` for speed.
+- **No PNG screenshots in git.** The `screenshots/` dir is
+  gitignored by design — 33 PNGs × ~80 KB = 2.6 MB. Generated on
+  demand via `pnpm screenshot`.
+- **No CI integration.** Manual commands. Phase 7 follow-up.
+- **Headless Chrome (Lighthouse v13) requires a manual `chrome`
+  launch** before the script runs. Documented in the script
+  comments.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm lint` → clean.
+- `pnpm build` → 38 routes. 0 warnings.
+- **`pnpm screenshot`** → 33 PNGs captured across 11 routes × 3
+  viewports, all under ~600 ms render time.
+- **`pnpm lighthouse`** → all 8 audited routes pass targets:
+  - `/`                perf=96  a11y=96  bp=100  seo=100
+  - `/log`             perf=94  a11y=96  bp=100  seo=100
+  - `/work`            perf=93  a11y=96  bp=100  seo=100
+  - `/work/algocode`   perf=97  a11y=96  bp=100  seo=100
+  - `/stack`           perf=93  a11y=96  bp=100  seo=100
+  - `/writing`         perf=93  a11y=98  bp=100  seo=100
+  - `/writing/linux-networking-part-1`  perf=97  a11y=96  bp=100  seo=100
+  - `/contact`         perf=98  a11y=96  bp=100  seo=100
+  - **Averages**: perf=95  a11y=96  bp=100  seo=100
+- **D3 fix** verified via Playwright `debug-stack.mjs`: no
+  `pageerror` events on `/stack` after the catch was added.

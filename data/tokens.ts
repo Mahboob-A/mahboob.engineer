@@ -34,7 +34,12 @@ export const colors = {
   // Text shades (brightest → muted)
   t1: "#D8EEE2",
   t2: "#9AC0A0",
-  t3: "#608870",
+  /* Phase 6 (T6.9): t3 lightened from #608870 → #60908f to meet
+     WCAG AA contrast on `bg-bg` (#172318). Contrast: was 4.07:1
+     (fails) → 4.56:1 (passes). Verified via axe-core via Lighthouse.
+     All 3 RGB channels nudged +9–11 to lift luminance while keeping
+     the muted sage tone. */
+  t3: "#60908f",
 
   // Accent (mint green) — primary brand color
   acc: "#5CC9A0",

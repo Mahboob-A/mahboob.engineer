@@ -107,15 +107,23 @@ export function WritingShell({ allPosts, series }: WritingShellProps) {
       {/* Filter bar */}
       <BlogFilter value={filter} onChange={setFilter} counts={counts} />
 
-      {/* Main grid */}
+      {/* Main grid — phase 6 (T6.9): wrapped in <section> + <h2>
+         so the BlogCard <h3> titles have a valid heading hierarchy.
+         axe-core flagged h1 (from InnerPageHeader) → h3 skip. */}
       {visible.length === 0 ? (
-        <EmptyState />
+        <section>
+          <h2 className="sr-only">No matching posts</h2>
+          <EmptyState />
+        </section>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {visible.map((post) => (
-            <BlogCard key={post.slug} post={post} />
-          ))}
-        </div>
+        <section>
+          <h2 className="sr-only">All posts</h2>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {visible.map((post) => (
+              <BlogCard key={post.slug} post={post} />
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Series rail — only show when at least one series has hits */}

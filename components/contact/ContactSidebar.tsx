@@ -119,9 +119,13 @@ function DirectLinkRow({ link }: { link: DirectLinkItem }) {
 function FAQCard() {
   return (
     <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
-      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
+      {/* Phase 6 (T6.9): was `<p>FAQ</p>`. Promoting to `<h2>` so the
+         FAQRow's `<h3>` questions have a valid heading hierarchy
+         (h1 from InnerPageHeader → h2 FAQ section → h3 question).
+         axe-core flagged the original as "heading-order" violation. */}
+      <h2 className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
         FAQ
-      </p>
+      </h2>
       <ul className="space-y-5">
         {FAQ.map((item, i) => (
           <li key={i}>

@@ -459,7 +459,10 @@ function RelatedStack({
           <Link
             key={t.id}
             href={`/stack#${t.id}`}
-            className="inline-flex"
+            /* Phase 6 (T6.9): extra padding so the touch target meets
+               WCAG 2.5.5 (24x24). The Chip is small; the wrapping
+               <a> needs the larger hit area. */
+            className="inline-flex p-1"
             aria-label={`More about ${t.name} on /stack`}
           >
             <Chip color={chipColor(t.name)}>{t.name}</Chip>
