@@ -118,8 +118,14 @@ function ProjectCard({ project, diagram, visualOnLeft }: ProjectCardProps) {
           <p className="text-amber mb-2.5 font-mono text-[11px] tracking-[1px] uppercase">
             {stackStatusLine(project)}
           </p>
-          <h3 className="font-display text-t1 mb-2.5 text-[24px] font-bold">
-            {project.name} — {project.tagline.split(" — ")[0]}
+          {/* Post-Phase 6 bug fix: project title is now a link to the
+             case-study page. Hover affordance via text-acc on hover.
+             Wrapping the whole h3 in <Link> avoids "anchor inside
+             anchor" issues (the bottom links row stays unchanged). */}
+          <h3 className="font-display text-t1 hover:text-acc mb-2.5 text-[24px] font-bold transition-colors">
+            <Link href={`/work/${project.slug}`} className="block">
+              {project.name} — {project.tagline.split(" — ")[0]}
+            </Link>
           </h3>
 
           <p className="text-t1 mb-2 text-[14.5px]">

@@ -940,3 +940,39 @@ Remote `main` now at `2e68b84` (T6.9). All Phase 6 commits shipped.
 
 - `pnpm typecheck` → clean.
 - `pnpm build` → clean.
+
+---
+
+## Bug 3 — Project headlines not linking to `/work/[slug]`
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-15
+
+### What shipped
+
+- **`components/sections/Projects.tsx`** — wrapped the project's
+  `<h3>` title in a Next.js `<Link href={`/work/${project.slug}`}>`
+  with `hover:text-acc` affordance.
+
+### Decisions
+
+- **Wrap the `<h3>` content, not the whole card.** The card
+  already has a bottom links row with outbound links; making
+  the entire card clickable would create nested-anchor HTML
+  (forbidden).
+- **`block` on the Link + transition-colors on the h3** so the
+  hover state covers the full headline area, not just the text.
+
+### Caveats / pending
+
+- **No visual affordance beyond hover color.** A future polish
+  could add a subtle underline on hover.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean.
+- **Live HTML** (dev server) — landing's first project card renders
+  `<h3><a href="/work/algocode">Algocode — Distributed online judge…</a></h3>`.
