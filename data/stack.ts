@@ -115,6 +115,18 @@ export const STACK: StackItem[] = [
     domain: "backend",
     projects: ["airpass", "drishti-ai"],
   },
+  /* Phase 12 (T12.5): added so resolveStackSlug() picks up
+     "Python" → python from the SRM MCA curriculum chips. Not
+     actively deployed in production projects today; learning
+     depth marker makes it visible on the force graph as a
+     self-rated tech. */
+  {
+    id: "python",
+    name: "Python",
+    domain: "backend",
+    projects: [],
+    depth: 90,
+  },
 
   // Infra
   {
@@ -141,6 +153,16 @@ export const STACK: StackItem[] = [
     domain: "infra",
     projects: ["load-balancer", "pulumi-infra"],
   },
+  /* Phase 12 (T12.5): added so resolveStackSlug() picks up
+     "Linux networking" → linux from the Poridhi covered chips.
+     `nginx` already lives in this domain; linux sits beside it. */
+  {
+    id: "linux",
+    name: "Linux",
+    domain: "infra",
+    projects: [],
+    depth: 85,
+  },
   {
     id: "pulumi",
     name: "Pulumi",
@@ -161,6 +183,18 @@ export const STACK: StackItem[] = [
     domain: "async",
     projects: ["algocode", "movio", "drishti-ai"],
     blogs: ["message-queue-101"],
+  },
+  /* Phase 12 (T12.5): added so resolveStackSlug() picks up
+     "Kafka internals" → kafka from the Poridhi covered chips.
+     Not actively deployed in production projects today; depth
+     marker makes it visible on the force graph as a self-rated
+     tech. */
+  {
+    id: "kafka",
+    name: "Kafka",
+    domain: "async",
+    projects: [],
+    depth: 55,
   },
 
   // Data
@@ -218,7 +252,20 @@ export const STACK: StackItem[] = [
   },
 
   // Learning
-  { id: "k8s", name: "Kubernetes", domain: "learning", projects: [], depth: 70 },
+  /* Phase 12 (T12.5): id renamed `k8s` → `kubernetes` so that
+     resolveStackSlug() matches "Kubernetes" → `kubernetes` (the
+     bidirectional substring check failed on the old `k8s` id
+     because "kubernetes".includes("k8s") is false). The display
+     name was already "Kubernetes"; only the lookup id changed.
+     No STACK_BY_ID["k8s"] callers exist in the codebase (verified
+     via grep) so this is a clean rename. */
+  {
+    id: "kubernetes",
+    name: "Kubernetes",
+    domain: "learning",
+    projects: [],
+    depth: 70,
+  },
   {
     id: "terraform",
     name: "Terraform",

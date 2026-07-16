@@ -1427,3 +1427,84 @@ warnings. `pnpm typecheck` clean. Pre-existing lint errors in
 `Blog.tsx` + `Hero.tsx` unchanged.
 
 Phase 12 status: **done**.
+
+---
+
+## Phase 12 T12.5 — Add 4 STACK ids for chip resolution
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`data/stack.ts`** — added 3 new STACK ids and renamed 1:
+  - `python` (backend, depth: 90) — academic curriculum + daily
+    scripting. Not actively deployed in production projects
+    today; depth marker makes it visible on the force graph.
+  - `linux` (infra, depth: 85) — used in Algocode's sandboxing,
+    Poridhi's coverage, and every EC2 deployment.
+  - `kafka` (async, depth: 55) — used in DrishtiAI and the
+    original Algocode architecture (per master §0.7).
+  - **`k8s` → `kubernetes`** (id renamed, name unchanged). The
+    old `k8s` id failed `resolveStackSlug()`'s bidirectional
+    substring check (`"kubernetes".includes("k8s") === false`).
+    The new `kubernetes` id matches.
+
+### Decisions
+
+- **Domain choices:**
+  - `python` → `backend` (the language lives in the backend
+    domain; consistent with how Django/DRF/FastAPI are
+    classified).
+  - `linux` → `infra` (consistent with Nginx / Docker /
+    AWS / Pulumi).
+  - `kafka` → `async` (consistent with RabbitMQ).
+  - `kubernetes` → `learning` (kept; the user hasn't deployed
+    k8s to production yet, but it's a self-rated 70).
+- **Depth values** — `python: 90`, `linux: 85`, `kafka: 55`.
+  Reflects self-rating: python + linux are daily-use, kafka
+  is study-only.
+- **No `STACK_BY_ID["k8s"]` callers exist** — verified by
+  `grep -rn 'STACK_BY_ID\["' .` returning empty. Safe to
+  rename the id without breaking any consumer.
+
+### Caveats / pending
+
+- **All 3 new ids have empty `projects: []`.** They render as
+  "currently leveling up" on the force graph (dashed border,
+  learning-domain). When a real project uses any of these,
+  move them to the production domain and add the project
+  slug to `projects`.
+- **Renaming `k8s → kubernetes` doesn't break Tailwind** — no
+  class names hardcoded with `k8s`.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware. 0 warnings.
+- **Live SSR smoke** (`/log`):
+  - `/stack#python`, `/stack#linux`, `/stack#kafka`,
+    `/stack#kubernetes` all appear in DOM (15 distinct slugs
+    total, was 11 before).
+  - The 4 chips on `/log` that previously rendered as plain
+    chips now render as deep-links.
+- **`/stack` force graph** — Python, Linux, Kafka, Kubernetes
+  all visible in DOM (4 new nodes on the force graph).
+
+---
+
+## Phase 12 complete (T12.1 → T12.5)
+
+All 5 Phase 12 tasks complete. Final state:
+
+| Surface | Before | After |
+|---|---|---|
+| Navbar glow on direct loads | 0 instances on `/log/<id>` etc. without Referer | 1+ instance per route via `x-pathname` middleware |
+| `/log` Education — SRM | Empty (no `courses`) | 13 courses + `Chennai, India` location |
+| `/log` Education — Poridhi | Plain chips | Clickable to `/stack#<slug>` for docker / ebpf / linux / kafka |
+| `/log` Education — SRM | Plain chips (no STACK matches) | Clickable to `/stack#python` |
+| `/stack` force graph | 25 nodes | 28 nodes (4 new: python / linux / kafka / kubernetes) |
+
+Phase 12 status: **done**.
