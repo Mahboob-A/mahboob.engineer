@@ -32,6 +32,7 @@ import {
   type NowStatusItem,
 } from "@/data/experience";
 import { chipColor } from "@/data/tokens";
+import { resolveStackSlug } from "@/data/stack-slug-map";
 
 export const metadata: Metadata = pageMetadata(
   "Log",
@@ -89,7 +90,9 @@ function SectionSeparator({ label }: { label: string }) {
 }
 
 /* Timeline — vertical left border, full bullets per entry. Mirrors the
-   landing DeployLog pattern but without truncation. */
+   landing DeployLog pattern (stretched-link card + chip-deep-links)
+   so a click anywhere on the card navigates to /log/[id] while
+   individual chips navigate to /stack#<slug]. */
 function Timeline({ entries }: { entries: ExperienceItem[] }) {
   return (
     <ol className="border-border ml-2 space-y-7 border-l-2 pl-7 md:ml-3 md:pl-9">
@@ -101,7 +104,7 @@ function Timeline({ entries }: { entries: ExperienceItem[] }) {
             className="bg-acc border-bg absolute top-[18px] -left-[35px] inline-block h-3 w-3 rounded-full border-2 md:-left-[41px]"
           />
 
-          <article className="bg-surface border-border rounded-[10px] border p-6 md:p-7">
+          <article className="bg-surface border-border hover:border-acc/40 relative rounded-[10px] border p-6 transition-colors md:p-7">
             {/* Top row: period · company · badge */}
             <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[13px]">
               <span className="text-t3">[{entry.period}]</span>
@@ -142,14 +145,43 @@ function Timeline({ entries }: { entries: ExperienceItem[] }) {
               ))}
             </ul>
 
-            {/* Tag chips */}
-            <div className="flex flex-wrap gap-2">
-              {entry.tags.map((tag) => (
-                <Chip key={tag} color={chipColor(tag)}>
-                  {tag}
-                </Chip>
-              ))}
+            {/* Tag chips — color computed from each tag via chipColor().
+                Each chip that resolves via resolveStackSlug() becomes a
+                clickable deep-link to /stack#<id>. Chips sit above the
+                overlay (z-20) so their click wins over the card-level
+                overlay (z-0). Mirrors DeployLog (T7.2 + T9.2). */}
+            <div className="relative z-10 flex flex-wrap gap-2">
+              {entry.tags.map((tag) => {
+                const slug = resolveStackSlug(tag);
+                const chip = <Chip color={chipColor(tag)}>{tag}</Chip>;
+                if (!slug) {
+                  return <span key={tag}>{chip}</span>;
+                }
+                return (
+                  <Link
+                    key={tag}
+                    href={`/stack#${slug}`}
+                    aria-label={`More about ${tag} on /stack`}
+                    className="relative z-20 inline-block rounded-[4px]"
+                  >
+                    {chip}
+                  </Link>
+                );
+              })}
             </div>
+
+            {/* Card-level overlay: covers the entire article (inset:0)
+                with position: absolute so all text is selectable +
+                chip clicks (z-20) win over this overlay. The card
+                body remains clickable as a single target. Mirrors
+                DeployLog's stretched-link pattern. */}
+            <Link
+              href={`/log/${entry.id}`}
+              aria-label={`${entry.company} — experience details`}
+              className="absolute inset-0 z-0 rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-acc"
+            >
+              <span className="sr-only">View {entry.company} details</span>
+            </Link>
           </article>
         </li>
       ))}
