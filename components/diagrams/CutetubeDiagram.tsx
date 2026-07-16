@@ -24,6 +24,7 @@ export function CutetubeDiagram() {
   return (
     <svg
       viewBox="0 0 480 200"
+      preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
       style={{
         width: "100%",

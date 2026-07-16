@@ -164,7 +164,7 @@ function Hero({ project }: { project: ProjectItem }) {
         </div>
 
         {/* RIGHT — diagram */}
-        <div className="bg-surface border-border flex items-stretch rounded-[10px] border p-4 md:p-6">
+        <div className="bg-surface border-border flex items-center justify-center rounded-[10px] border p-4 md:p-6">
           {Diagram}
         </div>
       </div>
