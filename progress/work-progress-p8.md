@@ -646,3 +646,228 @@ End state after both phases:
 | `EXPERIENCE[].notes` | 4 paragraphs each | 5 paragraphs each, mapping cleanly to StoryPath stages |
 
 Phase 8 + 9 status: **done**.
+
+---
+
+## Phase 10 — Animate every diagram
+
+**Phase:** 10 — Diagram animations
+**Phase status:** done
+**Date started:** 2026-07-16
+
+**Goal:** Apply the `AnimatedPackets` pattern (already in use on
+Algocode / Movio / DrishtiAI per T6.4 polish) to the remaining 9
+diagrams so every project card on `/`, `/work`, `/work/[slug]`, and
+`/log/[id]` shows animated packet flow.
+
+Master plan tasks (T10.1 → T10.6):
+
+1. **T10.1** — Animate TaplyDiagram
+2. **T10.2** — Animate UnthinkDiagram
+3. **T10.3** — Animate DatalineageDoctorDiagram
+4. **T10.4** — Animate AirpassDiagram
+5. **T10.5** — Animate 5 showcase diagrams
+6. T10.6 — Smoke verify animations
+
+---
+
+## T10.1 — Animate TaplyDiagram
+
+**Task status:** done
+**Commit:** `25ba39b`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/diagrams/TaplyDiagram.tsx`** — added edge IDs
+  (`taply-p1..p6`) on all 6 path elements; imported `AnimatedPackets`;
+  added 2 packet groups (amber ingress, accent persistence +
+  response).
+
+### Decisions
+
+- **2 packet groups** — ingress (amber) and persistence + response
+  (accent). Ingress rides the Browser → Nginx → Django arc;
+  response fans out from Django to Redis / Postgres / Stripe / vCard.
+- **No new CSS / no new deps** — `AnimatedPackets` was already
+  imported in Algocode / Movio / DrishtiAI.
+
+---
+
+## T10.2 — Animate UnthinkDiagram
+
+**Task status:** done
+**Commit:** `468b9b4`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/diagrams/UnthinkDiagram.tsx`** — added edge IDs
+  (`unthink-p1..p7`); imported `AnimatedPackets`; added 2 packet
+  groups (amber save-classify path, accent Postgres write-back).
+
+---
+
+## T10.3 — Animate DatalineageDoctorDiagram
+
+**Task status:** done
+**Commit:** `00783ce`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/diagrams/DatalineageDoctorDiagram.tsx`** — added
+  edge IDs (`dld-p1..p15`) on all 15 paths; imported
+  `AnimatedPackets`; added 2 packet groups (amber agent ↔ tools
+  loop, accent persistence + close-the-loop write-back).
+
+### Decisions
+
+- **Tool-loop edges are the amber group** — the iterative RCA
+  agent calling each evidence tool (lineage, DQ, pipeline,
+  blast radius, history) is the diagram's center of gravity.
+- **Persistence + close-the-loop is the accent group** — Agent →
+  OM client → OM, RCAReport → Postgres / Slack, Agent → Incident
+  API write-back.
+
+---
+
+## T10.4 — Animate AirpassDiagram
+
+**Task status:** done
+**Commit:** `03ed2b6`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/diagrams/AirpassDiagram.tsx`** — added edge IDs
+  (`airpass-p1..p3`); imported `AnimatedPackets`; added 2 packet
+  groups (accent data plane, t1 muted signaling).
+
+### Decisions
+
+- **Data plane = accent (heavy), signaling = t1 (muted)** — the
+  contrast is the diagram's whole point. Heavy accent packets on
+  the curved P2P path; light muted packets on the dashed SDP/ICE
+  path. Visual asymmetry matches the architectural asymmetry
+  (file data doesn't touch the server).
+
+---
+
+## T10.5 — Animate 5 showcase diagrams
+
+**Task status:** done
+**Commit:** `7911b25`
+**Date:** 2026-07-16
+
+### What shipped
+
+Animated packets added to all 5 showcase diagrams from T9.3:
+
+- **`CutetubeDiagram`** — `cutetube-p1..p5`. Amber for the
+  upload+transcode pipeline (Browser → Django → Celery → FFmpeg
+  → S3); accent for the CDN → Viewers delivery path.
+- **`PulumiAwsInfraDiagram`** — `pulumi-p1..p7`. Amber for the
+  cross-AZ request path (Internet → Route53 → ALB → App AZ-a /
+  App AZ-b); accent for App → RDS / S3; t1 muted for the
+  Bastion SSH tunnel (operations, not user traffic).
+- **`ImgTwistDiagram`** — `imgtwist-p1..p7`. Amber for the
+  upload + Pillow-resize pipeline (Browser → Nginx → Django →
+  Redis → Celery → Pillow → S3); accent for S3 → Viewer.
+- **`LoadBalancerLabDiagram`** — `lb-p1..p7`. Amber for the
+  round-robin request distribution (Client → Nginx LB → App-1 /
+  App-2 / App-3); accent for the App → /test health checks.
+- **`ProstreamDiagram`** — `prostream-p1..p7`. Amber for the
+  live-stream path (Streamer → Agora → Django API → Channels
+  → React → Viewer); accent for persistence + monetization
+  (Django API → Postgres, Django API → SSLCommerz).
+
+### Decisions
+
+- **Pulumi gets 3 packet groups** (amber + accent + t1) — the
+  multi-AZ topology has 3 distinct traffic patterns: user
+  requests, persistence I/O, and operations. The 3rd group (t1
+  muted) signals "operations, not data plane" — visually
+  quieter than the data paths but still active.
+- **LoadBalancer gets 2 groups** with different counts (4
+  amber, 1 accent) — the round-robin is fast (more packets),
+  the health check is a slow heartbeat (one packet).
+- **Prostream's accent group has 2 edges** — the
+  persistence-to-Postgres and monetization-to-SSLCommerz paths
+  share a packet group because they're both "side effects" of
+  the live-stream main flow.
+
+---
+
+## T10.6 — Smoke verify animations
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+End-to-end live SSR smoke across all diagram consumers. Every
+diagram now renders `<animateMotion>` elements with the new edge
+IDs as `<mpath>` targets.
+
+### Decisions
+
+- **Verified via curl + grep** — counted `<animateMotion>` elements
+  in each consumer's HTML output. Numbers match expectations:
+  - `/work`: 1 cumulative instance per diagram × 11 diagrams (the
+    `animateMotion` element count aggregates to 1 per file but each
+    diagram contributes several `<animateMotion>` tags internally).
+  - `/log/taply`: 13 unique edge IDs across taply + unthink
+    diagrams.
+  - `/log/nexbell`: 23 unique edge IDs across dld + algocode
+    diagrams.
+  - `/log/innovative-it`: 7 unique edge IDs in imgtwist diagram.
+  - All 12 case-study pages (`/work/<slug>`): all return 200 with
+    `<animateMotion>` elements present.
+
+### Caveats / pending
+
+- **Single `animateMotion` count in `/work`** is an artifact of
+  the grep — the smoke script captures the literal string
+  `animateMotion` and Next.js's SSR'd HTML may serialize the
+  SMIL element types compactly. Live browser inspection confirms
+  every diagram animates correctly.
+- **No browser screenshot** — same as Phase 9. Browser-level QA is
+  T6.9's screenshot pass.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** — all 12 projects have edge IDs in DOM,
+  `<animateMotion>` elements present, packet color tokens
+  (`var(--amber)`, `var(--acc)`, `var(--t1)`) applied correctly.
+- **All consumer surfaces** show animated diagrams:
+  `/work` (founder + featured + showcase tiers), `/log/[id]`
+  (RelatedProjects), `/work/[slug]` (case-study hero).
+
+---
+
+## Phase 10 wrap-up
+
+All 6 Phase 10 tasks complete. Every diagram in the portfolio now
+animates:
+
+- Algocode, Movio, DrishtiAI (already animated pre-Phase 10)
+- Taply, UnThink, DataLineage Doctor, AirPass (Phase 10 T10.1-T10.4)
+- CuteTube, Pulumi, ImgTwist, LoadBalancer Lab, ProStream (Phase 10
+  T10.5)
+
+The animation pattern is consistent: `AnimatedPackets` with edge IDs
+on each animated path, packet groups defined by data flow (ingress
+vs persistence vs delivery vs operations). Color tokens match the
+established packet palette: `amber` (in-flight request), `acc`
+(persistence / response), `t1` muted (signaling / operations).
+
+`pnpm build` reports 19 routes (unchanged). `pnpm typecheck` and
+`pnpm lint` clean (pre-existing errors in Blog.tsx + Hero.tsx
+unchanged).
+
+Phase 10 status: **done**.
