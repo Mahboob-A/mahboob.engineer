@@ -9,8 +9,16 @@
  * browsers shows the actual file path; a thin dotted arrow shows the
  * signaling path through the server.
  *
- * Static SVG, no JS.
+ * Animated packets (Phase 10 T10.4):
+ *   - Accent for the direct file path (Browser A → Browser B). Heavy
+ *     packets — the actual data plane.
+ *   - t1 (muted) for the SDP/ICE signaling path (Browser A →
+ *     FastAPI → Browser B). Light packets — metadata only.
+ *
+ * Pure SVG + SMIL, no JS.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function AirpassDiagram() {
   return (
@@ -27,8 +35,8 @@ export function AirpassDiagram() {
           viewBox="0 0 10 10"
           refX="9"
           refY="5"
-          markerWidth="6"
-          markerHeight="6"
+          markerWidth={6}
+          markerHeight={6}
           orient="auto"
         >
           <path d="M0 0 L10 5 L0 10 z" fill="var(--acc)" />
@@ -38,8 +46,8 @@ export function AirpassDiagram() {
           viewBox="0 0 10 10"
           refX="9"
           refY="5"
-          markerWidth="5"
-          markerHeight="5"
+          markerWidth={5}
+          markerHeight={5}
           orient="auto"
         >
           <path d="M0 0 L10 5 L0 10 z" fill="var(--t3)" />
@@ -67,6 +75,7 @@ export function AirpassDiagram() {
 
         {/* Direct file transfer (Browser A <-> Browser B) — heavy accent */}
         <path
+          id="airpass-p1"
           d="M160 95 Q260 30 360 95"
           className="alg-mini-edge"
           stroke="var(--acc)"
@@ -80,6 +89,7 @@ export function AirpassDiagram() {
 
         {/* Signaling (Browser A -> server -> Browser B) — thin dashed */}
         <path
+          id="airpass-p2"
           d="M160 115 H210"
           className="alg-mini-edge"
           stroke="var(--t3)"
@@ -89,6 +99,7 @@ export function AirpassDiagram() {
           markerEnd="url(#arrow-signal)"
         />
         <path
+          id="airpass-p3"
           d="M310 134 H360"
           className="alg-mini-edge"
           stroke="var(--t3)"
@@ -109,6 +120,20 @@ export function AirpassDiagram() {
           bcrypt password + optional AES-256-GCM E2E
         </text>
       </g>
+
+      {/* Animated packets — Phase 10 T10.4 */}
+      <AnimatedPackets
+        groups={[
+          /* Data plane — Browser A → Browser B direct. Accent packets,
+             riding the heavy curved path. The point of the diagram. */
+          { edges: ["airpass-p1"], color: "acc", count: 4 },
+          /* Signaling — Browser A → FastAPI → Browser B. Muted t1
+             packets ride the dashed SDP/ICE path; they signal the
+             tiny handshake that happens before the file transfer
+             starts. */
+          { edges: ["airpass-p2", "airpass-p3"], color: "t1", count: 1 },
+        ]}
+      />
     </svg>
   );
 }
