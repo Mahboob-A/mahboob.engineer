@@ -25,6 +25,11 @@ import { DatalineageDoctorDiagram } from "./DatalineageDoctorDiagram";
 import { AirpassDiagram } from "./AirpassDiagram";
 import { TaplyDiagram } from "./TaplyDiagram";
 import { UnthinkDiagram } from "./UnthinkDiagram";
+import { CutetubeDiagram } from "./CutetubeDiagram";
+import { PulumiAwsInfraDiagram } from "./PulumiAwsInfraDiagram";
+import { ImgTwistDiagram } from "./ImgTwistDiagram";
+import { LoadBalancerLabDiagram } from "./LoadBalancerLabDiagram";
+import { ProstreamDiagram } from "./ProstreamDiagram";
 import { DiagramPlaceholder } from "./DiagramPlaceholder";
 
 /**
@@ -55,8 +60,19 @@ export function pickDiagram(project: ProjectItem): React.JSX.Element {
       return <DatalineageDoctorDiagram />;
     case "airpass":
       return <AirpassDiagram />;
+    case "cutetube":
+      return <CutetubeDiagram />;
+    case "pulumi-infra":
+      return <PulumiAwsInfraDiagram />;
+    case "imgtwist":
+      return <ImgTwistDiagram />;
+    case "load-balancer":
+      return <LoadBalancerLabDiagram />;
+    case "prostream":
+      return <ProstreamDiagram />;
     default:
-      /* Showcase projects fall back to the placeholder panel. */
+      /* Future projects without a dedicated diagram fall back to the
+         placeholder panel. */
       return <DiagramPlaceholder project={project} />;
   }
 }
