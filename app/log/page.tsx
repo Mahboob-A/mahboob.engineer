@@ -190,7 +190,12 @@ function Timeline({ entries }: { entries: ExperienceItem[] }) {
 }
 
 /* EducationGrid — 2-col on md+. Each card shows institution + degree +
-   period + location; Poridhi also renders its `covered[]` topics as chips. */
+   period + location. Phase 12 (T12.2): SRM's `courses[]` renders
+   under a "curriculum" eyebrow (degree curriculum); Poridhi's
+   `covered[]` renders under "covered" (short training). Both chip
+   lists route through resolveStackSlug() (Phase 12 T12.3) — chips
+   that resolve become `<Link href="/stack#<slug}">`; the rest fall
+   back to plain chip. Same pattern as the Timeline component. */
 function EducationGrid({ entries }: { entries: EducationItem[] }) {
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -206,6 +211,18 @@ function EducationGrid({ entries }: { entries: EducationItem[] }) {
           <p className="text-t3 mt-2 font-mono text-[12px]">
             [{entry.period}] · {entry.location}
           </p>
+          {entry.courses?.length ? (
+            <div className="mt-5">
+              <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
+                curriculum
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {entry.courses.map((course) => (
+                  <ClickableChip key={course} label={course} />
+                ))}
+              </div>
+            </div>
+          ) : null}
           {entry.covered?.length ? (
             <div className="mt-5">
               <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
@@ -213,9 +230,7 @@ function EducationGrid({ entries }: { entries: EducationItem[] }) {
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {entry.covered.map((topic) => (
-                  <Chip key={topic} color={chipColor(topic)}>
-                    {topic}
-                  </Chip>
+                  <ClickableChip key={topic} label={topic} />
                 ))}
               </div>
             </div>
@@ -223,6 +238,30 @@ function EducationGrid({ entries }: { entries: EducationItem[] }) {
         </article>
       ))}
     </div>
+  );
+}
+
+/* ClickableChip — Phase 12 (T12.3). One chip whose click-target
+   resolves to /stack#<slug] when resolveStackSlug() returns a match,
+   otherwise renders as a plain non-clickable chip. Used by both
+   `covered` and `courses` chip lists in EducationGrid (and could
+   be reused by Timeline in T11.1 — kept file-local for now since
+   Timeline already has its own inline shape and refactoring it is
+   out of scope). */
+function ClickableChip({ label }: { label: string }) {
+  const slug = resolveStackSlug(label);
+  const chip = <Chip color={chipColor(label)}>{label}</Chip>;
+  if (!slug) {
+    return <span>{chip}</span>;
+  }
+  return (
+    <Link
+      href={`/stack#${slug}`}
+      aria-label={`More about ${label} on /stack`}
+      className="inline-block rounded-[4px]"
+    >
+      {chip}
+    </Link>
   );
 }
 
