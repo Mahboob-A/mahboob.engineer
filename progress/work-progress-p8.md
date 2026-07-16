@@ -84,3 +84,56 @@ Master plan tasks in this phase (T8.1 → T8.6):
 - `pnpm typecheck` → clean.
 - `pnpm build` → 19 routes, 0 warnings. (New file, no consumer
   change yet — T8.2/T8.3/T8.4 wire it up.)
+
+---
+
+## T8.2 — Wire diagrams into /work featured tier
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/work/WorkShell.tsx`** — dropped the local
+  `FOUNDER_DIAGRAMS` map + the `TaplyDiagram` / `UnthinkDiagram`
+  imports. Imports `pickDiagram` from the shared helper. Passes
+  `diagram={pickDiagram(p)}` to **both** the founder tier and the
+  featured tier. Showcase tier still doesn't pass a diagram (no
+  slot — by design).
+
+### Decisions
+
+- **`pickDiagram(p)` instead of `pickDiagram(p.slug)`** — the helper
+  takes a `ProjectItem` (T8.1 decision). One-call caller-side.
+- **Both tiers get the diagram prop** — founder (full-width stacked)
+  and featured (2-col grid) both pass it. Showcase doesn't (compact
+  card, no diagram slot in the design).
+- **Featured cards now have working diagrams** — Algocode,
+  Movio, DataLineage Doctor, DrishtiAI on `/work` all show their
+  full architecture SVGs in the top panel of each card. The
+  "diagram" placeholder (black panel + word) is gone.
+
+### Caveats / pending
+
+- **Showcase tier still shows no diagram** — intentional; showcase
+  cards are compact (3-col grid) with no diagram slot.
+- **Lighthouse perf / a11y unchanged** — same SVG bytes, just
+  rendered now instead of held back.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR'd HTML smoke** (`curl /work`):
+  - 6 `<svg viewBox=...>` elements present in DOM.
+  - `alg-p` (Algocode), `mov-p1..3` (Movio), `drishti-p1..5` (DrishtiAI),
+    `drishti-p` (DrishtiAI), `datalineage` (DataLineage Doctor) path
+    IDs all present.
+  - Diagram node labels rendered: `django`, `nginx`, `Nginx`, `vCard`,
+    `Redis broker`, `Gemini Flash` — confirms Taply + UnThink founder
+    diagrams + featured tier diagrams all return real SVG markup.
+  - The `bg-code-bg` placeholder panel is **no longer** a fallback
+    for the featured tier.

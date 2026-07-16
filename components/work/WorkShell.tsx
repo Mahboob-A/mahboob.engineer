@@ -9,6 +9,12 @@
  * of server components). Filter state is component-local; if a future
  * requirement wants URL-state (?filter=ai), plug in next/navigation
  * here. No localStorage — rule #3.
+ *
+ * Diagram rendering: founder + featured tiers pass `pickDiagram(p)`
+ * to `<ProjectCard>` so each card carries the right architecture SVG.
+ * Showcase tier doesn't have a diagram slot — cards stay compact.
+ * Phase 8 (T8.2) — the previous FOUNDER_DIAGRAMS map was replaced by
+ * the shared helper.
  */
 
 "use client";
@@ -19,15 +25,8 @@ import {
   ProjectFilter,
   type FilterId,
 } from "@/components/work/ProjectFilter";
-import { TaplyDiagram } from "@/components/diagrams/TaplyDiagram";
-import { UnthinkDiagram } from "@/components/diagrams/UnthinkDiagram";
+import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { type ProjectItem, type ProjectTier } from "@/data/projects";
-
-/* Founder-tier diagrams, looked up by slug. */
-const FOUNDER_DIAGRAMS: Record<string, () => React.JSX.Element> = {
-  taply: () => <TaplyDiagram />,
-  unthink: () => <UnthinkDiagram />,
-};
 
 const TIER_META: Array<{
   tier: ProjectTier;
@@ -137,7 +136,7 @@ export function WorkShell({ projects, filters }: WorkShellProps) {
                       key={p.slug}
                       project={p}
                       variant="founder"
-                      diagram={FOUNDER_DIAGRAMS[p.slug]?.()}
+                      diagram={pickDiagram(p)}
                     />
                   ))}
                 </div>
@@ -149,6 +148,7 @@ export function WorkShell({ projects, filters }: WorkShellProps) {
                       key={p.slug}
                       project={p}
                       variant="featured"
+                      diagram={pickDiagram(p)}
                     />
                   ))}
                 </div>
