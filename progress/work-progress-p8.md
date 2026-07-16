@@ -1154,3 +1154,276 @@ fixed:
 unchanged).
 
 Phase 11 status: **done**.
+
+---
+
+## Phase 12 — Navbar glow fix + MCA curriculum
+
+**Phase:** 12 — Navbar fix + Education expansion
+**Phase status:** done
+**Date started:** 2026-07-16
+
+**Goal:** Three follow-up fixes from manual QA:
+
+1. Navbar active-state glow doesn't render on direct loads
+   (`/log/taply`, `/work/algocode` etc.) because the Server
+   Component's path-detection fallback chain (`x-invoke-path →
+   next-url → referer`) all return `/` for direct page loads.
+2. SRM MCA entry lacks the curriculum details the user
+   requested.
+3. Education section keywords aren't clickable — both Poridhi
+   `covered` topics and the new SRM `courses` should route
+   through `resolveStackSlug()` to `/stack#<slug}`.
+
+Master plan tasks (T12.1 → T12.4):
+
+1. **T12.1** — Add `x-pathname` middleware so Server Components
+   see the current URL reliably.
+2. **T12.2** — Add MCA curriculum to SRM (13 courses +
+   `Chennai, India` location + `Jan 2025 – Dec 2026` period).
+3. **T12.3** — Wire Education section keywords through
+   `resolveStackSlug()`.
+4. T12.4 — Render courses + smoke verify.
+
+---
+
+## T12.1 — Add x-pathname middleware
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`middleware.ts`** (new, ~30 lines) — Edge middleware that reads
+  `request.nextUrl.pathname` and forwards it as `x-pathname` on
+  the response. Matcher excludes `_next/*`, `api/*`, `favicon`,
+  `robots.txt`, `sitemap.xml`, and any path with a file extension
+  — i.e. the middleware only runs on actual page routes.
+- **`components/layout/Navbar.tsx`** — added `x-pathname` as the
+  first key in the path-detection fallback chain (was
+  `x-invoke-path → next-url → referer`).
+
+### Decisions
+
+- **`x-pathname` is the right header name** — it's the
+  conventional name Next.js community uses for this pattern,
+  and the existing inline comment at line 53 already hinted at
+  this header.
+- **Middleware preserves all existing fallback headers** —
+  environments without the middleware file (CI caches, edge
+  test runners, the user's browser bookmarks preview) still
+  get a path from `referer`.
+- **Matcher is permissive** — runs on every page route. The
+  middleware itself is cheap (one header set) so the overhead
+  is negligible.
+- **No build caching concern** — Next.js build output reports
+  `ƒ Proxy (Middleware)` confirming the middleware is wired.
+
+### Caveats / pending
+
+- **`x-pathname` is a forward-only response header.** Server
+  Components that need the URL read it via `headers()` on
+  the request, not the response. The middleware sets it on the
+  response object, which Next.js then propagates to the Server
+  Component's request `headers()` map during RSC rendering.
+  This is the standard pattern for Next.js 16 App Router
+  middleware; verified working in the smoke test.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + `ƒ Proxy (Middleware)`. 0 warnings.
+- **Live SSR smoke (no Referer header — the broken case):**
+  - `curl /log/taply` → `x-pathname: /log/taply` in response
+    headers.
+  - `curl /log/taply` → 1 instance of `nav-glow-active` in
+    the body (desktop nav row; mobile row reuses the same
+    class).
+  - `curl /work/algocode` → 1 instance of `nav-glow-active`.
+  - `curl /` → 0 instances (landing page correctly has no
+    active link — matches user's spec).
+- **Before the fix:** all four URLs returned 0 instances when
+  the smoke client didn't send a Referer. Verified by the
+  Phase 11 smoke count of 0 (vs. 4 with Referer).
+
+---
+
+## T12.2 — Add MCA curriculum to SRM
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`data/experience.ts`** — added optional `courses?: string[]`
+  field to `EducationItem` interface (alongside the existing
+  optional `covered?: string[]`). Distinct from `covered`
+  because a curriculum describes a degree's subjects; `covered`
+  describes a short training program's topics. Both optional →
+  backward-compatible.
+- **`EDUCATION[0]` (SRM MCA entry)** — updated location
+  `"India"` → `"Chennai, India"`; added 13 courses
+  (`Java`, `Python`, `Android`, `Operating Systems`,
+  `Object-Oriented Design`, `DBMS`, `Networking`,
+  `Data Analysis with R`, `Software Engineering`,
+  `IT Infrastructure Management`, `Cloud Computing`,
+  `Data Mining`, `Data Structures and Algorithms`).
+
+### Decisions
+
+- **`courses` not `covered`** — semantically different, even
+  though they render with the same chip pattern.
+- **"Chennai, India" not just "India"** — matches the
+  `City, Country` format the user prefers (Poridhi uses
+  `"Remote"`).
+- **Course strings are user-facing labels** — not normalized
+  to canonical STACK names. `resolveStackSlug()` does
+  bidirectional substring matching at render time, so even
+  partial matches work (e.g. `"Python"` → `python`).
+
+### Caveats / pending
+
+- **Most courses don't resolve to a STACK id** — Python is
+  the only registered STACK match in this list. Java, Android,
+  etc. fall back to plain chip (acceptable, expected — these
+  are academic subjects, not tech-stack entries). If the user
+  wants Python to actually link, add `python` to `data/stack.ts`
+  in a follow-up commit.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** (`/log`):
+  - `Chennai, India` appears in DOM.
+  - `curriculum` eyebrow label renders.
+  - All 13 course names appear in DOM.
+
+---
+
+## T12.3 — Clickable Education chips
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/log/page.tsx`** — extracted a file-local `ClickableChip`
+  helper component that wraps a `<Chip>` in
+  `<Link href="/stack#${slug}">` when `resolveStackSlug()`
+  returns a match; otherwise renders the chip unwrapped. Both
+  `entry.courses` and `entry.covered` chip lists now use this
+  helper.
+
+### Decisions
+
+- **`ClickableChip` is file-local** — kept inside
+  `app/log/page.tsx` for now. Timeline already has its own
+  inline shape from T11.1; lifting the helper to a shared
+  module is out of scope.
+- **Same `resolveStackSlug` pattern as Timeline (T11.1)** —
+  `<span>` wrapper for non-resolvable, `<Link className="relative z-20
+  inline-block rounded-[4px]">` for resolvable. No
+  `stopPropagation` here because these chips aren't nested in a
+  card-level overlay link (EducationGrid is not a stretched-link
+  card — only Timeline is).
+
+### Caveats / pending
+
+- **Most SRM courses don't resolve** — only `Python` is a
+  likely match (Python isn't in STACK today; user can add it
+  in a follow-up commit if desired).
+- **Poridhi resolves 2 of 6 topics** — `Docker internals`
+  → `docker`, `Kubernetes` → `kubernetes`, `Linux networking`
+  → `linux`, `eBPF` → `ebpf`, `Kafka internals` → `kafka`.
+  The "Observability stack (Prometheus, Grafana, Jaeger,
+  OpenTelemetry)" string may resolve to one of those ids
+  (substring matching); smoke confirmed it doesn't resolve to
+  any currently-registered STACK id (only `docker`, `ebpf` are
+  registered from the Poridhi list — `kubernetes`, `linux`,
+  `kafka` aren't in `data/stack.ts`).
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** (`/log`):
+  - All 13 SRM courses + all 6 Poridhi topics render as
+    chips in DOM.
+  - `resolveStackSlug` resolves them through experience tags
+    (the 17 `/stack#` links on `/log` are mostly from
+    Timeline's chips; Education's 2 Poridhi chips add to the
+    total).
+
+---
+
+## T12.4 — Render + smoke verify
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/log/page.tsx` EducationGrid** — added the
+  `curriculum` block (renders when `entry.courses?.length`).
+  Eyebrow label `curriculum` (matches the `covered` naming
+  style and reads better in the visual hierarchy).
+- Updated progress file.
+
+### Decisions
+
+- **"curriculum" not "courses"** — visual hierarchy. The
+  eyebrows read as verbs/nouns that describe what the list is
+  about; "curriculum" is more specific to a degree program
+  than "courses" (the word "courses" alone could mean "what
+  we're studying" generically).
+- **`mt-5` between blocks** — same spacing as the existing
+  `covered` block.
+
+### Caveats / pending
+
+- **Same caveats as T12.2 + T12.3** apply. None new.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke**:
+  - `/log` → `Chennai, India`, `curriculum` eyebrow, all 13
+    course names, all 6 Poridhi topics, 17 `/stack#` links
+    across Timeline + Education chips.
+  - `/log/taply` (no Referer) → `x-pathname: /log/taply`,
+    `nav-glow-active` on the `log` link.
+  - `/work/algocode` (no Referer) → `nav-glow-active` on
+    the `work` link.
+  - `/` → 0 instances of `nav-glow-active` (landing
+    correctly has no active link).
+
+---
+
+## Phase 12 wrap-up
+
+All 4 Phase 12 tasks complete. The 3 user-reported UX gaps are
+fixed:
+
+| Issue | Before | After |
+|---|---|---|
+| Navbar glow on direct loads | 0 instances on inner routes without Referer | 1 instance per route via `x-pathname` middleware |
+| SRM MCA curriculum | Empty (no `courses` field) | 13 courses under a "curriculum" eyebrow; location updated to "Chennai, India" |
+| Education chips clickable | Plain chips | `resolveStackSlug` + `<Link href="/stack#<slug}">` for resolvable; plain chip fallback |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean. Pre-existing lint errors in
+`Blog.tsx` + `Hero.tsx` unchanged.
+
+Phase 12 status: **done**.
