@@ -5,10 +5,15 @@
  * 7 nodes laid out as a SaaS funnel: client → nginx → Django + 3
  * sidecar services (Redis, Postgres, Stripe).
  *
- * All colors come from CSS vars in data/tokens.ts (via diagrams.css).
- * Static SVG — no animation, no JS. Will be elaborated into a full
- * architecture diagram for /work/taply (T3.3) case-study page.
+ * Animated packets (Phase 10 T10.1) — amber for the ingress request
+ * (Browser → Nginx → Django), accent for the persistence + response
+ * paths (Django → Redis/Postgres, Django → Stripe, Django → vCard).
+ *
+ * Pure SVG + SMIL, no JS. Honors prefers-reduced-motion via the
+ * browser's automatic SMIL gate.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function TaplyDiagram() {
   return (
@@ -153,20 +158,37 @@ export function TaplyDiagram() {
           vCard + Leads
         </text>
 
-        {/* Edges */}
+        {/* Edges (with IDs for AnimatedPackets) */}
         {/* Client → Nginx */}
-        <path className="alg-mini-edge" d="M98 28 H116" />
+        <path id="taply-p1" className="alg-mini-edge" d="M98 28 H116" />
         {/* Nginx → Django */}
-        <path className="alg-mini-edge" d="M160 46 V80" />
+        <path id="taply-p2" className="alg-mini-edge" d="M160 46 V80" />
         {/* Django → Redis (cache lookup) */}
-        <path className="alg-mini-edge" d="M204 90 H222" />
+        <path id="taply-p3" className="alg-mini-edge" d="M204 90 H222" />
         {/* Django → PostgreSQL (persistence) */}
-        <path className="alg-mini-edge" d="M204 98 H222" />
+        <path id="taply-p4" className="alg-mini-edge" d="M204 98 H222" />
         {/* Django → Stripe (billing) */}
-        <path className="alg-mini-edge" d="M204 106 Q213 130 222 168" />
+        <path id="taply-p5" className="alg-mini-edge" d="M204 106 Q213 130 222 168" />
         {/* Django → vCard (response) */}
-        <path className="alg-mini-edge" d="M116 98 Q70 120 54 150" />
+        <path id="taply-p6" className="alg-mini-edge" d="M116 98 Q70 120 54 150" />
       </g>
+
+      {/* Animated packets — Phase 10 T10.1 */}
+      <AnimatedPackets
+        groups={[
+          /* Ingress: tap/QR request flows from the browser through
+             Nginx into Django. Amber = in-flight request. */
+          { edges: ["taply-p1", "taply-p2"], color: "amber", count: 2 },
+          /* Persistence + response: Django reads from Redis (cache),
+             writes to Postgres, bills via Stripe, returns vCard. Accent
+             = resolved / persisted flow. */
+          {
+            edges: ["taply-p3", "taply-p4", "taply-p5", "taply-p6"],
+            color: "acc",
+            count: 3,
+          },
+        ]}
+      />
     </svg>
   );
 }
