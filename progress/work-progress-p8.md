@@ -137,3 +137,48 @@ Master plan tasks in this phase (T8.1 → T8.6):
     diagrams + featured tier diagrams all return real SVG markup.
   - The `bg-code-bg` placeholder panel is **no longer** a fallback
     for the featured tier.
+
+---
+
+## T8.3 — Wire diagrams into /log/[id] RelatedProjects
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/log/[id]/page.tsx`** — imported `pickDiagram` from the
+  shared helper. Passes `diagram={pickDiagram(p)}` to
+  `<ProjectCard variant="featured">` in the RelatedProjects grid.
+
+### Decisions
+
+- **Same helper, same prop** as T8.2. The featured variant of
+  `<ProjectCard>` is the consumer in both places; both now wire
+  diagrams through one switch.
+- **No header comment updates needed** — the page's docstring
+  already mentions "2-col grid of `<ProjectCard variant=\"featured\">`"
+  and didn't claim anything about diagrams.
+
+### Caveats / pending
+
+- **Same diagram renders on `/work` and `/log/[id]` for the same
+  project** — the helper returns the same JSX. That's intentional:
+  consistency across surfaces, single source of truth.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR'd HTML smoke** (`curl /log/taply`):
+  - Taply diagram node labels present: `vCard`, `Nginx`.
+  - UnThink diagram node labels present: `FastAPI`, `Gemini Flash`,
+    `Redis broker`, `Extension`.
+  - Zero `DiagramPlaceholder` text in DOM — placeholder is gone for
+    the featured variant on this page.
+- **User-reported bug resolved** — the "black panel + diagram word"
+  is replaced by the full architecture SVG for Taply and UnThink on
+  `/log/taply`.

@@ -31,6 +31,7 @@ import { InnerLayout } from "@/components/layout/InnerLayout";
 import { Chip } from "@/components/ui/Chip";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { ProjectCard } from "@/components/work/ProjectCard";
+import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { pageMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import {
@@ -268,7 +269,12 @@ function RelatedProjects({
       </div>
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {projects.map((p) => (
-          <ProjectCard key={p.slug} project={p} variant="featured" />
+          <ProjectCard
+            key={p.slug}
+            project={p}
+            variant="featured"
+            diagram={pickDiagram(p)}
+          />
         ))}
       </div>
     </section>
