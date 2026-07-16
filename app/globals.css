@@ -147,3 +147,29 @@ html {
     opacity: 0.4;
   }
 }
+
+/* Navbar active-link glow — Phase 11 (T11.4). The active link in
+   Navbar.tsx uses `text-amber` + this class. The text-shadow
+   pulses between a soft amber halo and a brighter amber ring;
+   `currentPath.startsWith(l.href)` lights the matching link on
+   nested routes too (e.g. /log/taply still lights `log`). Honors
+   the global `prefers-reduced-motion` gate above (which zeroes out
+   all animation-duration across the page). */
+@keyframes nav-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 6px var(--amber);
+  }
+  50% {
+    text-shadow: 0 0 14px var(--amber), 0 0 22px rgba(245, 158, 11, 0.35);
+  }
+}
+.nav-glow-active {
+  animation: nav-glow 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-glow-active {
+    animation: none;
+    text-shadow: 0 0 8px var(--amber);
+  }
+}
