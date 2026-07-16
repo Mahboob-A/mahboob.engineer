@@ -65,19 +65,30 @@ export function D3ForceGraph({
     const svg = select(svgRef.current);
     svg.selectAll("*").remove();
 
-    /* Build simulation nodes + edges (mutable copies for D3 to update). */
+    /* Build simulation nodes + edges (mutable copies for D3 to update).
+       Edges keep source/target as STRING ids here. D3's
+       `forceLink.id((d) => d.id)` (below) resolves them to the actual
+       node objects on the first tick. Pre-resolving to numeric indices
+       (as the original code did) causes `forceLink` to throw
+       "node not found: 0" synchronously at construction time, because
+       the `.id(...)` accessor looks up `node.id` (a string) against
+       an integer — never matches. The Phase 6 (T6.9) try/catch has
+       been swallowing this error silently ever since, leaving the
+       graph unrendered. Keeping ids as strings is the fix. */
     const nodes: SimNode[] = techs.map((t) => ({
       id: t.id,
       name: t.name,
       domain: t.domain,
       depth: t.depth,
     }));
-    const idIndex = new Map(nodes.map((n, i) => [n.id, i]));
+    const nodeIds = new Set(nodes.map((n) => n.id));
     const simEdges: SimEdge[] = edges
-      .filter((e) => idIndex.has(e.source as string) && idIndex.has(e.target as string))
+      .filter(
+        (e) => nodeIds.has(e.source as string) && nodeIds.has(e.target as string),
+      )
       .map((e) => ({
-        source: idIndex.get(e.source as string)!,
-        target: idIndex.get(e.target as string)!,
+        source: e.source as string,
+        target: e.target as string,
         weight: e.weight,
       }));
 
@@ -143,15 +154,20 @@ export function D3ForceGraph({
         }),
     );
 
-    /* Helpers — neighborhood highlight. */
+    /* Helpers — neighborhood highlight. Edge source/target can be
+       either a string id (right after construction, before D3 has
+       run a tick) or a SimNode object (after forceLink re-writes
+       the references during simulation). Handle both. */
+    const edgeEndId = (end: SimEdge["source"]): string =>
+      typeof end === "string" ? end : (end as SimNode).id;
     const neighborsOf = (id: string): Set<string> => {
       const s = new Set<string>();
       s.add(id);
       for (const e of simEdges) {
-        const sId = (e.source as SimNode).id ?? (e.source as number);
-        const tId = (e.target as SimNode).id ?? (e.target as number);
-        if (sId === id) s.add(String(tId));
-        if (tId === id) s.add(String(sId));
+        const sId = edgeEndId(e.source);
+        const tId = edgeEndId(e.target);
+        if (sId === id) s.add(tId);
+        if (tId === id) s.add(sId);
       }
       return s;
     };
@@ -159,8 +175,8 @@ export function D3ForceGraph({
       const ns = neighborsOf(id);
       nodeSel.classed("highlight", (d) => ns.has(d.id));
       edgeSel.classed("highlight", (e) => {
-        const sId = (e.source as SimNode).id;
-        const tId = (e.target as SimNode).id;
+        const sId = edgeEndId(e.source);
+        const tId = edgeEndId(e.target);
         return ns.has(sId) || ns.has(tId);
       });
     }
@@ -169,11 +185,14 @@ export function D3ForceGraph({
       edgeSel.classed("highlight", false);
     }
 
-    /* Build + start simulation. Wrap in try/catch because d3-force
-       can throw "node not found: 0" on the very first tick before
-       its node-index map is built; we swallow the error and the
-       next tick succeeds. The Lighthouse pass (T6.9) hit this and
-       the pageerror tanked the a11y audit. */
+    /* Build + start simulation. Belt-and-braces try/catch around the
+       tick callback because d3-force can occasionally throw during
+       resolution under resize / hot-reload edge cases; the per-tick
+       catch swallows transient errors so the simulation keeps
+       running. The previous Phase 6 (T6.9) try/catch around the
+       whole block (which masked the "node not found: 0" bug at
+       construction) is no longer needed — edges now carry string
+       ids and `forceLink.id((d) => d.id)` resolves them cleanly. */
     let sim: d3f.Simulation<SimNode, SimEdge> | null = null;
     try {
       sim = d3f

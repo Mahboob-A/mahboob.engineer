@@ -20,7 +20,13 @@
   width: 100%;
   height: 100%;
   display: block;
-  background: var(--code-bg);
+  /* Transparent — the wrapper in StackShell.tsx carries `bg-surface`,
+     which is the dark-green card surface. Previously this SVG painted
+     its own `var(--code-bg)` (near-black) which made the entire graph
+     panel read as a black slab on lg+ screens (the mobile fallback
+     list uses `bg-surface` so the breakpoint switch was visually
+     jarring). Letting the wrapper color show through keeps the panel
+     consistent across breakpoints. */
   border-radius: 10px;
 }
 

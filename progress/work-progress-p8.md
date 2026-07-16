@@ -1599,3 +1599,132 @@ direct route loads.
 warnings. `pnpm typecheck` clean.
 
 Phase 14 status: **done**.
+
+---
+
+## Phase 15 — Fix /stack D3 init + graph panel background
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/stack/D3ForceGraph.tsx`** — D3 edge resolution fix.
+  - Edges now keep `source` and `target` as **string ids**
+    (e.g. `"django"`, `"drf"`) instead of pre-resolving them to
+    numeric indices. D3's `forceLink.id((d) => d.id)` resolves
+    them to the actual node objects on the first tick.
+  - The `neighborsOf` and `highlight` helpers got a small
+    `edgeEndId()` helper that handles both shapes — string id
+    (right after construction) and SimNode object (after
+    forceLink re-writes the references during simulation).
+  - The Phase 6 (T6.9) `try { ... } catch` around the whole
+    `forceSimulation(...).force(...)` chain stayed as belt-and-
+    braces (now only protects against transient d3-force
+    resolution errors during hot-reload), but the original
+    "node not found: 0" synchronous throw no longer happens.
+- **`components/stack/stack-graph.css`** — removed
+  `background: var(--code-bg)` from the `.stack-graph` SVG
+  rule. The wrapper in `StackShell.tsx` already carries
+  `bg-surface` (the dark-green card surface); letting it
+  show through the SVG keeps the panel consistent across
+  breakpoints. Before this fix the SVG painted its own
+  near-black `var(--code-bg)` which made the graph panel
+  read as a black slab on lg+ screens, jarring against the
+  `bg-surface` MobileTechList visible at smaller widths.
+
+### Why the bug existed since Phase 3 (T3.4)
+
+The original D3 graph code at T3.4 pre-resolved
+`e.source = idIndex.get(e.source)` (a number) and called
+`forceLink(simEdges).id((d) => d.id)`. D3's `.id()` accessor
+maps source/target values to nodes by `node.id` — which is a
+**string**. Numeric indices never matched, so `forceLink`
+threw synchronously at construction. Phase 6 (T6.9) added a
+try/catch around the construction chain to silence the
+pageerror for the Lighthouse a11y run, but the simulation
+silently never started — graph appeared empty ever since.
+
+The "node not found: 0" message in the browser console is the
+T6.9 catch surfacing: it sees the synchronous throw, logs it,
+and leaves `sim = null`. The catch kept the page from
+crashing but the graph stayed unrendered.
+
+### Decisions
+
+- **Keep edges as strings, let D3 resolve.** This is the
+  idiomatic D3-force pattern; D3 mutates the edges in place
+  to replace source/target with the actual node references
+  on the first tick. The pre-resolution was the bug, not a
+  feature.
+- **No regression risk on tick handler.** The `.on("tick", ...)`
+  callback already reads `(d.source as SimNode).x` because
+  D3 has replaced the string with the node reference by the
+  first tick. That code path is unchanged.
+- **`edgeEndId()` helper handles both shapes** instead of
+  hard-casting. The `neighborsOf` and `highlight` helpers
+  can now be called either before any tick (string ids) or
+  after (SimNode objects) without a crash.
+- **Remove SVG background, not the wrapper background.**
+  The wrapper's `bg-surface` is the canonical panel surface
+  and matches the MobileTechList fallback. Removing it from
+  the SVG (not the wrapper) keeps the dark-green look across
+  breakpoints and avoids a CLS-style surface jump when the
+  user resizes.
+
+### Caveats / pending
+
+- The try/catch around `forceSimulation(...).force(...)`
+  stays (now only catches genuinely-transient d3-force
+  errors). If it ever fires again, the warning will be
+  useful — the previous "node not found: 0" was a real bug,
+  not noise.
+- Circle fills stay `var(--code-bg)` (line 28 unchanged),
+  which gives a subtle "darker circle on dark-green
+  surface" effect. Bright stroke colors carry the visual
+  weight. If this reads as too dim in user testing, the
+  next move is to lift `circle.fill` to `var(--surface)`
+  (matching the panel) so only the strokes carry the tech
+  color.
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Live SSR smoke** (port 3000):
+  - `/stack` returns HTTP 200 with the SVG + tech-detail
+    panel in the rendered HTML.
+- **Browser smoke** (Playwright headless Chromium,
+  viewport 1440×900 and 600×900):
+  - Wide (lg+): graph renders 20+ visible nodes with edges.
+    SVG background matches the wrapper `bg-surface` (no
+    near-black slab).
+  - Narrow (<lg): MobileTechList renders with the same
+    `bg-surface` panel. Domain groupings visible (Backend,
+    Infrastructure, ...).
+  - Console: zero "simulation failed to initialize" /
+    "node not found" warnings.
+- **Compiled CSS check** (`.next/static/chunks/*.css`):
+  - `.stack-graph` rule no longer carries
+    `background:var(--code-bg)`.
+  - Circles still `fill:var(--code-bg)`.
+
+---
+
+## Phase 15 wrap-up
+
+Two long-standing bugs on `/stack` fixed:
+
+| Bug | Before | After |
+|---|---|---|
+| D3 force graph unrendered (Phase 3 T3.4) | Edges pre-resolved to numeric indices → `forceLink.id((d) => d.id)` never matched → synchronous "node not found: 0" throw → Phase 6 try/catch silently swallowed → empty SVG | Edges keep string ids; D3 resolves them on the first tick; graph renders all 29 techs with edges |
+| Graph panel reads as black on lg+ | SVG painted its own `var(--code-bg)` (near-black) on top of the wrapper's `bg-surface` | SVG transparent; wrapper's `bg-surface` shows through; consistent surface across breakpoints |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 15 status: **done**.
