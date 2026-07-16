@@ -1508,3 +1508,94 @@ All 5 Phase 12 tasks complete. Final state:
 | `/stack` force graph | 25 nodes | 28 nodes (4 new: python / linux / kafka / kubernetes) |
 
 Phase 12 status: **done**.
+---
+
+## Phase 14 — Drop nav glow, keep flat amber active color
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/globals.css`** — removed `@keyframes nav-glow`,
+  `.nav-glow-active` rule, and the reduced-motion fallback
+  (Phase 11 T11.4 block, ~26 lines). Replaced with a comment
+  noting Phase 14 dropped the pulse.
+- **`components/layout/Navbar.tsx`** — removed `nav-glow-active`
+  from the active-link className on both the desktop nav (line
+  110 area) and the mobile nav (line 158 area). Active links now
+  use just `"text-amber font-semibold"` — flat amber color, no
+  animation. Updated the comment on line 100 + line 147 to
+  reflect the Phase 14 decision.
+
+### Why
+
+The previous Phase 11 pulse was technically correct (class in DOM,
+keyframe in compiled CSS) but visually unreadable: the active
+link fill is already `text-amber`, so amber-on-amber text-shadow
+blends into the text instead of radiating. After 3 phases of
+attempts (Phase 11 original → Phase 13 attempted fix → Phase 13
+revert) the simplest correct answer is: no animation, just the
+flat amber color, which has worked since Phase 6.
+
+### Decisions
+
+- **Drop the keyframe entirely** rather than ship a static
+  fallback. The fallback was barely visible on bg-bg anyway;
+  the user wants a clear color marker, not a faint halo.
+- **Keep `text-amber font-semibold`** — the same active style
+  that shipped in Phase 6 and worked through Phase 10. No new
+  tokens, no new CSS.
+- **No founder-tier changes** — Phase 13 T13.2 founder-glow was
+  reverted by `git reset --hard` back to the Phase 12 baseline
+  before this commit. Founder cards on /work keep just the
+  `bg-tier-founder border-amber/40 hover:border-amber/70` styling
+  with no box-shadow pulse.
+- **No progress file** — Phase 13 entries were dropped along
+  with the rest of the Phase 13 commits via `git reset --hard`
+  before this work. The progress log goes straight from Phase 12
+  done → Phase 14.
+
+### Caveats / pending
+
+- Pre-existing lint errors in `components/sections/Blog.tsx` and
+  `components/sections/Hero.tsx` are out of scope and untouched.
+- The branch is still called `feat-1/glow-header` (carried over
+  from the Phase 13 attempt). The user can rename or delete it;
+  Phase 14 itself doesn't depend on the branch name.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Live SSR smoke** (port 3000):
+  - `/log`, `/log/taply`, `/work`, `/stack`, `/writing`,
+    `/lets-connect` — each renders the active link with
+    `text-amber font-semibold` (no `nav-glow-active` anywhere).
+  - `/work` — 2 founder cards with `bg-tier-founder
+    border-amber/40 hover:border-amber/70` (no founder-glow).
+- **Compiled CSS check** (`.next/static/chunks/*.css`):
+  - `grep -c nav-glow` → 0 across all chunks. Keyframe + rule
+    + reduced-motion fallback fully removed.
+
+---
+
+## Phase 14 wrap-up
+
+The navbar glow experiment is closed. Active-state highlighting
+is back to its Phase 6 baseline: just the flat `text-amber
+font-semibold` color marker on the matching route, no
+animation. The Phase 12 T12.1 middleware x-pathname wiring
+still does the heavy lifting of lighting the right link on
+direct route loads.
+
+| Surface | Before Phase 14 | After Phase 14 |
+|---|---|---|
+| Navbar active link | Pulsing amber halo (Phase 11 keyframe) | Flat amber color, no animation |
+| Founder cards on /work | Amber border + pulsing box-shadow (Phase 13 T13.2) | Amber border only (Phase 12 baseline) |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 14 status: **done**.
