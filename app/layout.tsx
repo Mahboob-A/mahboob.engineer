@@ -7,7 +7,6 @@ import { ogUrlFor, ogConstants } from "@/lib/og-helpers";
 import "./globals.css";
 import "@/components/diagrams/diagrams.css";
 import "@/components/sections/skill-graph.css";
-import "@/components/stack/stack-graph.css";
 
 /* ──────────────────────────────────────────────────────────────────────
    Fonts — loaded once at the root. Every inner page inherits these

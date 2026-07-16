@@ -1829,3 +1829,109 @@ behavior unchanged.
 warnings. `pnpm typecheck` clean.
 
 Phase 16 status: **done**.
+
+---
+
+## Phase 17 — Delete D3 graph dead code
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **Deleted** `components/stack/D3ForceGraph.tsx` (the
+  force-graph component that was unrendered in production
+  until Phase 15's fix, then removed from the layout in
+  Phase 16).
+- **Deleted** `components/stack/stack-graph.css` (the
+  accompanying CSS rules for `.stack-graph` selectors).
+- **`app/layout.tsx`** — removed the
+  `import "@/components/stack/stack-graph.css";` line that
+  pulled the deleted stylesheet into the global bundle.
+- **`components/stack/MobileTechList.tsx`** — refreshed the
+  file-level JSDoc. The old "Mobile fallback for /stack"
+  description referenced the now-deleted `D3ForceGraph` and
+  its breakpoint gating. New description calls out that
+  this component is the canonical view at every breakpoint
+  (Phase 16).
+- **`package.json`** + **`pnpm-lock.yaml`** — removed three
+  runtime d3 deps and three @types packages:
+  - `d3-drag` (^3.0.0)
+  - `d3-force` (^3.0.0)
+  - `d3-selection` (^3.0.0)
+  - `@types/d3-drag` (^3.0.7)
+  - `@types/d3-force` (^3.0.10)
+  - `@types/d3-selection` (^3.0.11)
+  - `pnpm install` reported 9 packages removed total
+    (including indirect deps).
+
+### Decisions
+
+- **Delete the files outright, don't leave them as `.bak` or
+  commented out.** Phase 16 made them unreachable; keeping
+  them as dead code would just be future lint noise.
+- **Drop the d3 deps from `package.json`.** Strict standing
+  rule: no new dependencies without explicit need, no
+  carryover dependencies without a consumer. The full d3
+  package was never used — only the three modular packages
+  above. All gone.
+- **Refresh the MobileTechList JSDoc** so it doesn't lie
+  about being a mobile-only fallback.
+- **Did not rename MobileTechList** to something like
+  `TechList.tsx` — the rename touches the import in
+  StackShell + this file's path, and the cosmetic value
+  isn't worth the diff. The name now describes history
+  (mobile origin) rather than current role; flagged for a
+  future rename if the codebase owner wants.
+
+### Caveats / pending
+
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+- The page-level description on `/stack` still reads "Hover
+  or click a node" — graph-era phrasing. The detail panel's
+  empty state uses "Hover or click a tech" which is
+  accurate. Future copy pass.
+
+### Verified
+
+- `pnpm install` → clean (9 packages removed, 0 added).
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Compiled CSS check** (`.next/static/chunks/*.css` +
+  `.next/dev/static/chunks/*.css`):
+  - `grep -l "stack-graph"` → 0 files. The deleted CSS
+    rules are fully gone from the bundle.
+- **Live SSR smoke** (port 3000):
+  - `/stack` → HTTP 200 with the detail panel and grouped
+    list in the rendered HTML.
+  - `grep "d3-force\|stack-graph"` on the rendered HTML →
+    0 hits.
+- **Browser smoke** (Playwright headless Chromium,
+  viewport 1440×900):
+  - Visual identical to Phase 16 screenshot. Grouped list
+    left, detail panel right. Click Django → detail
+    populated correctly.
+
+---
+
+## Phase 17 wrap-up
+
+The D3 force graph is fully removed from the codebase.
+`/stack` now ships only the grouped tech list. Three d3
+runtime deps + three @types packages gone from the
+dependency tree.
+
+| Surface | Before Phase 17 | After Phase 17 |
+|---|---|---|
+| `components/stack/` | 5 files (D3ForceGraph, MobileTechList, StackShell, TechDetailPanel, stack-graph.css) | 3 files (MobileTechList, StackShell, TechDetailPanel) |
+| `package.json` runtime deps | 22 entries (incl. 3 d3-*) | 19 entries (no d3-*) |
+| `package.json` devDeps | 14 entries (incl. 3 @types/d3-*) | 11 entries (no @types/d3-*) |
+| Compiled CSS bundle | Carried 23 lines of `.stack-graph-*` rules | No `.stack-graph-*` rules |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 17 status: **done**.
