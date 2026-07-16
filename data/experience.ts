@@ -59,10 +59,16 @@ export interface EducationItem {
   degree: string;
   /** Human-readable period. */
   period: string;
-  /** "Bangalore, India" / "Remote" / etc. */
+  /** "Chennai, India" / "Remote" / etc. */
   location: string;
   /** For training programs: list of topics covered. Optional. */
   covered?: string[];
+  /** For degree programs: list of subjects in the curriculum.
+   *  Phase 12 (T12.2): added so the SRM MCA entry can list its
+   *  formal courses. Distinct from `covered` (which describes a
+   *  short training program). Both are optional — backward-compatible.
+   *  Each string becomes a clickable chip on /log. */
+  courses?: string[];
 }
 
 /* ===========================================================================
@@ -177,7 +183,28 @@ export const EDUCATION: EducationItem[] = [
     institution: "SRM Institute of Science and Technology",
     degree: "Master of Computer Application (MCA)",
     period: "Jan 2025 – Dec 2026",
-    location: "India",
+    location: "Chennai, India",
+    /* Phase 12 (T12.2): full curriculum — 13 courses across 5
+       themes. Displayed as clickable chips on /log. Each entry that
+       resolves through resolveStackSlug() (e.g. "Python") becomes
+       a deep-link to /stack#<slug>; the rest fall back to plain
+       non-clickable chips (most academic subjects don't have a
+       matching STACK id). */
+    courses: [
+      "Java",
+      "Python",
+      "Android",
+      "Operating Systems",
+      "Object-Oriented Design",
+      "DBMS",
+      "Networking",
+      "Data Analysis with R",
+      "Software Engineering",
+      "IT Infrastructure Management",
+      "Cloud Computing",
+      "Data Mining",
+      "Data Structures and Algorithms",
+    ],
   },
   {
     institution: "Poridhi",
