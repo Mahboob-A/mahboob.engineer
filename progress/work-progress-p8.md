@@ -182,3 +182,51 @@ Master plan tasks in this phase (T8.1 → T8.6):
 - **User-reported bug resolved** — the "black panel + diagram word"
   is replaced by the full architecture SVG for Taply and UnThink on
   `/log/taply`.
+
+---
+
+## T8.4 — Refactor /work/[slug] to use shared pickDiagram
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/work/[slug]/page.tsx`** — replaced the file-local `pickDiagram`
+  function + 8 imports (TaplyDiagram, UnthinkDiagram, AlgocodeDiagram,
+  MovioDiagram, DrishtiAIDiagram, DatalineageDoctorDiagram, AirpassDiagram,
+  DiagramPlaceholder) with a single import of `pickDiagram` from the
+  shared helper. Removed the 19-line `pickDiagram` function.
+
+### Decisions
+
+- **No behavior change at this call site.** The local function had
+  the exact same switch + fallback structure as the shared helper.
+  The migration is a pure DRY refactor.
+- **`Hero({ project })` keeps its `const Diagram = pickDiagram(project)`
+  shape** — the local function's variable name + usage pattern carries
+  over verbatim. No callers other than `Hero` consume the helper in
+  this file.
+- **Comment marker** (`/* Diagram selector: removed in Phase 8
+  (T8.4)... */`) replaces the deleted function. Future editors
+  grepping for `pickDiagram` land on the import line + the comment.
+
+### Caveats / pending
+
+- **`ProjectStatus` still imported but unused** (pre-existing). The
+  file ends with `export type _ProjectStatus = ProjectStatus;` to
+  silence the unused-import warning. Phase 8 doesn't touch this.
+- **Three call sites now share one helper** — `/work` (founder +
+  featured tier, T8.2), `/log/[id]` (RelatedProjects, T8.3),
+  `/work/[slug]` (case-study Hero, T8.4). All three compile to the
+  same import.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Net change**: −8 imports, −19 lines of switch boilerplate, +1
+  import. Same render output.

@@ -32,14 +32,7 @@ import type { Metadata } from "next";
 import { InnerLayout } from "@/components/layout/InnerLayout";
 import { Chip } from "@/components/ui/Chip";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
-import { TaplyDiagram } from "@/components/diagrams/TaplyDiagram";
-import { UnthinkDiagram } from "@/components/diagrams/UnthinkDiagram";
-import { AlgocodeDiagram } from "@/components/diagrams/AlgocodeDiagram";
-import { MovioDiagram } from "@/components/diagrams/MovioDiagram";
-import { DrishtiAIDiagram } from "@/components/diagrams/DrishtiAIDiagram";
-import { DatalineageDoctorDiagram } from "@/components/diagrams/DatalineageDoctorDiagram";
-import { AirpassDiagram } from "@/components/diagrams/AirpassDiagram";
-import { DiagramPlaceholder } from "@/components/diagrams/DiagramPlaceholder";
+import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { projectMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import { cn } from "@/lib/cn";
@@ -473,29 +466,9 @@ function RelatedStack({
   );
 }
 
-/* Diagram selector: picks the full-size architecture diagram for each
-   of the 7 prioritized projects, falls back to the placeholder for the
-   rest. */
-function pickDiagram(project: ProjectItem): React.JSX.Element {
-  switch (project.slug) {
-    case "taply":
-      return <TaplyDiagram />;
-    case "unthink":
-      return <UnthinkDiagram />;
-    case "algocode":
-      return <AlgocodeDiagram />;
-    case "movio":
-      return <MovioDiagram />;
-    case "drishti-ai":
-      return <DrishtiAIDiagram />;
-    case "datalineage-doctor":
-      return <DatalineageDoctorDiagram />;
-    case "airpass":
-      return <AirpassDiagram />;
-    default:
-      return <DiagramPlaceholder project={project} />;
-  }
-}
+/* Diagram selector: removed in Phase 8 (T8.4). Use the shared
+   `pickDiagram` from `@/components/diagrams/pickDiagram` (imported at
+   the top). The Hero function on line 134 calls it directly. */
 
 /* Unused — silences lint warnings about `ProjectStatus` not being used
    after the data refactor. */
