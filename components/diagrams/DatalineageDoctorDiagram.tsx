@@ -11,7 +11,16 @@
  * agent writes structured findings to Postgres; the dashboard reads
  * them; the agent also closes the loop by writing findings back to
  * OpenMetadata via its Incident API.
+ *
+ * Animated packets (Phase 10 T10.3) — amber for the agent's tool-call
+ * loop (Agent → tools → RCAReport), accent for the persistence +
+ * close-the-loop paths (RCAReport → Postgres, Agent → Incident API,
+ * OM client → OM).
+ *
+ * Pure SVG + SMIL, no JS.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function DatalineageDoctorDiagram() {
   return (
@@ -82,38 +91,61 @@ export function DatalineageDoctorDiagram() {
         <rect className="alg-mini-node alg-mini-base" x={420} y={290} width={90} height={34} rx={5} />
         <text className="alg-mini-label" x={465} y={312} textAnchor="middle" fontSize={10}>Slack notifier</text>
 
-        {/* ───── Edges ───── */}
+        {/* ───── Edges (with IDs for AnimatedPackets) ───── */}
         {/* OM -> Webhook */}
-        <path className="alg-mini-edge" d="M72 62 V88" />
+        <path id="dld-p1" className="alg-mini-edge" d="M72 62 V88" />
         {/* Webhook -> FastAPI */}
-        <path className="alg-mini-edge" d="M132 105 H158" />
+        <path id="dld-p2" className="alg-mini-edge" d="M132 105 H158" />
         {/* FastAPI -> Celery */}
-        <path className="alg-mini-edge" d="M266 105 H290" />
+        <path id="dld-p3" className="alg-mini-edge" d="M266 105 H290" />
         {/* Celery -> Agent */}
-        <path className="alg-mini-edge" d="M344 122 V136" />
+        <path id="dld-p4" className="alg-mini-edge" d="M344 122 V136" />
         {/* Agent <-> tools */}
-        <path className="alg-mini-edge" d="M344 170 V184" />
-        <path className="alg-mini-edge" d="M344 206 V210" />
-        <path className="alg-mini-edge" d="M344 232 V236" />
-        <path className="alg-mini-edge" d="M344 258 V262" />
-        <path className="alg-mini-edge" d="M344 284 V288" />
+        <path id="dld-p5" className="alg-mini-edge" d="M344 170 V184" />
+        <path id="dld-p6" className="alg-mini-edge" d="M344 206 V210" />
+        <path id="dld-p7" className="alg-mini-edge" d="M344 232 V236" />
+        <path id="dld-p8" className="alg-mini-edge" d="M344 258 V262" />
+        <path id="dld-p9" className="alg-mini-edge" d="M344 284 V288" />
         {/* Agent -> OM client */}
-        <path className="alg-mini-edge" d="M398 153 H420" />
+        <path id="dld-p10" className="alg-mini-edge" d="M398 153 H420" />
         {/* OM client <-> OpenMetadata */}
-        <path className="alg-mini-edge" d="M420 105 H132 V62" />
+        <path id="dld-p11" className="alg-mini-edge" d="M420 105 H132 V62" />
         {/* Agent -> RCAReport */}
-        <path className="alg-mini-edge" d="M398 170 H420" />
+        <path id="dld-p12" className="alg-mini-edge" d="M398 170 H420" />
         {/* RCAReport -> Postgres */}
-        <path className="alg-mini-edge" d="M465 170 V220" />
+        <path id="dld-p13" className="alg-mini-edge" d="M465 170 V220" />
         {/* RCAReport -> Slack */}
-        <path className="alg-mini-edge" d="M465 170 V290" />
+        <path id="dld-p14" className="alg-mini-edge" d="M465 170 V290" />
         {/* Agent -> write back to OM via Incident API */}
-        <path className="alg-mini-edge" d="M398 153 Q280 280 132 315" />
+        <path id="dld-p15" className="alg-mini-edge" d="M398 153 Q280 280 132 315" />
         {/* Dashboard -> Postgres (read) */}
         <path className="alg-mini-edge" d="M266 153 H420" />
         {/* Prometheus -> App */}
         <path className="alg-mini-edge" d="M266 315 H158" />
       </g>
+
+      {/* Animated packets — Phase 10 T10.3 */}
+      <AnimatedPackets
+        groups={[
+          /* Tool-call loop: Agent ↔ tools. Amber packets signal the
+             iterative RCA in flight — the agent calls each tool to
+             gather evidence. One packet per tool edge. */
+          {
+            edges: ["dld-p5", "dld-p6", "dld-p7", "dld-p8", "dld-p9"],
+            color: "amber",
+            count: 4,
+          },
+          /* Persistence + close-the-loop: Agent → OM client → OM, Agent
+             → RCAReport → Postgres, Agent → RCAReport → Slack. Accent
+             packets signal findings being written back to the
+             source-of-truth system. */
+          {
+            edges: ["dld-p10", "dld-p11", "dld-p12", "dld-p13", "dld-p14", "dld-p15"],
+            color: "acc",
+            count: 4,
+          },
+        ]}
+      />
     </svg>
   );
 }
