@@ -1,0 +1,40 @@
+/**
+ * components/work/ProjectCard.css
+ *
+ * Scoped styles for the ProjectCard featured variant's diagram slot.
+ *
+ * The diagram slot is `h-[180px]` (a fixed-height container). Each
+ * diagram component sets `style={{ width: "100%", height: "auto" }}`
+ * inline — which would overflow on tall aspect ratios like
+ * DataLineageDoctor (520x360) on a 330px-wide card (would render at
+ * 330x228, exceeding the 180px slot).
+ *
+ * The selector below targets any <svg> child of `.project-card-diagram-slot`
+ * and overrides those inline styles so the SVG scales DOWN to fit
+ * the slot's height while preserving its aspect ratio. Width falls
+ * out of preserveAspectRatio automatically.
+ *
+ * `display: block` is required to remove the inline SVG's 4px bottom
+ * margin (an inline-block quirk) so the slot's flex centering is
+ * exact.
+ *
+ * Tailwind v4 arbitrary-property selectors use `[&_svg]:...` syntax
+ * but they can't override inline styles. This CSS file uses a real
+ * selector at higher specificity to win.
+ */
+
+.project-card-diagram-slot > svg {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.showcase-diagram-frame > svg {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}

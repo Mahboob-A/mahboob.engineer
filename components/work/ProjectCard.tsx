@@ -24,6 +24,7 @@ import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { type ProjectItem } from "@/data/projects";
 import { chipColor } from "@/data/tokens";
 import { cn } from "@/lib/cn";
+import "./ProjectCard.css";
 
 export type ProjectCardVariant = "founder" | "featured" | "showcase";
 
@@ -147,11 +148,11 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
       >
         <article className="bg-surface border-border hover:border-acc/40 flex h-full flex-col overflow-hidden rounded-[10px] border transition-colors">
           {diagram ? (
-            <div className="bg-code-bg border-border flex h-[160px] items-center justify-center border-b p-4">
+            <div className="project-card-diagram-slot bg-code-bg border-border flex h-[180px] items-center justify-center overflow-hidden border-b p-4">
               {diagram}
             </div>
           ) : (
-            <div className="bg-code-bg border-border flex h-[160px] items-center justify-center border-b text-t3 font-mono text-[11px]">
+            <div className="bg-code-bg border-border flex h-[180px] items-center justify-center border-b text-t3 font-mono text-[11px]">
               diagram
             </div>
           )}
@@ -196,31 +197,43 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
       className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-acc"
       aria-label={`${project.name} — case study`}
     >
-      <article className="bg-surface border-border hover:border-acc/40 flex h-full flex-col rounded-[10px] border p-5 transition-colors">
-        <div className="flex items-center gap-2">
-          <h3 className="font-display text-t1 text-[18px] font-semibold tracking-[-0.2px]">
-            {project.name}
-          </h3>
-          <Badge variant={project.status as BadgeVariant}>
-            {project.status === "live"
-              ? "● live"
-              : project.status === "building"
-                ? "building"
-                : "shipped"}
-          </Badge>
-        </div>
-        <p className="text-t2 mt-2 line-clamp-2 text-[12.5px] leading-[1.45]">
-          {project.tagline}
-        </p>
-        <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
-          {project.stack.slice(0, 3).map((tech) => (
-            <Chip key={tech} color={chipColor(tech)}>
-              {tech}
-            </Chip>
-          ))}
-        </div>
-        <div className="text-acc mt-3 inline-flex items-center gap-1 font-mono text-[11px]">
-          view on github ↗
+      <article className="bg-surface border-border hover:border-acc/40 flex h-full flex-col overflow-hidden rounded-[10px] border transition-colors">
+        {diagram ? (
+          /* Showcase diagram slot — narrower (110px) than the featured
+             slot (180px) so the card stays compact in the 3-col grid.
+             Same CSS override pattern as the featured variant. */
+          <div className="bg-code-bg border-border flex h-[110px] items-center justify-center overflow-hidden border-b p-3">
+            <div className="showcase-diagram-frame flex h-full max-h-full w-full max-w-full items-center justify-center [&_svg]:!h-auto [&_svg]:!max-h-full [&_svg]:!w-auto [&_svg]:!max-w-full">
+              {diagram}
+            </div>
+          </div>
+        ) : null}
+        <div className="flex flex-1 flex-col p-4">
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-t1 text-[18px] font-semibold tracking-[-0.2px]">
+              {project.name}
+            </h3>
+            <Badge variant={project.status as BadgeVariant}>
+              {project.status === "live"
+                ? "● live"
+                : project.status === "building"
+                  ? "building"
+                  : "shipped"}
+            </Badge>
+          </div>
+          <p className="text-t2 mt-2 line-clamp-2 text-[12.5px] leading-[1.45]">
+            {project.tagline}
+          </p>
+          <div className="mt-auto flex flex-wrap gap-1.5 pt-3">
+            {project.stack.slice(0, 3).map((tech) => (
+              <Chip key={tech} color={chipColor(tech)}>
+                {tech}
+              </Chip>
+            ))}
+          </div>
+          <div className="text-acc mt-2 inline-flex items-center gap-1 font-mono text-[11px]">
+            view on github ↗
+          </div>
         </div>
       </article>
     </Link>

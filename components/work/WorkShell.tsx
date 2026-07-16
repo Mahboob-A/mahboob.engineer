@@ -160,6 +160,7 @@ export function WorkShell({ projects, filters }: WorkShellProps) {
                       key={p.slug}
                       project={p}
                       variant="showcase"
+                      diagram={pickDiagram(p)}
                     />
                   ))}
                 </div>
