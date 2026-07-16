@@ -1728,3 +1728,104 @@ Two long-standing bugs on `/stack` fixed:
 warnings. `pnpm typecheck` clean.
 
 Phase 15 status: **done**.
+
+---
+
+## Phase 16 — Drop the D3 graph, keep the grouped list everywhere
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/stack/StackShell.tsx`** — replaced the desktop
+  D3 force graph wrapper with the MobileTechList wrapper on
+  every breakpoint. The conditional `hidden lg:block` /
+  `block lg:hidden` split is gone; the list is now the
+  canonical view.
+  - Removed the `D3ForceGraph` import (no longer used in
+    this file).
+  - Updated the file-level JSDoc to reflect the new layout.
+  - `edges` prop is still consumed by the `suggested`
+    useMemo (line 106) which drives the "Most connected"
+    section in the empty-state detail panel — kept.
+
+### Why
+
+The user prefers the grouped tech list layout over the D3
+graph. The list reads as a clean index: domain groupings,
+per-row project count, click to inspect. The graph added
+visual noise without adding information the list doesn't
+already convey.
+
+### Decisions
+
+- **Keep MobileTechList as the component name** even though
+  it's no longer mobile-only. Renaming would touch the file
+  path, the import in StackShell, and the JSDoc — a
+  cosmetic-only change with no functional value. Leaving
+  the name for now; can rename in a follow-up if the
+  codebase owner prefers.
+- **Leave `D3ForceGraph.tsx` and `stack-graph.css` on disk.**
+  No other consumer; both are now dead code. Deleting them
+  is a separate cleanup commit if the user wants — Phase 16
+  focuses on layout only.
+- **Keep the 2-col grid on lg+.** The list goes in the left
+  column (1.6fr) and the detail panel stays in the right
+  column (1fr). The list container keeps the same
+  `h-[600px] lg:h-[680px] overflow-y-auto` constraint so it
+  scrolls inside the grid without pushing the detail panel
+  down. Matches the layout the user screenshotted.
+- **Legend stays above the list.** Same color-domain
+  metadata, now visually precedes the indexed rows instead
+  of sitting above a graph that no longer exists.
+
+### Caveats / pending
+
+- `D3ForceGraph.tsx` + `stack-graph.css` are now unused. If
+  the user wants them deleted in a follow-up, that's a
+  trivial cleanup commit.
+- The page's hero description still reads "Hover or click a
+  node" — was a graph-era phrase. The detail panel's empty
+  state uses "Hover or click a tech" which is accurate, but
+  the page-level description could be cleaned up. Not
+  blocking; flagged for a future copy pass.
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Browser smoke** (Playwright headless Chromium,
+  viewport 1440×900):
+  - `/stack` renders the grouped list (Backend: Django, DRF,
+    FastAPI, Celery, WebSocket, SSE, WebRTC, Python) and the
+    detail panel side by side.
+  - Click Django → detail panel heading updates to "Django";
+    "Used in 7 projects" section appears with all 7 project
+    links; "Mentioned in 3 posts" + "Shares projects with 16"
+    chips render correctly.
+  - Console: zero errors.
+
+---
+
+## Phase 16 wrap-up
+
+The D3 force graph experiment on `/stack` is closed. The page
+now ships only the grouped tech list on every breakpoint —
+matching the screenshot the user shared. Click-to-inspect
+behavior unchanged.
+
+| Surface | Before Phase 16 | After Phase 16 |
+|---|---|---|
+| `/stack` desktop (lg+) | D3 force graph (which had been silently broken since Phase 3 T3.4 — fixed in Phase 15) | Grouped tech list with project counts |
+| `/stack` mobile (<lg) | Grouped tech list (mobile fallback) | Grouped tech list (now canonical) |
+| Detail panel | Right column on lg+ | Unchanged — still right column on lg+ |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 16 status: **done**.

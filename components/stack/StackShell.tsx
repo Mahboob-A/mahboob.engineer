@@ -6,12 +6,12 @@
  * neighbors) eagerly so the TechDetailPanel can be a Server
  * Component-equivalent pure presentational piece.
  *
- * Layout:
- *   - On lg+ (desktop): 2-col grid — D3 force graph left, detail
- *     panel right.
- *   - On <md (mobile): single-col — D3 graph hidden, mobile list
- *     shown above detail panel. Clicking a list row scrolls the
- *     detail panel into view.
+ * Layout (Phase 16: replaced the D3 force graph with the grouped
+ * list on every breakpoint — the user prefers this view):
+ *   - On lg+ (desktop): 2-col grid — grouped tech list left,
+ *     detail panel right.
+ *   - On <lg (mobile): single-col — list above detail panel.
+ *     Clicking a list row scrolls the detail panel into view.
  *
  * Deep-link support: reads window.location.hash on mount and seeds
  * activeId if a matching tech id is present. Honors T3.3's
@@ -21,7 +21,6 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { D3ForceGraph } from "@/components/stack/D3ForceGraph";
 import { TechDetailPanel } from "@/components/stack/TechDetailPanel";
 import { MobileTechList } from "@/components/stack/MobileTechList";
 import {
@@ -118,24 +117,18 @@ export function StackShell({
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
-      {/* LEFT — graph (desktop) + list (mobile) */}
+      {/* LEFT — grouped tech list (Phase 16: replaces the D3 graph
+         on every breakpoint). The user prefers this layout: techs
+         grouped by domain, project count badge per row, click to
+         inspect. MobileTechList was previously the <lg fallback;
+         it's now the canonical view. The container keeps the same
+         fixed height + overflow-y-auto so the list scrolls inside
+         the 2-col grid without pushing the detail panel down. */}
       <div className="space-y-4">
-        {/* Legend */}
         <Legend />
 
         <div className="bg-surface border-border relative h-[600px] overflow-hidden rounded-[10px] border lg:h-[680px]">
-          {/* Desktop D3 graph */}
-          <div className="hidden h-full w-full lg:block">
-            <D3ForceGraph
-              techs={techs}
-              edges={edges}
-              activeId={activeId}
-              onSelect={setActiveId}
-              className="h-full w-full"
-            />
-          </div>
-          {/* Mobile fallback list */}
-          <div className="block h-full w-full overflow-y-auto lg:hidden">
+          <div className="h-full w-full overflow-y-auto">
             <MobileTechList
               techs={techs}
               projectCountByTech={projectCountByTech}
