@@ -50,10 +50,18 @@ const LINKS: readonly NavLink[] = [
 export async function Navbar() {
   const mode = await getModeFromCookies();
   const h = await headers();
-  // x-pathname is set by the middleware (we'll add it in a follow-up task
-  // if needed). For now, we infer the current path from the URL header
-  // used by Next.js internally.
-  const fullPath = h.get("x-invoke-path") ?? h.get("next-url") ?? h.get("referer") ?? "/";
+  /* Phase 12 (T12.1): middleware sets `x-pathname` on every
+     request so Server Components can read the current URL reliably.
+     We read it first; the legacy fallback chain (x-invoke-path /
+     next-url / referer) stays below it for environments where the
+     middleware isn't running yet (e.g. local dev before the first
+     build picks up the new middleware file). */
+  const fullPath =
+    h.get("x-pathname") ??
+    h.get("x-invoke-path") ??
+    h.get("next-url") ??
+    h.get("referer") ??
+    "/";
   const currentPath = new URL(fullPath, "http://x").pathname;
 
   return (
