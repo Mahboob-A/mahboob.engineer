@@ -871,3 +871,286 @@ established packet palette: `amber` (in-flight request), `acc`
 unchanged).
 
 Phase 10 status: **done**.
+
+---
+
+## Phase 11 — /log clickable cards, Cutetube fix, navbar rename + glow
+
+**Phase:** 11 — Log page UX + Navbar polish
+**Phase status:** done
+**Date started:** 2026-07-16
+
+**Goal:** Four small UX fixes surfaced from manual QA:
+
+1. `/log` Timeline cards + chips weren't clickable (vs. DeployLog,
+   which was fixed in T7.2 + T9.2).
+2. `/work/cutetube` diagram was clipped on the right edge.
+3. Navbar label `experience` didn't match its `/log` route.
+4. Navbar had no active-state glow on the current section.
+
+Master plan tasks (T11.1 → T11.5):
+
+1. **T11.1** — Make /log Timeline cards clickable
+2. **T11.2** — Fix CutetubeDiagram cut-off
+3. **T11.3** — Rename navbar `experience` → `log`
+4. **T11.4** — Pulsing amber glow on active nav link
+5. T11.5 — Smoke verify all changes
+
+---
+
+## T11.1 — Make /log Timeline cards clickable
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/log/page.tsx`** — Timeline component mirrors the
+  DeployLog stretched-link pattern. Each `<article>` is wrapped
+  in an absolutely-positioned overlay `<Link href="/log/${id}">`
+  that covers the entire card. The card gets `relative` + the
+  existing classes plus the `hover:border-acc/40 transition-colors`
+  hover state to match DeployLog.
+- Tag chips use `resolveStackSlug()` (from `data/stack-slug-map.ts`).
+  Resolvable chips wrap in `<Link href="/stack#${slug}">` with
+  `relative z-20` so the chip click wins over the card overlay
+  (`z-0`). Unresolvable chips fall back to plain `<Chip>`.
+
+### Decisions
+
+- **Mirror DeployLog exactly.** The pattern is established
+  (T7.2 stretched link + T9.2 chip stopPropagation equivalent),
+  well-tested in the browser, and the user has already confirmed
+  it works there. No new design.
+- **`<article>` stays visible / interactive** — only the
+  absolute-positioned overlay does the navigation, so all child
+  links (the company URL span when present) keep their original
+  click semantics.
+- **No new data or helpers** — `resolveStackSlug` was already
+  imported in `DeployLog.tsx` (T7.2).
+
+### Caveats / pending
+
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** — `/log` returns HTML with all 3 expected
+  card-level overlay links (`/log/taply`, `/log/nexbell`,
+  `/log/innovative-it`) and 8 distinct `/stack#<slug>` chip
+  links (aws, cicd, django, drf, jwt, postgresql, redis,
+  stripe). Matches what DeployLog renders for the same entries.
+
+---
+
+## T11.2 — Fix CutetubeDiagram cut-off
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/diagrams/CutetubeDiagram.tsx`** — added
+  `preserveAspectRatio="xMidYMid meet"` to the `<svg>` root.
+  Forces the SVG to scale uniformly to fit its container without
+  squashing internal coordinates.
+- **`app/work/[slug]/page.tsx`** (line 167) — changed the case-
+  study hero diagram wrapper from
+  `flex items-stretch rounded-[10px] border p-4 md:p-6` →
+  `flex items-center justify-center rounded-[10px] border p-4 md:p-6`.
+  The diagram now centers inside the panel instead of stretching.
+
+### Decisions
+
+- **Two edits land together** — neither alone fixes the cut-off.
+  `preserveAspectRatio` keeps coordinates intact; `items-center
+  justify-center` lets the SVG stay centered when the panel is
+  wider than the diagram's natural aspect ratio.
+- **Other diagrams unaffected** — Algocode, Movio, DrishtiAI,
+  DataLineage Doctor, AirPass all use taller viewBoxes (e.g.
+  480×320, 520×360) where the wrapper change has no visible
+  effect because the diagram's natural height matches the panel.
+  CuteTube was the only outlier with a 480×200 viewBox where
+  the panel was wide enough to make the clipping obvious.
+- **No coordinate changes** — every `<rect>`, `<text>`, and
+  `<path>` keeps its `x` / `y` / `width` / `height`. Only the
+  outer `<svg>` got the new attribute.
+
+### Caveats / pending
+
+- **CuteTube remains the visual odd-one-out** — its 480×200 aspect
+  is wider than the other 11 diagrams. If a future polish task
+  rebalances the diagram set, CuteTube is the candidate to
+  redraw at 480×260 to match the rest. Not blocking — this fix
+  resolves the cut-off without changing the diagram's intent.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** (`/work/cutetube`):
+  - All 9 diagram nodes render in the DOM (Browser, Django + DRF,
+    Celery, FFmpeg, S3, Gcore CDN, Postgres, Worker, Viewers).
+  - `preserveAspectRatio="xMidYMid meet"` present in HTML (1
+    instance — only on the CutetubeDiagram).
+  - `items-center justify-center` present on the wrapper.
+  - `<animateMotion>` packet elements still render (the cut-off
+    fix didn't affect animation).
+
+---
+
+## T11.3 — Rename navbar `experience` → `log`
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/layout/Navbar.tsx`** (line 35) — single edit:
+  `label: "experience"` → `label: "log"`. The `href`, `anchor`,
+  and `eyebrow` fields stay.
+
+### Decisions
+
+- **Single source of truth.** Both desktop (line ~95) and mobile
+  (line ~135) nav rows iterate `LINKS` and consume `l.label`.
+  No other runtime references.
+- **Label matches URL segment.** All other nav labels already
+  matched their `/path` segments (`work`, `stack`, `writing`,
+  `let's connect`). `experience` was the only mismatch.
+- **`anchor: "log"` stays** — preserves legacy direct-link
+  scrolls (`mahboob.engineer/#log`).
+
+### Caveats / pending
+
+- **None.** Pure label rename.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** — Navbar HTML contains 5 labels (`log`,
+  `work`, `stack`, `writing`, `let's connect`). No `experience`
+  string remains in any rendered HTML.
+
+---
+
+## T11.4 — Pulsing amber glow on active nav link
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/globals.css`** — added `@keyframes nav-glow` (text-shadow
+  pulses between `0 0 6px var(--amber)` and a brighter
+  `0 0 14px + 22px halo`) plus the `.nav-glow-active` class.
+  `@media (prefers-reduced-motion: reduce)` neutralizes the
+  animation but keeps a static glow for visibility.
+- **`components/layout/Navbar.tsx`** — both desktop + mobile nav
+  rows swap the active className from
+  `"text-t1 font-semibold"` →
+  `"text-amber font-semibold nav-glow-active"`. The detection
+  logic (`currentPath.startsWith(l.href)`) is unchanged — it
+  already handles nested routes correctly.
+
+### Decisions
+
+- **Amber over white.** Amber matches the established accent
+  palette (KEY_ACHIEVEMENTS numbers, the Algocode diagram
+  packet, "● active" badges). White would clash with the
+  dark forest-green background.
+- **Pulsing keyframe over static glow.** User chose the
+  animated variant in the planning step. The keyframe runs at
+  2.4s `ease-in-out infinite` — slow enough to be ambient,
+  fast enough to draw the eye.
+- **Nested-route match via `startsWith`** — `/log/taply` still
+  glows the `log` link; `/work/algocode` still glows `work`.
+  This was already the behavior; only the styling changes.
+- **Zero new deps** — `text-shadow` keyframe is pure CSS.
+
+### Caveats / pending
+
+- **The glow is a text-shadow, not a box-shadow.** On long nav
+  labels (e.g. `let's connect`), the glow follows the text
+  shape rather than the chip rectangle. Acceptable — visually
+  consistent with the rest of the page's token-driven glow
+  (e.g. the navbar logo dot uses the same `shadow-[...]` CSS
+  variable approach).
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke**:
+  - `/` (no Referer): 0 `nav-glow-active` instances — correct,
+    no nav link should glow on the landing.
+  - `/log`, `/log/taply`, `/log/nexbell`, `/log/innovative-it`
+    (with Referer): 4 instances each (desktop + mobile nav
+    rows × 2 — once in the static prerender, once in the streamed
+    hydration payload, matching the T1.6 SSR pattern).
+  - `/work/algocode` (with Referer): 4 instances — `work`
+    link glows.
+
+---
+
+## T11.5 — Smoke verify all changes
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+End-to-end verification across the 4 issues. All 5 tasks pass:
+
+1. `/log` cards link to `/log/<id>` (3 slugs verified).
+2. `/log` chips link to `/stack#<slug>` (8 distinct slugs).
+3. `/work/cutetube` diagram fits the panel (9 nodes render).
+4. Navbar label is `log` (5 labels, no `experience`).
+5. Active nav link glows amber (4 instances on inner routes,
+   0 on landing).
+
+### Decisions
+
+- **Live SSR + grep** — same QA pattern as Phase 8/9/10.
+- **No browser screenshot** — out of scope; matches the
+  established QA bar.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** — all 5 checks pass.
+
+---
+
+## Phase 11 wrap-up
+
+All 5 Phase 11 tasks complete. The 4 user-reported UX gaps are
+fixed:
+
+| Issue | Before | After |
+|---|---|---|
+| `/log` Timeline cards | Plain `<article>` — no link | Stretched-link overlay to `/log/[id]` (matches DeployLog pattern) |
+| `/log` Timeline chips | Plain `<Chip>` — no link | `resolveStackSlug` + `<Link href="/stack#<slug}">` |
+| `/work/cutetube` diagram | Clipped on the right edge | `preserveAspectRatio` + `items-center justify-center` wrapper |
+| Navbar label | `experience` (mismatched `/log` route) | `log` (matches route segment) |
+| Navbar active state | Bold + bright text only | Amber text + pulsing glow keyframe |
+
+`pnpm build` reports 19 routes (unchanged). `pnpm typecheck` and
+`pnpm lint` clean (pre-existing errors in Blog.tsx + Hero.tsx
+unchanged).
+
+Phase 11 status: **done**.
