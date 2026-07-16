@@ -32,6 +32,11 @@ import { Chip } from "@/components/ui/Chip";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { ProjectCard } from "@/components/work/ProjectCard";
 import { pickDiagram } from "@/components/diagrams/pickDiagram";
+import {
+  StoryPath,
+  buildStoryStages,
+} from "@/components/log/StoryPath";
+import "@/components/log/StoryPath.css";
 import { pageMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import {
@@ -187,30 +192,14 @@ function Hero({ entry }: { entry: ExperienceItem }) {
 }
 
 function BuildNotes({ entry }: { entry: ExperienceItem }) {
-  const notes = entry.notes;
-  const paragraphs =
-    notes && notes.trim().length > 0
-      ? notes.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
-      : entry.bullets; // graceful fallback to bullets
-
-  return (
-    <section>
-      <div className="border-border mb-5 flex items-baseline gap-3 border-t pt-6">
-        <span className="bg-acc inline-block h-[6px] w-[6px] rounded-full" />
-        <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
-          The story
-        </h2>
-        <span className="text-t3 font-mono text-[11px] italic">
-          idea → framing → build → deploy → what&apos;s next
-        </span>
-      </div>
-      <div className="text-t1 max-w-[760px] space-y-4 text-[16.5px] leading-[1.7]">
-        {paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </div>
-    </section>
-  );
+  /* The snake-path narrative renders the same `entry.notes` paragraphs
+     the previous BuildNotes did, but along a curved SVG path with an
+     animated amber packet (Phase 8 T8.5–T8.6). The split helper lives
+     in `components/log/StoryPath.tsx`. */
+  const fallbackParagraph =
+    entry.bullets[0] ?? "More details coming soon.";
+  const stages = buildStoryStages(entry.notes, entry.bullets, fallbackParagraph);
+  return <StoryPath stages={stages} />;
 }
 
 function TagChips({ entry }: { entry: ExperienceItem }) {

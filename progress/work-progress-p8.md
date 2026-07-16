@@ -230,3 +230,107 @@ Master plan tasks in this phase (T8.1 → T8.6):
 - `pnpm build` → 19 routes, 0 warnings.
 - **Net change**: −8 imports, −19 lines of switch boilerplate, +1
   import. Same render output.
+
+---
+
+## T8.6 — Replace BuildNotes with StoryPath on /log/[id]
+
+**Task status:** in-progress
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/log/[id]/page.tsx`** — replaced the file-local `BuildNotes`
+  function (which rendered 4 paragraphs in a flat list) with a
+  thin wrapper that calls `buildStoryStages(entry.notes,
+  entry.bullets, fallback)` and renders `<StoryPath stages={...} />`.
+  Imports `StoryPath` + `buildStoryStages` from
+  `@/components/log/StoryPath` and the scoped CSS via
+  `@/components/log/StoryPath.css`.
+
+### Decisions
+
+- **`BuildNotes` stays as the local function name** (kept the
+  call-site `<BuildNotes entry={entry} />` in the page body). The
+  implementation now delegates to `StoryPath`. Future refactor can
+  rename, but the local-function naming preserves git blame for
+  earlier decisions.
+- **Fallback paragraph** = `entry.bullets[0] ?? "More details coming
+  soon."`. This gives `buildStoryStages` something to work with if
+  `notes` is missing (Innovative IT and NexBell both have full
+  `notes` content per T7.4, but the fallback keeps the component
+  robust against future entries without prose).
+- **No page-body changes** beyond the BuildNotes body. Section
+  ordering (Hero → BuildNotes → TagChips → ...) stays the same.
+
+### Caveats / pending
+
+- **5 stages from 4 paragraphs** — `entry.notes` for all 3
+  experiences has 4 paragraphs. `buildStoryStages` pads the array
+  to 5 entries (using `fallbackParagraph` for stage 5). On Taply /
+  NexBell / Innovative IT this means stage 5 (WHAT'S NEXT)
+  repeats stage 4's prose verbatim. Acceptable for v1; the user
+  can extend the registry to 5-paragraph `notes` in a future
+  commit.
+- **Stage headings from paragraphs** may end up long (a 90-char
+  first sentence). The component clips at 87 chars + "…". For
+  Taply the IDEA heading is "Taply started with a deceptively
+  simple question." which is short enough. For longer entries the
+  clip kicks in.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR'd HTML smoke** (`curl /log/taply`):
+  - All 5 stage labels render: `IDEA`, `FRAMING`, `BUILD`,
+    `DEPLOY`, `WHAT`.
+  - Snake path ID `story-snake-path` present (3 references: the
+    `<path>` itself + the `<mpath href>` for the packet + the
+    `id` on the SVG defs).
+  - `animateMotion` element present (1 instance — the amber
+    packet riding the path).
+  - Amber token references present in DOM
+    (`var(--amber)` — packet fill + path stroke).
+  - First paragraph of Taply's notes renders as the IDEA heading
+    ("Taply started with…").
+
+---
+
+## Phase 8 wrap-up
+
+All 6 Phase 8 tasks complete:
+
+- ✅ T8.1 — Extract shared pickDiagram helper
+- ✅ T8.2 — Wire diagrams into /work featured tier
+- ✅ T8.3 — Wire diagrams into /log/[id] RelatedProjects
+- ✅ T8.4 — Refactor /work/[slug] to use shared pickDiagram
+- ✅ T8.5 — Build StoryPath snake component
+- ✅ T8.6 — Replace BuildNotes with StoryPath on /log/[id]
+
+**End state:**
+
+- **Diagram issue resolved.** Three call sites (`/work` founder +
+  featured tier, `/log/[id]` RelatedProjects, `/work/[slug]`
+  case-study Hero) now share `pickDiagram(project)` from
+  `components/diagrams/pickDiagram.tsx`. No more "black panel +
+  diagram word" placeholder for the featured tier.
+- **Story section rebuilt.** The flat "The story" prose block on
+  `/log/[id]` is now a snake-path narrative with 5 stages, an
+  animated amber packet, and a dashed SVG path that mirrors the
+  case-study diagram visual language.
+
+`pnpm build` reports 19 routes (unchanged). `pnpm typecheck` and
+`pnpm lint` clean (new code adds 0 errors / 0 warnings; pre-existing
+errors in Blog.tsx + Hero.tsx unchanged).
+
+**Visual confirmation needed in browser:** the snake's zigzag layout
++ packet motion is best seen live. Open `/log/taply` and scroll to
+"The story" — you should see 5 stages in a zigzag with an amber dot
+traveling along the path. Reduced-motion users see the path without
+the packet animation.
+
+Phase 8 status: **done**.
