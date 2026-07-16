@@ -56,7 +56,7 @@ export function DeployLog() {
             Where I&apos;ve shipped
           </h2>
           <p className="text-t2 mt-3 max-w-[520px] text-[15px]">
-            A running log of roles — not a timeline of titles, a record of what got
+            A running log of roles. Not a timeline of titles. Record of what got
             deployed.
           </p>
         </div>
