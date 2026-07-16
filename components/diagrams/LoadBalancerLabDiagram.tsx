@@ -5,8 +5,18 @@
  * card. Round-robin / weighted Nginx load balancer fronting 3
  * upstream app containers, with health-check /test endpoint.
  *
- * Pure SVG, viewBox 480x200. Phase 9 (T9.3).
+ * Animated packets (Phase 10 T10.5):
+ *   - Amber for the request path: Client → Nginx LB → App-1 / App-2 /
+ *     App-3. Cycles through the upstreams so each App gets a packet
+ *     per rotation.
+ *   - Accent for the health-check path: App → /test. The lighter
+ *     heartbeat that verifies each App is alive.
+ *
+ * Pure SVG, viewBox 480x200. Phase 9 (T9.3) authored, Phase 10
+ * (T10.5) animated.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function LoadBalancerLabDiagram() {
   return (
@@ -156,22 +166,40 @@ export function LoadBalancerLabDiagram() {
           Round-robin
         </text>
 
-        {/* Edges */}
+        {/* Edges (with IDs for AnimatedPackets) */}
         {/* Client → Nginx */}
-        <path className="alg-mini-edge" d="M76 86 H104" />
+        <path id="lb-p1" className="alg-mini-edge" d="M76 86 H104" />
         {/* Nginx → App-1 */}
-        <path className="alg-mini-edge" d="M212 78 Q225 50 240 36" />
+        <path id="lb-p2" className="alg-mini-edge" d="M212 78 Q225 50 240 36" />
         {/* Nginx → App-2 */}
-        <path className="alg-mini-edge" d="M212 86 H240" />
+        <path id="lb-p3" className="alg-mini-edge" d="M212 86 H240" />
         {/* Nginx → App-3 */}
-        <path className="alg-mini-edge" d="M212 94 Q225 110 240 136" />
+        <path id="lb-p4" className="alg-mini-edge" d="M212 94 Q225 110 240 136" />
         {/* App-1 → /test */}
-        <path className="alg-mini-edge" d="M334 36 H360" />
+        <path id="lb-p5" className="alg-mini-edge" d="M334 36 H360" />
         {/* App-2 → /test */}
-        <path className="alg-mini-edge" d="M334 86 H360" />
+        <path id="lb-p6" className="alg-mini-edge" d="M334 86 H360" />
         {/* App-3 → /test */}
-        <path className="alg-mini-edge" d="M334 136 H360" />
+        <path id="lb-p7" className="alg-mini-edge" d="M334 136 H360" />
       </g>
+
+      {/* Animated packets — Phase 10 T10.5 */}
+      <AnimatedPackets
+        groups={[
+          /* Request distribution. Amber packets ride the Client →
+             Nginx LB → App-N cycle so the round-robin behavior is
+             visible at a glance. One packet per upstream edge keeps
+             all three routes active. */
+          {
+            edges: ["lb-p1", "lb-p2", "lb-p3", "lb-p4"],
+            color: "amber",
+            count: 4,
+          },
+          /* Health checks. Accent packets ride the App → /test path;
+             one per upstream so each App is being probed continuously. */
+          { edges: ["lb-p5", "lb-p6", "lb-p7"], color: "acc", count: 1 },
+        ]}
+      />
     </svg>
   );
 }

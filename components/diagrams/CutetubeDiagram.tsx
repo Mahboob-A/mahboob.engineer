@@ -8,8 +8,17 @@
  * Pure SVG, viewBox 480x200 — fits the 180px-tall featured card slot
  * (`width: 100%` capped by the slot).
  *
- * Phase 9 (T9.3).
+ * Animated packets (Phase 10 T10.5):
+ *   - Amber for the upload + transcode flow (Browser → Django →
+ *     Celery → FFmpeg → S3). The pipeline that turns a raw upload
+ *     into adaptive-bitrate DASH segments.
+ *   - Accent for the delivery flow (CDN → Viewers). The watched-
+ *     video path.
+ *
+ * Phase 9 (T9.3) authored, Phase 10 (T10.5) animated.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function CutetubeDiagram() {
   return (
@@ -195,22 +204,38 @@ export function CutetubeDiagram() {
           Viewers
         </text>
 
-        {/* Edges */}
+        {/* Edges (with IDs for AnimatedPackets) */}
         {/* Browser → Django */}
-        <path className="alg-mini-edge" d="M80 86 H110" />
+        <path id="cutetube-p1" className="alg-mini-edge" d="M80 86 H110" />
         {/* Django → Celery */}
-        <path className="alg-mini-edge" d="M194 86 H222" />
+        <path id="cutetube-p2" className="alg-mini-edge" d="M194 86 H222" />
         {/* Celery → FFmpeg */}
-        <path className="alg-mini-edge" d="M292 86 H322" />
+        <path id="cutetube-p3" className="alg-mini-edge" d="M292 86 H322" />
         {/* FFmpeg → S3 (upload segments) */}
-        <path className="alg-mini-edge" d="M408 86 H430" />
+        <path id="cutetube-p4" className="alg-mini-edge" d="M408 86 H430" />
         {/* Gcore CDN → Viewers */}
-        <path className="alg-mini-edge" d="M465 102 V140" />
+        <path id="cutetube-p5" className="alg-mini-edge" d="M465 102 V140" />
         {/* Django → Postgres */}
         <path className="alg-mini-edge" d="M152 102 V140" />
         {/* Celery → Worker pool */}
         <path className="alg-mini-edge" d="M257 102 V140" />
       </g>
+
+      {/* Animated packets — Phase 10 T10.5 */}
+      <AnimatedPackets
+        groups={[
+          /* Upload + transcode flow. Amber packets signal in-flight
+             segments being transcoded to HLS/DASH and uploaded to S3. */
+          {
+            edges: ["cutetube-p1", "cutetube-p2", "cutetube-p3", "cutetube-p4"],
+            color: "amber",
+            count: 3,
+          },
+          /* Delivery flow. Accent packets signal the watched-video path
+             through the CDN. */
+          { edges: ["cutetube-p5"], color: "acc", count: 2 },
+        ]}
+      />
     </svg>
   );
 }

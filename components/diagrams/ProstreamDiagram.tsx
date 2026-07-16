@@ -6,8 +6,18 @@
  * Channels + Redis Pub/Sub for chat / viewer sync → React frontend.
  * Wallet + tipping via SSLCommerz on the Django API.
  *
- * Pure SVG, viewBox 480x200. Phase 9 (T9.3).
+ * Animated packets (Phase 10 T10.5):
+ *   - Amber for the live-stream path: Streamer → Agora → Django API →
+ *     Channels → React → Viewer. The actual broadcast flow.
+ *   - Accent for the persistence + monetization path: Django API →
+ *     Postgres (chat persistence, viewer counts) and Django API →
+ *     SSLCommerz (tip payouts).
+ *
+ * Pure SVG, viewBox 480x200. Phase 9 (T9.3) authored, Phase 10
+ * (T10.5) animated.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function ProstreamDiagram() {
   return (
@@ -176,22 +186,40 @@ export function ProstreamDiagram() {
           Viewer
         </text>
 
-        {/* Edges */}
+        {/* Edges (with IDs for AnimatedPackets) */}
         {/* Streamer → Agora */}
-        <path className="alg-mini-edge" d="M76 86 H100" />
+        <path id="prostream-p1" className="alg-mini-edge" d="M76 86 H100" />
         {/* Agora → Django API (token validation + viewer count) */}
-        <path className="alg-mini-edge" d="M186 86 H208" />
+        <path id="prostream-p2" className="alg-mini-edge" d="M186 86 H208" />
         {/* Django API → Channels (chat fan-out) */}
-        <path className="alg-mini-edge" d="M294 86 H318" />
+        <path id="prostream-p3" className="alg-mini-edge" d="M294 86 H318" />
         {/* Channels → React */}
-        <path className="alg-mini-edge" d="M392 86 H416" />
+        <path id="prostream-p4" className="alg-mini-edge" d="M392 86 H416" />
         {/* React → Viewer (read) */}
-        <path className="alg-mini-edge" d="M443 102 V140" />
+        <path id="prostream-p5" className="alg-mini-edge" d="M443 102 V140" />
         {/* Django API → SSLCommerz (tip payout) */}
-        <path className="alg-mini-edge" d="M251 102 V140" />
+        <path id="prostream-p6" className="alg-mini-edge" d="M251 102 V140" />
         {/* Django API → Postgres */}
-        <path className="alg-mini-edge" d="M280 102 Q300 130 318 156" />
+        <path id="prostream-p7" className="alg-mini-edge" d="M280 102 Q300 130 318 156" />
       </g>
+
+      {/* Animated packets — Phase 10 T10.5 */}
+      <AnimatedPackets
+        groups={[
+          /* Live-stream path. Amber packets signal the broadcast
+             flowing from Streamer → Agora → API → Channels → React
+             → Viewer. The real-time path. */
+          {
+            edges: ["prostream-p1", "prostream-p2", "prostream-p3", "prostream-p4", "prostream-p5"],
+            color: "amber",
+            count: 4,
+          },
+          /* Persistence + monetization. Accent packets ride the
+             Django API → Postgres (chat + viewer state) and API →
+             SSLCommerz (tip payout) edges. */
+          { edges: ["prostream-p6", "prostream-p7"], color: "acc", count: 2 },
+        ]}
+      />
     </svg>
   );
 }
