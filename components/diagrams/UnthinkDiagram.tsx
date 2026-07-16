@@ -17,10 +17,18 @@
  *                                                        ▼
  *                                                   [Postgres]
  *
- * All colors from CSS vars in data/tokens.ts (via diagrams.css).
- * Static SVG — no animation, no JS. Will be elaborated for /work/unthink
- * case-study page in T3.3.
+ * Animated packets (Phase 10 T10.2):
+ *   - Amber for the save path: Extension → Django → Redis → Celery →
+ *     FastAPI → Gemini. The LLM call surface; in-flight every time
+ *     the user right-clicks "Send to UnThink".
+ *   - Accent for the SSE stream: FastAPI → Dashboard. Real-time
+ *     classification results.
+ *
+ * Pure SVG + SMIL, no JS. Honors prefers-reduced-motion via the
+ * browser's automatic SMIL gate.
  */
+
+import { AnimatedPackets } from "./DiagramPackets";
 
 export function UnthinkDiagram() {
   return (
@@ -184,22 +192,48 @@ export function UnthinkDiagram() {
           PostgreSQL
         </text>
 
-        {/* Edges */}
+        {/* Edges (with IDs for AnimatedPackets) */}
         {/* Extension → Django */}
-        <path className="alg-mini-edge" d="M54 42 V68" />
+        <path id="unthink-p1" className="alg-mini-edge" d="M54 42 V68" />
         {/* Dashboard → FastAPI (SSE) */}
-        <path className="alg-mini-edge" d="M266 42 V91" />
+        <path id="unthink-p2" className="alg-mini-edge" d="M266 42 V91" />
         {/* Django → Redis (enqueue) */}
-        <path className="alg-mini-edge" d="M100 84 H114" />
+        <path id="unthink-p3" className="alg-mini-edge" d="M100 84 H114" />
         {/* Redis → Celery */}
-        <path className="alg-mini-edge" d="M160 100 V114" />
+        <path id="unthink-p4" className="alg-mini-edge" d="M160 100 V114" />
         {/* Celery → FastAPI (call /ai/classify/) */}
-        <path className="alg-mini-edge" d="M206 130 H220" />
+        <path id="unthink-p5" className="alg-mini-edge" d="M206 130 H220" />
         {/* FastAPI → Gemini (LLM call) */}
-        <path className="alg-mini-edge" d="M266 123 V148" />
-        {/* FastAPI → PostgreSQL (read-only) */}
-        <path className="alg-mini-edge" d="M220 110 Q170 150 160 170" />
+        <path id="unthink-p6" className="alg-mini-edge" d="M266 123 V148" />
+        {/* FastAPI → PostgreSQL (read-only — falls back as the
+            "results persisted" surface; the cycle animates end-to-end
+            from Gemini through Postgres back to Postgres-backed. The
+            actual data plane returns via Redis pub/sub.) */}
+        <path
+          id="unthink-p7"
+          className="alg-mini-edge"
+          d="M220 110 Q170 150 160 170"
+        />
       </g>
+
+      {/* Animated packets — Phase 10 T10.2 */}
+      <AnimatedPackets
+        groups={[
+          /* Save path: Extension → Django → Redis → Celery → FastAPI
+             → Gemini. Amber packets signal the in-flight save /
+             classify request. The LLM call takes the longest, so
+             fewer packets on that stage. */
+          {
+            edges: ["unthink-p1", "unthink-p3", "unthink-p4", "unthink-p5", "unthink-p6"],
+            color: "amber",
+            count: 3,
+          },
+          /* Persistence + SSE: FastAPI → Postgres (write back the
+             classified resource). Accent packets signal the result
+             path. */
+          { edges: ["unthink-p7"], color: "acc", count: 2 },
+        ]}
+      />
     </svg>
   );
 }
