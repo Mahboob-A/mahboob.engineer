@@ -102,11 +102,11 @@ I co-founded the company and built the entire backend in Django 5.1 and DRF. The
 
 The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips that still supported NDEF rewrites so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap — we ship the vCard payload from a dedicated endpoint with the right MIME type so iOS and Android both handle it without downloads.
 
-The real-time analytics engine tracks views, NFC taps, QR scans, and vCard saves — plus a leads inbox that captures visitor contact requests. The console was built for sales teams: per-rep branding, bulk CSV onboarding, per-rep analytics. The team console is what closed Taply's first paying enterprise customer — a 250-rep sales org whose procurement team needed role-based controls and reporting.
+The real-time analytics engine tracks views, NFC taps, QR scans, and vCard saves — plus a leads inbox that captures visitor contact requests. The console was built for sales teams: per-rep branding, bulk CSV onboarding, per-rep analytics. The team console is what closed Taply's first paying enterprise customer — a 250-rep sales org whose procurement team needed role-based controls and reporting. Stripe (Checkout, Portal, Webhooks) handles billing across Free, Pro, Business, and Enterprise tiers; subscription state lives in our Postgres and webhook idempotency is critical because Stripe retries on any 5xx.
 
-Stripe (Checkout, Portal, Webhooks) handles billing across Free, Pro, Business, and Enterprise tiers. Subscription state lives in our Postgres; webhook idempotency is critical because Stripe retries on any 5xx.
+Deployment went from a single EC2 to a small fleet behind an ALB, with Redis as the shared session cache, Postgres with read-replicas, and S3 for media. The product surface is small, but every layer underneath is doing real work — and the same patterns (Redis caching at the edge, DRF for the orchestration layer, Postgres as the source of truth) recur across UnThink, DrishtiAI, and the Algocode backend.
 
-What's next: Tier-1 enterprise features (SSO via SAML), a deeper analytics surface (UTM-aware links, A/B-tested profile versions), and a public Taply API so other SaaS products can plug into Taply profiles as a primary identity. The product surface is small, but every layer underneath is doing real work.`,
+What's next: Tier-1 enterprise features (SSO via SAML), a deeper analytics surface (UTM-aware links, A/B-tested profile versions), and a public Taply API so other SaaS products can plug into Taply profiles as a primary identity. We're shipping in a tight weekly cadence against the v2 enterprise roadmap; a follow-on "Taply for Teams" tier is in private beta.`,
   },
   {
     id: "nexbell",
@@ -138,7 +138,9 @@ The second big push was a query rewrite. The original ORM code had lazy-loading 
 
 Cloud spend was the third lever. A previous engineer had provisioned the staging environment as a pair of always-on m5.larges that nobody touched. I migrated the always-on fleets to reserved instances (1-year, no-upfront), collapsed the idle staging environment into spot capacity, and rebuilt CI/CD on CodePipeline + Docker so deploys went from "submit a PR and someone has to ssh into the bastion" to a 12-minute automated pipeline. Lead time fell from hours to minutes; cloud spend fell 35%.
 
-What I'd do differently today: the multi-vendor shape suggests a per-tenant database split (one MySQL per store) rather than a shared schema. The query rewrite bought us 2-3 years; eventually you'd want to split.`,
+The deploys themselves were the unsung hero. Blue/green on the ALB with session draining, Postgres migrations gated behind a "no-DDL-during-traffic" runbook, Celery worker pools separated by task class so a slow batch job couldn't starve the realtime queue. By the end of my time there, shipping a feature was a 12-minute loop: PR → CI gates → CodePipeline → ALB swap → dashboards show new error rate, latency, and conversion within five minutes. That's the muscle memory I now expect on every team I join.
+
+What's next: a per-tenant database split (one MySQL per store) is the obvious improvement — the shared schema is the only thing still holding the platform back from true multi-region deployment. I'd also extract the auth layer into a separate service so the next product team can reuse OAuth2 + JWT without forking it. The patterns from NexBell (CI-as-a-gate, lazy-load discipline, blue/green by default) are the ones I keep applying; they're also the patterns Taply and UnThink now inherit.`,
   },
   {
     id: "innovative-it",
@@ -159,7 +161,9 @@ The first big project was a customer-portal API for a logistics client. I owned 
 
 Performance work was a recurring theme throughout the year. I'd inherited a couple of hot endpoints that the previous engineer had left running at 800ms+ median latency; the fix was always the same shape — find the lazy-loading patterns, replace them with select_related/prefetch_related, add the missing composite indexes. One endpoint dropped from 1.2s to 80ms after a single migration. The discipline stuck: every endpoint I wrote from then on started with "what's the slowest query path on this request, and is the index supporting it?"
 
-What I learned at Innovative IT: the value of writing tests before the second PR (catching regressions on a shared backend), the discipline of keeping serializers thin (one shape, one place to change), and the realization that performance is mostly about choosing the right indexes up front rather than tuning late. The DrishtiAI eye-screening pipeline (built the following year) and the Algocode online judge both trace patterns I'd honed here — clean schema design, eager-loaded queries, indexed rollups — even though neither uses Django.`,
+Deployment turned out to be where I learned the most. The first v1 shipped on a bare EC2 with no automation; by month six I'd introduced Fabric scripts for app + migrations + collectstatic + restart, then Ansible roles for the broker and the DB. The blue/green pattern (ALB swaps target groups with no downtime) came directly from this — it's the same pattern I later codified at NexBell. The lesson is that deployment isn't an afterthought; it's a forcing function for the rest of the architecture.
+
+What I learned at Innovative IT: the value of writing tests before the second PR (catching regressions on a shared backend), the discipline of keeping serializers thin (one shape, one place to change), and the realization that performance is mostly about choosing the right indexes up front rather than tuning late. The DrishtiAI eye-screening pipeline (built the following year) and the Algocode online judge both trace patterns I'd honed here — clean schema design, eager-loaded queries, indexed rollups — even though neither uses Django. What's next, if the consulting path ever opens again: I'd add observability (Prometheus + Grafana on day one) and a real per-tenant data model so each client could ship independently without shared-schema risk.`,
   },
 ];
 
