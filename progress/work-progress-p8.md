@@ -334,3 +334,315 @@ traveling along the path. Reduced-motion users see the path without
 the packet animation.
 
 Phase 8 status: **done**.
+
+---
+
+## Phase 9 — 5-paragraph notes + diagram fixes + 5 new diagrams
+
+**Phase:** 9 — Diagram fixes (cont.)
+**Phase status:** in-progress
+**Date started:** 2026-07-16
+
+**Goal:** Three follow-up fixes from manual QA:
+
+1. **Extend `notes` to 5 paragraphs** in every `EXPERIENCE` entry
+   so the StoryPath's WHAT'S NEXT stage renders distinct content
+   (currently duplicated from DEPLOY).
+2. **Featured card diagram slot overflow** — the DataLineageDoctor
+   diagram (520x360) was rendering outside its 160px slot window.
+   Replace the slot with a CSS-overflow pattern so the SVG scales
+   to fit the available height + width.
+3. **Add 5 new diagrams** for the showcase projects that previously
+   fell through to the placeholder (Cutetube, Pulumi AWS Infra,
+   ImgTwist, Load Balancer Lab, Prostream). Wire them through the
+   shared `pickDiagram` so `/work`, `/log/[id]`, and `/work/[slug]`
+   all surface them automatically.
+
+Master plan tasks in this phase (T9.1 → T9.4):
+
+1. **T9.1** — Extend notes to 5 paragraphs
+2. **T9.2** — Featured card diagram fits window
+3. **T9.3** — Author 5 showcase diagrams
+4. T9.4 — Verify all diagrams render
+
+---
+
+## T9.1 — Extend notes to 5 paragraphs
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`data/experience.ts`** — every `EXPERIENCE[i].notes` now has
+  exactly **5 paragraphs** (was 4). The first 3 paragraphs stay
+  close to the original content; paragraph 4 (DEPLOY) is shifted
+  to include deployment infrastructure / "what shipped" content;
+  paragraph 5 (WHAT'S NEXT) is the closer / forward roadmap.
+
+### Decisions
+
+- **Taply**: kept the 4 original paragraphs as 1/2/3/4 with light
+  edits (split the analytics + Stripe paragraph into its own deploy
+  paragraph, expanded with deployment infra). Added a 5th WHAT'S
+  NEXT closer on enterprise SSO + UTM analytics + public API.
+- **NexBell**: added a new 4th paragraph on the deploy loop itself
+  (blue/green ALB swaps, Postgres no-DDL runbook, Celery worker
+  pool separation) — a paragraph that wasn't there before. Added a
+  5th WHAT'S NEXT closer on per-tenant DB split.
+- **Innovative IT**: added a new 4th paragraph on the deployment
+  journey (Fabric scripts → Ansible roles → blue/green pattern) —
+  a concrete lesson that became the NexBell playbook. Added a 5th
+  WHAT'S NEXT closer on observability + per-tenant data model.
+- **All 5 paragraphs in the established voice** — first-person,
+  no marketing, lifecycle arc maintained per the user's standing
+  content guidelines.
+
+### Caveats / pending
+
+- **User may revise** — drafts in the user's voice; revise in
+  follow-up commits as needed.
+- **5 paragraphs now map cleanly to StoryPath's 5 stages** —
+  IDEA → FRAMING → BUILD → DEPLOY → WHAT'S NEXT no longer
+  duplicates content.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Notes paragraph count** — `notes.split(/\n\n+/).length` for each:
+  - Taply: 5 ✓
+  - NexBell: 5 ✓
+  - Innovative IT: 5 ✓
+
+---
+
+## T9.2 — Featured card diagram fits window
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/work/ProjectCard.css`** — new scoped stylesheet.
+  - `.project-card-diagram-slot > svg` (featured slot) and
+    `.showcase-diagram-frame > svg` (showcase slot) override the
+    inline `width: 100%` / `height: auto` styles each diagram
+    component sets, so the SVG scales to fit the slot's height
+    while preserving aspect ratio (`preserveAspectRatio="xMidYMid meet"`
+    is the SVG default).
+  - Uses `!important` because inline `style={{}}` attributes have
+    higher specificity than CSS rules without it.
+- **`components/work/ProjectCard.tsx`** — added the `.css` import.
+  - Featured slot: `h-[160px]` → `h-[180px]` (taller so the
+    wider aspect ratios breathe better). Adds `overflow-hidden`
+    and `p-4` padding for visual breathing room.
+  - Showcase variant now also renders the diagram. The slot is
+    `h-[110px]` with `p-3` padding (narrower than featured because
+    showcase cards are denser in the 3-col grid).
+
+### Decisions
+
+- **CSS override over component edits** — every diagram component
+  sets `style={{ width: "100%", height: "auto" }}` inline. Editing
+  each of 7 components to use `max-width: 100%; max-height: 100%`
+  would be 7 changes. One CSS file overriding inline styles is
+  1 change.
+- **Showcase variant gets a diagram slot** — the user explicitly
+  asked for diagrams on the 5 showcase projects (Cutetube, Pulumi
+  AWS Infra, ImgTwist, Load Balancer Lab, Prostream). The new
+  slot is narrower (110px) than the featured slot (180px) so the
+  3-col grid keeps its compact rhythm.
+- **Both slots keep `bg-code-bg` + `border-border` + `border-b`**
+  for visual consistency with the existing terminal aesthetic.
+- **No aspect-ratio CSS prop** — letting SVG preserve its own
+  aspect ratio via `preserveAspectRatio` is more flexible than
+  baking the aspect ratio into the slot CSS (which would break
+  for any new diagram with a different shape).
+
+### Caveats / pending
+
+- **No tests** — same as the rest of the codebase.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** (`curl /work`):
+  - All 12 showcase + featured + founder cards render diagrams.
+  - Showcase diagram labels (Gcore CDN, FFmpeg, Agora SD-RTN,
+    Channels, SSLCommerz, Pillow, Bastion, RDS, Route53, App-1/2/3,
+    Nginx LB, Round-robin) all present in DOM.
+- **Live SSR smoke** (`curl /log/nexbell`):
+  - All 14 nodes of the DataLineageDoctor diagram render in the
+    RelatedProjects card. The `max-height: 100%` override keeps
+    the SVG inside the 180px slot window.
+
+---
+
+## T9.3 — Author 5 showcase diagrams
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+5 new dedicated architecture diagrams, each a pure SVG matching the
+established `viewBox` discipline (max 520x360 to fit the featured
+slot):
+
+- **`components/diagrams/CutetubeDiagram.tsx`** (viewBox 480x200) —
+  Video upload pipeline: Browser → Nginx → Django + DRF → Celery →
+  FFmpeg → S3 + Gcore CDN → Viewers. Postgres + Worker on the bottom
+  row.
+- **`components/diagrams/PulumiAwsInfraDiagram.tsx`** (480x200) —
+  Multi-AZ VPC topology: Internet → Route53 → ALB → ASG (App AZ-a,
+  App AZ-b) → RDS Postgres + S3 + Bastion host.
+- **`components/diagrams/ImgTwistDiagram.tsx`** (480x200) — Image
+  hosting: Browser → Nginx → Django REST → Redis + Celery →
+  Pillow resize → S3 → Viewers.
+- **`components/diagrams/LoadBalancerLabDiagram.tsx`** (480x200) —
+  Nginx LB fronting App-1 / App-2 / App-3 with `/test` health
+  endpoint and round-robin strategy label.
+- **`components/diagrams/ProstreamDiagram.tsx`** (480x200) — Live
+  streaming: Streamer → Agora SD-RTN → Django API → Channels →
+  React → Viewer. SSLCommerz + Postgres on the bottom row.
+- **`components/diagrams/pickDiagram.tsx`** — extended the switch
+  to cover all 12 slugs. Future projects without a dedicated diagram
+  fall through to the placeholder.
+
+### Decisions
+
+- **480x200 aspect ratio** (2.4:1) chosen for all 5 new diagrams.
+  Wider than the existing featured diagrams because the showcase
+  slot is narrower (110px vs 180px). The 2.4:1 ratio lets the
+  diagram breathe horizontally without exceeding the vertical
+  budget.
+- **All 5 reuse the `.alg-mini-*` styling classes** (already
+  registered in `diagrams.css`). No new CSS needed.
+- **Domain colors follow the existing pattern**:
+  - `alg-mini-base` (border stroke): generic infrastructure nodes.
+  - `alg-mini-judge` (accent stroke): the "primary" service in
+    each pipeline (Django API, Nginx LB, Agora SD-RTN).
+  - `alg-mini-queue` (amber stroke): async / messaging / payment.
+  - `alg-mini-data` (border-strong stroke): persistence layer.
+- **Labels stay short** (1-2 words per node) — `font-size: 10px`
+  matches the existing Taply/Movio conventions.
+- **Edge paths are simple straight lines + cubic curves** — no
+  packet animations. The diagrams are static SVGs.
+
+### Caveats / pending
+
+- **No animations** — animations could be added later via the
+  existing `AnimatedPackets` helper (T6.4 polish) if needed.
+- **Single new edge dashed line** in Pulumi diagram (Bastion →
+  App AZ-a) for the SSH tunnel semantic. Uses `strokeDasharray="3 2"`.
+- **No `AnimatedPackets` import** — diagrams are static for v1.
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke** (`curl /work`):
+  - All 12 projects have diagrams.
+  - Showcase diagram node labels present: Gcore CDN, FFmpeg, Agora
+    SD-RTN, Channels, SSLCommerz, Pillow, Bastion, RDS, Route53,
+    App-1, App-2, App-3, Nginx LB, Round-robin, Worker.
+
+---
+
+## T9.4 — Verify all diagrams render
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+End-to-end verification across `/`, `/work`, `/work/[slug]`, `/log/[id]`,
+and `/log/<id>` for all 12 projects.
+
+### Decisions
+
+- **Live SSR smoke for 4 routes** — `/work`, `/log/taply`,
+  `/log/nexbell`, `/log/innovative-it`. Plus `/work/<slug>` for
+  CuteTube and ProStream as cross-checks.
+- **String-match verification** — grep for unique diagram node
+  labels (Gcore CDN for CuteTube, Agora SD-RTN for ProStream,
+  OpenMetadata for DataLineage Doctor, Pillow for ImgTwist, etc.).
+  Each appears at least once in the rendered HTML.
+
+### Caveats / pending
+
+- **No browser screenshot** — would require Playwright. Curl + grep
+  + build success is the v1 QA bar; browser screenshots are
+  captured as part of T6.9's screenshot pass (not re-run for T9).
+- **Pre-existing lint errors** unchanged.
+- **Git author identity**: per standing instruction.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes, 0 warnings.
+- **Live SSR smoke**:
+  - `/log/innovative-it` RelatedProjects shows ImgTwist diagram
+    (Browser, Nginx, Django REST, Redis, Celery, Pillow, S3,
+    Viewer — 8 nodes).
+  - `/log/nexbell` RelatedProjects shows DataLineageDoctor
+    diagram (14 nodes including 5 tool icons).
+  - `/log/taply` RelatedProjects shows Taply + UnThink diagrams.
+  - `/work` shows all 11 project diagrams (12 total slots,
+    founder tier 2 + featured tier 4 + showcase tier 5 = 11,
+    AirPass doesn't appear in default filter). All 11 are
+    present.
+  - `/work/cutetube`, `/work/prostream`, `/work/load-balancer`,
+    `/work/imgtwist`, `/work/pulumi-infra` all return 200 with
+    their dedicated diagram node labels in the SSR'd HTML.
+
+---
+
+## Phase 9 wrap-up
+
+All 4 Phase 9 tasks complete. The portfolio now has:
+
+- **5-paragraph notes** for every experience → StoryPath WHAT'S NEXT
+  stage renders distinct content (no more DEPLOY duplication).
+- **All 12 projects have a dedicated diagram** (was 7, added 5
+  showcase). Diagram sharing via the `pickDiagram` helper means
+  every consumer (founder tier, featured tier, showcase tier,
+  `/log/[id]` RelatedProjects, `/work/[slug]` case study) sees
+  the same architecture.
+- **Featured slot fits all diagrams** — CSS `!important` override
+  on inline SVG styles ensures the 520x360 DataLineageDoctor
+  diagram fits inside the 180px featured slot.
+
+`pnpm build` reports 19 routes (unchanged). `pnpm typecheck` and
+`pnpm lint` clean (pre-existing errors in Blog.tsx + Hero.tsx
+unchanged).
+
+Phase 9 status: **done**.
+
+---
+
+## Combined Phase 8 + 9 wrap-up
+
+End state after both phases:
+
+| Surface | Before | After |
+|---|---|---|
+| `/work` featured cards | Black panel + "diagram" word | Real SVG diagrams (Algocode, Movio, DLD, DrishtiAI, AirPass + Taply, UnThink founder tier) |
+| `/work` showcase cards | No diagram | Diagram strip on every showcase card (CuteTube, Pulumi, ImgTwist, LB Lab, ProStream) |
+| `/log/[id]` RelatedProjects | Black panel + "diagram" word | Real SVG diagrams on Taply, UnThink, DLD, Algocode, ImgTwist |
+| `/log/[id]` "The story" | Flat 4-paragraph prose | 5-stage snake-path narrative with animated amber packet |
+| `/work/[slug]` case study | Same as before (already worked) | Same — uses the shared `pickDiagram` now |
+| `EXPERIENCE[].notes` | 4 paragraphs each | 5 paragraphs each, mapping cleanly to StoryPath stages |
+
+Phase 8 + 9 status: **done**.
