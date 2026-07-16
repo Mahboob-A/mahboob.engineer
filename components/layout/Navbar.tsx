@@ -32,7 +32,10 @@ interface NavLink {
 }
 
 const LINKS: readonly NavLink[] = [
-  { label: "experience", href: "/log", anchor: "log", eyebrow: "01" },
+  /* Phase 11 (T11.3): label renamed `experience` → `log` to match
+     the route segment (`/log`). All other labels in this array
+     match their href segments; this was the only inconsistency. */
+  { label: "log", href: "/log", anchor: "log", eyebrow: "01" },
   { label: "work", href: "/work", anchor: "work", eyebrow: "02" },
   { label: "stack", href: "/stack", anchor: "stack", eyebrow: "03" },
   { label: "writing", href: "/writing", anchor: "blog", eyebrow: "04" },
@@ -84,7 +87,9 @@ export async function Navbar() {
             /* Post-Phase 6 bug fix: navlinks always navigate to the
                inner route. Active-state highlighting still uses
                currentPath (no change). The `anchor` field is kept for
-               legacy direct-link scrolls (e.g. mahboob.engineer/#log). */
+               legacy direct-link scrolls (e.g. mahboob.engineer/#log).
+               Phase 11 (T11.4): active links now glow amber via the
+               pulsing `nav-glow` keyframe in globals.css. */
             const target = l.href;
             const isActive = currentPath.startsWith(l.href);
             return (
@@ -94,7 +99,7 @@ export async function Navbar() {
                   className={cn(
                     "text-[14px] transition-colors",
                     isActive
-                      ? "text-t1 font-semibold"
+                      ? "text-amber font-semibold nav-glow-active"
                       : "text-t3 hover:text-t1 font-medium",
                   )}
                   data-eyebrow={l.eyebrow}
@@ -128,7 +133,8 @@ export async function Navbar() {
       </div>
 
       {/* Mobile nav: scrollable chip row below the header. Solid
-          bg-bg per T6.9 contrast fix. */}
+          bg-bg per T6.9 contrast fix. Active links glow amber
+          (Phase 11 T11.4). */}
       <ul className="border-border bg-bg flex items-center gap-5 overflow-x-auto border-t px-6 py-2 md:hidden">
         {LINKS.map((l) => {
           /* Same post-Phase 6 bug fix as desktop navlinks above. */
@@ -141,7 +147,7 @@ export async function Navbar() {
                 className={cn(
                   "text-[13px] transition-colors",
                   isActive
-                    ? "text-t1 font-semibold"
+                    ? "text-amber font-semibold nav-glow-active"
                     : "text-t3 hover:text-t1 font-medium",
                 )}
               >
