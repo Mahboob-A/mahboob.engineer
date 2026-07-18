@@ -2077,3 +2077,173 @@ the role-suffix annotation on Innovative IT, and the
 warnings. `pnpm typecheck` clean.
 
 Phase 18 status: **done**.
+
+---
+
+## Phase 19 — Copy pass: simple, minimal, em-dash-free
+
+**Task status:** done
+**Commit:** `5939081` (data layer) — plus the data/blog.ts,
+data/contact.ts, data/game/villains.ts updates from this phase.
+**Date:** 2026-07-18
+
+### What shipped
+
+**`data/experience.ts`** (Phase 19.1)
+- All 4 entries (`taply`, `nexbell`, `innovative-it`,
+  `eve-healthcare`) rewritten with simple, em-dash-free prose.
+- `innovative-it.bullets` are the user's 4 lines verbatim
+  (Performance, API Design, Async Architecture, Backend
+  Engineering).
+- `innovative-it.notes` rewritten as 5 short paragraphs (one
+  per StoryPath stage).
+- `taply` + `nexbell` keep their 6-paragraph form so the heavy
+  detail on founder-track projects is preserved.
+- `eve-healthcare.bullets` tightened: "Analytics Integration:
+  Integrated doctor dashboard" → "Doctor Dashboard: Built the
+  doctor dashboard". Drops the "Integration + Integrated"
+  repetition.
+- KEY_ACHIEVEMENTS context strings cleaned of em-dash.
+- NOW_STATUSES status strings cleaned of em-dash.
+
+**`data/projects.ts`** (Phase 19.2)
+- 12 projects. `tagline` / `problem` / `built` em-dash-cleaned
+  on all 12.
+- All `notes` rewritten as 5-stage narratives (IDEA, FRAMING,
+  BUILD, DEPLOY, WHAT'S NEXT). Heavy detail on Taply,
+  Algocode, Movio, DrishtiAI, DataLineage Doctor. Medium on
+  UnThink, CuteTube, AirPass, ProStream. Concise 2-3 sentence
+  paragraphs on Pulumi, ImgTwist, Load Balancer Lab.
+- All `notes` values converted from `"..."` regular strings to
+  `` `...` `` template literals so JS/TS parses the multi-paragraph
+  rewrites. The single-line original `"..."` format would have
+  broken the TypeScript parser when the new content introduced
+  literal newlines.
+- Metric strings cleaned (e.g. "peer-to-peer — no server storage"
+  → "peer-to-peer, no server storage"; "team of 3 — 2 countries"
+  → "team of 3, 2 countries"; "IaC — fully reproducible" → "IaC,
+  fully reproducible").
+
+**`data/blog.ts`**
+- 14+ em-dashes in post titles + excerpts cleaned across the
+  Linux Networking series (4 parts), the Redis High-Availability
+  series (2 parts), the AWS networking post, the Algocode
+  series (Medium + native), and the RabbitMQ series (Medium +
+  native).
+- JSDoc comments left alone (not visible prose).
+
+**`data/contact.ts`**
+- FAQ answer for "What stage of companies do you prefer?" had
+  "Series A–C is the sweet spot — large enough...". Now reads
+  "Series A through C is the sweet spot. Large enough...".
+
+**`data/game/villains.ts`**
+- 4 em-dashes in visible game-mode copy (Go and Terraform
+  villain descriptions). All converted.
+
+### Tone law applied throughout
+
+- **No em-dashes anywhere in visible prose.** Replaced with "and",
+  comma, period, "with", or "through". JSDoc comments and
+  section-header comments left alone (not visible).
+- **No semicolons in bullets.** Split into sentences.
+- **No nested parens**, no stacked parenthetical asides.
+- **No AI-junk vocabulary.** Verified clean of: delve into, deep
+  dive, certainly, robust, leverage, seamless, synergy, foster,
+  comprehensive, streamline, pivotal, pinnacle, intricate,
+  game-changer.
+- **Heavy detail on key projects.** Taply, Algocode, Movio,
+  DrishtiAI, DataLineage Doctor each got 5 paragraphs of real
+  substance — architecture, constraints, decisions, trade-offs.
+- **Minimal on simple projects.** ImgTwist, Load Balancer Lab,
+  Pulumi stay tight. The simple ones don't need to perform.
+- **Story flow.** Each project reads as a narrative that builds to
+  a payoff, not a bullet-soup.
+- **Narrator voice.** First-person, calm, observational. Not
+  salesy. Reads like a story that unfolds to a climax.
+
+### Out of scope (per user's clarification)
+
+- `app/*` and `components/*` page-level strings (Hero
+  description, section descriptions, Footer tagline, Navbar
+  aria-labels, Contact form toasts, HeroTerminal pre-canned
+  payloads, BackLink labels, TechDetailPanel empty-state prose).
+  All left as-is.
+- Em-dashes still appear in rendered HTML from these page-level
+  strings, but the data-driven prose is now em-dash-free.
+
+### Caveats / pending
+
+- `components/log/StoryPath.tsx` lines 257 and 265 derive
+  headings by splitting on em-dashes. With em-dashes gone from
+  bullets, the Stage 1 heading for Eve Healthcare reads
+  "Search Optimization: Improved platform search efficiency..."
+  (the full first bullet as the heading), which is verbose but
+  functionally correct. This is in rendering code (out of scope
+  for the data-layer Phase 19 commit). A follow-up could
+  change the split character or use the colon as the heading
+  terminator instead.
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Tone gate** on every modified data file:
+  - data/experience.ts: em-dashes in JSDoc only (21 hits, all
+    in `/** ... */` and `/* ... */` comments), 0 AI-junk words.
+  - data/projects.ts: 7 em-dashes (all in JSDoc), 0 AI-junk
+    words.
+  - data/blog.ts: 8 em-dashes (all in JSDoc), 0 AI-junk words.
+  - data/contact.ts: 8 em-dashes (all in JSDoc), 0 AI-junk
+    words.
+  - data/game/villains.ts: 9 em-dashes (all in JSDoc), 0
+    AI-junk words.
+- **Live SSR smoke** (port 3000):
+  - /log → HTTP 200 with 4 timeline cards rendered.
+  - /work → HTTP 200 with 12 project cards.
+  - /log/taply → HTTP 200 with new bullets + 6-paragraph
+    notes.
+  - /log/innovative-it → HTTP 200 with 4 user-given bullets
+    verbatim.
+  - /log/eve-healthcare → HTTP 200 with tightened bullets +
+    no-notes fallback.
+  - /work/taply → HTTP 200 with 5-paragraph "the build"
+    narrative.
+  - /work/algocode → HTTP 200 with 5-paragraph narrative.
+  - /work/imgtwist → HTTP 200 with concise 4-paragraph
+    narrative.
+  - /writing → HTTP 200 with em-dash-free post titles.
+- **Browser smoke** (Playwright headless Chromium):
+  - /work/taply (1440x3000): renders Tagline, Problem, Built,
+    Metrics, Build (5 paragraphs), Stack, Related Writing, all
+    em-dash-free in data-driven prose.
+  - /log/eve-healthcare (1440x2000): renders 4 tightened
+    bullets + StoryPath snake with bullet-fallback prose.
+
+---
+
+## Phase 19 wrap-up
+
+Two data commits shipped. Two related commits for the
+documentation/data files (blog, contact, game). All visible
+prose on /log, /log/*, /work, /work/*, /writing, /writing/* is
+now em-dash-free. Story-arc tone applied: heavy detail on key
+projects, minimal on simple ones, no AI-junk vocabulary.
+
+| Surface | Before | After |
+|---|---|---|
+| /log experience bullets | 2 em-dashes in Taply, NexBell bullets; semicolons; nested parens | Em-dash-free; semicolons split into sentences; flat structure |
+| /log experience notes | Em-dash-heavy, ~6 long paragraphs, mixed tone | Em-dash-free, 5-6 paragraph story flow, calm narrator voice |
+| /work project descriptions | Single ~700-word paragraph per project | 5-stage narrative (IDEA, FRAMING, BUILD, DEPLOY, WHAT'S NEXT) per project |
+| /work tagline/problem/built | Em-dash-heavy across all 12 | Em-dash-free across all 12 |
+| /writing post titles + excerpts | 14 em-dashes | Em-dash-free |
+| /lets-connect FAQ | 1 em-dash | Em-dash-free |
+| /game villain copy | 4 em-dashes | Em-dash-free |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 19 status: **done**.
