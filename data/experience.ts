@@ -93,11 +93,11 @@ export const EXPERIENCE: ExperienceItem[] = [
     period: "May 2026 – Present",
     status: "active",
     bullets: [
-      "Co-founded Taply and architected the backend profile system — 11 section types, 4 layout variants, live theme customization, drag-and-drop ordering, version history with rollback — on Django 5.1 and DRF.",
-      "Shipped the NFC and QR sharing layer: tap or scan opens a user's live profile in under 100ms via Redis-cached profile loads, with one-tap vCard save.",
-      "Built the real-time analytics engine tracking profile views, NFC taps, QR scans, and vCard saves — plus a leads inbox that captures visitor contact requests.",
-      "Delivered the team management console — role-based branding controls, bulk CSV onboarding, per-rep analytics — the feature set that closed Taply's first paying enterprise customer.",
-      "Integrated Stripe (Checkout + Portal + Webhooks) for billing across Free, Pro, Business, and Enterprise tiers.",
+      "Co-founded Taply and built the entire backend on Django 5.1 and DRF. Eleven section types, four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback.",
+      "Shipped the NFC and QR sharing layer. Tap or scan opens a user's live profile in under 100ms via Redis-cached loads, with one-tap vCard save that works on both iOS and Android without downloads.",
+      "Built the real-time analytics engine that tracks profile views, NFC taps, QR scans, and vCard saves, plus a leads inbox that captures visitor contact requests.",
+      "Delivered the team management console with role-based branding, bulk CSV onboarding, and per-rep analytics. The console closed Taply's first paying enterprise customer, a 250-rep sales org.",
+      "Integrated Stripe Checkout, Portal, and Webhooks for billing across Free, Pro, Business, and Enterprise tiers. Webhook idempotency is critical because Stripe retries on any 5xx.",
     ],
     tags: [
       "Django 5.1",
@@ -110,17 +110,17 @@ export const EXPERIENCE: ExperienceItem[] = [
       "NFC/QR",
     ],
     relatedProjects: ["taply", "unthink"],
-    notes: `Taply started with a deceptively simple question — "why does everyone still hand out paper business cards?" Eight-eight percent of paper cards are thrown away within a week; the people you actually want to remember you never look at the card again. We wanted to make the card live: scan a QR or tap an NFC tag and the recipient lands on your real-time profile — your current role, your latest work, a one-tap way to save you to their phone.
+    notes: `Taply started with a small question. Why does everyone still hand out paper business cards? 88% of paper cards are thrown away within a week. The people you actually want to remember you never look at the card again. We wanted to make the card live. Scan a QR or tap an NFC tag and the recipient lands on your real-time profile, your current role, your latest work, a one-tap way to save you to their phone.
 
-I co-founded the company and built the entire backend in Django 5.1 and DRF. The profile system is the heart of the product — eleven section types (about, links, social, gallery, testimonials, products, services, contact, schedule, files, video), four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback. Every profile is cached in Redis so a tap resolves in under 100ms regardless of traffic; every save is appended to a versioned history that the user can rewind to.
+I co-founded the company and built the backend in Django 5.1 and DRF. The profile system is the heart of the product. Eleven section types (about, links, social, gallery, testimonials, products, services, contact, schedule, files, video), four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback. Every profile is cached in Redis so a tap resolves in under 100ms regardless of traffic. Every save is appended to a versioned history that the user can rewind to.
 
-The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips that still supported NDEF rewrites so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap — we ship the vCard payload from a dedicated endpoint with the right MIME type so iOS and Android both handle it without downloads.
+The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips that still supported NDEF rewrites, so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap. We ship the vCard payload from a dedicated endpoint with the right MIME type, so iOS and Android both handle it without downloads.
 
-The real-time analytics engine tracks views, NFC taps, QR scans, and vCard saves — plus a leads inbox that captures visitor contact requests. The console was built for sales teams: per-rep branding, bulk CSV onboarding, per-rep analytics. The team console is what closed Taply's first paying enterprise customer — a 250-rep sales org whose procurement team needed role-based controls and reporting. Stripe (Checkout, Portal, Webhooks) handles billing across Free, Pro, Business, and Enterprise tiers; subscription state lives in our Postgres and webhook idempotency is critical because Stripe retries on any 5xx.
+The real-time analytics engine tracks views, NFC taps, QR scans, and vCard saves, plus a leads inbox that captures visitor contact requests. The console was built for sales teams: per-rep branding, bulk CSV onboarding, per-rep analytics. The team console is what closed Taply's first paying enterprise customer, a 250-rep sales org whose procurement team needed role-based controls and reporting. Stripe handles billing across Free, Pro, Business, and Enterprise tiers. Subscription state lives in our Postgres, and webhook idempotency is critical because Stripe retries on any 5xx.
 
-Deployment went from a single EC2 to a small fleet behind an ALB, with Redis as the shared session cache, Postgres with read-replicas, and S3 for media. The product surface is small, but every layer underneath is doing real work — and the same patterns (Redis caching at the edge, DRF for the orchestration layer, Postgres as the source of truth) recur across UnThink, DrishtiAI, and the Algocode backend.
+Deployment went from a single EC2 to a small fleet behind an ALB, with Redis as the shared session cache, Postgres with read-replicas, and S3 for media. The product surface is small, but every layer underneath does real work, and the same patterns (Redis caching at the edge, DRF for the orchestration layer, Postgres as the source of truth) recur across UnThink, DrishtiAI, and the Algocode backend.
 
-What's next: Tier-1 enterprise features (SSO via SAML), a deeper analytics surface (UTM-aware links, A/B-tested profile versions), and a public Taply API so other SaaS products can plug into Taply profiles as a primary identity. We're shipping in a tight weekly cadence against the v2 enterprise roadmap; a follow-on "Taply for Teams" tier is in private beta.`,
+What's next, if we keep going. Tier-1 enterprise features (SSO via SAML), a deeper analytics surface (UTM-aware links, A/B-tested profile versions), and a public Taply API so other SaaS products can plug into Taply profiles as a primary identity. We're shipping in a tight weekly cadence against the v2 enterprise roadmap, and a follow-on Taply for Teams tier is in private beta.`,
   },
   {
     id: "nexbell",
@@ -130,10 +130,10 @@ What's next: Tier-1 enterprise features (SSO via SAML), a deeper analytics surfa
     period: "Nov 2024 – Jun 2026",
     status: "completed",
     bullets: [
-      "Led sprint planning and PR review for a 9-person engineering team; introduced mandatory CI gates that tightened delivery consistency across releases.",
-      "Rebuilt the login system on OAuth2, JWT, and RBAC — closing authentication vulnerabilities in the legacy session-based flow.",
-      "Redesigned composite indexes and rewrote ORM queries across a multi-vendor MySQL system, cutting query execution time by 17% across 50+ store deployments.",
-      "Migrated idle AWS resources to reserved-instance and auto-scaling capacity; rebuilt CI/CD with CodePipeline + Docker — cut cloud spend by 35% and reduced deployment lead time from hours to minutes.",
+      "Led sprint planning and PR review for a 9-person engineering team. Introduced mandatory CI gates (lint, typecheck, tests) so every PR had to clear them before review.",
+      "Rebuilt the login system on OAuth2, JWT, and RBAC, closing authentication vulnerabilities in the legacy session-based flow. Ran old and new auth in parallel for a month to migrate without breaking active sessions.",
+      "Redesigned composite indexes and rewrote ORM queries across a multi-vendor MySQL system. Cut query execution time by 17% across 50+ store deployments, with tail latency dropping more.",
+      "Migrated idle AWS resources to reserved instances and auto-scaling capacity. Rebuilt CI/CD on CodePipeline and Docker. Cut cloud spend by 35% and deployment lead time from hours to minutes.",
     ],
     tags: [
       "Django",
@@ -144,17 +144,17 @@ What's next: Tier-1 enterprise features (SSO via SAML), a deeper analytics surfa
       "Team Leadership",
     ],
     relatedProjects: ["datalineage-doctor", "algocode"],
-    notes: `NexBell was the first role where I owned a real production system under live traffic — a multi-vendor marketplace platform serving 50+ independent stores, all running on a shared Django + MySQL backend. The system had grown organically for years: features stacked on features, indexes inherited from migrations that no one remembered writing, and a session-based login that was showing its age.
+    notes: `NexBell was the first role where I owned a real production system under live traffic. It was a multi-vendor marketplace platform serving 50+ independent stores, all running on a shared Django and MySQL backend. The system had grown organically for years. Features were stacked on features. Indexes were inherited from migrations that no one remembered writing. The session-based login was showing its age.
 
-My first job was to take ownership of the auth layer. The legacy session cookies were vulnerable to fixation and the role checks lived in scattered decorators across the codebase. I rebuilt login on OAuth2 + JWT, attached a clean RBAC layer, and gated every protected endpoint behind a single decorator. The migration path was the hard part — existing sessions had to keep working while we rolled out the new flow, and we ran the two in parallel for a month before sunset. PR review for a 9-person team was the meta-work: I introduced mandatory CI gates (lint, typecheck, tests) that tightened delivery consistency across releases and made "did CI pass?" the first thing every PR read.
+My first job was to take ownership of the auth layer. The legacy session cookies were vulnerable to fixation, and the role checks lived in scattered decorators across the codebase. I rebuilt login on OAuth2 and JWT, attached a clean RBAC layer, and gated every protected endpoint behind a single decorator. The hard part was the migration path. Existing sessions had to keep working while we rolled out the new flow, so we ran the two in parallel for a month before sunset. PR review for a 9-person team was the meta-work. Introducing mandatory CI gates made "did CI pass?" the first thing every PR read.
 
-The second big push was a query rewrite. The original ORM code had lazy-loading everywhere — N+1 queries were common, and the indexes were inherited from migrations that no one remembered writing. I redesigned composite indexes on the high-traffic tables (vendor-product mapping, order-history rollups) and rewrote the 12 hot-path queries to do eager-fetch + bulk reads. Query execution time dropped 17% across the deployment, measured at the median; tail latency dropped more, because the worst offenders were the ones that benefited most from composite indexes.
+The second big push was a query rewrite. The original ORM code had lazy-loading everywhere. N+1 queries were common, and the indexes were inherited from migrations no one remembered writing. I redesigned composite indexes on the high-traffic tables (vendor-product mapping, order-history rollups) and rewrote the 12 hot-path queries to do eager-fetch and bulk reads. Query execution time dropped 17% across the deployment, measured at the median. Tail latency dropped more, because the worst offenders benefited most from composite indexes.
 
-Cloud spend was the third lever. A previous engineer had provisioned the staging environment as a pair of always-on m5.larges that nobody touched. I migrated the always-on fleets to reserved instances (1-year, no-upfront), collapsed the idle staging environment into spot capacity, and rebuilt CI/CD on CodePipeline + Docker so deploys went from "submit a PR and someone has to ssh into the bastion" to a 12-minute automated pipeline. Lead time fell from hours to minutes; cloud spend fell 35%.
+Cloud spend was the third lever. A previous engineer had provisioned staging as a pair of always-on m5.larges that nobody touched. I migrated the always-on fleets to reserved instances (1-year, no-upfront), collapsed the idle staging environment into spot capacity, and rebuilt CI/CD on CodePipeline and Docker. Deploys went from "submit a PR and someone sshes into the bastion" to a 12-minute automated pipeline. Lead time fell from hours to minutes, and cloud spend fell 35%.
 
-The deploys themselves were the unsung hero. Blue/green on the ALB with session draining, Postgres migrations gated behind a "no-DDL-during-traffic" runbook, Celery worker pools separated by task class so a slow batch job couldn't starve the realtime queue. By the end of my time there, shipping a feature was a 12-minute loop: PR → CI gates → CodePipeline → ALB swap → dashboards show new error rate, latency, and conversion within five minutes. That's the muscle memory I now expect on every team I join.
+The deploys themselves were the unsung hero. Blue/green on the ALB with session draining. Postgres migrations gated behind a no-DDL-during-traffic runbook. Celery worker pools split by task class, so a slow batch job couldn't starve the realtime queue. By the end of my time there, shipping a feature was a 12-minute loop: PR, CI gates, CodePipeline, ALB swap, dashboards show new error rate, latency, and conversion within five minutes. That's the muscle memory I now expect on every team I join.
 
-What's next: a per-tenant database split (one MySQL per store) is the obvious improvement — the shared schema is the only thing still holding the platform back from true multi-region deployment. I'd also extract the auth layer into a separate service so the next product team can reuse OAuth2 + JWT without forking it. The patterns from NexBell (CI-as-a-gate, lazy-load discipline, blue/green by default) are the ones I keep applying; they're also the patterns Taply and UnThink now inherit.`,
+What's next, if I returned. A per-tenant database split (one MySQL per store) is the obvious improvement. The shared schema is the only thing still holding the platform back from true multi-region deployment. I'd also extract the auth layer into a separate service so the next product team can reuse OAuth2 and JWT without forking it. The patterns from NexBell (CI-as-a-gate, lazy-load discipline, blue/green by default) are the ones I keep applying, and they're also the patterns Taply and UnThink now inherit.`,
   },
   {
     id: "innovative-it",
@@ -170,20 +170,22 @@ What's next: a per-tenant database split (one MySQL per store) is the obvious im
     period: "Sept 2023 – Oct 2024",
     status: "completed",
     bullets: [
-      "Built and owned production REST APIs with DRF — relational schema design, serialization logic, secure low-latency delivery across web and mobile clients.",
-      "Diagnosed and resolved backend performance bottlenecks through query and index optimization, reducing API response times across client applications.",
+      "Performance: Owned bottleneck diagnosis and resolution through indexing and queryset optimization, driving measurable reductions in API response times across client applications.",
+      "API Design: Architected and owned production-ready REST APIs with DRF, enforcing secure auth patterns and optimized serialization logic for low-latency data delivery.",
+      "Async Architecture: Designed and owned Celery and Redis pipelines to offload reporting workflows and background processing tasks, directly improving frontend responsiveness.",
+      "Backend Engineering: Designed relational schemas and Django services built for data integrity and scalability across web and mobile surfaces.",
     ],
     tags: ["Django", "DRF", "PostgreSQL", "REST APIs"],
     relatedProjects: ["imgtwist"],
-    notes: `Innovative IT was my first full-time engineering role after the MCA coursework — a small consulting shop where everyone wore multiple hats. My focus was the Django + DRF backend that powered three client-facing products: two web apps and a mobile app, all hitting the same REST surface.
+    notes: `Innovative IT was my first full-time engineering role after the MCA coursework. It was a small consulting shop where everyone wore multiple hats. My focus was the Django and DRF backend that powered three client-facing products: two web apps and a mobile app, all hitting the same REST surface.
 
-The first big project was a customer-portal API for a logistics client. I owned the schema design end-to-end — relational modeling, DRF serializer shapes, authentication strategy — and shipped the v1 with full token-based auth, pagination, filtering, and a handful of specialized endpoints for shipment tracking. The mobile client was the harder constraint: low-latency endpoints with strict freshness needs, so I structured the read path to use materialized views for the most-queried rollups and the write path to publish change events to a lightweight WebSocket layer.
+The first big project was a customer-portal API for a logistics client. I owned the schema end to end: relational modeling, DRF serializer shapes, and the authentication strategy. We shipped v1 with token-based auth, pagination, filtering, and a handful of specialized endpoints for shipment tracking. The mobile client was the harder constraint. Low latency, strict freshness. I structured the read path to use materialized views for the most-queried rollups, and the write path to publish change events to a lightweight WebSocket layer.
 
-Performance work was a recurring theme throughout the year. I'd inherited a couple of hot endpoints that the previous engineer had left running at 800ms+ median latency; the fix was always the same shape — find the lazy-loading patterns, replace them with select_related/prefetch_related, add the missing composite indexes. One endpoint dropped from 1.2s to 80ms after a single migration. The discipline stuck: every endpoint I wrote from then on started with "what's the slowest query path on this request, and is the index supporting it?"
+Performance work kept showing up. I'd inherited a couple of hot endpoints running at 800ms+ median latency. The fix was always the same shape: find lazy-loading patterns, replace them with select_related and prefetch_related, add the missing composite indexes. One endpoint dropped from 1.2s to 80ms after a single migration. The discipline stuck. Every endpoint I wrote from then on started with "what's the slowest query path here, and is the index supporting it?"
 
-Deployment turned out to be where I learned the most. The first v1 shipped on a bare EC2 with no automation; by month six I'd introduced Fabric scripts for app + migrations + collectstatic + restart, then Ansible roles for the broker and the DB. The blue/green pattern (ALB swaps target groups with no downtime) came directly from this — it's the same pattern I later codified at NexBell. The lesson is that deployment isn't an afterthought; it's a forcing function for the rest of the architecture.
+Deployment turned out to be where I learned the most. The first v1 shipped on a bare EC2 with no automation. By month six I had Fabric scripts for app, migrations, collectstatic, and restart, then Ansible roles for the broker and the DB. The blue/green pattern (ALB swaps target groups with no downtime) came directly from this, and it's the same pattern I codified at NexBell. The lesson is that deployment is a forcing function for the rest of the architecture.
 
-What I learned at Innovative IT: the value of writing tests before the second PR (catching regressions on a shared backend), the discipline of keeping serializers thin (one shape, one place to change), and the realization that performance is mostly about choosing the right indexes up front rather than tuning late. The DrishtiAI eye-screening pipeline (built the following year) and the Algocode online judge both trace patterns I'd honed here — clean schema design, eager-loaded queries, indexed rollups — even though neither uses Django. What's next, if the consulting path ever opens again: I'd add observability (Prometheus + Grafana on day one) and a real per-tenant data model so each client could ship independently without shared-schema risk.`,
+What I learned at Innovative IT. Write tests before the second PR. Keep serializers thin (one shape, one place to change). Choose the right indexes up front rather than tuning late. The DrishtiAI pipeline and Algocode both trace patterns I honed here, even though neither uses Django. What's next, if the consulting path ever opens again. I'd add observability (Prometheus and Grafana on day one) and a real per-tenant data model so each client could ship independently without shared-schema risk.`,
   },
   /* Phase 18: Eve Healthcare internship. Sept–Nov 2023 overlaps with
      the start of Innovative IT (Sept 2023) — the roleSuffix on the
@@ -199,10 +201,10 @@ What I learned at Innovative IT: the value of writing tests before the second PR
     period: "Sept 2023 – Nov 2023",
     status: "completed",
     bullets: [
-      "Search Optimization: Enhanced platform search efficiency, boosting user search success rates by 15%.",
-      "Real-Time Communication: Implemented real-time in-app chat with WebSocket, increasing user engagement and retention by 30%.",
+      "Search Optimization: Improved platform search efficiency, lifting user search success rates by 15%.",
+      "Real-Time Communication: Added real-time in-app chat over WebSocket, lifting user engagement and retention by 30%.",
       "API Performance: Optimized 22% of patient dashboard APIs, cutting database queries and reducing response times by 1 second.",
-      "Analytics Integration: Integrated doctor dashboard and analytics, improving data access by 20% and data-driven decisions by 15%.",
+      "Doctor Dashboard: Built the doctor dashboard and analytics surface, improving data access by 20% and data-driven decisions by 15%.",
     ],
     tags: [],
   },
@@ -299,7 +301,7 @@ export const KEY_ACHIEVEMENTS: AchievementItem[] = [
   {
     num: "35%",
     label: "AWS cloud-cost reduction",
-    context: "at NexBell — idle → reserved + autoscaling",
+    context: "at NexBell, idle to reserved plus autoscaling",
   },
   {
     num: "17%",
@@ -342,7 +344,7 @@ export const NOW_STATUSES: NowStatusItem[] = [
     name: "Taply",
     slug: "taply",
     status:
-      "Co-founder + backend engineer. Shipping the profile system, NFC/QR sharing layer, real-time analytics, and team management console on Django 5.1 + DRF — daily.",
+      "Co-founder and backend engineer. Shipping the profile system, NFC/QR sharing layer, real-time analytics, and team management console on Django 5.1 and DRF, daily.",
     liveUrl: "https://gettaply.me/p/mehboob",
     statusKind: "active",
   },
