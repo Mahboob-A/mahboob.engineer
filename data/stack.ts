@@ -250,6 +250,20 @@ export const STACK: StackItem[] = [
     domain: "payment",
     projects: ["taply"],
   },
+  /* Phase 21: bKash was the dominant Bangladesh mobile-wallet
+     gateway at NexBell (the multi-vendor marketplace serving
+     50+ independent stores). I integrated the refund and
+     disbursement flows against their REST API in late 2024.
+     The "nexbell" project slug is a reference string — it ties
+     the tech back to the company context even though no
+     /work/<nexbell> case study exists today. Will render in
+     the /stack payment category next to Stripe. */
+  {
+    id: "bkash",
+    name: "bKash",
+    domain: "payment",
+    projects: ["nexbell"],
+  },
 
   // Learning
   /* Phase 12 (T12.5): id renamed `k8s` → `kubernetes` so that
