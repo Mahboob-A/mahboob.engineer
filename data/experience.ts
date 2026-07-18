@@ -32,6 +32,14 @@ export interface ExperienceItem {
   url: string | null;
   /** Job title. */
   role: string;
+  /**
+   * Optional small italic suffix appended after `role` — used for
+   * context that doesn't fit in the title itself (e.g. overlapping
+   * part-time stints that converted to full-time). Renders as muted
+   * italic ~12px with a " · " separator on both `/log` timeline
+   * cards and `/log/[id]` deep-dive hero. Phase 18.
+   */
+  roleSuffix?: string;
   /** Human-readable period, e.g. "May 2026 – Present". */
   period: string;
   /** Active or completed. */
@@ -153,6 +161,12 @@ What's next: a per-tenant database split (one MySQL per store) is the obvious im
     company: "Innovative IT",
     url: null,
     role: "Software Developer",
+    /* Phase 18: the Sept 2023 – Oct 2024 window overlaps with the
+       Eve Healthcare internship. Innovative IT was a 2.5-month
+       freelance/part-time engagement that converted to full-time
+       once the internship ended. The suffix surfaces that history
+       without cluttering the role itself. */
+    roleSuffix: "including 2.5 months parttime",
     period: "Sept 2023 – Oct 2024",
     status: "completed",
     bullets: [
@@ -170,6 +184,27 @@ Performance work was a recurring theme throughout the year. I'd inherited a coup
 Deployment turned out to be where I learned the most. The first v1 shipped on a bare EC2 with no automation; by month six I'd introduced Fabric scripts for app + migrations + collectstatic + restart, then Ansible roles for the broker and the DB. The blue/green pattern (ALB swaps target groups with no downtime) came directly from this — it's the same pattern I later codified at NexBell. The lesson is that deployment isn't an afterthought; it's a forcing function for the rest of the architecture.
 
 What I learned at Innovative IT: the value of writing tests before the second PR (catching regressions on a shared backend), the discipline of keeping serializers thin (one shape, one place to change), and the realization that performance is mostly about choosing the right indexes up front rather than tuning late. The DrishtiAI eye-screening pipeline (built the following year) and the Algocode online judge both trace patterns I'd honed here — clean schema design, eager-loaded queries, indexed rollups — even though neither uses Django. What's next, if the consulting path ever opens again: I'd add observability (Prometheus + Grafana on day one) and a real per-tenant data model so each client could ship independently without shared-schema risk.`,
+  },
+  /* Phase 18: Eve Healthcare internship. Sept–Nov 2023 overlaps with
+     the start of Innovative IT (Sept 2023) — the roleSuffix on the
+     Innovative IT entry documents that overlap. No relatedProjects
+     and no notes (deep-dive falls back to the bullets-as-prose path
+     in StoryPath). Period format matches the existing convention
+     (en-dash, "Present" / month + year). */
+  {
+    id: "eve-healthcare",
+    company: "Eve Healthcare",
+    url: null,
+    role: "Software Engineer Intern",
+    period: "Sept 2023 – Nov 2023",
+    status: "completed",
+    bullets: [
+      "Search Optimization: Enhanced platform search efficiency, boosting user search success rates by 15%.",
+      "Real-Time Communication: Implemented real-time in-app chat with WebSocket, increasing user engagement and retention by 30%.",
+      "API Performance: Optimized 22% of patient dashboard APIs, cutting database queries and reducing response times by 1 second.",
+      "Analytics Integration: Integrated doctor dashboard and analytics, improving data access by 20% and data-driven decisions by 15%.",
+    ],
+    tags: [],
   },
 ];
 

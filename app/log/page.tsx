@@ -127,8 +127,20 @@ function Timeline({ entries }: { entries: ExperienceItem[] }) {
               </Badge>
             </div>
 
-            {/* Role line */}
-            <p className="text-t3 mb-4 text-[14px]">{entry.role}</p>
+            {/* Role line — Phase 18: optionally append a small italic
+               suffix (e.g. "Software Developer · including 2.5 months
+               parttime") when `roleSuffix` is set on the entry. The
+               suffix uses muted italic 12px so it reads as metadata
+               about the role without competing with the bullets. */}
+            <p className="text-t3 mb-4 text-[14px]">
+              {entry.role}
+              {entry.roleSuffix ? (
+                <>
+                  {" · "}
+                  <span className="italic text-[12px]">{entry.roleSuffix}</span>
+                </>
+              ) : null}
+            </p>
 
             {/* Bullets */}
             <ul className="text-t1 mb-5 flex flex-col gap-2.5 text-[14.5px] leading-[1.6]">

@@ -1935,3 +1935,145 @@ dependency tree.
 warnings. `pnpm typecheck` clean.
 
 Phase 17 status: **done**.
+
+---
+
+## Phase 18 — Add Eve Healthcare + role-suffix field + fix Related Projects copy
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-18
+
+### What shipped
+
+- **`data/experience.ts`**:
+  - Extended `ExperienceItem` interface with optional
+    `roleSuffix?: string` field (between `role` and `period`).
+    JSDoc explains the styling contract ("small italic
+    ~12px with ' · ' separator on both /log and /log/[id]")
+    so future entries know how to use it.
+  - Added `roleSuffix: "including 2.5 months parttime"` to
+    the `innovative-it` entry. Inline comment documents the
+    Sept 2023 overlap story (freelance/part-time
+    engagement that converted to full-time after the Eve
+    Healthcare internship ended).
+  - Added the **Eve Healthcare internship entry** at the
+    END of the EXPERIENCE array (4 entries total now).
+    `id: "eve-healthcare"`, role `Software Engineer Intern`,
+    period `Sept 2023 – Nov 2023`, status `completed`,
+    4 bullets verbatim from the user's request. No
+    `relatedProjects` (none of the existing PROJECTS are
+    tied to Eve Healthcare) and no `notes` (the deep-dive
+    falls back to bullets-joined via StoryPath).
+- **`app/log/page.tsx` line 131** — render `roleSuffix`
+  inline after `{entry.role}` with `" · "` separator +
+  italic 12px text. Conditional on the field existing;
+  Taply, NexBell, Eve Healthcare render unchanged.
+- **`app/log/[id]/page.tsx` line 163** — same conditional
+  append on the deep-dive hero; uses `text-t3 italic
+  text-[12.5px]` for the suffix (the parent line is
+  `text-t2` mid-tone, so the suffix sits one tone quieter
+  for hierarchy).
+- **`app/log/[id]/page.tsx` lines 254-257** — Related
+  Projects subtitle reworded from "shipped at {company}"
+  to "shipped alongside work at {company}". Singular and
+  plural both grammatical. Single edit point — applies to
+  every entry with `relatedProjects` set (Taply, NexBell,
+  Innovative IT). Eve Healthcare has no relatedProjects so
+  its deep-dive doesn't render the section.
+
+### Decisions
+
+- **Placed Eve Healthcare at the end of the array** (not
+  between NexBell and Innovative IT). Both share Sept 2023
+  as a start month, so strict reverse-chronological
+  ordering has no clean answer; placing the new entry at
+  the bottom is the simplest, most predictable placement.
+  The user's "below internship experience" reads naturally
+  as "below all current entries".
+- **`roleSuffix` is optional** — additive change, no
+  existing entry breaks. Only `innovative-it` sets it for
+  now; future entries can use the same field for similar
+  context (e.g. "covering for a maternity leave", "while
+  studying part-time").
+- **Styling: italic + 12px + `·` separator, text-t3**
+  (muted gray). Italic + smaller font reads as "metadata
+  about the role" without competing with the bullets.
+  Separator is the middle-dot character `·`, not a period
+  or asterisk.
+- **`tags: []` on Eve Healthcare**, not arbitrary tags.
+  The bullets carry the tech signal (WebSocket, APIs,
+  analytics) and adding tags would imply they're
+  production-grade skills when they're internship-scope.
+  Honest empty array.
+- **No `notes` on Eve Healthcare** — the user only provided
+  bullets. StoryPath already falls back to joining bullets
+  with paragraph breaks when `notes` is missing, so the
+  deep-dive still has a body section.
+- **Single commit for all three edits** — they share the
+  same logical concern (`/log` content + structure), all
+  touching the same data shape (the new `roleSuffix`
+  field), and the verification curls / screenshots cover
+  both. Splitting into multiple commits would force
+  intermediate states where some entries have suffixes
+  and others don't, which would be misleading.
+
+### Caveats / pending
+
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+- The Eve Healthcare deep-dive falls back to bullets-joined
+  as the story prose, which means the StoryPath snake shows
+  the same first bullet (Search Optimization) repeated across
+  all 5 stages (IDEA / FRAMING / BUILD / DEPLOY / WHAT'S
+  NEXT). Functionally fine but visually repetitive. If the
+  user wants a custom deep-dive prose, that's a follow-up
+  Phase 18.x edit — just add the `notes` field.
+
+### Verified
+
+- `pnpm typecheck` → clean (interface change is additive,
+  no consumer broke).
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Live SSR smoke** (port 3000):
+  - `/log` renders 4 timeline cards (Taply, NexBell,
+    Innovative IT, Eve Healthcare). The "Software
+    Developer · *including 2.5 months parttime*" suffix
+    shows on the Innovative IT card.
+  - `/log/innovative-it` renders the same suffix in the
+    deep-dive hero plus the new "1 project shipped
+    alongside work at Innovative IT" subtitle.
+  - `/log/eve-healthcare` renders all 4 bullets, no
+    Related Projects section.
+  - `/log/taply` and `/log/nexbell` deep-dives render the
+    new "shipped alongside work at {company}" copy.
+- **Browser smoke** (Playwright headless Chromium,
+  viewport 1440×900 / 1440×2400 / 1440×3500):
+  - `/log` (tall): 4 cards visible, suffix renders
+    correctly on the Innovative IT card.
+  - `/log/innovative-it` (extra tall): hero + bullets +
+    snake path + Related Projects section with
+    "1 project shipped alongside work at Innovative IT"
+    subtitle (singular works).
+  - `/log/eve-healthcare`: bullets + StoryPath snake +
+    COMPLETED badge.
+
+---
+
+## Phase 18 wrap-up
+
+`/log` is fully refreshed with the new Eve Healthcare entry,
+the role-suffix annotation on Innovative IT, and the
+"shipped alongside work at X" copy across all 4 entries.
+
+| Surface | Before Phase 18 | After Phase 18 |
+|---|---|---|
+| `/log` timeline cards | 3 entries (Taply, NexBell, Innovative IT) | 4 entries (+ Eve Healthcare Sept 2023 – Nov 2023) |
+| Innovative IT role | "Software Developer" (bare) | "Software Developer · *including 2.5 months parttime*" |
+| Related Projects subtitle | "N projects shipped at {company}" | "N projects shipped alongside work at {company}" |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 18 status: **done**.

@@ -160,7 +160,20 @@ function Hero({ entry }: { entry: ExperienceItem }) {
       <h1 className="font-display text-t1 text-[clamp(32px,5vw,52px)] leading-[1.05] font-bold tracking-[-1px]">
         {entry.company}
       </h1>
-      <p className="text-t2 mt-3 font-mono text-[15px]">{entry.role}</p>
+      {/* Role line — Phase 18: optionally append a small italic
+         suffix (see `roleSuffix` on the entry). Mirrors the
+         timeline-card render in app/log/page.tsx but uses text-t3
+         for the suffix so the hierarchy reads as "main role in t2
+         mid-tone, suffix quieter in t3". */}
+      <p className="text-t2 mt-3 font-mono text-[15px]">
+        {entry.role}
+        {entry.roleSuffix ? (
+          <>
+            {" · "}
+            <span className="text-t3 italic text-[12.5px]">{entry.roleSuffix}</span>
+          </>
+        ) : null}
+      </p>
 
       {entry.url ? (
         <a
@@ -251,9 +264,17 @@ function RelatedProjects({
         <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
           Related projects
         </h2>
+        {/* Phase 18: copy reframe. The previous "shipped AT {company}"
+         implied these projects were delivered under that employer.
+         In practice they're personal projects built during /
+         alongside the role, so the wording now reads "shipped
+         alongside work at {company}". Singular + plural both
+         grammatical ("1 project shipped alongside work at X" /
+         "2 projects shipped alongside work at X"). */}
         <span className="text-t3 font-mono text-[11px] italic">
-          {projects.length} {projects.length === 1 ? "project" : "projects"}{" "}
-          shipped at {entry.company}
+          {projects.length}{" "}
+          {projects.length === 1 ? "project" : "projects"} shipped alongside
+          work at {entry.company}
         </span>
       </div>
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
