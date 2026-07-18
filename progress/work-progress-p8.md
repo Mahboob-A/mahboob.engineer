@@ -1508,3 +1508,430 @@ All 5 Phase 12 tasks complete. Final state:
 | `/stack` force graph | 25 nodes | 28 nodes (4 new: python / linux / kafka / kubernetes) |
 
 Phase 12 status: **done**.
+---
+
+## Phase 14 — Drop nav glow, keep flat amber active color
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`app/globals.css`** — removed `@keyframes nav-glow`,
+  `.nav-glow-active` rule, and the reduced-motion fallback
+  (Phase 11 T11.4 block, ~26 lines). Replaced with a comment
+  noting Phase 14 dropped the pulse.
+- **`components/layout/Navbar.tsx`** — removed `nav-glow-active`
+  from the active-link className on both the desktop nav (line
+  110 area) and the mobile nav (line 158 area). Active links now
+  use just `"text-amber font-semibold"` — flat amber color, no
+  animation. Updated the comment on line 100 + line 147 to
+  reflect the Phase 14 decision.
+
+### Why
+
+The previous Phase 11 pulse was technically correct (class in DOM,
+keyframe in compiled CSS) but visually unreadable: the active
+link fill is already `text-amber`, so amber-on-amber text-shadow
+blends into the text instead of radiating. After 3 phases of
+attempts (Phase 11 original → Phase 13 attempted fix → Phase 13
+revert) the simplest correct answer is: no animation, just the
+flat amber color, which has worked since Phase 6.
+
+### Decisions
+
+- **Drop the keyframe entirely** rather than ship a static
+  fallback. The fallback was barely visible on bg-bg anyway;
+  the user wants a clear color marker, not a faint halo.
+- **Keep `text-amber font-semibold`** — the same active style
+  that shipped in Phase 6 and worked through Phase 10. No new
+  tokens, no new CSS.
+- **No founder-tier changes** — Phase 13 T13.2 founder-glow was
+  reverted by `git reset --hard` back to the Phase 12 baseline
+  before this commit. Founder cards on /work keep just the
+  `bg-tier-founder border-amber/40 hover:border-amber/70` styling
+  with no box-shadow pulse.
+- **No progress file** — Phase 13 entries were dropped along
+  with the rest of the Phase 13 commits via `git reset --hard`
+  before this work. The progress log goes straight from Phase 12
+  done → Phase 14.
+
+### Caveats / pending
+
+- Pre-existing lint errors in `components/sections/Blog.tsx` and
+  `components/sections/Hero.tsx` are out of scope and untouched.
+- The branch is still called `feat-1/glow-header` (carried over
+  from the Phase 13 attempt). The user can rename or delete it;
+  Phase 14 itself doesn't depend on the branch name.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Live SSR smoke** (port 3000):
+  - `/log`, `/log/taply`, `/work`, `/stack`, `/writing`,
+    `/lets-connect` — each renders the active link with
+    `text-amber font-semibold` (no `nav-glow-active` anywhere).
+  - `/work` — 2 founder cards with `bg-tier-founder
+    border-amber/40 hover:border-amber/70` (no founder-glow).
+- **Compiled CSS check** (`.next/static/chunks/*.css`):
+  - `grep -c nav-glow` → 0 across all chunks. Keyframe + rule
+    + reduced-motion fallback fully removed.
+
+---
+
+## Phase 14 wrap-up
+
+The navbar glow experiment is closed. Active-state highlighting
+is back to its Phase 6 baseline: just the flat `text-amber
+font-semibold` color marker on the matching route, no
+animation. The Phase 12 T12.1 middleware x-pathname wiring
+still does the heavy lifting of lighting the right link on
+direct route loads.
+
+| Surface | Before Phase 14 | After Phase 14 |
+|---|---|---|
+| Navbar active link | Pulsing amber halo (Phase 11 keyframe) | Flat amber color, no animation |
+| Founder cards on /work | Amber border + pulsing box-shadow (Phase 13 T13.2) | Amber border only (Phase 12 baseline) |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 14 status: **done**.
+
+---
+
+## Phase 15 — Fix /stack D3 init + graph panel background
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/stack/D3ForceGraph.tsx`** — D3 edge resolution fix.
+  - Edges now keep `source` and `target` as **string ids**
+    (e.g. `"django"`, `"drf"`) instead of pre-resolving them to
+    numeric indices. D3's `forceLink.id((d) => d.id)` resolves
+    them to the actual node objects on the first tick.
+  - The `neighborsOf` and `highlight` helpers got a small
+    `edgeEndId()` helper that handles both shapes — string id
+    (right after construction) and SimNode object (after
+    forceLink re-writes the references during simulation).
+  - The Phase 6 (T6.9) `try { ... } catch` around the whole
+    `forceSimulation(...).force(...)` chain stayed as belt-and-
+    braces (now only protects against transient d3-force
+    resolution errors during hot-reload), but the original
+    "node not found: 0" synchronous throw no longer happens.
+- **`components/stack/stack-graph.css`** — removed
+  `background: var(--code-bg)` from the `.stack-graph` SVG
+  rule. The wrapper in `StackShell.tsx` already carries
+  `bg-surface` (the dark-green card surface); letting it
+  show through the SVG keeps the panel consistent across
+  breakpoints. Before this fix the SVG painted its own
+  near-black `var(--code-bg)` which made the graph panel
+  read as a black slab on lg+ screens, jarring against the
+  `bg-surface` MobileTechList visible at smaller widths.
+
+### Why the bug existed since Phase 3 (T3.4)
+
+The original D3 graph code at T3.4 pre-resolved
+`e.source = idIndex.get(e.source)` (a number) and called
+`forceLink(simEdges).id((d) => d.id)`. D3's `.id()` accessor
+maps source/target values to nodes by `node.id` — which is a
+**string**. Numeric indices never matched, so `forceLink`
+threw synchronously at construction. Phase 6 (T6.9) added a
+try/catch around the construction chain to silence the
+pageerror for the Lighthouse a11y run, but the simulation
+silently never started — graph appeared empty ever since.
+
+The "node not found: 0" message in the browser console is the
+T6.9 catch surfacing: it sees the synchronous throw, logs it,
+and leaves `sim = null`. The catch kept the page from
+crashing but the graph stayed unrendered.
+
+### Decisions
+
+- **Keep edges as strings, let D3 resolve.** This is the
+  idiomatic D3-force pattern; D3 mutates the edges in place
+  to replace source/target with the actual node references
+  on the first tick. The pre-resolution was the bug, not a
+  feature.
+- **No regression risk on tick handler.** The `.on("tick", ...)`
+  callback already reads `(d.source as SimNode).x` because
+  D3 has replaced the string with the node reference by the
+  first tick. That code path is unchanged.
+- **`edgeEndId()` helper handles both shapes** instead of
+  hard-casting. The `neighborsOf` and `highlight` helpers
+  can now be called either before any tick (string ids) or
+  after (SimNode objects) without a crash.
+- **Remove SVG background, not the wrapper background.**
+  The wrapper's `bg-surface` is the canonical panel surface
+  and matches the MobileTechList fallback. Removing it from
+  the SVG (not the wrapper) keeps the dark-green look across
+  breakpoints and avoids a CLS-style surface jump when the
+  user resizes.
+
+### Caveats / pending
+
+- The try/catch around `forceSimulation(...).force(...)`
+  stays (now only catches genuinely-transient d3-force
+  errors). If it ever fires again, the warning will be
+  useful — the previous "node not found: 0" was a real bug,
+  not noise.
+- Circle fills stay `var(--code-bg)` (line 28 unchanged),
+  which gives a subtle "darker circle on dark-green
+  surface" effect. Bright stroke colors carry the visual
+  weight. If this reads as too dim in user testing, the
+  next move is to lift `circle.fill` to `var(--surface)`
+  (matching the panel) so only the strokes carry the tech
+  color.
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Live SSR smoke** (port 3000):
+  - `/stack` returns HTTP 200 with the SVG + tech-detail
+    panel in the rendered HTML.
+- **Browser smoke** (Playwright headless Chromium,
+  viewport 1440×900 and 600×900):
+  - Wide (lg+): graph renders 20+ visible nodes with edges.
+    SVG background matches the wrapper `bg-surface` (no
+    near-black slab).
+  - Narrow (<lg): MobileTechList renders with the same
+    `bg-surface` panel. Domain groupings visible (Backend,
+    Infrastructure, ...).
+  - Console: zero "simulation failed to initialize" /
+    "node not found" warnings.
+- **Compiled CSS check** (`.next/static/chunks/*.css`):
+  - `.stack-graph` rule no longer carries
+    `background:var(--code-bg)`.
+  - Circles still `fill:var(--code-bg)`.
+
+---
+
+## Phase 15 wrap-up
+
+Two long-standing bugs on `/stack` fixed:
+
+| Bug | Before | After |
+|---|---|---|
+| D3 force graph unrendered (Phase 3 T3.4) | Edges pre-resolved to numeric indices → `forceLink.id((d) => d.id)` never matched → synchronous "node not found: 0" throw → Phase 6 try/catch silently swallowed → empty SVG | Edges keep string ids; D3 resolves them on the first tick; graph renders all 29 techs with edges |
+| Graph panel reads as black on lg+ | SVG painted its own `var(--code-bg)` (near-black) on top of the wrapper's `bg-surface` | SVG transparent; wrapper's `bg-surface` shows through; consistent surface across breakpoints |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 15 status: **done**.
+
+---
+
+## Phase 16 — Drop the D3 graph, keep the grouped list everywhere
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **`components/stack/StackShell.tsx`** — replaced the desktop
+  D3 force graph wrapper with the MobileTechList wrapper on
+  every breakpoint. The conditional `hidden lg:block` /
+  `block lg:hidden` split is gone; the list is now the
+  canonical view.
+  - Removed the `D3ForceGraph` import (no longer used in
+    this file).
+  - Updated the file-level JSDoc to reflect the new layout.
+  - `edges` prop is still consumed by the `suggested`
+    useMemo (line 106) which drives the "Most connected"
+    section in the empty-state detail panel — kept.
+
+### Why
+
+The user prefers the grouped tech list layout over the D3
+graph. The list reads as a clean index: domain groupings,
+per-row project count, click to inspect. The graph added
+visual noise without adding information the list doesn't
+already convey.
+
+### Decisions
+
+- **Keep MobileTechList as the component name** even though
+  it's no longer mobile-only. Renaming would touch the file
+  path, the import in StackShell, and the JSDoc — a
+  cosmetic-only change with no functional value. Leaving
+  the name for now; can rename in a follow-up if the
+  codebase owner prefers.
+- **Leave `D3ForceGraph.tsx` and `stack-graph.css` on disk.**
+  No other consumer; both are now dead code. Deleting them
+  is a separate cleanup commit if the user wants — Phase 16
+  focuses on layout only.
+- **Keep the 2-col grid on lg+.** The list goes in the left
+  column (1.6fr) and the detail panel stays in the right
+  column (1fr). The list container keeps the same
+  `h-[600px] lg:h-[680px] overflow-y-auto` constraint so it
+  scrolls inside the grid without pushing the detail panel
+  down. Matches the layout the user screenshotted.
+- **Legend stays above the list.** Same color-domain
+  metadata, now visually precedes the indexed rows instead
+  of sitting above a graph that no longer exists.
+
+### Caveats / pending
+
+- `D3ForceGraph.tsx` + `stack-graph.css` are now unused. If
+  the user wants them deleted in a follow-up, that's a
+  trivial cleanup commit.
+- The page's hero description still reads "Hover or click a
+  node" — was a graph-era phrase. The detail panel's empty
+  state uses "Hover or click a tech" which is accurate, but
+  the page-level description could be cleaned up. Not
+  blocking; flagged for a future copy pass.
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Browser smoke** (Playwright headless Chromium,
+  viewport 1440×900):
+  - `/stack` renders the grouped list (Backend: Django, DRF,
+    FastAPI, Celery, WebSocket, SSE, WebRTC, Python) and the
+    detail panel side by side.
+  - Click Django → detail panel heading updates to "Django";
+    "Used in 7 projects" section appears with all 7 project
+    links; "Mentioned in 3 posts" + "Shares projects with 16"
+    chips render correctly.
+  - Console: zero errors.
+
+---
+
+## Phase 16 wrap-up
+
+The D3 force graph experiment on `/stack` is closed. The page
+now ships only the grouped tech list on every breakpoint —
+matching the screenshot the user shared. Click-to-inspect
+behavior unchanged.
+
+| Surface | Before Phase 16 | After Phase 16 |
+|---|---|---|
+| `/stack` desktop (lg+) | D3 force graph (which had been silently broken since Phase 3 T3.4 — fixed in Phase 15) | Grouped tech list with project counts |
+| `/stack` mobile (<lg) | Grouped tech list (mobile fallback) | Grouped tech list (now canonical) |
+| Detail panel | Right column on lg+ | Unchanged — still right column on lg+ |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 16 status: **done**.
+
+---
+
+## Phase 17 — Delete D3 graph dead code
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-16
+
+### What shipped
+
+- **Deleted** `components/stack/D3ForceGraph.tsx` (the
+  force-graph component that was unrendered in production
+  until Phase 15's fix, then removed from the layout in
+  Phase 16).
+- **Deleted** `components/stack/stack-graph.css` (the
+  accompanying CSS rules for `.stack-graph` selectors).
+- **`app/layout.tsx`** — removed the
+  `import "@/components/stack/stack-graph.css";` line that
+  pulled the deleted stylesheet into the global bundle.
+- **`components/stack/MobileTechList.tsx`** — refreshed the
+  file-level JSDoc. The old "Mobile fallback for /stack"
+  description referenced the now-deleted `D3ForceGraph` and
+  its breakpoint gating. New description calls out that
+  this component is the canonical view at every breakpoint
+  (Phase 16).
+- **`package.json`** + **`pnpm-lock.yaml`** — removed three
+  runtime d3 deps and three @types packages:
+  - `d3-drag` (^3.0.0)
+  - `d3-force` (^3.0.0)
+  - `d3-selection` (^3.0.0)
+  - `@types/d3-drag` (^3.0.7)
+  - `@types/d3-force` (^3.0.10)
+  - `@types/d3-selection` (^3.0.11)
+  - `pnpm install` reported 9 packages removed total
+    (including indirect deps).
+
+### Decisions
+
+- **Delete the files outright, don't leave them as `.bak` or
+  commented out.** Phase 16 made them unreachable; keeping
+  them as dead code would just be future lint noise.
+- **Drop the d3 deps from `package.json`.** Strict standing
+  rule: no new dependencies without explicit need, no
+  carryover dependencies without a consumer. The full d3
+  package was never used — only the three modular packages
+  above. All gone.
+- **Refresh the MobileTechList JSDoc** so it doesn't lie
+  about being a mobile-only fallback.
+- **Did not rename MobileTechList** to something like
+  `TechList.tsx` — the rename touches the import in
+  StackShell + this file's path, and the cosmetic value
+  isn't worth the diff. The name now describes history
+  (mobile origin) rather than current role; flagged for a
+  future rename if the codebase owner wants.
+
+### Caveats / pending
+
+- Pre-existing lint errors in `components/sections/Blog.tsx`
+  and `components/sections/Hero.tsx` are out of scope and
+  untouched.
+- The page-level description on `/stack` still reads "Hover
+  or click a node" — graph-era phrasing. The detail panel's
+  empty state uses "Hover or click a tech" which is
+  accurate. Future copy pass.
+
+### Verified
+
+- `pnpm install` → clean (9 packages removed, 0 added).
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- **Compiled CSS check** (`.next/static/chunks/*.css` +
+  `.next/dev/static/chunks/*.css`):
+  - `grep -l "stack-graph"` → 0 files. The deleted CSS
+    rules are fully gone from the bundle.
+- **Live SSR smoke** (port 3000):
+  - `/stack` → HTTP 200 with the detail panel and grouped
+    list in the rendered HTML.
+  - `grep "d3-force\|stack-graph"` on the rendered HTML →
+    0 hits.
+- **Browser smoke** (Playwright headless Chromium,
+  viewport 1440×900):
+  - Visual identical to Phase 16 screenshot. Grouped list
+    left, detail panel right. Click Django → detail
+    populated correctly.
+
+---
+
+## Phase 17 wrap-up
+
+The D3 force graph is fully removed from the codebase.
+`/stack` now ships only the grouped tech list. Three d3
+runtime deps + three @types packages gone from the
+dependency tree.
+
+| Surface | Before Phase 17 | After Phase 17 |
+|---|---|---|
+| `components/stack/` | 5 files (D3ForceGraph, MobileTechList, StackShell, TechDetailPanel, stack-graph.css) | 3 files (MobileTechList, StackShell, TechDetailPanel) |
+| `package.json` runtime deps | 22 entries (incl. 3 d3-*) | 19 entries (no d3-*) |
+| `package.json` devDeps | 14 entries (incl. 3 @types/d3-*) | 11 entries (no @types/d3-*) |
+| Compiled CSS bundle | Carried 23 lines of `.stack-graph-*` rules | No `.stack-graph-*` rules |
+
+`pnpm build` reports 19 routes + `ƒ Proxy (Middleware)`. 0
+warnings. `pnpm typecheck` clean.
+
+Phase 17 status: **done**.

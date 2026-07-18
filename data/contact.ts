@@ -80,7 +80,7 @@ export const DIRECT_LINKS: DirectLinkItem[] = [
   {
     label: "Taply",
     handle: "gettaply.me",
-    href: "https://gettaply.me",
+    href: "https://gettaply.me/p/mehboob",
     external: true,
   },
   {

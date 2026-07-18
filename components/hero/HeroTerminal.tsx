@@ -136,7 +136,7 @@ function buildPayload(key: ChipKey): string[] {
     }
     case "contact": {
       return [
-        "Taply: gettaply.me",
+        "Taply: gettaply.me/p/mehboob",
         "GitHub: github.com/Mahboob-A",
         "LinkedIn: linkedin.com/in/i-mahboob-alam",
         "Medium: imehboob.medium.com",

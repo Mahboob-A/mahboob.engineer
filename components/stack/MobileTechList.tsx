@@ -1,12 +1,15 @@
 /**
  * components/stack/MobileTechList.tsx
  *
- * Mobile fallback for /stack — flat list of all techs grouped by
- * StackDomain. Visible on screens narrower than the `lg` breakpoint
- * (the desktop D3ForceGraph is hidden at the same breakpoint).
+ * Grouped tech list for /stack. Was previously the mobile-only
+ * fallback (with the desktop D3ForceGraph paired at lg+), but
+ * Phase 16 dropped the D3 graph entirely and this list became
+ * the canonical view at every breakpoint. Kept the file name
+ * for now — renaming would touch the import in StackShell + this
+ * JSDoc for cosmetic-only value.
  *
  * Each row is a button that fires `onSelect(techId)`. The parent
- * StackShell handles scroll-to-panel logic for mobile.
+ * StackShell handles scroll-to-panel logic for narrow screens.
  *
  * Server Component. The interactive parent (StackShell) passes
  * `onSelect` through, so a click on a row sets the activeId in the

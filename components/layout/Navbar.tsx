@@ -96,8 +96,10 @@ export async function Navbar() {
                inner route. Active-state highlighting still uses
                currentPath (no change). The `anchor` field is kept for
                legacy direct-link scrolls (e.g. mahboob.engineer/#log).
-               Phase 11 (T11.4): active links now glow amber via the
-               pulsing `nav-glow` keyframe in globals.css. */
+               Active links are simply painted amber (no pulse) — the
+               previous Phase 11 nav-glow keyframe was dropped in
+               Phase 14 because the pulse read as amber-on-amber noise
+               against bg-bg. */
             const target = l.href;
             const isActive = currentPath.startsWith(l.href);
             return (
@@ -107,7 +109,7 @@ export async function Navbar() {
                   className={cn(
                     "text-[14px] transition-colors",
                     isActive
-                      ? "text-amber font-semibold nav-glow-active"
+                      ? "text-amber font-semibold"
                       : "text-t3 hover:text-t1 font-medium",
                   )}
                   data-eyebrow={l.eyebrow}
@@ -141,8 +143,8 @@ export async function Navbar() {
       </div>
 
       {/* Mobile nav: scrollable chip row below the header. Solid
-          bg-bg per T6.9 contrast fix. Active links glow amber
-          (Phase 11 T11.4). */}
+          bg-bg per T6.9 contrast fix. Active links are painted amber
+          (Phase 14 — dropped the Phase 11 nav-glow pulse). */}
       <ul className="border-border bg-bg flex items-center gap-5 overflow-x-auto border-t px-6 py-2 md:hidden">
         {LINKS.map((l) => {
           /* Same post-Phase 6 bug fix as desktop navlinks above. */
@@ -155,7 +157,7 @@ export async function Navbar() {
                 className={cn(
                   "text-[13px] transition-colors",
                   isActive
-                    ? "text-amber font-semibold nav-glow-active"
+                    ? "text-amber font-semibold"
                     : "text-t3 hover:text-t1 font-medium",
                 )}
               >
