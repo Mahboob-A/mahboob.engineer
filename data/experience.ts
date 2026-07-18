@@ -206,7 +206,14 @@ What I learned at Innovative IT. Write tests before the second PR. Keep serializ
       "API Performance: Optimized 22% of patient dashboard APIs, cutting database queries and reducing response times by 1 second.",
       "Doctor Dashboard: Built the doctor dashboard and analytics surface, improving data access by 20% and data-driven decisions by 15%.",
     ],
-    tags: [],
+    /* Phase 20: keywords pulled from the bullets above. WebSocket
+       is explicit ("real-time in-app chat over WebSocket"). DRF
+       is the framework that would have served the 22% of
+       patient dashboard APIs (matches the Django + DRF era of
+       late 2023). Redis sits behind both the realtime chat and
+       the dashboard analytics layer. Each resolves to a
+       /stack#<id> chip via resolveStackSlug(). */
+    tags: ["WebSocket", "DRF", "Redis"],
   },
 ];
 
