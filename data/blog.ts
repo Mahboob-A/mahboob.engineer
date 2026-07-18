@@ -97,7 +97,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
        both (native wins on /writing/[slug] via last-write-wins). */
     slug: "linux-networking-part-1-medium",
     title:
-      "Linux Networking for Backend Engineers — Part 1: Namespaces & Virtual Interfaces",
+      "Linux Networking for Backend Engineers. Part 1: Namespaces and Virtual Interfaces",
     source: "medium",
     url: "https://imehboob.medium.com/linux-networking-your-hands-on-guide-to-understand-how-docker-works-part-1-fbf2b6cef06f",
     tags: ["linux", "networking", "docker", "internals"],
@@ -108,12 +108,12 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["unthink"],
     stack: ["Linux", "Docker"],
     excerpt:
-      "Starting a series on the kernel primitives that make container networking work — namespaces, veth pairs, and bridges, explained from the ground up.",
+      "Starting a series on the kernel primitives that make container networking work. Namespaces, veth pairs, and bridges, explained from the ground up.",
   },
   {
     slug: "linux-networking-part-2",
     title:
-      "Linux Networking — Part 2: Communication From Namespace to Host Through Virtual Ethernet",
+      "Linux Networking. Part 2: Communication From Namespace to Host Through Virtual Ethernet",
     source: "medium",
     url: "https://imehboob.medium.com/linux-networking-communication-from-namespace-to-host-through-virtual-ethernet-part-2-a661521c9b5d",
     tags: ["linux", "networking", "namespaces", "veth"],
@@ -124,12 +124,12 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["unthink"],
     stack: ["Linux"],
     excerpt:
-      "How namespaces actually talk to each other — virtual ethernet pairs, packet flow, and why Docker's bridge networking works the way it does.",
+      "How namespaces actually talk to each other. Virtual ethernet pairs, packet flow, and why Docker's bridge networking works the way it does.",
   },
   {
     slug: "linux-networking-part-3",
     title:
-      "Linux Networking — Part 3: Bridge and Default Gateway for One-Way Outbound Communication",
+      "Linux Networking. Part 3: Bridge and Default Gateway for One-Way Outbound Communication",
     source: "medium",
     url: "https://imehboob.medium.com/linux-networking-bridge-and-default-gateway-for-one-way-outbound-communication-part-3-32e3ba1c9a84",
     tags: ["linux", "networking", "bridge", "gateway"],
@@ -145,7 +145,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
   {
     slug: "linux-networking-part-4",
     title:
-      "Linux Networking — Part 4: SNAT and Packet Forwarding to Connect to the Internet From a Namespace",
+      "Linux Networking. Part 4: SNAT and Packet Forwarding to Connect to the Internet From a Namespace",
     source: "medium",
     url: "https://imehboob.medium.com/linux-networking-snat-and-packet-forwarding-to-connect-to-internet-from-namespace-part-4-558a505794bd",
     tags: ["linux", "networking", "nat", "iptables"],
@@ -156,7 +156,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["unthink"],
     stack: ["Linux"],
     excerpt:
-      "The last mile — how source NAT (MASQUERADE) and packet forwarding complete the loop so a namespace can hit the public internet.",
+      "The last mile. How source NAT (MASQUERADE) and packet forwarding complete the loop so a namespace can hit the public internet.",
   },
 
   /* ─── PostgreSQL series (3 parts) ───────────────────────────────── */
@@ -190,7 +190,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["taply", "algocode"],
     stack: ["PostgreSQL"],
     excerpt:
-      "INNER, LEFT, RIGHT, FULL — and what each one actually means before the planner rewrites your query into something different.",
+      "INNER, LEFT, RIGHT, FULL, and what each one actually means before the planner rewrites your query into something different.",
   },
   {
     slug: "postgresql-part-3",
@@ -213,7 +213,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
   {
     slug: "redis-part-1",
     title:
-      "Your Easy Guide to Design Highly Available Systems With Redis — Part 1",
+      "Your Easy Guide to Design Highly Available Systems With Redis. Part 1",
     source: "medium",
     url: "https://medium.com/@imehboob/your-easy-guide-to-design-highly-available-system-with-redis-part-1-812d3baec45b",
     tags: ["redis", "high-availability", "cache", "distributed"],
@@ -229,7 +229,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
   {
     slug: "redis-part-2",
     title:
-      "Step-by-Step Guide to Deploy Redis Cluster in AWS to Achieve High Availability — Part 2",
+      "Step-by-Step Guide to Deploy Redis Cluster in AWS to Achieve High Availability. Part 2",
     source: "medium",
     url: "https://medium.com/@imehboob/step-by-step-guide-to-deploy-redis-cluster-in-aws-to-achieve-high-availability-part-2-93d96afdb2b4",
     tags: ["redis", "aws", "cluster", "high-availability"],
@@ -240,7 +240,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["taply", "unthink"],
     stack: ["Redis", "AWS"],
     excerpt:
-      "From a single EC2 to a fault-tolerant Redis Cluster — the real-world glue that turns theory into a prod deployment.",
+      "From a single EC2 to a fault-tolerant Redis Cluster. The real-world glue that turns theory into a prod deployment.",
   },
 
   /* ─── Standalone cross-posts ────────────────────────────────────── */
@@ -256,7 +256,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["pulumi-infra"],
     stack: ["AWS", "Nginx"],
     excerpt:
-      "A practical first step into AWS networking — VPCs, subnets, security groups, and the bastion pattern explained hands-on.",
+      "A practical first step into AWS networking. VPCs, subnets, security groups, and the bastion pattern explained hands-on.",
   },
   {
     slug: "building-leetcode-online-judge",
@@ -270,7 +270,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["algocode"],
     stack: ["Django", "RabbitMQ", "Docker"],
     excerpt:
-      "The full story behind Algocode — microservice boundaries, RabbitMQ coordination, and running untrusted code safely inside sibling Docker containers.",
+      "The full story behind Algocode. Microservice boundaries, RabbitMQ coordination, and running untrusted code safely inside sibling Docker containers.",
   },
   {
     /* Post-Phase 6 bug fix: native MDX at content/posts/message-queue-101.mdx
@@ -286,7 +286,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["algocode"],
     stack: ["RabbitMQ"],
     excerpt:
-      "RabbitMQ from first principles — why Algocode needed a message queue, how exchanges and queues actually work, and the mental model that made it click.",
+      "RabbitMQ from first principles. Why Algocode needed a message queue, how exchanges and queues actually work, and the mental model that made it click.",
   },
   {
     slug: "drishti-ai-eye-screening-agent",
@@ -300,14 +300,14 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["drishti-ai"],
     stack: ["Django", "FastAPI", "WebRTC", "Gemini"],
     excerpt:
-      "Building a real-time AI eye-screening pipeline for rural India over WebRTC — agent architecture, queue design, and the constraints that shaped every decision.",
+      "Building a real-time AI eye-screening pipeline for rural India over WebRTC. Agent architecture, queue design, and the constraints that shaped every decision.",
   },
 
   /* ─── Native MDX posts (managed by Keystatic, T5.6) ─────────────── */
   {
     slug: "linux-networking-part-1",
     title:
-      "Linux Networking for Backend Engineers — Part 1: Namespaces & Virtual Interfaces",
+      "Linux Networking for Backend Engineers. Part 1: Namespaces and Virtual Interfaces",
     source: "native",
     url: "/writing/linux-networking-part-1",
     tags: ["linux", "networking", "docker", "internals"],
@@ -318,7 +318,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["unthink"],
     stack: ["Linux", "Docker"],
     excerpt:
-      "Starting a hands-on series on the kernel primitives that make container networking work — namespaces, veth pairs, and bridges, explained from the ground up.",
+      "Starting a hands-on series on the kernel primitives that make container networking work. Namespaces, veth pairs, and bridges, explained from the ground up.",
     publishedAt: "2026-07-15",
   },
   {
@@ -333,13 +333,13 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["algocode"],
     stack: ["RabbitMQ"],
     excerpt:
-      "RabbitMQ from first principles — what a message queue actually solves, how exchanges and queues connect, and the mental model that makes it click when you're debugging a stuck producer at 2am.",
+      "RabbitMQ from first principles. What a message queue actually solves, how exchanges and queues connect, and the mental model that makes it click when you're debugging a stuck producer at 2am.",
     publishedAt: "2026-07-15",
   },
   {
     slug: "algocode-deep-dive",
     title:
-      "How I Built Algocode — A Distributed Online Judge, Microservices to Kernel Isolation",
+      "How I Built Algocode. A Distributed Online Judge, Microservices to Kernel Isolation",
     source: "native",
     url: "/writing/algocode-deep-dive",
     tags: ["microservices", "docker", "rabbitmq", "distributed-systems", "linux"],
@@ -348,7 +348,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
     projects: ["algocode"],
     stack: ["Django", "RabbitMQ", "Docker"],
     excerpt:
-      "The full build story behind Algocode — splitting a judge into three independently deployable services, coordinating through RabbitMQ, and running untrusted C++ inside sibling Docker containers with Linux namespaces + cgroups + seccomp enforcing hard resource limits.",
+      "The full build story behind Algocode. Splitting a judge into three independently deployable services, coordinating through RabbitMQ, and running untrusted C++ inside sibling Docker containers with Linux namespaces + cgroups + seccomp enforcing hard resource limits.",
     publishedAt: "2026-07-15",
   },
 ];

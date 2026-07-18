@@ -56,16 +56,16 @@ export const VILLAINS: VillainData[] = [
       "Go modules and project structure",
     ],
     whatImLearning: [
-      "Writing idiomatic Go — interfaces, composition over inheritance",
+      "Writing idiomatic Go. Interfaces, composition over inheritance",
       "Building container runtime internals in Go",
       "gRPC services and protobuf in Go",
     ],
     activeResources: [
-      "Building Systems with Go — Poridhi",
+      "Building Systems with Go, by Poridhi",
       "Container runtime internals series",
     ],
     encounterLine:
-      "You approach the Go territories. You know the basics — but concurrency at scale? Come back stronger.",
+      "You approach the Go territories. You know the basics, but concurrency at scale? Come back stronger.",
   },
   {
     id: "terraform-titan",
@@ -74,7 +74,7 @@ export const VILLAINS: VillainData[] = [
     learningArea: "Terraform",
     hp: 50,
     whatIKnow: [
-      "Core Terraform concepts — providers, resources, state",
+      "Core Terraform concepts. Providers, resources, state",
       "Writing basic HCL modules for AWS",
       "Already shipped Pulumi IaC (Python) in production",
     ],

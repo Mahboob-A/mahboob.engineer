@@ -115,7 +115,7 @@ export const FAQ: FAQItem[] = [
   {
     question: "What stage of companies do you prefer?",
     answer:
-      "Startups to mid-size. Series A–C is the sweet spot — large enough to have real systems problems, small enough to own architecture decisions.",
+      "Startups to mid-size. Series A through C is the sweet spot. Large enough to have real systems problems, small enough to own architecture decisions.",
   },
   {
     question: "Do you take freelance / consulting work?",
