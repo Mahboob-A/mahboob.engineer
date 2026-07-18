@@ -30,6 +30,7 @@ import {
 } from "@/data/stack";
 import { PROJECTS_BY_SLUG } from "@/data/projects";
 import { BLOG_POSTS_BY_SLUG, postsByStack } from "@/data/blog";
+import { EXPERIENCE_BY_ID } from "@/data/experience";
 
 export interface StackShellProps {
   techs: ReadonlyArray<StackItem>;
@@ -72,9 +73,38 @@ export function StackShell({
     const tech = STACK_BY_ID[activeId];
     if (!tech) return null;
 
-    const projects = tech.projects
-      .map((slug) => PROJECTS_BY_SLUG[slug])
-      .filter((p): p is NonNullable<typeof p> => p !== undefined);
+    /* Phase 22: split the tech.projects slugs into two arrays.
+       Resolved ones turn into the project cards on the right.
+       Unresolved slugs (e.g. "nexbell" — no /work/<nexbell> case
+       study exists, but the slug is a reference string tying the
+       tech to the NexBell tenure) surface as an informational
+       note in the detail panel rather than getting filtered
+       out silently and leaving a "0 projects" caption. */
+
+    const resolvedProjects: typeof PROJECTS_BY_SLUG[string][] = [];
+    const unresolvedRefs: Array<{
+      slug: string;
+      /** Experience entry id that matches the slug, if any. */
+      company: string | null;
+      period: string | null;
+      status: "active" | "completed" | null;
+    }> = [];
+    for (const slug of tech.projects) {
+      const project = PROJECTS_BY_SLUG[slug];
+      if (project) {
+        resolvedProjects.push(project);
+      } else {
+        const exp = EXPERIENCE_BY_ID[slug];
+        unresolvedRefs.push({
+          slug,
+          company: exp?.company ?? null,
+          period: exp?.period ?? null,
+          status: exp?.status ?? null,
+        });
+      }
+    }
+
+    const projects = resolvedProjects;
 
     const posts = postsByStack(tech.id);
     const postsFiltered = posts.filter((p) => BLOG_POSTS_BY_SLUG[p.slug]);
@@ -96,7 +126,7 @@ export function StackShell({
         (n): n is { tech: StackItem; sharedCount: number } => n.tech != null,
       );
 
-    return { tech, projects, posts: postsFiltered, neighbors };
+    return { tech, projects, posts: postsFiltered, neighbors, unresolvedRefs };
   }, [activeId, techs]);
 
   /* Suggested nodes for the empty state — top-5 most-connected. */
@@ -142,6 +172,7 @@ export function StackShell({
       <TechDetailPanel
         tech={detail?.tech ?? null}
         projects={detail?.projects ?? []}
+        unresolvedRefs={detail?.unresolvedRefs ?? []}
         posts={detail?.posts ?? []}
         neighbors={detail?.neighbors ?? []}
         onSelect={setActiveId}
