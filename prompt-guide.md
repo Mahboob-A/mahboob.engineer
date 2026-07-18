@@ -168,7 +168,7 @@ Layout (top to bottom):
 2. Section header:
    - Eyebrow: "01 / DEPLOYMENT LOG" in acc color (#5CC9A0), mono font
    - Title: "The full record" in Space Grotesk, large
-   - Subtext: "Every role, every result — not summarised."
+   - Subtext: "Work and education. In detail."
 
 3. Experience entries — loop over EXPERIENCE array from data/experience.ts
    Each entry is a card with: surface background, border, border-radius 8px, padding 24px 28px

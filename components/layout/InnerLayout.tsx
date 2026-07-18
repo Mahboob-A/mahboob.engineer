@@ -34,7 +34,7 @@
  *           num: "01",
  *           section: "DEPLOYMENT LOG",
  *           title: "The full record",
- *           description: "Every role, every result — not summarised.",
+ *           description: "Work and education. In detail.",
  *         }}
  *       >
  *         {/* page-specific content *\/}

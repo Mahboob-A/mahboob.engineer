@@ -36,7 +36,7 @@ import { resolveStackSlug } from "@/data/stack-slug-map";
 
 export const metadata: Metadata = pageMetadata(
   "Log",
-  "The full record — every role, every result, plus what I'm working on now.",
+  "The full record. Every role, every result, plus what I'm working on now.",
 );
 
 export default function LogPage() {
@@ -48,7 +48,7 @@ export default function LogPage() {
         num: "01",
         section: "DEPLOYMENT LOG",
         title: "The full record",
-        description: "Every role, every result — not summarised.",
+        description: "Work and education. In detail.",
       }}
     >
       <SectionSeparator label="EXPERIENCE" />
