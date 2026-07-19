@@ -2775,3 +2775,99 @@ as deliberate prose. Mapping (locked in during planning):
   - `/work/taply` → no badge (private repo).
   - `/work/unthink` → no badge (no GitHub).
 
+---
+
+# Phase 25 — Landing eyebrow strip + inner-page eyebrow rework
+
+**Phase:** 25 — Eyebrow copy pass
+
+**Phase status:** done
+
+**Date:** 2026-07-19
+
+**Goal:** Drop the eyebrow line from the 5 landing-page sections
+(DeployLog / Projects / SkillGraph / Blog / Contact) and rework
+the inner-page eyebrows so they don't duplicate the H1. Visual
+treatment stays the same; copy is shorter and lowercase so it
+reads as a deliberate label rather than templating.
+
+---
+
+## T25.1 — Landing eyebrow strip + inner-page eyebrow rework
+
+**Task status:** done
+**Commit:** `ff2ae1e`
+**Date:** 2026-07-19
+
+### What shipped
+
+10 files touched:
+
+- **`components/sections/DeployLog.tsx`,
+  Projects.tsx, SkillGraph.tsx, Blog.tsx, Contact.tsx`** —
+  the `<p className="text-acc mb-2.5 font-mono text-[13px]
+  tracking-[1px]">{eyebrow}</p>` line removed from each
+  section header. H1 + description underneath stay
+  untouched. Each section opens directly with the
+  display-font H1.
+- **`app/log/page.tsx`** — InnerPageHeader eyebrow:
+  `"Where I've shipped"` → `"the run so far"`.
+- **`app/work/page.tsx`** — eyebrow:
+  `"Everything I've built end-to-end"` → `"the build catalog"`.
+- **`app/stack/page.tsx`** — eyebrow:
+  `"How the stack connects"` → `"every tool, every system"`.
+- **`app/writing/page.tsx`** — eyebrow:
+  `"The Backend Diaries"` → `"how i think"`. Headline:
+  `"Writing"` → `"The Backend Diaries"`.
+- **`app/lets-connect/page.tsx`** — unchanged.
+  Eyebrow stays `"Say hello"` (per user direction).
+- **`components/layout/InnerPageHeader.tsx`** — JSDoc
+  block refreshed to reflect the new lowercase eyebrow
+  pattern.
+
+### Decisions
+
+- **Landing eyebrows dropped entirely** — the user
+  explicitly asked for zero eyebrow content on the
+  landing. The 5 sections now lead with their H1 + one-line
+  description. Cleaner visual rhythm; no AI-slop "section
+  number" feel.
+- **Lowercase inner-page eyebrows** — the `text-acc font-mono
+  text-[13px] tracking-[1px]` style stays; only the copy
+  changes. Lowercase reads as a deliberate label rather
+  than a templated header tag.
+- **`/writing` is the cleanest eyebrow/headline pair**:
+  eyebrow `how i think` + headline `The Backend Diaries`
+  — the two labels read as a complete sentence ("how I
+  think, The Backend Diaries"). Natural semantic split.
+- **`/lets-connect` left unchanged** — the user
+  explicitly said no change needed; the existing
+  `"Say hello"` eyebrow + `"Let's build something
+  durable."` headline already work.
+- **JSDoc comments at the top of each section component
+  still reference the old `XX / LABEL`** — developer docs,
+  not visible prose. Untouched per the tone law.
+- **No new components** — single-file edits per section
+  plus the InnerPageHeader JSDoc refresh.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- `grep -rn "text-acc mb-2.5 font-mono" components/sections`
+  → 0 hits. The landing eyebrow `<p>` lines are fully
+  removed.
+- Live SSR (dev) smoke across `/`, `/log`, `/work`,
+  `/stack`, `/writing`:
+  - `/` → no eyebrow lines on any of the 5 sections;
+    each section opens with H1 directly.
+  - `/log` → eyebrow `the run so far`, H1 `Where I've
+    shipped, what I built, and how it went.`
+  - `/work` → eyebrow `the build catalog`, H1
+    `Everything I've built end-to-end`.
+  - `/stack` → eyebrow `every tool, every system`, H1
+    `How the stack connects`.
+  - `/writing` → eyebrow `how i think`, H1
+    `The Backend Diaries`.
+  - `/lets-connect` → unchanged.
+
