@@ -7,7 +7,7 @@
 
 ## T32.1 — Game mode rescue plan, boot fix, and mode navigation cleanup
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `cbd4bd0`
 **Date:** 2026-07-19
 
 ### What shipped
@@ -37,7 +37,7 @@
 
 ## T32.2 — Extract first-pass Backend City sprites from ChatGPT sheets
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `4d52557`
 **Date:** 2026-07-19
 
 ### What shipped
@@ -65,7 +65,7 @@
 
 ## T32.3 — Add deliberate Backend City layout model
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `9e1ffcb`
 **Date:** 2026-07-19
 
 ### What shipped
@@ -92,7 +92,7 @@
 
 ## T32.4 — Replace tilemap renderer with layout-driven city vertical slice
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `42acfc7`
 **Date:** 2026-07-19
 
 ### What shipped
@@ -121,7 +121,7 @@
 
 ## T32.5 — Restore arrow-key movement alongside WASD
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `c754403`
 **Date:** 2026-07-19
 
 ### What shipped
@@ -145,7 +145,7 @@
 
 ## T32.6 — Make project overlays escapable and show shared diagrams
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `c754403`
 **Date:** 2026-07-19
 
 ### What shipped
@@ -171,7 +171,7 @@
 
 ## T32.7 — Fix clipped game overlays and villain close loop
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `f96e397`
 **Date:** 2026-07-19
 
 ### What shipped
