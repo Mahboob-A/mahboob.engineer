@@ -324,3 +324,83 @@ All grounded in the corpus, all in first-person, all below the
   mutual-exclusion guard before any network call.
 - Real Upstash call deferred to first production deploy (real env
   vars not available locally).
+
+---
+
+## T34.5 — `docs/rag/rag-management.md`
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `docs/rag/rag-management.md` (new file) — command-focused
+  documentation for the dynamic RAG corpus. Organized as:
+  - TL;DR table of the three modes (`--dry-run`, `--reset`,
+    `--reset-all`).
+  - "What `pnpm rag:reindex` does" — three-phase walkthrough
+    (build corpus → assign stable id → upsert to Upstash).
+  - "The three flag modes" — what each does, when to reach for
+    which.
+  - "When does Upstash re-embed vs reuse?" — explicit table
+    mapping each scenario to embedding cost.
+  - "Edit scenarios" — table mapping common edits (new project,
+    edit notes, delete, etc.) to the right reindex command.
+  - "Production deploy loop" — 5-step sequence for shipping new
+    corpus content.
+  - "Why production defaults to `--reset`" — cost analysis.
+  - "When to reach for `--reset-all`" — escape-hatch rationale.
+  - "Where it lands in the file tree" — index of all RAG files.
+  - "Notes for future work" — known caveats.
+- `docs/rag/OPERATIONS.md` — added a "see also" pointer to
+  `rag-management.md` at the top, since OPERATIONS.md is
+  topic-organized and the new doc is command-organized.
+- `docs/RAG_TERMINAL.md` — updated the **Status:** blockquote
+  from "Not implemented" to "Implemented (Phase 33 + Phase 34)"
+  with a link to the new command-level doc. The original v1-
+  is-still-live caveat is preserved.
+
+### Decisions
+
+- The new doc is **operator-facing**, not visitor-facing. It
+  describes how to manage the corpus, not what the corpus
+  contains. Same `docs/rag/` location keeps related docs
+  together.
+- Cross-links from `OPERATIONS.md` (topic → command pointer)
+  and `RAG_TERMINAL.md` (runbook → management) so a reader
+  of either finds the command-focused doc without needing
+  to know it exists by name.
+- The script's actual behaviour (`stableId()` format,
+  dim-check ordering, mutual-exclusion guard) is the source
+  of truth. The doc cites the relevant functions where
+  useful but doesn't quote the source verbatim — easier to
+  keep in sync.
+
+### Caveats / pending
+
+- The chunker indexes every `.md` file under `docs/`, including
+  this new one. `pnpm rag:reindex -- --dry-run` reports
+  447 chunks (up from 429) — the new doc split into ~18
+  chunks under the 250-word cap. Retrieval occasionally
+  surfacing management prose in a dynamic-mode answer is
+  harmless (80-word cap compresses visitor-facing answers
+  away from operator content), but if it ever shows up in
+  smoke tests, the cleanest fix is a tiny chunker exclusion
+  for `docs/rag/_*` or `docs/rag/rag-*` paths. Not worth doing
+  now; flagging for future work.
+- The "Notes for future work" section in the doc points to
+  three things the script doesn't currently do (skip-when-
+  unchanged, smart diff, automated smoke against Upstash).
+  All three are small follow-ups if the corpus ever grows
+  enough to make them worth the complexity.
+
+### Verified
+
+- `pnpm typecheck` → clean (docs only).
+- `pnpm rag:reindex -- --dry-run` → 447 chunks (was 429),
+  18-doc growth from the new file; no errors.
+- Spot-checked the doc's "When does Upstash re-embed vs
+  reuse?" table against the literal `scripts/rag-reindex.ts`
+  flow and `lib/rag/chunks.ts:stableId()` definition. Numbers
+  match.

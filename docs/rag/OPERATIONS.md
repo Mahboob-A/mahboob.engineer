@@ -3,6 +3,11 @@
 **Purpose:** Day-to-day setup, reindexing, deployment, and debugging notes for
 the dynamic hero terminal.
 
+> **For command-level documentation** (`pnpm rag:reindex` flags, when
+> to run them, embedding caching behaviour), see
+> [`rag-management.md`](./rag-management.md). This file is organized by
+> topic (env, debug, security); that file is organized by command.
+
 ## Required Services
 
 1. Fireworks API key for chat.

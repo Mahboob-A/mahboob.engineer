@@ -5,9 +5,12 @@
 > (shipped in Phase 7 T7.6) to a real LLM-backed chat that "knows about me"
 > via retrieval-augmented generation over the portfolio content.
 >
-> **Status:** Not implemented. This runbook documents the swap path; the
-> v1 static terminal is live and serves users correctly. v2 is a future
-> task with the prerequisite env vars added to `.env.example` (T7.7).
+> **Status:** Implemented (Phase 33 + Phase 34). The dynamic mode is the
+> v2 described here, the corpus is in production, and `pnpm rag:reindex`
+> ships the content to Upstash. See [`docs/rag/rag-management.md`](rag/rag-management.md)
+> for command-level docs (the three modes, when to run which, edit
+> scenarios, deploy loop). The v1 static terminal is still live and
+> is the default on every page load.
 
 ---
 
