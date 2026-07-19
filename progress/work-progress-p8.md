@@ -2697,3 +2697,81 @@ as deliberate prose. Mapping (locked in during planning):
   RelatedWriting / RelatedStack / SeriesNav all render
   unchanged.
 
+---
+
+## T24.7 — Stars badge in case-study Hero
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`data/projects.ts`** — added `stars: N` to 9 projects:
+  - `movio`: 13
+  - `datalineage-doctor`: 25
+  - `cutetube`: 8
+  - `drishti-ai`: 14
+  - `airpass`: 12
+  - `pulumi-infra`: 8
+  - `imgtwist`: 8
+  - `prostream`: 10
+  - `load-balancer`: 7
+  - `algocode` already had `stars: 22`. Taply + UnThink
+    intentionally skip the field — Taply is private
+    (`github: null`) and UnThink is in active build
+    (`github: null`).
+- **`app/work/[slug]/page.tsx`** — the case-study Hero
+  (`function Hero`) now renders a `★ N` badge next to the
+  `[year]` chip in the badge row. Style matches the
+  `ProjectCard` (T3.2) implementation: `text-amber
+  font-mono text-[13px]`. Adds an `aria-label={`${stars}
+  stars on GitHub`}` for screen readers (the visual "★
+  22" reads as opaque to AT users).
+
+### Decisions
+
+- **Same-row placement as `[year]`** — sits in the existing
+  `<div className="mb-3 flex items-center gap-3">` row.
+  Visual hierarchy: status Badge → `[year]` → `★ N`. No
+  layout shift, no new flex container.
+- **Conditional render** — `project.stars ? <span>...</span>
+  : null`. Taply + UnThink render without the badge, same
+  as before.
+- **`aria-label` on the badge** — the unicode star
+  character isn't always announced by screen readers, so
+  the explicit `"22 stars on GitHub"` label makes the
+  social-proof signal accessible.
+- **`ProjectCard.tsx` already had the badge pattern**
+  (T3.2, for `/work` grid cards + `/log/[id]`
+  RelatedProjects). This commit lifts the same pattern to
+  the case-study Hero — single visual language across
+  every surface that mentions a project.
+- **No badge on `/game` mode** — the `CaseStudyOverlay`
+  component renders the same `project.stars` via
+  `ProjectCard`'s already-implemented pattern; no change
+  needed there.
+- **Star counts are user-provided values** — taken
+  verbatim from the planning discussion. If any are wrong
+  vs GitHub's current state, the user can update them in
+  `data/projects.ts` directly; the field is the single
+  source of truth.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR (dev) smoke per project:
+  - `/work/algocode` → ★ 22 next to [2024].
+  - `/work/movio` → ★ 13.
+  - `/work/datalineage-doctor` → ★ 25.
+  - `/work/drishti-ai` → ★ 14.
+  - `/work/cutetube` → ★ 8.
+  - `/work/airpass` → ★ 12.
+  - `/work/pulumi-infra` → ★ 8.
+  - `/work/imgtwist` → ★ 8.
+  - `/work/load-balancer` → ★ 7.
+  - `/work/prostream` → ★ 10.
+  - `/work/taply` → no badge (private repo).
+  - `/work/unthink` → no badge (no GitHub).
+

@@ -137,6 +137,14 @@ function Hero({ project }: { project: ProjectItem }) {
               : "shipped"}
         </Badge>
         <span className="text-t3 font-mono text-[13px]">[{project.year}]</span>
+        {project.stars ? (
+          <span
+            className="text-amber font-mono text-[13px]"
+            aria-label={`${project.stars} stars on GitHub`}
+          >
+            ★ {project.stars}
+          </span>
+        ) : null}
       </div>
       <h1 className="font-display text-t1 text-[clamp(32px,5vw,52px)] leading-[1.05] font-bold tracking-[-1px]">
         {project.name}

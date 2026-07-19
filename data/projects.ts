@@ -265,6 +265,7 @@ What's next, if I pick this back up. Skip Mongo for results and use Postgres JSO
     demo: null,
     youtube: "https://youtu.be/Y2_KYdhKGhw",
     youtube_extra: ["https://youtu.be/F_R2KIXYBMU"],
+    stars: 13,
     domain: ["video", "distributed", "backend"],
     stack: [
       "Django",
@@ -312,6 +313,7 @@ ProStream (live streaming) is the sibling project and CuteTube (monolith) is the
     github: "https://github.com/Mahboob-A/datalineage-doctor",
     demo: null,
     youtube: "https://youtu.be/p9yGq0KsWhw",
+    stars: 25,
     domain: ["ai", "platform", "backend", "observability"],
     stack: [
       "Python",
@@ -354,6 +356,7 @@ What's next. HMAC webhook signature verification. Real auth on the dashboard. Mu
     github: "https://github.com/Mahboob-A/CuteTube",
     demo: null,
     youtube: null,
+    stars: 8,
     domain: ["video", "backend"],
     stack: [
       "Django",
@@ -398,6 +401,7 @@ What's next, if I ever revisit this. Move the worker to a small container with b
     github: "https://github.com/Mahboob-A/drishti-ai",
     demo: null,
     youtube: "https://youtu.be/8LUT89UYnSc",
+    stars: 14,
     domain: ["ai", "backend", "distributed"],
     stack: [
       "Django",
@@ -444,6 +448,7 @@ What's next, if I keep going. HMAC-signed session audit logs. Real auth on the d
     github: "https://github.com/Mahboob-A/airpass",
     demo: null,
     youtube: null,
+    stars: 12,
     domain: ["backend", "distributed"],
     stack: ["Django", "Django Channels", "WebRTC", "WebSocket", "JavaScript"],
     metrics: [
@@ -482,6 +487,7 @@ What's next, if I revive it. A mobile wrapper. A richer signaling protocol for m
       "https://github.com/Mahboob-A/scalable-aws-infra-client-pulumi",
     demo: null,
     youtube: null,
+    stars: 8,
     domain: ["infra", "platform"],
     stack: [
       "Pulumi",
@@ -528,6 +534,7 @@ The pattern I want to reuse is defense-in-depth subnet isolation and the Bastion
     github: "https://github.com/Mahboob-A/ImgTwist",
     demo: null,
     youtube: null,
+    stars: 8,
     domain: ["backend"],
     stack: ["Django", "Celery", "Redis", "PostgreSQL", "Pillow", "AWS S3"],
     metrics: ["async image processing", "social features", "S3 storage"],
@@ -558,6 +565,7 @@ Improvements I'd prioritize. Enforce the rate limiter per-app per-IP. Add a CDN 
     github: "https://github.com/Mahboob-A/Load-Balancer-Nginx-Docker",
     demo: null,
     youtube: null,
+    stars: 7,
     domain: ["infra", "platform", "backend"],
     stack: ["Nginx", "Docker", "Docker Compose", "Shell scripting"],
     metrics: [
@@ -594,6 +602,7 @@ The original plan was to extend this into AWS-based load balancing (the project 
     demo: null,
     youtube: "https://youtu.be/TCOQNh2Kd-E",
     youtube_extra: ["https://youtu.be/z5IY4pMIIQM"],
+    stars: 10,
     domain: ["backend", "video", "distributed"],
     stack: [
       "Django",
