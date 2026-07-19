@@ -57,6 +57,52 @@ where static remains the default and dynamic is backed by a RAG API.
 
 ---
 
+## T33.4 — Provider adapter + env contract
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- Installed `openai` and `@upstash/vector` as server-side RAG dependencies.
+- Added `lib/rag/providers.ts`, a reusable provider adapter selected by
+  `LLM_PROVIDER`.
+- Implemented the OpenAI-compatible path for Fireworks, OpenAI, and Groq-style
+  providers, with Fireworks defaults for chat and embeddings.
+- Added explicit Gemini recognition and `GEMINI_API_KEY` validation, with a
+  clear not-yet-implemented adapter error until a Gemini-specific path is
+  added.
+- Updated `.env.example` with `LLM_PROVIDER`, provider-specific API keys,
+  Fireworks model defaults, OpenAI-compatible base URL, and Upstash Vector
+  settings.
+
+### Decisions
+
+- Used the `openai` package directly rather than the Vercel AI SDK so the same
+  adapter can call Fireworks chat completions and embeddings through
+  `https://api.fireworks.ai/inference/v1`.
+- Kept the route-facing interface small: `embed()` and `streamChat()`. The API
+  route and reindex script should not know which provider is active.
+- Set `temperature: 0.2`, `max_tokens: 500`, `timeout: 60_000`, and
+  `maxRetries: 3` for interactive terminal answers.
+- Omitted all Fireworks reasoning/thinking parameters.
+
+### Caveats / pending
+
+- Gemini is only recognized and key-validated; the actual Gemini adapter is
+  future work.
+- Groq has no default embedding model in this plan. It requires
+  `RAG_EMBEDDING_MODEL` or a separate embedding provider before it can be used
+  end-to-end.
+- No API route or reindex script uses this adapter yet.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+
+---
+
 ## T33.3 — Rich corpus builder + starter corpus notes
 
 **Task status:** done
