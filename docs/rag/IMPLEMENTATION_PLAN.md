@@ -15,6 +15,7 @@ Create the RAG docs under `docs/rag/`:
 - `CORPUS_GUIDE.md`
 - `IMPLEMENTATION_PLAN.md`
 - `OPERATIONS.md`
+- `PROVIDERS.md`
 
 No runtime changes.
 
@@ -45,21 +46,28 @@ Verification:
 Install server-side dependencies:
 
 ```txt
-ai
-@ai-sdk/openai
+openai
 @upstash/vector
 ```
 
 Update `.env.example`:
 
 ```txt
+LLM_PROVIDER=fireworks
+FIREWORKS_API_KEY=
+GEMINI_API_KEY=
+GROQ_API_KEY=
 OPENAI_API_KEY=
+RAG_CHAT_MODEL=accounts/fireworks/models/gpt-oss-120b
+RAG_EMBEDDING_MODEL=accounts/fireworks/models/qwen3-embedding-8b
+RAG_OPENAI_COMPAT_BASE_URL=https://api.fireworks.ai/inference/v1
 UPSTASH_VECTOR_REST_URL=
 UPSTASH_VECTOR_REST_TOKEN=
 ```
 
-Decide whether the reindex script needs a separate CLI OpenAI client. If the
-Vercel AI SDK embedding API is enough, do not add the `openai` package.
+`openai` is used as the reusable OpenAI-compatible client for Fireworks first,
+then later for OpenAI/Groq-compatible APIs. Gemini should be added behind the
+same provider interface when needed.
 
 Verification:
 
@@ -96,7 +104,7 @@ Behavior:
 
 - Validate env vars.
 - Build chunks.
-- Embed each chunk.
+- Embed each chunk through the selected provider adapter.
 - Upsert to Upstash Vector.
 - Store a corpus hash marker.
 - Skip if hash has not changed unless `--force` is passed.
@@ -116,9 +124,12 @@ Behavior:
 - Validate JSON body.
 - Accept only known terminal commands.
 - Map command to a safe default question.
-- Embed the question.
+- Select provider via `LLM_PROVIDER`.
+- Require the matching provider key, e.g. `FIREWORKS_API_KEY` for `fireworks`
+  or `GEMINI_API_KEY` for `gemini`.
+- Embed the question through the selected provider adapter.
 - Retrieve top chunks from Upstash Vector.
-- Stream grounded answer with the AI SDK.
+- Stream grounded answer through the selected provider adapter.
 - Return a useful `503` message if env vars are missing.
 
 Security:
@@ -127,6 +138,7 @@ Security:
 - No model keys in client.
 - No browser storage.
 - Conservative system prompt.
+- No Fireworks reasoning/thinking parameters.
 
 Verification:
 
@@ -204,3 +216,5 @@ Verification:
   first.
 - Whether corpus markdown files should be committed with full prose or kept as
   private local-only notes.
+- Whether Gemini gets a separate first-class adapter in the first code pass or
+  remains documented until the Fireworks path is stable.

@@ -53,11 +53,39 @@ flowchart LR
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Chat model | OpenAI via Vercel AI SDK | Use a small low-latency model for concise answers. |
-| Embeddings | OpenAI `text-embedding-3-small` | One embedding model for query + indexed chunks. |
+| Provider switch | `LLM_PROVIDER=fireworks` by default | Future values: `gemini`, `groq`, `openai`. See `docs/rag/PROVIDERS.md`. |
+| Chat model | Fireworks OpenAI-compatible API | Default: `accounts/fireworks/models/gpt-oss-120b`. |
+| Embeddings | Fireworks OpenAI-compatible embeddings API | Default: `accounts/fireworks/models/qwen3-embedding-8b`. |
 | Vector store | Upstash Vector | Serverless, Vercel-friendly REST API. |
-| Streaming | Vercel AI SDK `streamText()` | Server route streams text; client reads the response. |
+| Streaming | OpenAI-compatible streaming response | Server route streams text; client reads the response. |
 | Indexer | Local script | Reads registries and docs, embeds chunks, upserts to vector store. |
+
+## Provider Toggle
+
+The RAG route and reindex script should not import Fireworks-specific logic
+directly. They should call a reusable provider adapter selected by:
+
+```txt
+LLM_PROVIDER=fireworks
+```
+
+Provider key convention:
+
+| Provider | Required env var |
+|---|---|
+| `fireworks` | `FIREWORKS_API_KEY` |
+| `gemini` | `GEMINI_API_KEY` |
+| `groq` | `GROQ_API_KEY` |
+| `openai` | `OPENAI_API_KEY` |
+
+For Fireworks, use the OpenAI-compatible base URL:
+
+```txt
+https://api.fireworks.ai/inference/v1
+```
+
+Do not enable Fireworks reasoning/thinking options for this portfolio terminal.
+Answers should be final-text only.
 
 ## Runtime Boundaries
 
@@ -65,7 +93,7 @@ flowchart LR
   active command, streaming output, and keyboard behavior.
 - `app/api/rag/route.ts` is server-only and must import model/vector clients
   only inside the route boundary.
-- No OpenAI or Upstash keys are exposed to the client.
+- No provider, model, or Upstash keys are exposed to the client.
 - No browser storage is used. Static mode remains default on every load.
 - No project, experience, or contact content is hardcoded in JSX. Static mode
   keeps reading from `data/*.ts`; dynamic mode reads from the indexed corpus.

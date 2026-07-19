@@ -1,7 +1,7 @@
 # RAG Terminal — Upgrade Runbook
 
 > **Audience:** Future agent session or the portfolio owner.
-> **Purpose:** Document the v2 upgrade path from the static HeroTerminal
+> **Purpose:** Document the v2 upgrade path from the static HeroTerminal (or keep static and add the dynamic rag based if requested)
 > (shipped in Phase 7 T7.6) to a real LLM-backed chat that "knows about me"
 > via retrieval-augmented generation over the portfolio content.
 >
@@ -29,21 +29,28 @@ landing page.
 
 | Layer | Choice | Why |
 |---|---|---|
-| LLM | OpenAI `gpt-4o-mini` via Vercel AI SDK | Cheap (~$0.10/1k queries), good enough for RAG, well-supported. |
-| Embeddings | OpenAI `text-embedding-3-small` | Same vendor (one API key), 1536 dimensions, cheap. |
+| Provider toggle | `LLM_PROVIDER=fireworks` default | Lets the implementation switch later to `gemini`, `groq`, or `openai` without rewriting the terminal route. |
+| LLM | Fireworks OpenAI-compatible API | Mahboob has Fireworks credits; default model: `accounts/fireworks/models/gpt-oss-120b`. |
+| Embeddings | Fireworks OpenAI-compatible embeddings API | Default model: `accounts/fireworks/models/qwen3-embedding-8b`. |
 | Vector store | Upstash Vector | Serverless, free tier, Vercel-friendly, REST API. No infra. |
-| Streaming | Vercel AI SDK `streamText()` | Built-in SSE streaming; integrates with the `<HeroTerminal>` typewriter. |
+| Streaming | OpenAI-compatible streaming | Fireworks supports streaming chat completions; client reads the streamed text into `<HeroTerminal>`. |
 | Chunker | Local Node script (`scripts/rag-reindex.mjs`) | Reads `data/projects.ts` + `data/experience.ts` + `data/blog.ts`, emits chunks with metadata. |
 
-The combo keeps everything in TS, deploys as Vercel functions, costs
-~$0.01/mo at portfolio traffic (100 queries × $0.0001 = $0.01).
+The provider contract is now expanded in `docs/rag/PROVIDERS.md`.
 
 ## New env vars
 
 Added to `.env.example` in T7.7:
 
 ```
-OPENAI_API_KEY=                  # platform.openai.com/api-keys
+LLM_PROVIDER=fireworks           # fireworks | gemini | groq | openai
+FIREWORKS_API_KEY=               # required when LLM_PROVIDER=fireworks
+GEMINI_API_KEY=                  # required when LLM_PROVIDER=gemini
+GROQ_API_KEY=                    # required when LLM_PROVIDER=groq
+OPENAI_API_KEY=                  # required when LLM_PROVIDER=openai
+RAG_CHAT_MODEL=accounts/fireworks/models/gpt-oss-120b
+RAG_EMBEDDING_MODEL=accounts/fireworks/models/qwen3-embedding-8b
+RAG_OPENAI_COMPAT_BASE_URL=https://api.fireworks.ai/inference/v1
 UPSTASH_VECTOR_REST_URL=         # console.upstash.com → Vector
 UPSTASH_VECTOR_REST_TOKEN=       # same
 ```
@@ -55,19 +62,18 @@ you want to test the RAG path during `pnpm dev`.
 ## New deps (server-only)
 
 ```
-pnpm add ai @ai-sdk/openai @upstash/vector
+pnpm add openai @upstash/vector
 ```
 
-All server-only — zero client bundle impact. Roughly 80 KB minified in
-the server bundle. (`ai` is the Vercel AI SDK; pulls in zod for
-validation.)
+All server-only — zero client bundle impact. The `openai` package is used as
+the reusable OpenAI-compatible client for Fireworks first, then OpenAI/Groq
+later. Gemini can be added behind the same provider adapter when needed.
 
 ## API route — `app/api/rag/route.ts`
 
 ```ts
-import { streamText } from "ai";
-import { openai } from "@ai-sdk/openai";
 import { Index } from "@upstash/vector";
+import { getRagModelClient } from "@/lib/rag/providers";
 import "server-only";
 
 const index = new Index({
@@ -83,12 +89,9 @@ export async function POST(req: Request) {
     return new Response("Bad request", { status: 400 });
   }
 
-  // 1. Embed the question.
-  const embedResp = await openai.embeddings.create({
-    model: "text-embedding-3-small",
-    input: question,
-  });
-  const queryVector = embedResp.data[0].embedding;
+  // 1. Select the configured provider and embed the question.
+  const modelClient = getRagModelClient();
+  const { embedding: queryVector } = await modelClient.embed(question);
 
   // 2. Top-5 from the vector store.
   const results = await index.query({ vector: queryVector, topK: 5, includeMetadata: true });
@@ -98,13 +101,14 @@ export async function POST(req: Request) {
     .map((r) => `[${r.metadata!.kind}] ${r.metadata!.title}: ${r.metadata!.text}`)
     .join("\n\n");
 
-  // 4. Stream the answer.
-  const result = streamText({
-    model: openai("gpt-4o-mini"),
-    system: `You are Mahboob Alam's portfolio assistant. Answer questions using ONLY the context below. Be concise (3-6 sentences). If the context doesn't contain the answer, say "I don't have that info — check /contact."\n\n---\n\n${context}`,
-    prompt: question,
-  });
-  return result.toDataStreamResponse();
+  // 4. Stream the answer. Provider implementation decides the SDK/base URL.
+  return modelClient.streamChat([
+    {
+      role: "system",
+      content: `You are Mahboob Alam's portfolio assistant. Answer questions using ONLY the context below. Be concise (3-6 sentences). If the context doesn't contain the answer, say "I don't have that info — check /lets-connect."\n\n---\n\n${context}`,
+    },
+    { role: "user", content: question },
+  ]);
 }
 ```
 
@@ -126,13 +130,13 @@ LLM can attribute its answers.)
  * overwrites the same key.
  */
 import { Index } from "@upstash/vector";
-import OpenAI from "openai";
+import { getRagModelClient } from "../lib/rag/providers";
 
 const index = new Index({
   url: process.env.UPSTASH_VECTOR_REST_URL,
   token: process.env.UPSTASH_VECTOR_REST_TOKEN,
 });
-const openai = new OpenAI();
+const modelClient = getRagModelClient();
 
 // …read PROJECTS, EXPERIENCE, BLOG_POSTS, write chunks with metadata
 ```
@@ -195,14 +199,14 @@ Cheap insurance; recommended once we're past v1 launch.
 
 ```
 Per query:
-  Embeddings:      $0.00002  (1 input × 3-small)
-  LLM:             $0.00015  (300 in / 200 out × 4o-mini)
+  Embeddings:      provider-dependent
+  LLM:             provider-dependent
   Vector query:    free      (Upstash free tier: 10k queries/day)
   ─────────────────────────────────
-  Total per query: ~$0.00017
+  Total per query: depends on selected model/provider
 
 At ~100 portfolio queries/month:
-  Monthly cost: ~$0.017
+  Monthly cost: expected to remain low, but verify against Fireworks pricing
 ```
 
 Negligible. The upgrade pays for itself the first time a visitor spends
@@ -223,12 +227,15 @@ Negligible. The upgrade pays for itself the first time a visitor spends
 4. **Caching.** Identical questions from different visitors should
    hit the cache. Add a query-string hash + Upstash Redis for
    1-hour TTL. Or skip — the cost is already negligible.
+5. **Provider fallback.** Fireworks is the default. Later providers
+   should be selected only through `LLM_PROVIDER` and the matching
+   env key (`GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`).
 
 ## Rollout checklist
 
-- [ ] OpenAI + Upstash accounts created
-- [ ] `OPENAI_API_KEY`, `UPSTASH_VECTOR_REST_URL`, `UPSTASH_VECTOR_REST_TOKEN` in `.env.local`
-- [ ] `pnpm add ai @ai-sdk/openai @upstash/vector`
+- [ ] Fireworks + Upstash accounts created
+- [ ] `LLM_PROVIDER`, `FIREWORKS_API_KEY`, `UPSTASH_VECTOR_REST_URL`, `UPSTASH_VECTOR_REST_TOKEN` in `.env.local`
+- [ ] `pnpm add openai @upstash/vector`
 - [ ] `pnpm rag:reindex` populates the vector store (verify with `upstash` console)
 - [ ] `app/api/rag/route.ts` implemented (snippet above)
 - [ ] `HeroTerminal.tsx` swaps `buildPayload` for the streaming fetch

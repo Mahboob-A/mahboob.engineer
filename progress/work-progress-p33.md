@@ -54,3 +54,64 @@ where static remains the default and dynamic is backed by a RAG API.
 ### Verified
 
 - `pnpm typecheck` → clean.
+
+---
+
+## T33.2 — Provider toggle + Fireworks defaults
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- Added `docs/rag/PROVIDERS.md`, the reusable provider contract for the RAG
+  implementation. It sets `fireworks` as the default provider and documents
+  future planned values: `gemini`, `groq`, and `openai`.
+- Updated `docs/rag/ARCHITECTURE.md` so the proposed stack no longer reads as
+  OpenAI-only. It now specifies Fireworks OpenAI-compatible chat +
+  embeddings, the `LLM_PROVIDER` switch, provider-specific env key convention,
+  and the "no reasoning/thinking" rule.
+- Updated `docs/rag/IMPLEMENTATION_PLAN.md` so future code tasks install
+  `openai` + `@upstash/vector`, add `LLM_PROVIDER` and provider keys to the
+  env contract, and route embeddings/chat through a provider adapter instead
+  of direct SDK imports.
+- Updated `docs/rag/OPERATIONS.md` with Fireworks setup, model defaults,
+  OpenAI-compatible base URL, provider-key debugging, and the Fireworks
+  embedding model-id fallback caveat.
+- Updated `docs/RAG_TERMINAL.md` so the older runbook also reflects Fireworks
+  defaults and links the provider contract instead of recommending an
+  OpenAI-only Vercel AI SDK path.
+
+### Decisions
+
+- Fireworks is the first implementation target because Mahboob has Fireworks
+  credits. Default chat model:
+  `accounts/fireworks/models/gpt-oss-120b`. Default embedding model:
+  `accounts/fireworks/models/qwen3-embedding-8b`.
+- Use the OpenAI-compatible client path for Fireworks:
+  `https://api.fireworks.ai/inference/v1`. This matches the attached
+  Fireworks text-model and embedding docs and keeps the code reusable for
+  other compatible providers.
+- Provider selection should happen through `LLM_PROVIDER`, with matching env
+  key conventions: `FIREWORKS_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`,
+  `OPENAI_API_KEY`.
+- Do not enable Fireworks reasoning/thinking (`reasoning_effort`, `thinking`,
+  or `reasoning_content`) for the portfolio terminal. The terminal should
+  stream concise final answer text only.
+- Prefer a small `getRagModelClient()` adapter contract so API route and
+  reindex script call shared `embed()` / `streamChat()` methods.
+
+### Caveats / pending
+
+- Fireworks embedding docs list `fireworks/qwen3-embedding-8b`, while the user
+  requested `accounts/fireworks/models/qwen3-embedding-8b`. The docs say to
+  use the requested model first and switch only `RAG_EMBEDDING_MODEL` if
+  Fireworks returns `404`.
+- Gemini/Groq/OpenAI are documented as planned provider values, not implemented
+  yet.
+- No runtime code or dependencies were added in this task.
+
+### Verified
+
+- `pnpm typecheck` → clean.

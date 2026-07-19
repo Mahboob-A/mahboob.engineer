@@ -5,13 +5,14 @@ the dynamic hero terminal.
 
 ## Required Services
 
-1. OpenAI API key for chat + embeddings.
+1. Fireworks API key for the first chat + embeddings implementation.
 2. Upstash Vector index.
 3. Vercel environment variables for production and preview.
 
 Recommended Upstash Vector settings:
 
-- Dimension: `1536` for `text-embedding-3-small`.
+- Dimension: match Fireworks `qwen3-embedding-8b` output. If using the
+  `dimensions` request parameter later, match that configured value exactly.
 - Distance metric: cosine.
 - Region: closest reasonable region to Vercel deployment.
 
@@ -20,7 +21,14 @@ Recommended Upstash Vector settings:
 Local `.env.local`:
 
 ```txt
+LLM_PROVIDER=fireworks
+FIREWORKS_API_KEY=
+GEMINI_API_KEY=
+GROQ_API_KEY=
 OPENAI_API_KEY=
+RAG_CHAT_MODEL=accounts/fireworks/models/gpt-oss-120b
+RAG_EMBEDDING_MODEL=accounts/fireworks/models/qwen3-embedding-8b
+RAG_OPENAI_COMPAT_BASE_URL=https://api.fireworks.ai/inference/v1
 UPSTASH_VECTOR_REST_URL=
 UPSTASH_VECTOR_REST_TOKEN=
 ```
@@ -73,6 +81,9 @@ Then test:
 - Static command chips behave exactly as before.
 - Switching to dynamic shows `$ mehboob@portfolio-bastion:`.
 - Each dynamic chip streams a response.
+- Fireworks requests use `https://api.fireworks.ai/inference/v1`.
+- Fireworks requests omit `reasoning_effort`, `thinking`, and
+  `reasoning_content` handling.
 - Clearing output aborts any active stream.
 - Switching back to static does not call `/api/rag`.
 
@@ -102,10 +113,33 @@ Invalid payload should return `400`. Missing env vars should return `503`.
 
 Check:
 
-- `OPENAI_API_KEY` exists in the current environment.
+- `LLM_PROVIDER` is set. Default should be `fireworks`.
+- The matching provider key exists:
+  - `fireworks` → `FIREWORKS_API_KEY`
+  - `gemini` → `GEMINI_API_KEY`
+  - `groq` → `GROQ_API_KEY`
+  - `openai` → `OPENAI_API_KEY`
 - `UPSTASH_VECTOR_REST_URL` exists.
 - `UPSTASH_VECTOR_REST_TOKEN` exists.
 - Vercel was redeployed after adding env vars.
+
+### Fireworks returns 404 for embeddings
+
+The requested embedding model is:
+
+```txt
+accounts/fireworks/models/qwen3-embedding-8b
+```
+
+The Fireworks embedding docs also list:
+
+```txt
+fireworks/qwen3-embedding-8b
+```
+
+If the requested account-scoped model returns `404`, switch only
+`RAG_EMBEDDING_MODEL` to the shorter model id and record the decision in the
+active progress file.
 
 ### Answers are too generic
 
