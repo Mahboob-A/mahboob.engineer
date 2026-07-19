@@ -148,12 +148,8 @@ html {
   }
 }
 
-/* Navbar active-link indicator — Phase 14.
-   The previous Phase 11 (T11.4) `nav-glow` keyframe + .nav-glow-active
-   pulse was dropped because the text-shadow pulse read as amber-on-amber
-   noise against the navy bg-bg (the active link fill is already
-   `text-amber`). Active-state highlighting is now just the flat
-   `text-amber font-semibold` className applied in Navbar.tsx — no
-   animation, no shadow. `currentPath.startsWith(l.href)` still lights
-   the matching link on nested routes (e.g. /log/taply still lights
-   `log`) via the Phase 12 T12.1 middleware x-pathname header. */
+/* Navbar active-link indicator
+   Phase 14 removed the invisible text-shadow pulse. Active links now
+   use text-only color/weight in ActiveNavLink.tsx, with client-side
+   usePathname() matching so the state updates reliably across soft
+   navigation and nested routes. */
