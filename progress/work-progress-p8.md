@@ -41,7 +41,9 @@ navigate without scrolling.
 | 27  — `/lets-connect` right sidebar gap fill | 3076–3161 | Added 3 sidebar cards |
 | 28  — Sidebar trim + How-the-form-gets-used compression | 3162–3250 | Dropped 2 cards, compressed the kept one |
 | 29  — 5th line on How the form gets used | 3251–3312 | "I won't subscribe you to anything." |
-| 30  — 6th line on How the form gets used | 3313–3370 | "Nothing here trains an AI model!" |
+| 30  — 6th line on How the form gets used | 3313–3374 | "Nothing here trains an AI model." |
+| 31  — OG / favicon ChatGPT prompts + integration plan | 3375–3500 | 5 ChatGPT image-gen prompts + 7-commit plan docs |
+| 31.2 — OG + favicon asset integration | 3501–end | Static PNGs in /public, @vercel/og removed |
 
 **Skipped phase numbers:** 13, 20–23 — see work-progress-p23.md
 and work-progress-p20-22.md for Phase 20-22 + 23 history.
