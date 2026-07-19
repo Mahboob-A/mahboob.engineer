@@ -11,6 +11,9 @@
  *   - FAQ — 9 always-expanded Q&A pairs (Phase 26 expansion)
  *   - QUICK_CONTEXT_FITS + QUICK_CONTEXT_DOESNT — sidebar
  *     "is this email for me?" two-list card (Phase 26)
+ *   - WHAT_I_READ_FIRST + RESPONSE_TIME_LINES +
+ *     HOW_THE_FORM_GETS_USED — 3 sidebar cards (Phase 27)
+ *     fill the height gap left by the FAQ moving left.
  *   - CONTACT_LABELS + bucketFor() — the form's 5 label chips + color
  *
  * Source: portfolio-master-doc.md §0.2 + §2.6.
@@ -116,12 +119,12 @@ export const FAQ: FAQItem[] = [
   {
     question: "Are you open to relocating?",
     answer:
-      "Open to remote-first roles globally. In-office in Bangalore / Chennai possible.",
+      "Open to remote-first roles globally. On-site in India.",
   },
   {
     question: "What stage of companies do you prefer?",
     answer:
-      "Startups to mid-size. Series A through C is the sweet spot. Large enough to have real systems problems, small enough to own architecture decisions.",
+      "Startups to mid-size. Series A through C is the sweet spot, although founding role works too. Large enough to have real systems problems, small enough to own architecture decisions.",
   },
   {
     question: "Do you take freelance / consulting work?",
@@ -179,6 +182,45 @@ export const QUICK_CONTEXT_DOESNT: QuickContextItem[] = [
   { text: "Crypto / NFT outreach." },
   { text: "Generic agency sales." },
   { text: "Cold 'we're hiring 100 engineers' recruiter blasts." },
+];
+
+/* ─────────────────────────────────────────────────────────────────────
+   3c. Sidebar fill cards (Phase 27) — what I read first,
+       response time, how the form gets used. These are the
+       third, fourth, and fifth cards in the right sidebar to
+       match the 9-item FAQ on the left column.
+   ───────────────────────────────────────────────────────────────────── */
+
+export interface WhatIReadFirstItem {
+  text: string;
+}
+
+export const WHAT_I_READ_FIRST: WhatIReadFirstItem[] = [
+  { text: "The subject line + opening line" },
+  { text: "The role context (company, stage, team)" },
+  { text: "A specific problem you want help with" },
+  { text: "A link to the JD if there is one" },
+];
+
+export interface ResponseTimeLine {
+  text: string;
+}
+
+export const RESPONSE_TIME_LINES: ResponseTimeLine[] = [
+  { text: "Reach me IST (UTC+5:30), weekdays 1–6pm." },
+  { text: "Async-first. Expect a reply within a working day." },
+  { text: "Mark the subject [urgent] for same-day reads." },
+];
+
+export interface FormDataLine {
+  text: string;
+}
+
+export const HOW_THE_FORM_GETS_USED: FormDataLine[] = [
+  { text: "Relays to my Gmail via Resend." },
+  { text: "I read every email myself." },
+  { text: "Your address goes nowhere else." },
+  { text: "Form data is not stored on the site beyond the submit request." },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────

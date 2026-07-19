@@ -1,14 +1,19 @@
 /**
  * components/contact/ContactSidebar.tsx
  *
- * Right column on /lets-connect. Three stacked cards:
+ * Right column on /lets-connect. Six stacked cards:
  *
  *   1. Availability card  — 3 status lines + response time footer
  *   2. Direct links card  — 6 social/resume rows with hover affordance
- *   3. Quick context card — "is this email for me?" two-list
- *                           check (Phase 26). Replaces the old FAQ
- *                           card; FAQ moved to a full-width
- *                           section below the TerminalBlock.
+ *   3. Quick context card — "is this email for me?" two-list check
+ *   4. What I read first  — what lands at the top of inbox (Phase 27)
+ *   5. Response time      — timezone + reply cadence (Phase 27)
+ *   6. How the form gets used — privacy + data handling (Phase 27)
+ *
+ * Cards 4-6 (Phase 27) fill the height gap left when the FAQ
+ * card moved into a full-width section below the form. They
+ * keep the right column's bottom edge roughly aligned with
+ * the FAQ's bottom on lg+.
  *
  * Server Component. All data comes from `data/contact.ts`. No state.
  */
@@ -20,6 +25,9 @@ import {
   DIRECT_LINKS,
   QUICK_CONTEXT_FITS,
   QUICK_CONTEXT_DOESNT,
+  WHAT_I_READ_FIRST,
+  RESPONSE_TIME_LINES,
+  HOW_THE_FORM_GETS_USED,
   type AvailabilityKind,
   type DirectLinkItem,
 } from "@/data/contact";
@@ -38,6 +46,9 @@ export function ContactSidebar() {
       <AvailabilityCard />
       <DirectLinksCard />
       <QuickContextCard />
+      <WhatIReadFirstCard />
+      <ResponseTimeCard />
+      <HowTheFormGetsUsedCard />
     </aside>
   );
 }
@@ -118,7 +129,7 @@ function DirectLinkRow({ link }: { link: DirectLinkItem }) {
   );
 }
 
-/* ─── Quick context (Phase 26) ─────────────────────────────────────── */
+/* ─── Quick context ────────────────────────────────────────────────── */
 
 function QuickContextCard() {
   return (
@@ -135,7 +146,7 @@ function QuickContextCard() {
           <li key={i} className="flex items-start gap-2">
             <span
               aria-hidden
-              className="text-acc mt-[7px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-acc"
+              className="mt-[7px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-acc"
             />
             <span>{item.text}</span>
           </li>
@@ -150,8 +161,83 @@ function QuickContextCard() {
           <li key={i} className="flex items-start gap-2">
             <span
               aria-hidden
-              className="text-t3 mt-[7px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-t3/60"
+              className="mt-[7px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-t3/60"
             />
+            <span>{item.text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/* ─── What I read first (Phase 27) ────────────────────────────────── */
+
+function WhatIReadFirstCard() {
+  return (
+    <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
+      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
+        What I read first
+      </p>
+      <ul className="text-t1 space-y-2 text-[13.5px] leading-[1.55]">
+        {WHAT_I_READ_FIRST.map((item, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className="text-acc mt-[2px] font-mono text-[11px]"
+            >
+              →
+            </span>
+            <span>{item.text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/* ─── Response time (Phase 27) ────────────────────────────────────── */
+
+function ResponseTimeCard() {
+  return (
+    <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
+      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
+        Response time
+      </p>
+      <ul className="text-t1 space-y-2 text-[13.5px] leading-[1.55]">
+        {RESPONSE_TIME_LINES.map((item, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className="text-acc mt-[2px] font-mono text-[11px]"
+            >
+              →
+            </span>
+            <span>{item.text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/* ─── How the form gets used (Phase 27) ───────────────────────────── */
+
+function HowTheFormGetsUsedCard() {
+  return (
+    <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
+      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
+        How the form gets used
+      </p>
+      <ul className="text-t1 space-y-2 text-[13.5px] leading-[1.55]">
+        {HOW_THE_FORM_GETS_USED.map((item, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className="text-acc mt-[2px] font-mono text-[11px]"
+            >
+              →
+            </span>
             <span>{item.text}</span>
           </li>
         ))}
