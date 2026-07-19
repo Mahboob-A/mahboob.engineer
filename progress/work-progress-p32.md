@@ -87,3 +87,32 @@
 ### Verified
 - `pnpm typecheck`
 - `pnpm exec eslint game/world/city-layout.ts game/assets/manifest.ts`
+
+---
+
+## T32.4 — Replace tilemap renderer with layout-driven city vertical slice
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+- Updated `game/scenes/PreloadScene.ts` to load the extracted `GAME_ASSETS` building, terrain, prop, and player sprites instead of the broken Tiled map visual path.
+- Replaced `game/scenes/WorldScene.ts` with a layout-driven renderer that creates grass, roads, sidewalks, buildings, props, player, villains, collisions, interaction zones, camera follow, and audio ducking from `CITY_LAYOUT`.
+- Preserved the existing React overlay bridge, villain overlay trigger, pause-menu mute API, keyboard controls, and HUD scene launch.
+- The game route now compiles in dev without requiring `this.make.tilemap({ key: "backend-city" })`.
+
+### Decisions
+- Used Phaser `tileSprite` for grass and road rectangles as the first vertical slice. This is not final art direction, but it immediately removes the repeated concept-sheet strip that made the game look broken.
+- Rendered buildings as large cropped image sprites with separate static collision zones and entrance interaction zones.
+- Kept the old procedural villain entity for now because the current rewrite priority is city readability and project building navigation.
+
+### Caveats / pending
+- Asset transparency still needs cleanup; several cropped sprites include source-sheet dark backgrounds.
+- Road rendering is functional but visually rough. It needs better tiled/nine-slice treatment and probably more crop tuning.
+- `UIScene` still assumes some old minimap semantics and should be rewritten against `CITY_LAYOUT` in a later checkpoint.
+- `pnpm build` was attempted but stayed silent for several minutes and was interrupted; this checkpoint is verified with typecheck, targeted lint, and dev-route smoke instead.
+
+### Verified
+- `pnpm typecheck`
+- `pnpm exec eslint game/scenes/PreloadScene.ts game/scenes/WorldScene.ts game/world/city-layout.ts game/assets/manifest.ts`
+- `pnpm dev`, then `curl -sS 'http://localhost:3000/game?entered=1' -o /tmp/game-page.html -w '%{http_code}\n'` returned `200`.

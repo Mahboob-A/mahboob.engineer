@@ -1,20 +1,10 @@
 /**
- * game/scenes/WorldScene.ts
+ * Layout-driven Backend City world scene.
  *
- * The main game scene. T4.4 fleshes out:
- *   - Tilemap load via `make.tilemap({key: "backend-city"})` (cached by
- *     PreloadScene in T4.3).
- *   - Tileset image registration.
- *   - Ground tile layer rendering.
- *   - Player entity at SpawnPoint (default visible, no movement yet —
- *     T4.5 attaches WASD/arrow handlers + walk-cycle animations).
- *   - Building zones per Buildings[] object-layer entries (E-key fires
- *     bridge.openOverlay when overlapping).
- *   - Villain entities per Villains[] entries (physics-only, no visual
- *     yet — T4.7 adds sprites).
- *   - Camera bounds + follow with lerp 0.1.
- *
- * T4.3 also wired the BGM + bridge ducking logic which remains unchanged.
+ * This renderer intentionally avoids the old Tiled JSON path. The ChatGPT
+ * city image is a concept sheet, so the game now renders named cropped
+ * sprites from `public/assets/game/*` and positions them with
+ * `CITY_LAYOUT`.
  */
 
 import Phaser from "phaser";
@@ -23,112 +13,91 @@ import { BGM_TRACKS, BGM_VOLUME } from "@/game/audio/registry";
 import { Player } from "@/game/entities/Player";
 import { Building } from "@/game/entities/Building";
 import { Villain } from "@/game/entities/Villain";
-import type { OverlayType, VillainId } from "@/game/types";
+import {
+  CITY_LAYOUT,
+  districtForPoint,
+  type Rect,
+} from "@/game/world/city-layout";
+import type {
+  BuildingAssetKey,
+  PropAssetKey,
+  TerrainAssetKey,
+} from "@/game/assets/manifest";
 
-/* Player sprite scale factor — 256x384 native / scale ≈ 0.13 → ~33x50,
-   close to master spec's 32x48. */
-const PLAYER_SCALE = 0.13;
+const PLAYER_DISPLAY_WIDTH = 44;
+const PLAYER_DISPLAY_HEIGHT = 66;
 
-/* Building zone inset — the Tiled rect is the building sprite's visual
-   footprint (220x260). Inset by this much so walking past a building
-   doesn't trigger zone overlap. */
-const BUILDING_ZONE_INSET = 20;
+function buildingKey(key: BuildingAssetKey): string {
+  return `building-${key}`;
+}
 
-/* Villain visual offset — sprites default to centered on coords, but
-   Tiled objects are top-left. Offset +16 (half of 32, the spawn
-   point's width/height) so the visual center sits on the spawn. */
-const VILLAIN_VISUAL_OFFSET = 16;
+function terrainKey(key: TerrainAssetKey): string {
+  return `terrain-${key}`;
+}
 
-interface TiledObjectProperties {
-  slug?: string;
-  type?: string;
-  villainId?: string;
-  name?: string;
+function propKey(key: PropAssetKey): string {
+  return `prop-${key}`;
+}
+
+function rectCenter(rect: Rect): { x: number; y: number } {
+  return {
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2,
+  };
 }
 
 export class WorldScene extends Phaser.Scene {
-  /** Active BGM sound object — set by startBGM(). */
+  public player?: Player;
+  public buildings: Building[] = [];
+
   private bgm: Phaser.Sound.BaseSound | null = null;
-  /** Active BGM buffer key — derived from the picked track path. */
-  private bgmKey: string | null = null;
-  /** True while an overlay is open (BGM is ducked). */
   private isDucked = false;
-  /** True while the user has muted audio via the pause menu. */
   private isMuted = false;
-
-  /** Tilemap + ground layer (created in createMap). */
-  private tilemap?: Phaser.Tilemaps.Tilemap;
-  /** addTilesetImage returns Tileset | null — coerced to undefined
-   *  for field typing. */
-  private tileset: Phaser.Tilemaps.Tileset | undefined;
-  /** createLayer returns TilemapLayer | TilemapGPULayer (no null).
-   *  We use TilemapLayer as the concrete runtime type — TilemapGPULayer
-   *  would only apply if we passed `gpu: true` to createLayer. */
-  private groundLayer?: Phaser.Tilemaps.TilemapLayer;
-
-  /** Player + collision-against zones. */
-  private player?: Player;
-  private buildings: Building[] = [];
-  private villains: Villain[] = [];
-
-  /** Currently-overlapping Building zone (for hint show/hide). */
-  private currentZone: Building | null = null;
-
-  /** T4.5: WASD/arrow-key bindings — populated by createCursorKeys()
-   *  in create(). Passed into player.updateMovement() each frame. */
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-
-  /** T4.7: encounter-active guard. The player-villain overlap fires
-   *  on every frame the player is inside the zone; we want the
-   *  overlay to open only on the first overlap. Set to true on
-   *  encounter start (fires bridge.openOverlay), reset to false on
-   *  bridge CLOSE_OVERLAY (overlay closed → player can re-trigger
-   *  by walking back into the zone). */
+  private currentZone: Building | null = null;
   private villainEncounterActive = false;
+  private collisionZones: Phaser.GameObjects.Zone[] = [];
+  private villains: Villain[] = [];
+  private closeOverlayListener?: () => void;
 
   constructor() {
     super({ key: "WorldScene" });
   }
 
-  /**
-   * Bootstraps the entire scene in deterministic order:
-   *   1. BGM playback (T4.3)
-   *   2. Bridge event subscriptions for overlay ducking (T4.3)
-   *   3. Map + entities + camera + input (T4.4)
-   *   4. Player animations + cursor keys + building colliders (T4.5)
-   */
   create(): void {
     this.startBGM();
     this.wireBridgeDuck();
     this.wireEncounterHandlers();
-    this.createMap();
-    this.createEntities();
-    this.createCamera();
-    this.setupInput();
-    /* T4.5: movement wiring. createAnimations registers the 4 walk
-       anims; cursors are the WASD/arrow keys; createColliders makes
-       buildings solid walls so the player can't walk through them. */
-    if (this.player) this.player.createAnimations();
-    this.cursors = this.input.keyboard!.createCursorKeys();
+    this.createBackground();
+    this.createRoads();
+    this.createBuildings();
+    this.createProps();
+    this.createPlayer();
+    this.createVillains();
     this.createColliders();
-    /* T4.8: launch the HUD layer in parallel. `launch` (not `start`)
-       keeps WorldScene running — UIScene draws on top. */
+    this.setupInput();
+    this.createCamera();
     this.scene.launch("UIScene");
   }
 
-  /* ─────────────────────────────────────────────────────────────────────
-     T4.3 — Audio (BGM + duck + mute)
-     ───────────────────────────────────────────────────────────────────── */
+  update(_time: number, _delta: number): void {
+    void _time;
+    void _delta;
+    this.player?.updateMovement(this.cursors);
+    if (this.player) {
+      this.player.setDepth(this.player.y + 24);
+    }
+    this.maybeLeaveBuildingZone();
+  }
 
   private startBGM(): void {
     const trackPath = Phaser.Math.RND.pick(
       BGM_TRACKS as unknown as string[],
     );
-    this.bgmKey =
-      trackPath.split("/").pop()?.replace(/\.[^.]+$/, "") ?? null;
-    if (!this.bgmKey) return;
+    const bgmKey = trackPath.split("/").pop()?.replace(/\.[^.]+$/, "");
+    if (!bgmKey) return;
 
-    const sound = this.sound.add(this.bgmKey, {
+    const sound = this.sound.add(bgmKey, {
       loop: true,
       volume: BGM_VOLUME.base,
     });
@@ -163,7 +132,6 @@ export class WorldScene extends Phaser.Scene {
       bridge.off("CLOSE_OVERLAY", onClose);
       this.sound.stopAll();
       this.bgm = null;
-      this.bgmKey = null;
     });
   }
 
@@ -172,277 +140,247 @@ export class WorldScene extends Phaser.Scene {
     this.sound.setMute(this.isMuted);
   }
 
-  /* ─────────────────────────────────────────────────────────────────────
-     T4.4 — Map, entities, camera, input, zone overlap
-     ───────────────────────────────────────────────────────────────────── */
-
-  /**
-   * Read the cached 'backend-city' tilemap (loaded by PreloadScene),
-   * register the tileset image (loaded by PreloadScene as key
-   * 'tileset'), and create the Ground layer.
-   */
-  private createMap(): void {
-    this.tilemap = this.make.tilemap({ key: "backend-city" });
-    /* The Tiled tileset JSON's `name` field is "tileset" and the loaded
-       Phaser image is also keyed "tileset" — same key.
-       addTilesetImage returns Tileset | null; we coerce to undefined
-       so the field type matches. */
-    this.tileset = this.tilemap.addTilesetImage("tileset", "tileset") ?? undefined;
-    if (!this.tileset) {
-      console.warn(
-        "[Backend City] tileset 'tileset' not found in cached map; aborting createMap",
-      );
-      return;
-    }
-    /* createLayer returns TilemapLayer | TilemapGPULayer (no null).
-       We use the CPU TilemapLayer — TilemapGPULayer would only apply
-       if we passed gpu: true (T6.x polish). The cast is safe. */
-    const layer = this.tilemap.createLayer(
-      "Ground",
-      this.tileset,
-      0,
-      0,
-    ) as Phaser.Tilemaps.TilemapLayer | undefined;
-    if (!layer) {
-      console.warn("[Backend City] could not create Ground layer");
-      return;
-    }
-    this.groundLayer = layer;
-    /* No collidable tiles yet — T4.5 may add building-wall collisions. */
-    this.groundLayer.setCollisionByProperty({ collides: false });
+  private wireEncounterHandlers(): void {
+    this.closeOverlayListener = () => {
+      this.villainEncounterActive = false;
+    };
+    bridge.on("CLOSE_OVERLAY", this.closeOverlayListener);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      if (this.closeOverlayListener) {
+        bridge.off("CLOSE_OVERLAY", this.closeOverlayListener);
+      }
+      this.villainEncounterActive = false;
+    });
   }
 
-  /**
-   * Spawns the Player at SpawnPoint, then iterates the Buildings and
-   * Villains object layers to create entities. Each Building is a
-   * Phaser.GameObjects.Zone with a static physics body; each Villain
-   * gets a physics body but no visual (T4.7 swaps in a sprite).
-   */
-  private createEntities(): void {
-    this.createPlayer();
-    this.createBuildings();
-    this.createVillains();
-  }
+  private createBackground(): void {
+    const { width, height } = CITY_LAYOUT.world;
+    this.add
+      .tileSprite(
+        width / 2,
+        height / 2,
+        width,
+        height,
+        terrainKey("grassPlain"),
+      )
+      .setDepth(0);
 
-  private createPlayer(): void {
-    if (!this.tilemap) return;
-    const spawnLayer = this.tilemap.getObjectLayer("SpawnPoint");
-    /* Phaser 4's Tilemap.findObject takes a callback, not a name. Iterate
-       the layer's `objects` array directly to find the spawn by name. */
-    const spawn = spawnLayer?.objects.find((o) => o.name === "player");
-    const x = spawn?.x ?? 928;
-    const y = spawn?.y ?? 832;
-
-    this.player = new Player(this, x, y, "developer");
-    /* Scale 256x384 → ~33x50 to match master §5.5's 32x48 spec. */
-    this.player.setScale(PLAYER_SCALE);
-    /* add.existing + physics.add.existing is the Phaser 4 canonical
-       idiom for placing a non-pool object into a scene's display +
-       physics lists without a Phaser factory function. */
-    this.add.existing(this.player);
-    this.physics.add.existing(this.player);
-  }
-
-  private createBuildings(): void {
-    if (!this.tilemap) return;
-    const buildingsLayer = this.tilemap.getObjectLayer("Buildings");
-    if (!buildingsLayer) return;
-
-    for (const obj of buildingsLayer.objects) {
-      const props = readTiledProperties(obj);
-      const slug = props.slug ?? "";
-      if (!slug) continue;
-      const overlayType = (props.type as OverlayType) ?? "project";
-      const hint =
-        overlayType === "special"
-          ? "Enter"
-          : (props.name ?? slug);
-
-      const zone = new Building(
-        this,
-        obj.x! + BUILDING_ZONE_INSET,
-        obj.y! + BUILDING_ZONE_INSET,
-        obj.width! - BUILDING_ZONE_INSET * 2,
-        obj.height! - BUILDING_ZONE_INSET * 2,
-        slug,
-        overlayType,
-        hint,
-      );
-      /* physics.add.existing(obj, true) — true = static body. Zone
-         geometries never move; collision checks should be O(1). */
-      this.physics.add.existing(zone, true);
-      this.buildings.push(zone);
-    }
-  }
-
-  private createVillains(): void {
-    if (!this.tilemap) return;
-    const villainsLayer = this.tilemap.getObjectLayer("Villains");
-    if (!villainsLayer) return;
-
-    for (const obj of villainsLayer.objects) {
-      const props = readTiledProperties(obj);
-      const villainId = (props.villainId as VillainId) ?? "gopher-king";
-      const villain = new Villain(
-        this,
-        (obj.x ?? 0) + VILLAIN_VISUAL_OFFSET,
-        (obj.y ?? 0) + VILLAIN_VISUAL_OFFSET,
-        villainId,
-      );
-      this.physics.add.existing(villain);
-      this.villains.push(villain);
-    }
-
-    /* T4.7: wire overlap detection. Per-frame callback guarded by
-       `villainEncounterActive` so the encounter fires only on first
-       contact. We use `add.overlap` (not `add.collider`) so villains
-       don't block the player — they're interaction zones, not walls. */
-    if (this.player) {
-      for (const villain of this.villains) {
-        this.physics.add.overlap(
-          this.player,
-          villain,
-          (_player, v) => this.onVillainContact(v as Villain),
-        );
+    for (let x = 96; x < width; x += 240) {
+      for (let y = 96; y < height; y += 220) {
+        const key = (x + y) % 3 === 0 ? "grassFlower" : "grassDetail";
+        this.add
+          .image(x, y, terrainKey(key))
+          .setAlpha(0.42)
+          .setDepth(0.5);
       }
     }
   }
 
-  /**
-   * T4.7: player touched a villain. Stop the player, set the
-   * encounter-active guard, and fire `bridge.openOverlay` so
-   * VillainOverlay mounts in the React tree.
-   */
+  private createRoads(): void {
+    for (const road of CITY_LAYOUT.roads) {
+      this.add
+        .tileSprite(
+          road.x + road.width / 2,
+          road.y + road.height / 2,
+          road.width,
+          road.height,
+          terrainKey(road.sprite),
+        )
+        .setDepth(1);
+    }
+
+    for (const building of CITY_LAYOUT.buildings) {
+      this.add
+        .tileSprite(
+          building.interaction.x + building.interaction.width / 2,
+          building.interaction.y + building.interaction.height / 2,
+          building.interaction.width + 32,
+          42,
+          terrainKey("sidewalkPlain"),
+        )
+        .setAlpha(0.9)
+        .setDepth(2);
+    }
+  }
+
+  private createBuildings(): void {
+    for (const building of CITY_LAYOUT.buildings) {
+      this.add
+        .image(building.x, building.y, buildingKey(building.sprite))
+        .setOrigin(0, 0)
+        .setScale(building.scale)
+        .setDepth(building.y + 260);
+
+      const interactionCenter = rectCenter(building.interaction);
+      const zone = new Building(
+        this,
+        interactionCenter.x,
+        interactionCenter.y,
+        building.interaction.width,
+        building.interaction.height,
+        building.slug,
+        building.overlayType,
+        `[E] Enter ${building.name}`,
+      );
+      this.add.existing(zone);
+      this.physics.add.existing(zone, true);
+      this.buildings.push(zone);
+
+      const collision = this.createStaticZone(building.collision);
+      this.collisionZones.push(collision);
+    }
+  }
+
+  private createProps(): void {
+    for (const prop of CITY_LAYOUT.props) {
+      const sprite = this.add
+        .image(prop.x, prop.y, propKey(prop.sprite))
+        .setScale(prop.scale ?? 1)
+        .setDepth(prop.y + 12);
+      if (prop.collision) {
+        this.collisionZones.push(this.createStaticZone(prop.collision));
+      }
+      sprite.setName(prop.id);
+    }
+  }
+
+  private createPlayer(): void {
+    this.player = new Player(
+      this,
+      CITY_LAYOUT.spawn.x,
+      CITY_LAYOUT.spawn.y,
+      "developer",
+    );
+    this.player.setDisplaySize(PLAYER_DISPLAY_WIDTH, PLAYER_DISPLAY_HEIGHT);
+    this.player.setDepth(this.player.y + 24);
+    this.add.existing(this.player);
+    this.physics.add.existing(this.player);
+    this.player.createAnimations();
+    this.player.stopMoving();
+
+    const body = this.player.body as Phaser.Physics.Arcade.Body | undefined;
+    body?.setSize(28, 32);
+    body?.setOffset(34, 96);
+  }
+
+  private createVillains(): void {
+    for (const villainLayout of CITY_LAYOUT.villains) {
+      const villain = new Villain(
+        this,
+        villainLayout.x,
+        villainLayout.y,
+        villainLayout.id,
+      );
+      villain.setDepth(villain.y + 16);
+      this.add.existing(villain);
+      this.physics.add.existing(villain);
+      this.villains.push(villain);
+    }
+  }
+
+  private createColliders(): void {
+    if (!this.player) return;
+
+    this.player.setCollideWorldBounds(true);
+    for (const zone of this.collisionZones) {
+      this.physics.add.collider(this.player, zone);
+    }
+    for (const zone of this.buildings) {
+      this.physics.add.overlap(
+        this.player,
+        zone,
+        (_player, building) => this.onEnterBuildingZone(building as Building),
+      );
+    }
+    for (const villain of this.villains) {
+      this.physics.add.overlap(
+        this.player,
+        villain,
+        (_player, v) => this.onVillainContact(v as Villain),
+      );
+    }
+  }
+
+  private setupInput(): void {
+    this.cursors = this.input.keyboard!.createCursorKeys();
+    const wasd = this.input.keyboard!.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.W,
+      down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+      interact: Phaser.Input.Keyboard.KeyCodes.E,
+    }) as Record<string, Phaser.Input.Keyboard.Key>;
+
+    this.cursors.up = wasd.up;
+    this.cursors.down = wasd.down;
+    this.cursors.left = wasd.left;
+    this.cursors.right = wasd.right;
+
+    wasd.interact.on("down", () => {
+      if (!this.currentZone) return;
+      bridge.openOverlay({
+        slug: this.currentZone.slug,
+        overlayType: this.currentZone.overlayType,
+        title: this.currentZone.hint.replace(/^\[E\]\s*/, ""),
+      });
+    });
+  }
+
+  private createCamera(): void {
+    const cam = this.cameras.main;
+    cam.setBounds(0, 0, CITY_LAYOUT.world.width, CITY_LAYOUT.world.height);
+    cam.setBackgroundColor("#0d1511");
+    if (this.player) {
+      cam.startFollow(this.player, true, 0.1, 0.1);
+    }
+    this.physics.world.setBounds(
+      0,
+      0,
+      CITY_LAYOUT.world.width,
+      CITY_LAYOUT.world.height,
+    );
+  }
+
+  private createStaticZone(rect: Rect): Phaser.GameObjects.Zone {
+    const center = rectCenter(rect);
+    const zone = this.add.zone(center.x, center.y, rect.width, rect.height);
+    this.physics.add.existing(zone, true);
+    return zone;
+  }
+
+  private onEnterBuildingZone(zone: Building): void {
+    if (this.currentZone === zone) return;
+    this.currentZone = zone;
+    bridge.showInteractionHint(zone.hint);
+  }
+
   private onVillainContact(villain: Villain): void {
     if (this.villainEncounterActive) return;
     this.villainEncounterActive = true;
-    if (this.player) {
-      this.player.setVelocity(0, 0);
-    }
+    this.player?.setVelocity(0, 0);
     bridge.openOverlay({
       slug: villain.villainId,
       overlayType: "villain",
     });
   }
 
-  /**
-   * T4.7: subscribe to bridge CLOSE_OVERLAY to reset the
-   * encounter-active guard. When the player closes the villain
-   * overlay, they can walk back into the zone to re-trigger the
-   * encounter. Distinct from `wireBridgeDuck` (which handles audio)
-   * because the concerns are separate — this could in principle
-   * be wired in a different scene or moved to UIScene later.
-   */
-  private wireEncounterHandlers(): void {
-    bridge.on("CLOSE_OVERLAY", () => {
-      this.villainEncounterActive = false;
-    });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      bridge.off("CLOSE_OVERLAY", () => {
-        this.villainEncounterActive = false;
-      });
-      this.villainEncounterActive = false;
-    });
-  }
-
-  /**
-   * Camera bounds 0,0 → 1920,1600 (matches map size per master §5.5).
-   * Follows the Player with lerp 0.1.
-   */
-  private createCamera(): void {
-    const cam = this.cameras.main;
-    cam.setBounds(0, 0, 1920, 1600);
-    if (this.player) {
-      cam.startFollow(this.player, true, 0.1, 0.1);
-    }
-  }
-
-  /**
-   * E-key listener — fires `bridge.openOverlay()` when the player
-   * overlaps any Building zone at the moment of keypress.
-   */
-  private setupInput(): void {
-    this.input.keyboard?.on("keydown-E", () => {
-      if (!this.player) return;
-      for (const b of this.buildings) {
-        if (this.physics.overlap(this.player, b)) {
-          bridge.openOverlay({
-            slug: b.slug,
-            overlayType: b.overlayType,
-          });
-          return;
-        }
-      }
-    });
-  }
-
-  /**
-   * T4.5: collider between the Player and every Building zone. The
-   * Building zone is a static physics body (set in T4.4's
-   * createBuildings with `physics.add.existing(b, true)`), so the
-   * collider is enough to make buildings solid walls. The player
-   * still has 20-px room inside the zone to trigger the E-key
-   * overlay.
-   */
-  private createColliders(): void {
-    if (!this.player) return;
-    for (const b of this.buildings) {
-      this.physics.add.collider(this.player, b);
-    }
-  }
-
-  /**
-   * Per-frame loop:
-   *   - T4.5: drives player movement from the cursor keys.
-   *   - T4.4: tracks which Building zone the player is currently
-   *     overlapping and emits SHOW_INTERACTION_HINT / HIDE on
-   *     enter/exit.
-   */
-  update(_time: number, _delta: number): void {
-    void _time;
-    void _delta;
-    if (!this.player) return;
-
-    /* T4.5: movement + animation switching. */
-    this.player.updateMovement(this.cursors);
-
-    /* T4.4: hint show/hide. */
-    const nextZone =
-      this.buildings.find((b) => this.physics.overlap(this.player!, b)) ??
-      null;
-    if (nextZone === this.currentZone) return;
-
-    if (nextZone) {
-      bridge.showInteractionHint(nextZone.hint);
-    } else if (this.currentZone) {
+  private maybeLeaveBuildingZone(): void {
+    if (!this.currentZone || !this.player) return;
+    const zoneBody = this.currentZone.body as Phaser.Physics.Arcade.StaticBody;
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+    const overlaps =
+      playerBody.x < zoneBody.x + zoneBody.width &&
+      playerBody.x + playerBody.width > zoneBody.x &&
+      playerBody.y < zoneBody.y + zoneBody.height &&
+      playerBody.y + playerBody.height > zoneBody.y;
+    if (!overlaps) {
+      this.currentZone = null;
       bridge.hideInteractionHint();
     }
-    this.currentZone = nextZone;
   }
-}
 
-/* ─────────────────────────────────────────────────────────────────────
-   Module-private helper
-   ───────────────────────────────────────────────────────────────────── */
-
-/**
- * Read a Tiled object's custom properties into a flat object.
- * Tiled's `obj.properties` is `{name, type, value}[]` — we flatten to
- * `{[name]: value}` keyed by the property name.
- */
-function readTiledProperties(
-  obj: Phaser.Types.Tilemaps.TiledObject,
-): TiledObjectProperties {
-  const out: TiledObjectProperties = {};
-  if (obj.properties) {
-    for (const p of obj.properties) {
-      const name = p.name as keyof TiledObjectProperties;
-      const value = p.value as TiledObjectProperties[typeof name];
-      if (name === "slug") out.slug = String(value);
-      else if (name === "type") out.type = String(value);
-      else if (name === "villainId") out.villainId = String(value);
-      else if (name === "name") out.name = String(value);
-    }
+  public currentDistrictName(): string {
+    if (!this.player) return "Backend City";
+    return districtForPoint(this.player.x, this.player.y)?.name ?? "Backend City";
   }
-  return out;
 }

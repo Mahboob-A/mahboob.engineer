@@ -23,8 +23,9 @@
  */
 
 import Phaser from "phaser";
-import { PHASER_ASSETS, GAME_WIDTH, GAME_HEIGHT } from "@/game/config";
+import { GAME_WIDTH, GAME_HEIGHT } from "@/game/config";
 import { SFX, BGM_TRACKS } from "@/game/audio/registry";
+import { GAME_ASSETS } from "@/game/assets/manifest";
 
 /* Hex colors that mirror the token palette. These are the only hex
    literals in this file — same exception as config.ts's
@@ -53,17 +54,25 @@ export class PreloadScene extends Phaser.Scene {
    * COMPLETE and we transition to WorldScene in create().
    */
   preload(): void {
-    /* 1. Tileset PNG (a single image; per-tile cropping happens in
-         WorldScene.create via `setTexture('tileset', tileId)`). */
-    this.load.image("tileset", PHASER_ASSETS.tileset.png);
+    /* 1. Rewritten game assets. These are cropped from the ChatGPT
+         concept sheets by scripts/extract-game-assets.py. */
+    for (const [key, path] of Object.entries(GAME_ASSETS.buildings)) {
+      this.load.image(`building-${key}`, path);
+    }
+    for (const [key, path] of Object.entries(GAME_ASSETS.terrain)) {
+      this.load.image(`terrain-${key}`, path);
+    }
+    for (const [key, path] of Object.entries(GAME_ASSETS.props)) {
+      this.load.image(`prop-${key}`, path);
+    }
 
     /* 2. Dev sprite — 4×4 grid of frames at 256×384 each. Player.ts
          (T4.5) reads developer.json for animation setup; the loader
          here uses hardcoded frame dims to keep PreloadScene
          self-contained. */
-    this.load.spritesheet("developer", PHASER_ASSETS.sprite.png, {
-      frameWidth: 256,
-      frameHeight: 384,
+    this.load.spritesheet("developer", GAME_ASSETS.player.developerSheet, {
+      frameWidth: GAME_ASSETS.player.frameWidth,
+      frameHeight: GAME_ASSETS.player.frameHeight,
     });
 
     /* 3. SFX — one buffer per file. Keys are derived from the SFX
@@ -81,12 +90,6 @@ export class PreloadScene extends Phaser.Scene {
       const key = filename.replace(/\.[^.]+$/, "");
       this.load.audio(key, path);
     }
-
-    /* 5. Tilemap (Tiled JSON). WorldScene (T4.4) reads the cached key
-         "backend-city" via `this.make.tilemap({key: "backend-city"})`.
-         T4.2 verifies the JSON parses + the asset loads; T4.4 builds
-         the actual map. */
-    this.load.tilemapTiledJSON("backend-city", PHASER_ASSETS.tilemap.json);
 
     /* ─── Progress bar UI ──────────────────────────────────────────
        Three Phaser.GameObjects laid over the canvas:
