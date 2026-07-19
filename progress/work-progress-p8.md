@@ -3652,6 +3652,17 @@ The `/public/favicon_io/` staging folder is removed.
 
 ### Caveats / pending
 
+- **Browser favicon cache** — `/favicon.ico` is
+  cached aggressively by every browser. After this
+  commit, the new favicon only appears after a hard
+  reload (`Cmd+Shift+R` / `Ctrl+F5`) or DevTools →
+  Network → "Disable cache". Without that, Chrome /
+  Firefox can hold the previous favicon for the
+  session / weeks respectively. Same caveat will apply
+  on Vercel after the next deploy — the edge CDN
+  caches `/favicon.ico` and the new file shows only
+  after cache invalidation or a cache-busting query
+  param.
 - **9 of 12 per-project OG cards still missing** —
   datalineage-doctor, cutetube, airpass, pulumi-infra,
   imgtwist, load-balancer, prostream, unthink, taply.
