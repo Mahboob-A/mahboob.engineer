@@ -26,14 +26,7 @@
 
 import Link from "next/link";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
-import { TaplyDiagram } from "@/components/diagrams/TaplyDiagram";
-import { UnthinkDiagram } from "@/components/diagrams/UnthinkDiagram";
-import { AlgocodeDiagram } from "@/components/diagrams/AlgocodeDiagram";
-import { MovioDiagram } from "@/components/diagrams/MovioDiagram";
-import { DrishtiAIDiagram } from "@/components/diagrams/DrishtiAIDiagram";
-import { DatalineageDoctorDiagram } from "@/components/diagrams/DatalineageDoctorDiagram";
-import { AirpassDiagram } from "@/components/diagrams/AirpassDiagram";
-import { DiagramPlaceholder } from "@/components/diagrams/DiagramPlaceholder";
+import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { type ProjectItem } from "@/data/projects";
 
 export interface CaseStudyOverlayProps {
@@ -47,38 +40,11 @@ export interface CaseStudyOverlayProps {
   onClose: () => void;
 }
 
-/**
- * Map project slug → architectural diagram. Mirrors the picker in
- * app/work/[slug]/page.tsx — keep them in sync.
- */
-function pickOverlayDiagram(
-  p: ProjectItem,
-  ): React.JSX.Element {
-  switch (p.slug) {
-    case "taply":
-      return <TaplyDiagram />;
-    case "unthink":
-      return <UnthinkDiagram />;
-    case "algocode":
-      return <AlgocodeDiagram />;
-    case "movio":
-      return <MovioDiagram />;
-    case "drishti-ai":
-      return <DrishtiAIDiagram />;
-    case "datalineage-doctor":
-      return <DatalineageDoctorDiagram />;
-    case "airpass":
-      return <AirpassDiagram />;
-    default:
-      return <DiagramPlaceholder project={p} />;
-  }
-}
-
 export function CaseStudyOverlay({
   project,
   onClose,
 }: CaseStudyOverlayProps) {
-  const Diagram = pickOverlayDiagram(project);
+  const Diagram = pickDiagram(project);
 
   /* First 2 paragraphs only — overlay is compact. Fall back to
      problem+built if notes is missing (matches app/work/[slug]
@@ -92,118 +58,129 @@ export function CaseStudyOverlay({
 
   return (
     <div
-      className="bg-surface border-acc/40 mx-auto flex max-h-[90vh] w-full max-w-[760px] flex-col gap-4 overflow-y-auto rounded-[12px] border p-6 shadow-2xl"
+      className="bg-surface border-acc/40 mx-auto flex h-[min(760px,90vh)] w-full max-w-[820px] flex-col overflow-hidden rounded-[12px] border shadow-2xl"
       role="dialog"
       aria-label={`${project.name} case study`}
     >
       {/* ─── Header ─────────────────────────────────────────────────── */}
-      <header className="border-border flex flex-col gap-2 border-b pb-4">
-        <div className="flex items-center gap-3">
-          {/* The "complete" status from data/projects.ts isn't a
-             BadgeVariant directly, but the cast + display-string
-             fallback below handles it gracefully. */}
-          <Badge variant={project.status as BadgeVariant}>
-            {project.status === "live"
-              ? "● live"
-              : project.status === "building"
-                ? "building"
-                : "shipped"}
-          </Badge>
-          <span className="text-t3 font-mono text-[13px]">
-            [{project.year}]
-          </span>
+      <header className="border-border bg-surface flex shrink-0 items-start justify-between gap-4 border-b p-5">
+        <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex items-center gap-3">
+            {/* The "complete" status from data/projects.ts isn't a
+               BadgeVariant directly, but the cast + display-string
+               fallback below handles it gracefully. */}
+            <Badge variant={project.status as BadgeVariant}>
+              {project.status === "live"
+                ? "● live"
+                : project.status === "building"
+                  ? "building"
+                  : "shipped"}
+            </Badge>
+            <span className="text-t3 font-mono text-[13px]">
+              [{project.year}]
+            </span>
+          </div>
+          <h2 className="font-display text-t1 text-[28px] leading-[1.1] font-bold tracking-[-0.5px]">
+            {project.name}
+          </h2>
+          <p className="text-t2 font-mono text-[13px]">{project.tagline}</p>
         </div>
-        <h2 className="font-display text-t1 text-[28px] leading-[1.1] font-bold tracking-[-0.5px]">
-          {project.name}
-        </h2>
-        <p className="text-t2 font-mono text-[13px]">{project.tagline}</p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="bg-acc text-bg hover:bg-t1 shrink-0 rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold transition-colors"
+        >
+          back to game
+        </button>
       </header>
 
-      {/* ─── Body — 2-col (notes left, diagram right) ──────────────── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]">
-        {/* LEFT — first 2 paragraphs of notes */}
-        <div className="flex flex-col gap-3">
-          <p className="text-t3 font-mono text-[11px] tracking-[1px] uppercase">
-            The build
-          </p>
-          <div className="text-t1 space-y-3 text-[14px] leading-[1.6]">
-            {noteParagraphs.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
+      <main className="flex-1 overflow-y-auto p-5">
+        {/* ─── Body — 2-col (notes left, diagram right) ──────────────── */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]">
+          {/* LEFT — first 2 paragraphs of notes */}
+          <div className="flex flex-col gap-3">
+            <p className="text-t3 font-mono text-[11px] tracking-[1px] uppercase">
+              The build
+            </p>
+            <div className="text-t1 space-y-3 text-[14px] leading-[1.6]">
+              {noteParagraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT — diagram */}
+          <div className="bg-code-bg border-border flex min-h-[300px] items-center justify-center overflow-hidden rounded-[8px] border p-3 [&>section]:w-full [&_svg]:max-h-[360px] [&_svg]:w-full">
+            {Diagram}
           </div>
         </div>
 
-        {/* RIGHT — diagram */}
-        <div className="bg-code-bg border-border flex items-center justify-center rounded-[8px] border p-3">
-          {Diagram}
-        </div>
-      </div>
+        {/* ─── Metrics row (4-up) ────────────────────────────────────── */}
+        {project.metrics.length > 0 ? (
+          <section className="mt-4">
+            <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
+              Metrics
+            </p>
+            <div className="bg-bg border-border grid grid-cols-2 overflow-hidden rounded-[8px] border md:grid-cols-4">
+              {project.metrics.slice(0, 4).map((m, i) => {
+                /* First token = headline number ("<100ms", "22★"),
+                   rest = label. Same parse shape as
+                   app/work/[slug]/page.tsx → MetricsRow. */
+                const [num, ...rest] = m.split(" ");
+                return (
+                  <div
+                    key={i}
+                    className={
+                      "border-border px-3 py-2.5" +
+                      (i < 3 ? " border-r" : "") +
+                      (i < 2 ? " border-b md:border-b-0" : "")
+                    }
+                  >
+                    <p className="text-amber font-mono text-[16px] leading-none font-semibold">
+                      {num}
+                    </p>
+                    <p className="text-t3 mt-1.5 text-[11px] leading-[1.35]">
+                      {rest.join(" ") || "—"}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
 
-      {/* ─── Metrics row (4-up) ────────────────────────────────────── */}
-      {project.metrics.length > 0 ? (
-        <section>
+        {/* ─── Links row ─────────────────────────────────────────────── */}
+        <section className="border-border mt-4 border-t pt-4">
           <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
-            Metrics
+            Links
           </p>
-          <div className="bg-bg border-border grid grid-cols-2 overflow-hidden rounded-[8px] border md:grid-cols-4">
-            {project.metrics.slice(0, 4).map((m, i) => {
-              /* First token = headline number ("<100ms", "22★"),
-                 rest = label. Same parse shape as
-                 app/work/[slug]/page.tsx → MetricsRow. */
-              const [num, ...rest] = m.split(" ");
-              return (
-                <div
-                  key={i}
-                  className={
-                    "border-border px-3 py-2.5" +
-                    (i < 3 ? " border-r" : "") +
-                    (i < 2 ? " border-b md:border-b-0" : "")
-                  }
-                >
-                  <p className="text-amber font-mono text-[16px] leading-none font-semibold">
-                    {num}
-                  </p>
-                  <p className="text-t3 mt-1.5 text-[11px] leading-[1.35]">
-                    {rest.join(" ") || "—"}
-                  </p>
-                </div>
-              );
-            })}
+          <div className="flex flex-wrap gap-2">
+            {project.url ? (
+              <OverlayLink href={project.url} label="live" external />
+            ) : null}
+            {project.demo ? (
+              <OverlayLink href={project.demo} label="demo" external />
+            ) : null}
+            {project.github ? (
+              <OverlayLink
+                href={project.github}
+                label="source"
+                external
+              />
+            ) : null}
+            {project.youtube ? (
+              <OverlayLink
+                href={project.youtube}
+                label="video"
+                external
+              />
+            ) : null}
           </div>
         </section>
-      ) : null}
-
-      {/* ─── Links row ─────────────────────────────────────────────── */}
-      <section className="border-border border-t pt-4">
-        <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
-          Links
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {project.url ? (
-            <OverlayLink href={project.url} label="↗ live" external />
-          ) : null}
-          {project.demo ? (
-            <OverlayLink href={project.demo} label="↗ demo" external />
-          ) : null}
-          {project.github ? (
-            <OverlayLink
-              href={project.github}
-              label="↗ source"
-              external
-            />
-          ) : null}
-          {project.youtube ? (
-            <OverlayLink
-              href={project.youtube}
-              label="↗ video"
-              external
-            />
-          ) : null}
-        </div>
-      </section>
+      </main>
 
       {/* ─── Footer (link to full case study + close button) ─────── */}
-      <div className="border-border mt-auto flex items-center justify-between border-t pt-4">
+      <footer className="border-border bg-surface flex shrink-0 flex-wrap items-center justify-between gap-3 border-t p-5">
         <Link
           href={`/work/${project.slug}`}
           className="text-acc hover:text-t1 font-mono text-[12px] underline-offset-4 hover:underline"
@@ -215,9 +192,9 @@ export function CaseStudyOverlay({
           onClick={onClose}
           className="bg-acc text-bg hover:bg-t1 rounded-[6px] px-5 py-2 font-mono text-[12px] font-semibold transition-colors"
         >
-          close ↩
+          back to game
         </button>
-      </div>
+      </footer>
     </div>
   );
 }

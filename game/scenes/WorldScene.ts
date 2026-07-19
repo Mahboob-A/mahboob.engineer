@@ -10,7 +10,7 @@
 import Phaser from "phaser";
 import { bridge } from "@/game/EventBridge";
 import { BGM_TRACKS, BGM_VOLUME } from "@/game/audio/registry";
-import { Player } from "@/game/entities/Player";
+import { Player, type MovementKeys } from "@/game/entities/Player";
 import { Building } from "@/game/entities/Building";
 import { Villain } from "@/game/entities/Villain";
 import {
@@ -53,7 +53,7 @@ export class WorldScene extends Phaser.Scene {
   private bgm: Phaser.Sound.BaseSound | null = null;
   private isDucked = false;
   private isMuted = false;
-  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private movementKeys!: MovementKeys;
   private currentZone: Building | null = null;
   private villainEncounterActive = false;
   private collisionZones: Phaser.GameObjects.Zone[] = [];
@@ -83,7 +83,7 @@ export class WorldScene extends Phaser.Scene {
   update(_time: number, _delta: number): void {
     void _time;
     void _delta;
-    this.player?.updateMovement(this.cursors);
+    this.player?.updateMovement(this.movementKeys);
     if (this.player) {
       this.player.setDepth(this.player.y + 24);
     }
@@ -302,7 +302,22 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private setupInput(): void {
-    this.cursors = this.input.keyboard!.createCursorKeys();
+    const keyboard = this.input.keyboard;
+    if (!keyboard) return;
+
+    keyboard.addCapture([
+      Phaser.Input.Keyboard.KeyCodes.UP,
+      Phaser.Input.Keyboard.KeyCodes.DOWN,
+      Phaser.Input.Keyboard.KeyCodes.LEFT,
+      Phaser.Input.Keyboard.KeyCodes.RIGHT,
+      Phaser.Input.Keyboard.KeyCodes.W,
+      Phaser.Input.Keyboard.KeyCodes.A,
+      Phaser.Input.Keyboard.KeyCodes.S,
+      Phaser.Input.Keyboard.KeyCodes.D,
+      Phaser.Input.Keyboard.KeyCodes.E,
+    ]);
+
+    const arrows = keyboard.createCursorKeys();
     const wasd = this.input.keyboard!.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -311,10 +326,12 @@ export class WorldScene extends Phaser.Scene {
       interact: Phaser.Input.Keyboard.KeyCodes.E,
     }) as Record<string, Phaser.Input.Keyboard.Key>;
 
-    this.cursors.up = wasd.up;
-    this.cursors.down = wasd.down;
-    this.cursors.left = wasd.left;
-    this.cursors.right = wasd.right;
+    this.movementKeys = {
+      up: [arrows.up, wasd.up],
+      down: [arrows.down, wasd.down],
+      left: [arrows.left, wasd.left],
+      right: [arrows.right, wasd.right],
+    };
 
     wasd.interact.on("down", () => {
       if (!this.currentZone) return;

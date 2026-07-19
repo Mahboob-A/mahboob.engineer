@@ -116,3 +116,53 @@
 - `pnpm typecheck`
 - `pnpm exec eslint game/scenes/PreloadScene.ts game/scenes/WorldScene.ts game/world/city-layout.ts game/assets/manifest.ts`
 - `pnpm dev`, then `curl -sS 'http://localhost:3000/game?entered=1' -o /tmp/game-page.html -w '%{http_code}\n'` returned `200`.
+
+---
+
+## T32.5 — Restore arrow-key movement alongside WASD
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+- Updated `game/entities/Player.ts` so movement reads a group of keys per direction instead of a single key.
+- Updated `game/scenes/WorldScene.ts` so arrow keys and WASD both drive movement.
+- Added keyboard capture for arrow keys, WASD, and `E` so the browser/page does not steal the intended game controls.
+
+### Decisions
+- Fixed the root cause instead of adding a second movement path. The previous rewrite created arrow cursors, then replaced `up/down/left/right` with WASD keys, which made arrow keys inert.
+- Kept the movement normalization and animation selection inside `Player`, while keeping keyboard binding ownership in `WorldScene`.
+
+### Caveats / pending
+- This was verified by typecheck, lint, and route compile smoke. Browser manual movement QA is still needed to confirm feel, collision tuning, and camera follow.
+
+### Verified
+- `pnpm typecheck`
+- `pnpm exec eslint game/entities/Player.ts game/scenes/WorldScene.ts`
+- Existing dev server: `curl -sS 'http://localhost:3000/game?entered=1' -o /tmp/game-page.html -w '%{http_code}\n'` returned `200`.
+
+---
+
+## T32.6 — Make project overlays escapable and show shared diagrams
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+- Updated `components/overlay/CaseStudyOverlay.tsx` so the project popup has an always-visible top-right `back to game` button.
+- Moved the footer outside the scrollable body so the `Links` row and full-case-study/back-to-game actions are no longer clipped below the visible dialog.
+- Replaced the overlay-local diagram switch with the shared `pickDiagram()` helper, so showcase projects like ProStream now render their dedicated diagrams instead of falling back to the placeholder.
+- Kept the body scrollable for long notes while preserving a fixed dialog shell.
+
+### Decisions
+- Solved the UX issue in the overlay itself rather than relying on Escape. Escape currently also interacts with the pause menu, so a dedicated close button is clearer and safer.
+- Used the existing flat-site diagram picker as the single source of truth instead of duplicating slug-to-diagram mapping in the game overlay.
+
+### Caveats / pending
+- Browser manual QA is still needed to confirm the diagram scale feels right for every project in the in-game overlay.
+- Escape behavior can still be improved later so it closes only the active overlay before opening the pause menu.
+
+### Verified
+- `pnpm typecheck`
+- `pnpm exec eslint components/overlay/CaseStudyOverlay.tsx game/entities/Player.ts game/scenes/WorldScene.ts`
+- Existing dev server: `curl -sS 'http://localhost:3000/game?entered=1' -o /tmp/game-page.html -w '%{http_code}\n'` returned `200`.

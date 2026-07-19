@@ -39,6 +39,13 @@ const WALK_FRAME_RATE = 10;
 /* Sprite-sheet row ranges. Hardcoded here so the entity is
    self-contained; the canonical source remains developer.json. */
 type Facing = "down" | "up" | "left" | "right";
+type MovementKey = Pick<Phaser.Input.Keyboard.Key, "isDown">;
+export interface MovementKeys {
+  up?: MovementKey[];
+  down?: MovementKey[];
+  left?: MovementKey[];
+  right?: MovementKey[];
+}
 const ROWS: Record<Facing, { start: number; end: number }> = {
   down: { start: 0, end: 3 },
   up: { start: 4, end: 7 },
@@ -123,16 +130,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * when |vx| ≥ |vy|, vertical otherwise) — this avoids flip-flopping
    * when the player holds, say, W+ D while moving mostly up.
    */
-  public updateMovement(cursors: Phaser.Types.Input.Keyboard.CursorKeys): void {
+  public updateMovement(cursors: MovementKeys): void {
     const body = this.body as Phaser.Physics.Arcade.Body | undefined;
     if (!body) return;
 
     let vx = 0;
     let vy = 0;
-    if (cursors.left?.isDown) vx -= PLAYER_SPEED;
-    if (cursors.right?.isDown) vx += PLAYER_SPEED;
-    if (cursors.up?.isDown) vy -= PLAYER_SPEED;
-    if (cursors.down?.isDown) vy += PLAYER_SPEED;
+    if (cursors.left?.some((key) => key.isDown)) vx -= PLAYER_SPEED;
+    if (cursors.right?.some((key) => key.isDown)) vx += PLAYER_SPEED;
+    if (cursors.up?.some((key) => key.isDown)) vy -= PLAYER_SPEED;
+    if (cursors.down?.some((key) => key.isDown)) vy += PLAYER_SPEED;
 
     /* Normalize diagonals (Phaser's built-in `normalize()` is in
        the Phaser.Math.Vector2D utility; for vx/vy primitives we do
