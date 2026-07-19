@@ -60,3 +60,30 @@
 - `python3 scripts/extract-game-assets.py`
 - Contact-sheet visual inspection of generated assets at `/tmp/game-asset-contact-sheet.png`.
 - `find public/assets/game -type f | sort | xargs file`
+
+---
+
+## T32.3 — Add deliberate Backend City layout model
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+- Added `game/world/city-layout.ts` as the new source of truth for the rewritten game world.
+- Defined world dimensions, spawn point, districts, roads, buildings, props, villains, collisions, entrances, and interaction rectangles.
+- Mapped all project slugs plus the three special buildings into named building entries with sprite keys from the new asset manifest.
+- Added `districtForPoint()` so the HUD/minimap work can resolve the player's current district from coordinates.
+
+### Decisions
+- Used plain TypeScript data instead of Tiled JSON for the rewrite. This keeps the city layout reviewable and avoids repeating the previous mistake of treating the concept sheet as a uniform tilemap.
+- Used `as const satisfies CityLayout` so bad sprite keys, villain ids, and required layout fields fail at typecheck time.
+- Started with deliberate approximate positions and road rectangles rather than attempting final art-perfect placement immediately.
+
+### Caveats / pending
+- The layout is not yet rendered by `WorldScene`.
+- Collision and interaction rectangles are first-pass estimates and will need tuning after visual QA.
+- Road sprites are currently represented as stretchable rectangles; the renderer may need tiling or nine-slice-style placement for better visual quality.
+
+### Verified
+- `pnpm typecheck`
+- `pnpm exec eslint game/world/city-layout.ts game/assets/manifest.ts`
