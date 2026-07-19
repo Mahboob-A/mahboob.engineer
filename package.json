@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "extract:game-assets": "python3 scripts/extract-game-assets.py",
     "screenshot": "node scripts/screenshots.mjs",
     "lighthouse": "node scripts/lighthouse.mjs"
   },

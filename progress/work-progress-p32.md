@@ -32,3 +32,31 @@
 - `pnpm typecheck`
 - `pnpm exec eslint components/layout/Navbar.tsx components/layout/ActiveNavLink.tsx game/index.tsx`
 - Browser logs confirmed the bug moved from missing `WorldScene` to the next tilemap parsing issue before the rewrite plan was written.
+
+---
+
+## T32.2 — Extract first-pass Backend City sprites from ChatGPT sheets
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+- Added `scripts/extract-game-assets.py`, a repeatable Pillow-based crop pipeline for the ChatGPT city and developer source sheets.
+- Generated first-pass cropped assets under `public/assets/game/` for buildings, terrain, props, and the normalized player sheet.
+- Added `game/assets/manifest.ts` so the rewritten Phaser renderer can load named sprites instead of touching the labeled concept sheet directly.
+- Added `pnpm extract:game-assets` to `package.json` for rerunning the extraction after crop-box tuning.
+
+### Decisions
+- Used Pillow because it is already available locally, while `sharp` is not installed in the project.
+- Treated the ChatGPT city sheet as a source atlas/concept sheet only. The generated Phaser inputs are discrete PNGs like `server-farm.png`, `road-horizontal.png`, and `developer-sheet.png`.
+- Kept crop boxes in a tracked script so visual tuning is versioned and reviewable.
+
+### Caveats / pending
+- This is a first-pass extraction. Several sprites still carry source-sheet background pixels and may need transparency cleanup before final rendering.
+- The player sheet is normalized to 96x144 frames for stable Phaser loading, but final display scale still needs to be set in the player rewrite.
+- The new assets are not yet wired into `PreloadScene` or `WorldScene`.
+
+### Verified
+- `python3 scripts/extract-game-assets.py`
+- Contact-sheet visual inspection of generated assets at `/tmp/game-asset-contact-sheet.png`.
+- `find public/assets/game -type f | sort | xargs file`
