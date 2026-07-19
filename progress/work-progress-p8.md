@@ -3184,3 +3184,65 @@ with the FAQ's bottom.
   - Right sidebar's bottom edge now visually flushes
     with the bottom of the FAQ on the left column.
 
+---
+
+# Phase 29 — 5th line on How the form gets used
+
+**Phase:** 29 — sidebar alignment (one more line)
+
+**Phase status:** done
+
+**Date:** 2026-07-19
+
+**Goal:** The Phase 28 compression didn't quite reach the
+FAQ's bottom on lg+. Add one more bullet to the kept
+privacy card so the right column extends to match.
+
+---
+
+## T29.1 — 5th privacy bullet
+
+**Task status:** done
+**Commit:** `d4ed165`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`data/contact.ts`** — appended a 5th entry to
+  `HOW_THE_FORM_GETS_USED`: `{ text: "I won't subscribe
+  you to anything." }`.
+
+### Decisions
+
+- **5th line content** — per user-confirmed brainstormed
+  candidate. Quiet closer: addresses the implicit
+  concern that "your address goes nowhere else" raised
+  (will anything be sold or dripped?). Reads as a
+  deliberate one-liner that closes the privacy beats.
+- **No component changes** — the existing
+  `HowTheFormGetsUsedCard` already iterates over the
+  full array. The 5th bullet renders automatically.
+- **No header / padding / spacing changes** — the
+  privacy card stays at the tighter Phase 28 sizing.
+  Only the content array grows.
+- **`FormDataLine` interface unchanged** — same shape,
+  still just `{ text }`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR (dev) smoke on `/lets-connect`:
+  - Right sidebar's `How the form gets used` card now
+    renders 5 bullets.
+  - Right sidebar's bottom edge aligns with the FAQ's
+    bottom on lg+.
+
+---
+
+Phase 29 status: **done**.
+
+The next milestone is the visual confirmation pass — Playwright
+screenshot at 375 / 768 / 1440 px to verify the alignment
+visually. Out of scope for Phase 29; future polish.
+
