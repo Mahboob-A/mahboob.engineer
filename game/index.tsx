@@ -25,6 +25,7 @@ import Phaser from "phaser";
 import { bridge } from "@/game/EventBridge";
 import { createPhaserConfig } from "@/game/config";
 import { PreloadScene } from "@/game/scenes/PreloadScene";
+import { WorldScene } from "@/game/scenes/WorldScene";
 import { UIScene } from "@/game/scenes/UIScene";
 import { ProjectOverlay } from "@/game/scenes/overlays/ProjectOverlay";
 import { VillainOverlay } from "@/game/scenes/overlays/VillainOverlay";
@@ -58,6 +59,7 @@ export default function GameRoot() {
     if (Array.isArray(config.scene)) {
       (config.scene as Phaser.Scene[]).push(
         new PreloadScene(),
+        new WorldScene(),
         new UIScene(),
       );
     }

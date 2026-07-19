@@ -12,12 +12,11 @@
  * Nav links always navigate to their inner routes.
  *
  * Mode toggle: a tiny <form action="/api/mode" method="post"> so the
- * cookie flip works without JavaScript. The "active" toggle pill reflects
- * the current mode from the cookie.
+ * cookie flip works without JavaScript. The game pill routes to `/game`;
+ * the flat pill routes to `/`. The active pill reflects the cookie.
  */
 
 import Link from "next/link";
-import { headers } from "next/headers";
 import { getModeFromCookies } from "@/lib/mode";
 import { cn } from "@/lib/cn";
 import { ActiveNavLink } from "@/components/layout/ActiveNavLink";
@@ -50,17 +49,6 @@ const LINKS: readonly NavLink[] = [
 
 export async function Navbar() {
   const mode = await getModeFromCookies();
-  const h = await headers();
-  /* Mode form fallback only. Active nav highlighting is client-side
-     in ActiveNavLink so it updates on soft navigation without a hard
-     reload. */
-  const fullPath =
-    h.get("x-pathname") ??
-    h.get("x-invoke-path") ??
-    h.get("next-url") ??
-    h.get("referer") ??
-    "/";
-  const currentPath = new URL(fullPath, "http://x").pathname;
 
   return (
     <nav
@@ -73,19 +61,7 @@ export async function Navbar() {
     >
       <div className="mx-auto flex h-[62px] max-w-[1180px] items-center justify-between px-6 md:px-8">
         {/* ─── Logo ──────────────────────────────────────────────────── */}
-        <Link
-          href="/"
-          className="text-t1 flex items-center gap-2 font-mono text-[15px] font-semibold tracking-[0.5px]"
-          aria-label="mahboob.engineer — home"
-        >
-          <span
-            className="bg-acc inline-block h-2 w-2 rounded-full shadow-[0_0_0_3px_rgba(92,201,160,0.15)]"
-            style={{ animation: "pulse-dot 2.4s ease-in-out infinite" }}
-            aria-hidden
-          />
-          mahboob
-          <span className="text-t3">.engineer</span>
-        </Link>
+        <LogoLink mode={mode} />
 
         {/* ─── Nav links ────────────────────────────────────────────── */}
         <ul className="hidden items-center gap-8 md:flex">
@@ -95,6 +71,7 @@ export async function Navbar() {
                 href={l.href}
                 label={l.label}
                 eyebrow={l.eyebrow}
+                mode={mode}
                 variant="desktop"
               />
             </li>
@@ -110,13 +87,13 @@ export async function Navbar() {
           <ModeTogglePill
             active={mode === "flat"}
             value="flat"
-            currentPath={currentPath}
+            nextPath="/"
             label="flat"
           />
           <ModeTogglePill
             active={mode === "game"}
             value="game"
-            currentPath={currentPath}
+            nextPath="/game"
             label="game"
           />
         </div>
@@ -131,6 +108,7 @@ export async function Navbar() {
               href={l.href}
               label={l.label}
               eyebrow={l.eyebrow}
+              mode={mode}
               variant="mobile"
             />
           </li>
@@ -140,18 +118,61 @@ export async function Navbar() {
   );
 }
 
+function LogoLink({ mode }: { mode: "flat" | "game" }) {
+  const className =
+    "text-t1 flex items-center gap-2 font-mono text-[15px] font-semibold tracking-[0.5px]";
+  const content = (
+    <>
+      <span
+        className="bg-acc inline-block h-2 w-2 rounded-full shadow-[0_0_0_3px_rgba(92,201,160,0.15)]"
+        style={{ animation: "pulse-dot 2.4s ease-in-out infinite" }}
+        aria-hidden
+      />
+      mahboob
+      <span className="text-t3">.engineer</span>
+    </>
+  );
+
+  if (mode === "game") {
+    return (
+      <form action="/api/mode" method="post" className="contents">
+        <input type="hidden" name="mode" value="flat" />
+        <input type="hidden" name="next" value="/" />
+        <button
+          type="submit"
+          className={cn(className, "cursor-pointer")}
+          aria-label="mahboob.engineer — home"
+        >
+          {content}
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <Link
+      href="/"
+      className={className}
+      aria-label="mahboob.engineer — home"
+    >
+      {content}
+    </Link>
+  );
+}
+
 interface ModeTogglePillProps {
   active: boolean;
   value: "flat" | "game";
-  currentPath: string;
+  nextPath: string;
   label: string;
 }
 
 /**
  * One pill in the mode toggle. A real <button> inside a <form> so the
- * submit hits /api/mode and flips the cookie. No client JS required.
+ * submit hits /api/mode, flips the cookie, and redirects to `nextPath`.
+ * No client JS required.
  */
-function ModeTogglePill({ active, value, currentPath, label }: ModeTogglePillProps) {
+function ModeTogglePill({ active, value, nextPath, label }: ModeTogglePillProps) {
   /* Phase 6 (T6.4): aria-label so screen readers announce the action
      ("Switch to flat portfolio mode") instead of just reading the
      visible text "flat" / "game". */
@@ -162,7 +183,7 @@ function ModeTogglePill({ active, value, currentPath, label }: ModeTogglePillPro
   return (
     <form action="/api/mode" method="post" className="contents">
       <input type="hidden" name="mode" value={value} />
-      <input type="hidden" name="next" value={currentPath} />
+      <input type="hidden" name="next" value={nextPath} />
       <button
         type="submit"
         aria-pressed={active}

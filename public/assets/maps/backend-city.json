@@ -3569,7 +3569,403 @@
   "tilesets": [
     {
       "firstgid": 1,
-      "source": "../tilesets/backend-city.json"
+      "_comment": "Tiled tileset JSON for ChatGPT-cyberpunk-city-tileset-layout.png. The image is 1254x1254 px and shows named tile regions (buildings, road tiles, grass tiles, sidewalk tiles) in a layout-style reference, NOT a uniform grid. The explicit `tiles` array below defines the bounding box for each tile so Phaser + Tiled can reference them by id. Tile coordinates are first-pass estimates based on inspection of the source PNG; T4.2 will refine these via Tiled's 'Edit Tileset' panel. Tile sizes vary per region (buildings ~220x260, road/grass tiles ~128x128, sidewalk tiles ~110x110). See the tileset's source PNG for the canonical layout reference.",
+      "_comment_palette_swatch": "The 8-color palette swatch at x=60, y=1080 is a visual reference baked into the image — it is NOT a tile and has no entry in this file.",
+      "_comment_map_preview": "The right-side region (x=620, y=340, ~600x400) is a 'how-it-looks-assembled' preview map — also not a tile. Real tiles are the named regions only.",
+      "columns": 0,
+      "image": "../tilesets/backend-city.png",
+      "imagewidth": 1254,
+      "imageheight": 1254,
+      "margin": 0,
+      "spacing": 0,
+      "tilewidth": 64,
+      "tileheight": 64,
+      "tiles": [
+        {
+          "_comment": "BUILDINGS — row 1",
+          "id": 0,
+          "name": "building-server-farm",
+          "image": "backend-city.png",
+          "x": 60,
+          "y": 60,
+          "width": 220,
+          "height": 260
+        },
+        {
+          "id": 1,
+          "name": "building-studio",
+          "image": "backend-city.png",
+          "x": 300,
+          "y": 60,
+          "width": 220,
+          "height": 260
+        },
+        {
+          "id": 2,
+          "name": "building-lab",
+          "image": "backend-city.png",
+          "x": 540,
+          "y": 60,
+          "width": 220,
+          "height": 260
+        },
+        {
+          "id": 3,
+          "name": "building-newspaper-hq",
+          "image": "backend-city.png",
+          "x": 780,
+          "y": 60,
+          "width": 220,
+          "height": 260
+        },
+        {
+          "_comment": "BUILDINGS — row 2",
+          "id": 4,
+          "name": "building-office-tower",
+          "image": "backend-city.png",
+          "x": 60,
+          "y": 340,
+          "width": 220,
+          "height": 260
+        },
+        {
+          "id": 5,
+          "name": "building-exchange",
+          "image": "backend-city.png",
+          "x": 300,
+          "y": 340,
+          "width": 220,
+          "height": 260
+        },
+        {
+          "_comment": "ROAD TILES — 4 cols x 3 rows = 12 variants",
+          "id": 20,
+          "name": "road-straight-h",
+          "image": "backend-city.png",
+          "x": 660,
+          "y": 660,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 21,
+          "name": "road-straight-v",
+          "image": "backend-city.png",
+          "x": 800,
+          "y": 660,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 22,
+          "name": "road-corner-ne",
+          "image": "backend-city.png",
+          "x": 940,
+          "y": 660,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 23,
+          "name": "road-corner-nw",
+          "image": "backend-city.png",
+          "x": 1080,
+          "y": 660,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 24,
+          "name": "road-corner-sw",
+          "image": "backend-city.png",
+          "x": 660,
+          "y": 800,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 25,
+          "name": "road-corner-se",
+          "image": "backend-city.png",
+          "x": 800,
+          "y": 800,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 26,
+          "name": "road-cross",
+          "image": "backend-city.png",
+          "x": 940,
+          "y": 800,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 27,
+          "name": "road-t-cross-n",
+          "image": "backend-city.png",
+          "x": 1080,
+          "y": 800,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 28,
+          "name": "road-t-cross-s",
+          "image": "backend-city.png",
+          "x": 660,
+          "y": 940,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 29,
+          "name": "road-t-cross-e",
+          "image": "backend-city.png",
+          "x": 800,
+          "y": 940,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 30,
+          "name": "road-t-cross-w",
+          "image": "backend-city.png",
+          "x": 940,
+          "y": 940,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": 31,
+          "name": "road-end",
+          "image": "backend-city.png",
+          "x": 1080,
+          "y": 940,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "_comment": "GRASS TILES — 4 cols x 3 rows = 12 variants",
+          "id": 50,
+          "name": "grass-plain",
+          "image": "backend-city.png",
+          "x": 60,
+          "y": 660,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 51,
+          "name": "grass-detail-1",
+          "image": "backend-city.png",
+          "x": 180,
+          "y": 660,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 52,
+          "name": "grass-detail-2",
+          "image": "backend-city.png",
+          "x": 300,
+          "y": 660,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 53,
+          "name": "grass-detail-3",
+          "image": "backend-city.png",
+          "x": 420,
+          "y": 660,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 54,
+          "name": "grass-detail-4",
+          "image": "backend-city.png",
+          "x": 60,
+          "y": 780,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 55,
+          "name": "grass-detail-5",
+          "image": "backend-city.png",
+          "x": 180,
+          "y": 780,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 56,
+          "name": "grass-detail-6",
+          "image": "backend-city.png",
+          "x": 300,
+          "y": 780,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 57,
+          "name": "grass-detail-7",
+          "image": "backend-city.png",
+          "x": 420,
+          "y": 780,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 58,
+          "name": "grass-corner-ne",
+          "image": "backend-city.png",
+          "x": 60,
+          "y": 900,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 59,
+          "name": "grass-corner-nw",
+          "image": "backend-city.png",
+          "x": 180,
+          "y": 900,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 60,
+          "name": "grass-corner-se",
+          "image": "backend-city.png",
+          "x": 300,
+          "y": 900,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "id": 61,
+          "name": "grass-corner-sw",
+          "image": "backend-city.png",
+          "x": 420,
+          "y": 900,
+          "width": 110,
+          "height": 110
+        },
+        {
+          "_comment": "SIDEWALK TILES — 6 cols x 2 rows = 12 variants",
+          "id": 80,
+          "name": "sidewalk-straight-h",
+          "image": "backend-city.png",
+          "x": 60,
+          "y": 1040,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 81,
+          "name": "sidewalk-straight-v",
+          "image": "backend-city.png",
+          "x": 180,
+          "y": 1040,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 82,
+          "name": "sidewalk-corner",
+          "image": "backend-city.png",
+          "x": 300,
+          "y": 1040,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 83,
+          "name": "sidewalk-t-junction",
+          "image": "backend-city.png",
+          "x": 420,
+          "y": 1040,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 84,
+          "name": "sidewalk-cross",
+          "image": "backend-city.png",
+          "x": 530,
+          "y": 1040,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 85,
+          "name": "sidewalk-edge",
+          "image": "backend-city.png",
+          "x": 640,
+          "y": 1040,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 86,
+          "name": "sidewalk-detail-1",
+          "image": "backend-city.png",
+          "x": 60,
+          "y": 1110,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 87,
+          "name": "sidewalk-detail-2",
+          "image": "backend-city.png",
+          "x": 180,
+          "y": 1110,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 88,
+          "name": "sidewalk-detail-3",
+          "image": "backend-city.png",
+          "x": 300,
+          "y": 1110,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 89,
+          "name": "sidewalk-corner-inverse",
+          "image": "backend-city.png",
+          "x": 420,
+          "y": 1110,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 90,
+          "name": "sidewalk-end-n",
+          "image": "backend-city.png",
+          "x": 530,
+          "y": 1110,
+          "width": 110,
+          "height": 60
+        },
+        {
+          "id": 91,
+          "name": "sidewalk-end-s",
+          "image": "backend-city.png",
+          "x": 640,
+          "y": 1110,
+          "width": 110,
+          "height": 60
+        }
+      ],
+      "name": "tileset"
     }
   ],
   "tilewidth": 32,
