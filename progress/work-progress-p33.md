@@ -540,3 +540,89 @@ where static remains the default and dynamic is backed by a RAG API.
 - With real `FIREWORKS_API_KEY` + `UPSTASH_VECTOR_REST_URL` /
   `_TOKEN` the route streams `200 text/plain; charset=utf-8`. (Real
   env smoke deferred to T33.7/T33.9 when keys are added locally.)
+
+---
+
+## T33.7 — HeroTerminal static / dynamic toggle + streaming
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `components/hero/HeroTerminal.tsx` — full rewrite that keeps every
+  v1 affordance and adds the dynamic mode toggle:
+  - New `mode: "static" | "dynamic"` state, default `"static"`. State
+    lives in the component only — no localStorage, no cookie (master
+    §6 rule 3).
+  - Mode segment replaces the previous `terminal · click a command`
+    label with `[static] [dynamic]` buttons (existing token classes:
+    `bg-acc-dim text-acc border-acc/40` for active, `text-t2` for
+    inactive).
+  - The six chip keys (`whoami` / `projects` / `stack` / `latest` /
+    `contact` / `help`) come from `lib/rag/command-map.ts` so the
+    static chip labels and the dynamic-mode question prompt stay in
+    one source of truth.
+  - **Static mode** — unchanged from v1: `buildPayload()` produces
+    pre-canned lines, walked with a `setTimeout` typewriter (12ms/char,
+    snap-in for `useReducedMotion()`).
+  - **Dynamic idle** — renders `$ mehboob@portfolio-bastion:` with the
+    existing `.hero-terminal-cursor` blinking caret. Subtitle:
+    "Click a chip above to ask. Press Esc to clear."
+  - **Dynamic active** — `startDynamic(key)` does
+    `fetch("/api/rag", { method: "POST", body: JSON.stringify({ command,
+    question }) })` with an `AbortController`. Reads the response body
+    via `ReadableStream`, decoding incrementally and updating local
+    `dynText`. Errors (HTTP 4xx/5xx, network failures) render as
+    terminal text — no thrown exceptions in the UI.
+  - **Abort handling** — abort fires on (a) chip click that switches
+    active key, (b) Esc press, (c) mode flip back to static,
+    (d) component unmount. The abort propagates into the upstream
+    Fireworks streaming call (route uses `req.signal` → OpenAI SDK
+    second arg), so the connection actually closes server-side.
+  - **`contact` chip in dynamic mode** — keeps the `/lets-connect` CTA
+    under the streamed answer, same as static.
+  - Mode toggle honors `prefers-reduced-motion` indirectly via the
+    existing `.hero-terminal-cursor` CSS guard (no animation when
+    reduced-motion is requested).
+
+### Decisions
+
+- The dynamic body shows a small `thinking…` placeholder while the
+  fetch is in flight (`dynPhase === "loading"`), then the streamed
+  text once chunks arrive. Avoids a brief empty-state flash.
+- Streaming reader caps decoding at the natural stream boundary; the
+  state updates are batched by React's scheduler.
+- The Error / 503 body is rendered in the terminal-pre in `text-t3`
+  (muted accent) so a missing-env error doesn't read like a success
+  response.
+- The new `ModeButton` is a tiny local component so the segment is
+  keyboard-accessible (`aria-pressed`) and matches the chip styling.
+
+### Caveats / pending
+
+- Dynamic mode requires the dev server to be running on the same origin;
+  CORS is not handled (matches the rest of the portfolio's API surface).
+- Body length is hard-capped at 400 chars in error rendering and 2000
+  chars in `safeReadText`. A 503 message longer than that is truncated.
+- The terminal does not surface the corpus hash or model name on
+  dynamic responses — would be a useful future addition if a visitor
+  asks "what model answered?".
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean. Route table still shows `ƒ /api/rag` and the
+  landing page renders without warnings.
+- `.next/static/chunks` grep: zero references to `upstash` or
+  `fireworks` → server packages stay server-side.
+- Manual code path review (no live env smoke here):
+  - Mount → mode defaults to `static`, idle hint shows.
+  - Click `[whoami]` → typewriter walks lines 12ms/char.
+  - Switch to `[dynamic]` → idle prompt renders.
+  - Click `[whoami]` → fetch fires, "thinking…" → streamed text.
+  - Press Esc mid-stream → `AbortController.abort()` fires,
+    upstream connection terminates, UI resets to idle.
+  - Switch back to `[static]` → aborts in-flight stream (if any), resets
+    dynamic state, static chip behavior resumes.
