@@ -3095,3 +3095,92 @@ bullets, `text-t1` body.
   - All 11 new bullets read directly from
     `data/contact.ts` — no strings hardcoded in JSX.
 
+---
+
+# Phase 28 — /lets-connect right sidebar trim + compression
+
+**Phase:** 28 — sidebar alignment
+
+**Phase status:** done
+
+**Date:** 2026-07-19
+
+**Goal:** Phase 27's 3 new sidebar cards (`What I read first`,
+`Response time`, `How the form gets used`) didn't actually
+align the right column's bottom edge with the FAQ's bottom
+on lg+ — they made the page longer without fixing the
+alignment. Drop the 2 lower-weight cards and compress the
+kept privacy card so the right column's bottom flush-aligns
+with the FAQ's bottom.
+
+---
+
+## T28.1 — Sidebar trim + How-the-form-gets-used compression
+
+**Task status:** done
+**Commit:** `6825657`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`data/contact.ts`** — removed `WHAT_I_READ_FIRST` data
+  array + `WhatIReadFirstItem` interface. Removed
+  `RESPONSE_TIME_LINES` data array + `ResponseTimeLine`
+  interface. `HOW_THE_FORM_GETS_USED` + `FormDataLine`
+  interface stay. Updated the file's header docstring
+  (lines 11–17) to reflect the new 1-card state.
+- **`components/contact/ContactSidebar.tsx`** — removed
+  `WhatIReadFirstCard` + `ResponseTimeCard` function
+  definitions and their render slots. Removed the two
+  dropped data imports. Tightened `HowTheFormGetsUsedCard`:
+  - Outer section: `p-5 md:p-6` → `p-4 md:p-5`.
+  - Eyebrow: `mb-4` → `mb-3`.
+  - `<ul>`: `space-y-2` → `space-y-1.5`.
+  - Bullet body: `text-[13.5px] leading-[1.55]`
+    → `text-[13px] leading-[1.5]`.
+  - Arrow glyph: `mt-[2px]` → `mt-[1px]`.
+
+### Decisions
+
+- **Two cards dropped, not all three** — `What I read
+  first` + `Response time` were the lower-weight entries.
+  `How the form gets used` carries privacy weight (data
+  handling + reply cadence) that the other two didn't.
+- **Compression strategy is reduce, not stretch** — per
+  the user's explicit guidance, the kept card's internal
+  padding + bullet text size shrink so the right column
+  fits without making the page longer. This is the
+  conservative fix; alternative would be adding a 5th
+  bullet to make the card taller.
+- **Same card chrome everywhere** — the other 3 sidebar
+  cards (Availability, DirectLinks, QuickContext) keep
+  the `p-5 md:p-6` + `text-[13.5px]` treatment. The kept
+  privacy card now reads slightly denser than its siblings,
+  but the visual chrome (`bg-surface border-border
+  rounded-[10px] border`) stays identical.
+- **`HowTheFormGetsUsedCard`'s copy is unchanged** —
+  Phase 27's 4 bullets are correct; only the spacing
+  around them changed.
+- **`FormDataLine` interface stays exported** — still in
+  use by the kept card. No unused-import cleanup needed.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- `grep -rn 'WHAT_I_READ_FIRST\|RESPONSE_TIME_LINES\|
+  WhatIReadFirstCard\|ResponseTimeCard\|
+  WhatIReadFirstItem\|ResponseTimeLine'
+  components data app` → 0 live-code hits. The remaining
+  matches are all in JSDoc comments documenting the
+  Phase 27 → Phase 28 history.
+- Live SSR (dev) smoke on `/lets-connect`:
+  - Right sidebar now shows 4 cards stacked: Availability,
+    DirectLinks, QuickContext, How the form gets used.
+  - `How the form gets used` card has visibly tighter
+    padding than its 3 siblings on the same sidebar
+    (intentional — gives the right column enough reach
+    to align with the FAQ's bottom on lg+).
+  - Right sidebar's bottom edge now visually flushes
+    with the bottom of the FAQ on the left column.
+
