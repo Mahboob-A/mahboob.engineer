@@ -204,6 +204,10 @@ export const HOW_THE_FORM_GETS_USED: FormDataLine[] = [
   { text: "I read every email myself." },
   { text: "Your address goes nowhere else." },
   { text: "Form data is not stored on the site beyond the submit request." },
+  /* Phase 29: 5th line. Quiet closer that anchors the
+     privacy beats — the user won't get added to any
+     newsletter / drip / outreach sequence. */
+  { text: "I won't subscribe you to anything." },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
