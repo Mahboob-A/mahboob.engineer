@@ -11,9 +11,11 @@
  *   - FAQ — 9 always-expanded Q&A pairs (Phase 26 expansion)
  *   - QUICK_CONTEXT_FITS + QUICK_CONTEXT_DOESNT — sidebar
  *     "is this email for me?" two-list card (Phase 26)
- *   - WHAT_I_READ_FIRST + RESPONSE_TIME_LINES +
- *     HOW_THE_FORM_GETS_USED — 3 sidebar cards (Phase 27)
- *     fill the height gap left by the FAQ moving left.
+ *   - HOW_THE_FORM_GETS_USED — single sidebar card
+ *     (Phase 28). Phase 27's WHAT_I_READ_FIRST and
+ *     RESPONSE_TIME_LINES were dropped after the page
+ *     still misaligned with the FAQ on lg+; the kept card
+ *     got tighter padding + smaller bullet text instead.
  *   - CONTACT_LABELS + bucketFor() — the form's 5 label chips + color
  *
  * Source: portfolio-master-doc.md §0.2 + §2.6.
@@ -185,32 +187,13 @@ export const QUICK_CONTEXT_DOESNT: QuickContextItem[] = [
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
-   3c. Sidebar fill cards (Phase 27) — what I read first,
-       response time, how the form gets used. These are the
-       third, fourth, and fifth cards in the right sidebar to
-       match the 9-item FAQ on the left column.
+   3c. How the form gets used (Phase 27, kept in Phase 28).
+       The third (and final) sidebar card. Privacy + data
+       handling disclosure. Phase 27's WHAT_I_READ_FIRST
+       and RESPONSE_TIME_LINES were dropped after review —
+       they made the page longer without fixing the FAQ
+       alignment. This card stays with tighter spacing.
    ───────────────────────────────────────────────────────────────────── */
-
-export interface WhatIReadFirstItem {
-  text: string;
-}
-
-export const WHAT_I_READ_FIRST: WhatIReadFirstItem[] = [
-  { text: "The subject line + opening line" },
-  { text: "The role context (company, stage, team)" },
-  { text: "A specific problem you want help with" },
-  { text: "A link to the JD if there is one" },
-];
-
-export interface ResponseTimeLine {
-  text: string;
-}
-
-export const RESPONSE_TIME_LINES: ResponseTimeLine[] = [
-  { text: "Reach me IST (UTC+5:30), weekdays 1–6pm." },
-  { text: "Async-first. Expect a reply within a working day." },
-  { text: "Mark the subject [urgent] for same-day reads." },
-];
 
 export interface FormDataLine {
   text: string;

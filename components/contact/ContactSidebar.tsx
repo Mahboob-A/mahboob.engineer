@@ -1,19 +1,19 @@
 /**
  * components/contact/ContactSidebar.tsx
  *
- * Right column on /lets-connect. Six stacked cards:
+ * Right column on /lets-connect. Four stacked cards:
  *
  *   1. Availability card  — 3 status lines + response time footer
  *   2. Direct links card  — 6 social/resume rows with hover affordance
  *   3. Quick context card — "is this email for me?" two-list check
- *   4. What I read first  — what lands at the top of inbox (Phase 27)
- *   5. Response time      — timezone + reply cadence (Phase 27)
- *   6. How the form gets used — privacy + data handling (Phase 27)
+ *   4. How the form gets used — privacy + data handling (Phase 27,
+ *      kept in Phase 28 with tighter padding so the right
+ *      column's bottom edge aligns with the FAQ's bottom on lg+).
  *
- * Cards 4-6 (Phase 27) fill the height gap left when the FAQ
- * card moved into a full-width section below the form. They
- * keep the right column's bottom edge roughly aligned with
- * the FAQ's bottom on lg+.
+ * Phase 28 history: cards 4-6 (Phase 27) didn't actually align
+ * with the FAQ on lg+ — they made the page longer without fixing
+ * the alignment. Two of them were dropped before commit;
+ * `HowTheFormGetsUsedCard` stays with tighter spacing.
  *
  * Server Component. All data comes from `data/contact.ts`. No state.
  */
@@ -25,8 +25,6 @@ import {
   DIRECT_LINKS,
   QUICK_CONTEXT_FITS,
   QUICK_CONTEXT_DOESNT,
-  WHAT_I_READ_FIRST,
-  RESPONSE_TIME_LINES,
   HOW_THE_FORM_GETS_USED,
   type AvailabilityKind,
   type DirectLinkItem,
@@ -46,8 +44,6 @@ export function ContactSidebar() {
       <AvailabilityCard />
       <DirectLinksCard />
       <QuickContextCard />
-      <WhatIReadFirstCard />
-      <ResponseTimeCard />
       <HowTheFormGetsUsedCard />
     </aside>
   );
@@ -171,70 +167,24 @@ function QuickContextCard() {
   );
 }
 
-/* ─── What I read first (Phase 27) ────────────────────────────────── */
+/* ─── How the form gets used (Phase 27, tightened in Phase 28) ───── */
 
-function WhatIReadFirstCard() {
-  return (
-    <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
-      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
-        What I read first
-      </p>
-      <ul className="text-t1 space-y-2 text-[13.5px] leading-[1.55]">
-        {WHAT_I_READ_FIRST.map((item, i) => (
-          <li key={i} className="flex items-start gap-2">
-            <span
-              aria-hidden
-              className="text-acc mt-[2px] font-mono text-[11px]"
-            >
-              →
-            </span>
-            <span>{item.text}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/* ─── Response time (Phase 27) ────────────────────────────────────── */
-
-function ResponseTimeCard() {
-  return (
-    <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
-      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
-        Response time
-      </p>
-      <ul className="text-t1 space-y-2 text-[13.5px] leading-[1.55]">
-        {RESPONSE_TIME_LINES.map((item, i) => (
-          <li key={i} className="flex items-start gap-2">
-            <span
-              aria-hidden
-              className="text-acc mt-[2px] font-mono text-[11px]"
-            >
-              →
-            </span>
-            <span>{item.text}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/* ─── How the form gets used (Phase 27) ───────────────────────────── */
-
+/* Phase 28 compression: outer padding p-5 md:p-6 -> p-4 md:p-5,
+   eyebrow mb-4 -> mb-3, bullet space-y-2 -> space-y-1.5, body
+   text-[13.5px] -> text-[13px], arrow mt-[2px] -> mt-[1px].
+   Same chrome as the other cards; just denser. */
 function HowTheFormGetsUsedCard() {
   return (
-    <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
-      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
+    <section className="bg-surface border-border rounded-[10px] border p-4 md:p-5">
+      <p className="text-t3 mb-3 font-mono text-[11px] tracking-[1.5px] uppercase">
         How the form gets used
       </p>
-      <ul className="text-t1 space-y-2 text-[13.5px] leading-[1.55]">
+      <ul className="text-t1 space-y-1.5 text-[13px] leading-[1.5]">
         {HOW_THE_FORM_GETS_USED.map((item, i) => (
           <li key={i} className="flex items-start gap-2">
             <span
               aria-hidden
-              className="text-acc mt-[2px] font-mono text-[11px]"
+              className="text-acc mt-[1px] font-mono text-[11px]"
             >
               →
             </span>
