@@ -1,7 +1,69 @@
+# Progress index — `work-progress-p8.md`
+
+This file collects the rulebook-format progress entries for
+**Phases 8 → 30** of the portfolio rebuild. The file grew to
+127 KB through 30 commits — this index lets a future agent
+navigate without scrolling.
+
+**Latest:** Phase 30 (2026-07-19) — 6th line on
+"How the form gets used". 5 phases done this session
+(Phases 26–30).
+
+**Companion files:**
+
+- `progress/work-progress-p20-22.md` — retrospective for
+  Phases 20, 21, 22 (Eve Healthcare keywords, bKash,
+  stack reference-notes UI).
+- `progress/work-progress-p23.md` — Phase 23 (navbar active
+  state + proxy migration). Standalone file because Phase 23
+  was authored in its own planning session.
+
+---
+
+## Phase index
+
+| Phase | Lines | One-liner |
+|---|---|---|
+| 8   — Diagram fixes + StoryPath snake | 63–401 | Shared `pickDiagram` helper + StoryPath snake on `/log/[id]` |
+| 9   — 5-paragraph notes + 5 new diagrams | 402–713 | 12 dedicated diagrams; AllProjects fit window |
+| 10  — Animate every diagram | 714–938 | `AnimatedPackets` across all 12 projects |
+| 11  — `/log` clickable cards + navbar polish | 939–1221 | Stretched-link timeline + Cutetube fix + `log` label |
+| 12  — Navbar fix + MCA curriculum | 1222–1574 | `x-pathname` middleware + 13 SRM courses |
+| 14  — Drop nav glow | 1575–1666 | Flat amber active color |
+| 15  — Fix `/stack` D3 init | 1667–1795 | Edges keep string ids; SVG transparent |
+| 16  — Drop the D3 graph | 1796–1896 | Grouped tech list becomes canonical |
+| 17  — Delete D3 graph dead code | 1897–2002 | Drop d3-* deps |
+| 18  — Eve Healthcare + role-suffix | 2003–2144 | 4th experience entry |
+| 19  — Copy pass | 2145–2314 | Em-dash-free prose across all data |
+| 24  — Eyebrow reframe + em-dash + 9-card collapse + stars | 2315–2841 | 7 sub-tasks; the landing polishing wave |
+| 25  — Landing eyebrow strip + inner eyebrow rework | 2842–2937 | Drop `XX / LABEL` site-wide |
+| 26  — Landing gap halve + showcase stars + /lets-connect redesign | 2938–3075 | FAQ moves left, sidebar refactored |
+| 27  — `/lets-connect` right sidebar gap fill | 3076–3161 | Added 3 sidebar cards |
+| 28  — Sidebar trim + How-the-form-gets-used compression | 3162–3250 | Dropped 2 cards, compressed the kept one |
+| 29  — 5th line on How the form gets used | 3251–3312 | "I won't subscribe you to anything." |
+| 30  — 6th line on How the form gets used | 3313–3370 | "Nothing here trains an AI model." |
+
+**Skipped phase numbers:** 13, 20–23 — see work-progress-p23.md
+and work-progress-p20-22.md for Phase 20-22 + 23 history.
+Phase 13 was rolled back (see Phase 14 wrap-up note).
+
+---
+
+## Audit (2026-07-19)
+
+- Phase 8 header flag flipped from `in-progress` → `done`.
+  Five Phase 8 sub-task flags (`T8.1`, `T8.2`, `T8.3`,
+  `T8.4`, `T8.6`) flipped from `in-progress` → `done`.
+- Phase 9 header flag flipped from `in-progress` → `done`.
+- Phase 24 header flag flipped from `in-progress` → `done`.
+- This index added. No other content modified.
+
+---
+
 # Phase 8 — Diagram fixes + StoryPath snake
 
 **Phase:** 8 — Diagram fixes + StoryPath snake
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-16
 
 **Goal:** Fix two visual regressions surfaced from manual QA:
@@ -37,7 +99,7 @@ Master plan tasks in this phase (T8.1 → T8.6):
 
 ## T8.1 — Extract shared pickDiagram helper
 
-**Task status:** in-progress
+**Task status:** done
 **Commit:** `<this commit>`
 **Date:** 2026-07-16
 
@@ -89,7 +151,7 @@ Master plan tasks in this phase (T8.1 → T8.6):
 
 ## T8.2 — Wire diagrams into /work featured tier
 
-**Task status:** in-progress
+**Task status:** done
 **Commit:** `<this commit>`
 **Date:** 2026-07-16
 
@@ -142,7 +204,7 @@ Master plan tasks in this phase (T8.1 → T8.6):
 
 ## T8.3 — Wire diagrams into /log/[id] RelatedProjects
 
-**Task status:** in-progress
+**Task status:** done
 **Commit:** `<this commit>`
 **Date:** 2026-07-16
 
@@ -187,7 +249,7 @@ Master plan tasks in this phase (T8.1 → T8.6):
 
 ## T8.4 — Refactor /work/[slug] to use shared pickDiagram
 
-**Task status:** in-progress
+**Task status:** done
 **Commit:** `<this commit>`
 **Date:** 2026-07-16
 
@@ -235,7 +297,7 @@ Master plan tasks in this phase (T8.1 → T8.6):
 
 ## T8.6 — Replace BuildNotes with StoryPath on /log/[id]
 
-**Task status:** in-progress
+**Task status:** done
 **Commit:** `<this commit>`
 **Date:** 2026-07-16
 
@@ -340,7 +402,7 @@ Phase 8 status: **done**.
 ## Phase 9 — 5-paragraph notes + diagram fixes + 5 new diagrams
 
 **Phase:** 9 — Diagram fixes (cont.)
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-16
 
 **Goal:** Three follow-up fixes from manual QA:
@@ -2254,7 +2316,7 @@ Phase 19 status: **done**.
 
 **Phase:** 24 — UX/copy sweep + content polish
 
-**Phase status:** in-progress
+**Phase status:** done
 
 **Date started:** 2026-07-19
 
