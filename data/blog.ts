@@ -78,6 +78,13 @@ export interface BlogPostItem {
   part?: number;
   /** Short excerpt shown on the post card. */
   excerpt?: string;
+  /**
+   * First-person take-away that the dynamic RAG terminal surfaces as the
+   * "why I wrote it" answer for each Medium post. Not rendered on the
+   * static /writing page; lives here so the registry stays the source of
+   * truth and the chunker can index it alongside `excerpt`. Phase 34.
+   */
+  notes?: string;
   /** Publication date in ISO 8601. Optional for native drafts. */
   publishedAt?: string;
 }
@@ -109,6 +116,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Linux", "Docker"],
     excerpt:
       "Starting a series on the kernel primitives that make container networking work. Namespaces, veth pairs, and bridges, explained from the ground up.",
+    notes:
+      "I wrote this series because almost every container networking bug I've debugged came back to one of three concepts being misunderstood. Namespaces, veth pairs, bridges. Part 1 is the ground floor.",
   },
   {
     slug: "linux-networking-part-2",
@@ -125,6 +134,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Linux"],
     excerpt:
       "How namespaces actually talk to each other. Virtual ethernet pairs, packet flow, and why Docker's bridge networking works the way it does.",
+    notes:
+      "Namespaces don't actually talk to each other by magic — they talk via veth pairs. I wrote this because part 1 left people confused about how the routing between two namespaces actually works.",
   },
   {
     slug: "linux-networking-part-3",
@@ -141,6 +152,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Linux"],
     excerpt:
       "Linux bridges, default gateways, and the one-way outbound path every container uses when it reaches for the internet.",
+    notes:
+      "Bridges, default gateways, and the one-way outbound path every container uses when reaching for the public internet. The mental model in here is the one I wish every DevOps engineer had on day one.",
   },
   {
     slug: "linux-networking-part-4",
@@ -157,6 +170,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Linux"],
     excerpt:
       "The last mile. How source NAT (MASQUERADE) and packet forwarding complete the loop so a namespace can hit the public internet.",
+    notes:
+      "Source NAT (MASQUERADE) and packet forwarding complete the loop so a namespace can hit the public internet. If you only have time for one post in the series, read this one.",
   },
 
   /* ─── PostgreSQL series (3 parts) ───────────────────────────────── */
@@ -175,6 +190,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["PostgreSQL"],
     excerpt:
       "Getting PostgreSQL running, the right way to think about tables, and CRUD that holds up when the schema is no longer a toy.",
+    notes:
+      "I wrote this because most Postgres tutorials skip the part where schemas stop being a toy. This covers getting Postgres running, tables that scale, and CRUD that holds up at 10M rows.",
   },
   {
     slug: "postgresql-part-2",
@@ -191,6 +208,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["PostgreSQL"],
     excerpt:
       "INNER, LEFT, RIGHT, FULL, and what each one actually means before the planner rewrites your query into something different.",
+    notes:
+      "Joins. INNER, LEFT, RIGHT, FULL, what each one means before the planner rewrites your query into something different. The mental model I wish I'd had on day one.",
   },
   {
     slug: "postgresql-part-3",
@@ -207,6 +226,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["PostgreSQL"],
     excerpt:
       "GROUP BY, HAVING, and the mental model that makes aggregation queries feel obvious instead of guessing at syntax.",
+    notes:
+      "GROUP BY, HAVING, and the mental model that makes aggregation queries feel obvious. If you've ever copy-pasted an aggregation from Stack Overflow hoping for the best, this is the post for you.",
   },
 
   /* ─── Redis series (2 parts) ────────────────────────────────────── */
@@ -225,6 +246,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Redis"],
     excerpt:
       "Replication, sentinels, and the failure modes you actually have to design for when Redis is on the request path.",
+    notes:
+      "Replication, sentinels, and the failure modes you actually have to design for when Redis is on the request path. The mental model I'd want every backend engineer to absorb before they pick a topology.",
   },
   {
     slug: "redis-part-2",
@@ -241,6 +264,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Redis", "AWS"],
     excerpt:
       "From a single EC2 to a fault-tolerant Redis Cluster. The real-world glue that turns theory into a prod deployment.",
+    notes:
+      "From a single EC2 to a fault-tolerant Redis Cluster. The practical glue that turns the part 1 mental model into a real production deployment.",
   },
 
   /* ─── Standalone cross-posts ────────────────────────────────────── */
@@ -257,6 +282,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["AWS", "Nginx"],
     excerpt:
       "A practical first step into AWS networking. VPCs, subnets, security groups, and the bastion pattern explained hands-on.",
+    notes:
+      "A practical first step into AWS networking. VPCs, subnets, security groups, and the bastion pattern. The post the Pulumi AWS Infra project on this portfolio cites as the pre-read.",
   },
   {
     slug: "building-leetcode-online-judge",
@@ -271,6 +298,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Django", "RabbitMQ", "Docker"],
     excerpt:
       "The full story behind Algocode. Microservice boundaries, RabbitMQ coordination, and running untrusted code safely inside sibling Docker containers.",
+    notes:
+      "The public version of the Algocode deep-dive. Microservice boundaries, RabbitMQ coordination, and running untrusted code safely inside sibling Docker containers. Read it if you're about to design a code judge or any sandbox-of-arbitrary-user-code system.",
   },
   {
     /* Post-Phase 6 bug fix: native MDX at content/posts/message-queue-101.mdx
@@ -287,6 +316,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["RabbitMQ"],
     excerpt:
       "RabbitMQ from first principles. Why Algocode needed a message queue, how exchanges and queues actually work, and the mental model that made it click.",
+    notes:
+      "RabbitMQ from first principles. Why Algocode needed a message queue, how exchanges and queues actually work, and the mental model that made it click. The Medium cross-post version of the canonical piece.",
   },
   {
     slug: "drishti-ai-eye-screening-agent",
@@ -301,6 +332,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     stack: ["Django", "FastAPI", "WebRTC", "Gemini"],
     excerpt:
       "Building a real-time AI eye-screening pipeline for rural India over WebRTC. Agent architecture, queue design, and the constraints that shaped every decision.",
+    notes:
+      "Building a real-time AI eye-screening pipeline for rural India over WebRTC. Agent architecture, queue design, and the constraints that shaped every decision. Ties the DrishtiAI project to a real problem — 12M blind in India, 80% preventable.",
   },
 
   /* ─── Native MDX posts (managed by Keystatic, T5.6) ─────────────── */
@@ -320,6 +353,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     excerpt:
       "Starting a hands-on series on the kernel primitives that make container networking work. Namespaces, veth pairs, and bridges, explained from the ground up.",
     publishedAt: "2026-07-15",
+    notes:
+      "Same content as the Medium cross-post, kept on the canonical channel for search discoverability. Read whichever version Medium surfaces.",
   },
   {
     slug: "message-queue-101",
@@ -335,6 +370,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     excerpt:
       "RabbitMQ from first principles. What a message queue actually solves, how exchanges and queues connect, and the mental model that makes it click when you're debugging a stuck producer at 2am.",
     publishedAt: "2026-07-15",
+    notes:
+      "The canonical, longer version of Message Queue 101. I wrote this one first; the Medium cross-post is a tighter reader-focused summary. Read this one for the deeper RabbitMQ mental model — flow control, dead-letter queues, the Ack patterns that survive a consumer crash.",
   },
   {
     slug: "algocode-deep-dive",
@@ -350,6 +387,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
     excerpt:
       "The full build story behind Algocode. Splitting a judge into three independently deployable services, coordinating through RabbitMQ, and running untrusted C++ inside sibling Docker containers with Linux namespaces + cgroups + seccomp enforcing hard resource limits.",
     publishedAt: "2026-07-15",
+    notes:
+      "The full build story behind Algocode. Three independently deployable services, RabbitMQ coordination, and running untrusted C++ inside sibling Docker containers with Linux namespaces + cgroups + seccomp enforcing hard resource limits. If you read one post on this portfolio, read this one.",
   },
 ];
 

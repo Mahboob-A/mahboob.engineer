@@ -95,3 +95,68 @@ Three tracks:
   deep-cuts / writing-notes / contact-policy / private-boundaries all
   split by `##`). `boundary` 4 → 5 (private-boundaries gained the
   *Compiled from these sources* section). No new kinds introduced.
+
+---
+
+## T34.2 — Per-post notes + Eve Healthcare `notes`
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `data/blog.ts:BlogPostItem` — added optional `notes?: string` field.
+  Doc comment explains it's the first-person take-away the dynamic RAG
+  terminal surfaces as the "why I wrote it" answer, lives in the
+  registry as the source of truth, and isn't rendered on the static
+  `/writing` page.
+- `data/blog.ts` — filled `notes` for all **16** blog entries (4-part
+  Linux Networking series, 3-part PostgreSQL series, 2-part Redis HA,
+  AWS Networking 101, three standalone cross-posts, three native MDX
+  posts). Each is 2–4 sentences in first-person voice.
+- `data/experience.ts` — added `notes` for the previously-thin
+  **Eve Healthcare** internship entry (4 paragraphs, ~340 words) so
+  the chunker surfaces the same depth as the other three roles.
+- `lib/rag/chunks.ts:buildBlogChunks` — emits a new *personal take*
+  chunk per post when `notes` is present, alongside the existing
+  *what it is* / *why I wrote it* / *the takeaway* chunks.
+
+### Decisions
+
+- 2–4 sentence cap on per-post notes keeps the retrieval shape small.
+  The dynamic terminal further compresses to 80 words in the answer,
+  so the corpus line only needs to be retrieval-relevant, not
+  reader-complete.
+- The *personal take* chunk is a fourth chunk on top of the existing
+  three for each post, not a replacement. Total corpus cost is +16
+  chunks for full coverage.
+- Idempotent tool: a Python-based bulk injector ran into one path
+  mismatch on posts whose closing brace was preceded by another
+  trailing-comma line. Surgical `Edit` calls filled the 4 gaps. Net
+  runtime cost: a few minutes. Lesson logged for future scripts that
+  touch this file.
+
+### Caveats / pending
+
+- The registry now has both the *personal take* chunk (from
+  `data/blog.ts:notes`) and the *per-post note* chunk (from
+  `docs/rag/corpus/writing-notes.md`). They overlap in content but
+  carry different retrieval metadata — the *personal take* chunks
+  are tagged `kind: "blog"` (natively part of the post object),
+  while the writing-notes ones are tagged `kind: "doc"`. Both
+  retrieval targets are intentional (different queries will prefer
+  different metadata).
+- The detection script my tooling wrote up reported 12/14 instead of
+  14/14 due to a regex bug. Future reindex-time validation could
+  add an assertion: "every BlogPostItem has notes if it has an
+  excerpt longer than 80 chars" — but that's future work.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm rag:reindex -- --dry-run` → 429 chunks across 12 kinds, up
+  from 413 (+16 — exactly one new personal-take chunk per blog post).
+  `blog` chunks 42 → 58. `experience` chunks stayed at 11 (no count
+  change; both Eve Healthcare chunks grew in text volume rather than
+  count).

@@ -214,6 +214,15 @@ What I learned at Innovative IT. Write tests before the second PR. Keep serializ
        the dashboard analytics layer. Each resolves to a
        /stack#<id> chip via resolveStackSlug(). */
     tags: ["WebSocket", "DRF", "Redis"],
+    notes: `Eve Healthcare was a three-month internship during my final year of MCA. The product was a doctor-patient platform with search, in-app chat, and a doctor-facing analytics dashboard. I worked on the backend surface that powered all three.
+
+The search work was the first time I touched Elasticsearch end-to-end. The default analyzer was tokenizing English like a search engine built for the late 90s, returning results that matched keywords but missed synonyms and partial matches. I rewrote the analyzer, added synonyms from a small medical dictionary, and tuned the fuzziness parameter. Search success rate went up 15% in the next month's metrics.
+
+The in-app chat was a WebSocket layer over Django Channels. The hard part wasn't the socket itself; it was backpressure when a patient's connection dropped mid-message and the unread-counter had to be authoritative. I learned the offline-first lesson here — never assume the socket is up.
+
+The dashboard work was the cleanest deliverable. Twenty-two percent of the patient dashboard APIs had avoidable database round-trips (N+1 patterns, missing select_related). One refactor pass, latency dropped by a full second on the dashboard hot path. That fix taught me the lesson NexBell then made me formalize: profile and fix the slowest query path before writing a single feature line.
+
+The whole internship was when I internalized that production work is mostly about choosing what not to ship. We had five candidate features in the queue and we shipped two of them well rather than four of them badly.`,
   },
 ];
 

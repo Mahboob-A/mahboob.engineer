@@ -306,6 +306,9 @@ function buildBlogChunks(): RagChunk[] {
       : post.tags.length
         ? `Covers ${post.tags.join(", ")} from the ${post.category} angle.`
         : `Post in the ${post.category} category.`;
+    const personalNotes = post.notes
+      ? `Why I wrote it (in my words): ${post.notes}`
+      : "";
     const chunks: RagChunk[] = [
       chunk({
         kind: "blog",
@@ -321,6 +324,16 @@ function buildBlogChunks(): RagChunk[] {
           title: `${post.title} — why I wrote it`,
           ...shared,
           text: why,
+        }),
+      );
+    }
+    if (personalNotes) {
+      chunks.push(
+        chunk({
+          kind: "blog",
+          title: `${post.title} — personal take`,
+          ...shared,
+          text: personalNotes,
         }),
       );
     }
