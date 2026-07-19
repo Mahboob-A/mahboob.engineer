@@ -2871,3 +2871,141 @@ reads as a deliberate label rather than templating.
     `The Backend Diaries`.
   - `/lets-connect` → unchanged.
 
+---
+
+# Phase 26 — Landing gap halve + showcase stars + /lets-connect redesign
+
+**Phase:** 26 — UX polish
+
+**Phase status:** done
+
+**Date:** 2026-07-19
+
+**Goal:** Three independent changes landing together:
+(1) halve the landing section top padding (90→45) to match
+the new eyebrow-free rhythm; (2) showcase-tier cards on `/work`
+gain the same `★ N` badge featured cards already had; (3) the
+`/lets-connect` page reshuffles — smaller description textarea,
+FAQ moved out of the right sidebar into a full-width section
+below the form, and a new "is this email for me?" Quick context
+card fills the vacated FAQ slot.
+
+---
+
+## T26.1 — Landing gap halve + showcase stars
+
+**Task status:** done
+**Commit:** `783e089`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`components/sections/DeployLog.tsx`,
+  Projects.tsx, SkillGraph.tsx, Blog.tsx, Contact.tsx`** —
+  section className `py-[90px]` → `pt-[45px] pb-[90px]`.
+  Halves the top padding only; the bottom 90px stays for
+  the inter-section breath.
+- **`components/work/ProjectCard.tsx`** — the showcase
+  variant's top row (`<div className="flex items-center gap-2">`)
+  now renders a `★ N` `<span>` next to the Badge when
+  `project.stars` is set. Same `text-amber font-mono
+  text-[10.5px]` styling as the featured variant.
+
+### Decisions
+
+- **Top padding halved, bottom kept** — when the eyebrow
+  line was present, the gap above the H1 was 90px of
+  section padding + 10px eyebrow→H1 margin. Halving the
+  top padding restores the same visual breath. Bottom
+  stays 90px because the next section's H1 (or footer)
+  needs the spacing for visual rhythm.
+- **Showcase stars match featured exactly** — same
+  className, same `aria-label="${stars} stars on GitHub"`,
+  same inline-after-Badge placement. Single visual language
+  for every project card on `/work`.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR smoke (dev): `/work` showcase cards now render
+  `★ N` next to the shipped badge. Landing sections feel
+  tighter above the H1.
+
+---
+
+## T26.2 — `/lets-connect` redesign
+
+**Task status:** done
+**Commit:** `cd9488e`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`data/contact.ts`** — `FAQ` expanded from 3 to 9 entries
+  (3 originals + 6 new). New data exports:
+  - `QUICK_CONTEXT_FITS: QuickContextItem[]` (4 entries).
+  - `QUICK_CONTEXT_DOESNT: QuickContextItem[]` (4 entries).
+- **`components/contact/ContactForm.tsx`** — description
+  textarea: `rows={5}` → `rows={3}`, `min-h-[120px]` →
+  `min-h-[80px]`. `resize-y` kept so users can drag taller
+  if they want more room.
+- **`components/contact/FAQSection.tsx`** (new, ~50 lines)
+  — Server Component. Renders the full FAQ list as a
+  single `bg-surface` card with the same Q:/A: mono
+  prefix the old sidebar card used. Reads as a deliberate
+  FAQ block, not a sidebar item.
+- **`components/contact/ContactSidebar.tsx`** — dropped
+  `FAQCard`. Added `QuickContextCard` (two-bullet list:
+  "Probably fits" with accent-green dots, "Probably doesn't"
+  with muted dots). Visual hierarchy: the "fits" items
+  read as opportunities, the "doesn't" items read as
+  honest exclusions.
+- **`app/lets-connect/page.tsx`** — layout rewritten:
+  - Left column: `ContactForm` + `FAQSection` (full-width
+    below the form, `mt-6` separator).
+  - Right column: `ContactSidebar` (Availability +
+    DirectLinks + QuickContext). No structural change to
+    the grid template.
+
+### Decisions
+
+- **FAQ below the form, not inside it** — placing the
+  FAQ inside the TerminalBlock would make the terminal
+  panel absurdly long; placing it as a separate card
+  below the form lets the terminal panel stay tight
+  while the FAQ takes the visual real estate the form
+  used to occupy.
+- **QuickContext reads as "is this email for me?"** —
+  the eyebrow label `Is this email for me?` frames the
+  card as a soft gate. Fits = accent-green dots,
+  doesn't = muted dots. Visual hierarchy matches the
+  semantic: the user is invited if their context matches
+  "fits", warned off if it matches "doesn't".
+- **FAQ grouped by topic** — order: location → company
+  fit → engagement → logistics → work style → ramp.
+  The 3 originals stay at the top because they answer
+  the most-common questions. New 6 follow in a sensible
+  reading order.
+- **No markdown support in FAQ** — kept the same
+  `{question, answer}` string shape; no HTML risk.
+- **`aria-label` on showcase star badge** — same a11y
+  pattern as the case-study Hero (T24.7).
+- **No CTA at the bottom of the FAQ** — the form is
+  right there at the top of the page. FAQ is a
+  read-only reference.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR (dev) smoke on `/lets-connect`:
+  - Description textarea visibly shorter (~80px tall).
+  - Below the TerminalBlock: full-width FAQ card with
+    9 Q&A pairs.
+  - Right sidebar: Availability + DirectLinks +
+    QuickContext (3 cards stacked).
+  - QuickContextCard: "Probably fits" section has 4
+    accent-green-dot bullets; "Probably doesn't" has 4
+    muted-dot bullets.
+
