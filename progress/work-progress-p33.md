@@ -313,3 +313,63 @@ where static remains the default and dynamic is backed by a RAG API.
 ### Verified
 
 - `pnpm typecheck` → clean.
+
+---
+
+## T33.5c — Reindex + adapter to server-side embedding
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `lib/rag/providers.ts`: dropped the `embed()` method from
+  `RagModelClient`, the `EmbeddingResult` type, and the per-provider
+  `defaultEmbeddingModel` config. All four providers (`fireworks`,
+  `gemini`, `groq`, `openai`) remain selectable for chat only; Gemini
+  recognition and key-validation are unchanged. The interface is now
+  `{ provider, chatModel, streamChat(messages, signal?) }`.
+- `scripts/rag-reindex.ts`: removed the `getRagModelClient` import and the
+  per-chunk embed loop. Each chunk is now upserted via
+  `index.upsert({ id, data: text, metadata })` in batches of 20 — Upstash
+  embeds the `data` server-side. Per-vector metadata gains
+  `upstashEmbeddingModel` and `upstashEmbeddingDimensions` so future
+  debugging can see what model wrote the vector.
+- Added a dim-parity sanity check at reindex start: calls `client.info()`
+  and throws if `info.dimension` does not match
+  `RAG_UPSTASH_EMBEDDING_DIMENSIONS`. The check is wrapped so a network
+  failure here warns instead of failing the reindex (reindex itself can
+  still succeed; only the safety net is lost in that case).
+- The script now logs `Upstash embed model: <model> (<dim>d, server-side)`
+  and a redacted `Upstash endpoint: https://***-us1-vector.upstash.io`.
+  The full `UPSTASH_VECTOR_REST_URL` is never printed, matching the
+  security rule recorded for T33.9.
+
+### Decisions
+
+- Used the SDK's auto-routing `upsert([{ id, data, metadata }])` shape
+  rather than calling a separate `upsertData` method. The SDK picks the
+  `upsert-data` REST endpoint automatically when payloads have no `vector`
+  field.
+- Kept the `RAG_VECTOR_NAMESPACE=portfolio-rag` default; the namespace
+  still wins whether `upsert` is called with vectors or data.
+- The dimension sanity check is non-fatal on network errors. A future task
+  could promote it to fatal, but today the priority is "don't block a real
+  reindex on a transient 5xx".
+
+### Caveats / pending
+
+- The namespace-scoped `client.namespace(ns)` doesn't expose `info()`;
+  the check calls `info()` on the un-namespaced client. Same dimension
+  value applies to all namespaces under the index, so this is correct.
+- The reindex script no longer prints an "Embedding: complete" line
+  because there is no client-side embed step. Documented in
+  `docs/rag/OPERATIONS.md` already (T33.5b).
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm rag:reindex -- --dry-run` → 353 chunks across 10 kinds; output
+  includes `Upstash embed model: openai/text-embedding-3-small
+  (1536d, server-side)` placeholder (only printed in real reindex mode).

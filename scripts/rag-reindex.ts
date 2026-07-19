@@ -1,10 +1,18 @@
 import { Index } from "@upstash/vector";
 import { buildRagCorpus, type RagChunk } from "@/lib/rag/chunks";
-import { getRagModelClient } from "@/lib/rag/providers";
 
 type VectorMetadata = Record<string, unknown>;
 
 const BATCH_SIZE = 20;
+
+const DEFAULT_UPSTASH_EMBEDDING_MODEL = "openai/text-embedding-3-small";
+const DEFAULT_UPSTASH_EMBEDDING_DIMENSIONS = 1536;
+
+function redactVectorUrl(url: string): string {
+  // Never log the full UPSTASH_VECTOR_REST_URL (it embeds a project id).
+  // Replace the prefix segment after the scheme with ***.
+  return url.replace(/(https?:\/\/)[^.\-]+/, "$1***");
+}
 
 async function main() {
   const args = new Set(process.argv.slice(2));
@@ -16,7 +24,7 @@ async function main() {
   console.log(`Corpus hash: ${corpus.hash}`);
   console.log("By kind:");
   for (const [kind, count] of Object.entries(byKind).sort()) {
-    console.log(`  ${kind.padEnd(12, " ")} ${count}`);
+    console.log(`  ${kind.padEnd(16, " ")} ${count}`);
   }
 
   if (dryRun) {
@@ -37,34 +45,64 @@ async function main() {
     );
   }
 
-  const namespace = process.env.RAG_VECTOR_NAMESPACE ?? "portfolio-rag";
-  const index = new Index<VectorMetadata>({ url, token }).namespace(namespace);
-  const modelClient = getRagModelClient();
+  const embeddingModel =
+    process.env.RAG_UPSTASH_EMBEDDING_MODEL ??
+    DEFAULT_UPSTASH_EMBEDDING_MODEL;
+  const embeddingDimensions = Number.parseInt(
+    process.env.RAG_UPSTASH_EMBEDDING_DIMENSIONS ??
+      String(DEFAULT_UPSTASH_EMBEDDING_DIMENSIONS),
+    10,
+  );
+  if (!Number.isFinite(embeddingDimensions)) {
+    throw new Error(
+      `RAG_UPSTASH_EMBEDDING_DIMENSIONS must be an integer; got "${process.env.RAG_UPSTASH_EMBEDDING_DIMENSIONS}".`,
+    );
+  }
 
-  console.log(`Provider: ${modelClient.provider}`);
-  console.log(`Embedding model: ${modelClient.embeddingModel}`);
+  const namespace = process.env.RAG_VECTOR_NAMESPACE ?? "portfolio-rag";
+  const client = new Index<VectorMetadata>({ url, token });
+  const index = client.namespace(namespace);
+
+  // Optional sanity check: read the index's reported dimension and warn
+  // loudly if it differs from the configured value. This catches a
+  // recreate-index mistake before we waste a full reindex.
+  try {
+    const info = await client.info();
+    if (info.dimension !== embeddingDimensions) {
+      throw new Error(
+        `Upstash index reports dimension ${info.dimension} but RAG_UPSTASH_EMBEDDING_DIMENSIONS=${embeddingDimensions}. ` +
+          `Recreate the Upstash index at dimension ${embeddingDimensions} (matching the selected embedding model) and re-run.`,
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Upstash index")) {
+      throw error;
+    }
+    console.warn(
+      `Could not verify Upstash index dimension (${error instanceof Error ? error.message : String(error)}); proceeding with configured value ${embeddingDimensions}.`,
+    );
+  }
+
+  console.log(`Upstash embed model: ${embeddingModel} (${embeddingDimensions}d, server-side)`);
+  console.log(`Upstash endpoint: ${redactVectorUrl(url)}`);
   console.log(`Vector namespace: ${namespace}`);
 
-  let embedded = 0;
+  let upserted = 0;
   for (const batch of batches(corpus.chunks, BATCH_SIZE)) {
-    const vectors = [];
-    for (const item of batch) {
-      const result = await modelClient.embed(item.text);
-      vectors.push({
-        id: item.id,
-        vector: result.embedding,
-        metadata: {
-          ...item.metadata,
-          text: item.text,
-          corpusHash: corpus.hash,
-          embeddingModel: result.model,
-          dimensions: result.dimensions,
-        },
-      });
-      embedded += 1;
-      process.stdout.write(`\rEmbedding: ${embedded}/${corpus.chunks.length}`);
-    }
+    const vectors = batch.map((item) => ({
+      id: item.id,
+      data: item.text,
+      metadata: {
+        ...item.metadata,
+        text: item.text,
+        corpusHash: corpus.hash,
+        upstashEmbeddingModel: embeddingModel,
+        upstashEmbeddingDimensions: embeddingDimensions,
+      } satisfies VectorMetadata,
+    }));
     await index.upsert(vectors);
+    upserted += batch.length;
+    process.stdout.write(`\rUpsert: ${upserted}/${corpus.chunks.length}`);
   }
 
   console.log("\nUpstash upsert: complete");

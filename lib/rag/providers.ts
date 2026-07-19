@@ -8,28 +8,26 @@ export type RagChatMessage = {
   content: string;
 };
 
-export type EmbeddingResult = {
-  embedding: number[];
-  dimensions: number;
-  model: string;
-};
-
 export interface RagModelClient {
   provider: LlmProvider;
   chatModel: string;
-  embeddingModel: string;
-  embed(input: string): Promise<EmbeddingResult>;
   streamChat(
     messages: RagChatMessage[],
     signal?: AbortSignal,
   ): Promise<Response>;
 }
 
+// Note: embeddings are owned by Upstash Vector (server-side) and are not
+// produced by any provider SDK in this codebase. The previous `embed()`
+// method on `RagModelClient` was removed when the design pivoted to
+// server-side embedding. If a future provider needs to produce embeddings
+// client-side, re-introduce it here and add an explicit embed path in
+// `scripts/rag-reindex.ts` and `app/api/rag/route.ts`.
+
 type ProviderConfig = {
   apiKeyEnv: string;
   baseURL: string;
   defaultChatModel: string;
-  defaultEmbeddingModel: string;
 };
 
 const OPENAI_COMPATIBLE_PROVIDERS = {
@@ -37,19 +35,16 @@ const OPENAI_COMPATIBLE_PROVIDERS = {
     apiKeyEnv: "FIREWORKS_API_KEY",
     baseURL: "https://api.fireworks.ai/inference/v1",
     defaultChatModel: "accounts/fireworks/models/gpt-oss-120b",
-    defaultEmbeddingModel: "accounts/fireworks/models/qwen3-embedding-8b",
   },
   groq: {
     apiKeyEnv: "GROQ_API_KEY",
     baseURL: "https://api.groq.com/openai/v1",
     defaultChatModel: "llama-3.3-70b-versatile",
-    defaultEmbeddingModel: "",
   },
   openai: {
     apiKeyEnv: "OPENAI_API_KEY",
     baseURL: "https://api.openai.com/v1",
     defaultChatModel: "gpt-4.1-mini",
-    defaultEmbeddingModel: "text-embedding-3-small",
   },
 } satisfies Partial<Record<LlmProvider, ProviderConfig>>;
 
@@ -88,15 +83,6 @@ function createOpenAICompatibleClient(
   const apiKey = env.required(config.apiKeyEnv);
   const baseURL = env.optional("RAG_OPENAI_COMPAT_BASE_URL", config.baseURL);
   const chatModel = env.optional("RAG_CHAT_MODEL", config.defaultChatModel);
-  const embeddingModel = env.optional(
-    "RAG_EMBEDDING_MODEL",
-    config.defaultEmbeddingModel,
-  );
-  if (!embeddingModel) {
-    throw new RagProviderConfigurationError(
-      `${provider} does not have a default embedding model. Set RAG_EMBEDDING_MODEL or use a provider with embeddings.`,
-    );
-  }
 
   const client = new OpenAI({
     apiKey,
@@ -108,22 +94,6 @@ function createOpenAICompatibleClient(
   return {
     provider,
     chatModel,
-    embeddingModel,
-    async embed(input: string): Promise<EmbeddingResult> {
-      const response = await client.embeddings.create({
-        model: embeddingModel,
-        input,
-      });
-      const embedding = response.data[0]?.embedding;
-      if (!embedding) {
-        throw new Error("Embedding response did not include a vector.");
-      }
-      return {
-        embedding,
-        dimensions: embedding.length,
-        model: embeddingModel,
-      };
-    },
     async streamChat(
       messages: RagChatMessage[],
       signal?: AbortSignal,
