@@ -32,7 +32,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = pageMetadata(
   "Writing",
-  "How I think, not just what I shipped — long-form breakdowns of distributed systems, Linux internals, async pipelines, and the bugs that taught me the most.",
+  "How I think, not just what I shipped. Long-form breakdowns of distributed systems, Linux internals, async pipelines, and the bugs that taught me the most.",
 );
 
 export const dynamic = "force-dynamic"; // RSS fetch + native post reads → fresh on every render.
@@ -167,7 +167,7 @@ export default async function WritingPage() {
         section: "THE BACKEND DIARIES",
         title: "Writing",
         description:
-          "How I think, not just what I shipped — long-form breakdowns of systems, internals, and the bugs that taught me the most.",
+          "How I think, not just what I shipped. Long-form breakdowns of systems, internals, and the bugs that taught me the most.",
       }}
     >
       <WritingShell

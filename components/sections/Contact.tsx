@@ -45,7 +45,7 @@ export function Contact() {
             Let&apos;s build something durable.
           </h2>
           <p className="text-t2 mt-3 max-w-[520px] text-[15px]">
-            Hiring, consulting, a partnership, or just a hello — pick a
+            Hiring, consulting, a partnership, or just a hello. Pick a
             label and tell me what you&apos;re working on.
           </p>
         </div>

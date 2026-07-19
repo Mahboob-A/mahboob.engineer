@@ -22,7 +22,7 @@ import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata(
   "Work",
-  "Founder projects, featured builds, and a long-tail of experiments — filter by domain.",
+  "Founder projects, featured builds, and a long-tail of experiments. Filter by domain.",
 );
 
 /* Display order — only ids + labels cross the RSC boundary. The actual
@@ -47,7 +47,7 @@ export default function WorkPage() {
         section: "SYSTEMS",
         title: "Everything I've built end-to-end",
         description:
-          "Founder projects, featured builds, and a long-tail of experiments — filter by domain.",
+          "Founder projects, featured builds, and a long-tail of experiments. Filter by domain.",
       }}
     >
       <WorkShell projects={PROJECTS} filters={FILTERS} />

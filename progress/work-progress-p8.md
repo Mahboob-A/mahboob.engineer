@@ -2247,3 +2247,157 @@ projects, minimal on simple ones, no AI-junk vocabulary.
 warnings. `pnpm typecheck` clean.
 
 Phase 19 status: **done**.
+
+---
+
+# Phase 24 — Eyebrow reframe, em-dash sweep, hero rewrite, /writing 9-card collapse, story-stage labels, stars
+
+**Phase:** 24 — UX/copy sweep + content polish
+
+**Phase status:** in-progress
+
+**Date started:** 2026-07-19
+
+**Goal:** Seven related UX/copy/content changes landing across the
+portfolio: em-dash sweep on landing-page strings (Phase 19 cleaned
+the data files; page-level strings stayed), hero H1 + description
+rewrite, section eyebrow rework (drop the `01 / DEPLOYMENT LOG`
+pattern site-wide), `/writing` 9-card collapse, story-stage labels
+(`[Idea] / [Framing] / [Build] / [Deploy] / [What's next]`) on
+`/work/[slug]`, stars badge on the case-study Hero, and a
+retrospective doc for Phases 20–22.
+
+**Result target:** A landing page that reads as deliberate human
+prose, inner pages that don't carry the AI-slop eyebrow pattern,
+case-study pages with a single visible story structure, and a
+`/writing` list that's not all-at-once.
+
+Master plan tasks (T24.1 → T24.7):
+
+1. **T24.1** — Retrospective doc for Phases 20, 21, 22
+2. T24.2 — Em-dash sweep on page-level strings
+3. T24.3 — Hero H1 + description rewrite
+4. T24.4 — Section eyebrows (drop `01 / LABEL` site-wide)
+5. T24.5 — `/writing` 9-card collapse + `?all=1` URL flag
+6. T24.6 — `[Idea] / [Framing] / [Build] / [Deploy] / [What's next]` labels in `/work/[slug]`
+7. T24.7 — Stars badge on case-study Hero (9 projects)
+
+---
+
+## T24.1 — Retrospective for Phases 20, 21, 22
+
+**Task status:** done
+**Commit:** `b3d2372`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`progress/work-progress-p20-22.md`** — single retrospective
+  file covering three thin follow-up commits that landed between
+  Phase 19 (data copy pass) and Phase 23 (navbar + proxy
+  migration). Each section follows the rulebook format (What
+  shipped / Decisions / Caveats / Verified).
+  - **Phase 20** (`fb9be1e`) — added WebSocket / DRF / Redis to
+    Eve Healthcare in `data/experience.ts` so the deep-dive
+    Keywords section renders 3 clickable chips instead of
+    `"0 techs"`.
+  - **Phase 21** (`936cae3`) — added bKash under the payment
+    domain in `data/stack.ts` with `projects: ["nexbell"]`
+    (a reference slug, not a `/work/<nexbell>` slug).
+  - **Phase 22** (`05b1f2a`) — split `tech.projects` into
+    `resolvedProjects` + `unresolvedRefs` in StackShell; the
+    detail panel now renders `"Used in N projects + M
+    references"` with company + period metadata for phantom
+    refs.
+
+### Decisions
+
+- **Single retrospective file instead of 3 thin stubs** —
+  rulebook-compliant (preserves the per-phase pattern by
+  giving each phase its own section header) and avoids three
+  thin files for thin commits.
+- **Place the file under `progress/work-progress-p20-22.md`**
+  with the file header documenting all three phases. Phase 23
+  has its own `work-progress-p23.md`; this fills the
+  20–22 gap.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean.
+
+---
+
+## T24.2 — Em-dash sweep on page-level strings
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+11 user-visible em-dashes replaced across page-level strings
+(comma, period, or ` · ` separators per the Phase 19 tone law).
+JSDoc comments and developer identifiers (e.g.
+`"%s — Mahboob Alam"`, `"Mahboob Alam — Co-Founder & Backend
+Engineer"`) intentionally left alone — those are convention, not
+prose.
+
+- **`app/work/page.tsx`** — metadata + InnerPageHeader
+  description: `"Founder projects, featured builds, and a
+  long-tail of experiments — filter by domain."` →
+  `"…experiments. Filter by domain."` (em-dash → period).
+- **`app/writing/page.tsx`** — metadata + InnerPageHeader
+  description: `"How I think, not just what I shipped —
+  long-form breakdowns…"` → `"…what I shipped.
+  Long-form breakdowns…"` (em-dash → period).
+- **`app/log/[id]/page.tsx`** — CaseStudyCrossLink paragraph:
+  `"For the architecture deep-dive — three-layer build,
+  isolation strategy, deployment topology — read the case
+  study"` → `"…deep-dive: three-layer build, isolation
+  strategy, deployment topology. Read the case study"`
+  (em-dashes → colon + period).
+- **`components/sections/SkillGraph.tsx`** — section
+  description: `"Not a list of logos. Hover a node to trace
+  what it actually works with — including what I'm actively
+  leveling up."` → comma.
+- **`components/sections/Contact.tsx`** — section
+  description: `"Hiring, consulting, a partnership, or just
+  a hello — pick a label…"` → period.
+- **`components/sections/Hero.tsx`** — eyebrow line:
+  `"BACKEND & PLATFORM ENGINEER — BANGALORE / CHENNAI"` →
+  `"…ENGINEER · BANGALORE / CHENNAI"` (em-dash → middle dot,
+  matches the existing middle-dot convention used in the
+  Navbar's "Let's connect" pulse treatment). The H1 and
+  description get the full rewrite in T24.3.
+- **`components/hero/HeroTerminal.tsx`** — TerminalBlock label
+  `"terminal — click a command"` → middle dot. Chip `whoami`
+  payload line `"Last role: … — {role}."` → comma.
+- **`app/api/contact/route.ts`** — body line `"— {email}"`
+  → `"From: {email}"` (em-dash was reading as the email
+  signature separator; `From:` is the standard email header).
+- **`app/work/[slug]/page.tsx`** — fallback label `"—"` in the
+  metric row's split-helper → `""` (empty string; the metric
+  number renders alone when there's no label).
+
+### Decisions
+
+- **Industry-standard identifiers kept verbatim:**
+  `"%s — Mahboob Alam"` (page titles), `"Mahboob Alam — Co-
+  Founder & Backend Engineer"` (author byline + OG alt), and
+  `"Bangalore / Chennai — India"` (timezone/locale format)
+  stay. These aren't prose — they're conventional naming
+  patterns readers expect.
+- **`chips` + `data` arrays keep `split(" — ")`** — that's a
+  code split, not visible prose. Phase 19 cleaned the
+  project.tagline string content but the split-character was
+  unchanged.
+- **JSDoc / JSX comments left alone** — they're developer
+  documentation, not user-visible.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Tone-gate grep: `grep -rn '[a-zA-Z0-9\)\?\.!,;]—' app components --include='*.tsx' --include='*.ts'` returns no visible-prose hits.
+

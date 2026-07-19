@@ -181,7 +181,7 @@ function MetricsRow({ project }: { project: ProjectItem }) {
     const parts = s.split(" ");
     return {
       num: parts[0] ?? s,
-      label: parts.slice(1).join(" ") || "—",
+      label: parts.slice(1).join(" ") || "",
     };
   }
 

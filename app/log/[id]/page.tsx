@@ -349,8 +349,8 @@ function CaseStudyCrossLink({
         </h2>
       </div>
       <p className="text-t2 text-[15px] leading-[1.65]">
-        For the architecture deep-dive — three-layer build, isolation
-        strategy, deployment topology — read the case study
+        For the architecture deep-dive: three-layer build, isolation
+        strategy, deployment topology. Read the case study
         {others.length > 0 ? "s" : ""}:{" "}
         {projects.map((p, i) => (
           <span key={p.slug}>

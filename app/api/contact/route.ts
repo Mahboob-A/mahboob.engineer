@@ -122,7 +122,7 @@ export async function POST(req: Request): Promise<Response> {
   const text = [
     result.description,
     "",
-    `— ${result.email}`,
+    `From: ${result.email}`,
     `Label: ${result.label ?? "(none)"}`,
   ].join("\n");
 

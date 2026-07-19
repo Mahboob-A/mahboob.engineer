@@ -79,7 +79,7 @@ function buildPayload(key: ChipKey): string[] {
         `Currently shipping Taply (NFC + QR business cards) and`,
         `building UnThink (fragment-first knowledge base).`,
         last
-          ? `Last role: ${last.company} (${last.period}) — ${last.role}.`
+          ? `Last role: ${last.company} (${last.period}), ${last.role}.`
           : "—",
         "Based in Bangalore / Chennai. Open to backend / platform roles.",
       ];
@@ -236,7 +236,7 @@ export function HeroTerminal() {
 
   return (
     <div ref={containerRef} className="mt-6">
-      <TerminalBlock label="terminal — click a command">
+      <TerminalBlock label="terminal · click a command">
         {/* Chip row */}
         <div
           className="flex flex-wrap gap-1.5 pb-3"
