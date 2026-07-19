@@ -3246,3 +3246,63 @@ The next milestone is the visual confirmation pass — Playwright
 screenshot at 375 / 768 / 1440 px to verify the alignment
 visually. Out of scope for Phase 29; future polish.
 
+---
+
+# Phase 30 — 6th line on How the form gets used
+
+**Phase:** 30 — sidebar alignment (one more line)
+
+**Phase status:** done
+
+**Date:** 2026-07-19
+
+**Goal:** The Phase 29 5th line still didn't reach the FAQ's
+bottom on lg+. Append one more bullet to the kept privacy
+card so the right column extends further.
+
+---
+
+## T30.1 — 6th privacy bullet
+
+**Task status:** done
+**Commit:** `ef7213a`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`data/contact.ts`** — appended a 6th entry to
+  `HOW_THE_FORM_GETS_USED`: `{ text: "Nothing here
+  trains an AI model." }`.
+
+### Decisions
+
+- **6th line content** — per user-confirmed brainstormed
+  candidate. Calls out the AI-training elephant in the
+  room. Reads as current + honest; positions this site
+  as not part of any training-data pipeline.
+- **No component changes** — the existing
+  `HowTheFormGetsUsedCard` already iterates over the
+  full array. The 6th bullet renders automatically.
+- **No header / padding / spacing changes** — the
+  privacy card stays at the tighter Phase 28 sizing.
+  Only the content array grows.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR (dev) smoke on `/lets-connect`:
+  - Right sidebar's `How the form gets used` card now
+    renders 6 bullets.
+  - Right sidebar's bottom edge extends further toward
+    the FAQ's bottom on lg+.
+
+---
+
+Phase 30 status: **done**.
+
+If the right column still doesn't align after this, a 7th
+line or a layout-side fix (gap adjustment, vertical
+alignment in the grid) would be the next moves. Out of
+scope for Phase 30.
+
