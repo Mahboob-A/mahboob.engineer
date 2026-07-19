@@ -174,7 +174,7 @@ export interface QuickContextItem {
 }
 
 export const QUICK_CONTEXT_FITS: QuickContextItem[] = [
-  { text: "You're hiring for a backend or platform role (remote or Bangalore)." },
+  { text: "You're hiring for a backend or platform role (remote or anywhere in India)." },
   { text: "You want a Taply partnership or white-label conversation." },
   { text: "You want a system design review on a Django / FastAPI stack." },
 ];
@@ -212,7 +212,7 @@ export const HOW_THE_FORM_GETS_USED: FormDataLine[] = [
      elephant in the room. Reads current + honest;
      positions this site as not part of the training-
      data pipeline. */
-  { text: "Nothing here trains an AI model." },
+  { text: "Nothing here trains an AI model!" },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
