@@ -461,3 +461,82 @@ where static remains the default and dynamic is backed by a RAG API.
   9 FAQ, 6 question, 4 boundary, 250 doc, 2 voice, 3 system-prompt.
   Sample chunks show first-person framing and notes-surfacing for
   projects with `notes` set.
+
+---
+
+## T33.6 — RAG API route
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `app/api/rag/route.ts` — the POST handler for `/api/rag`. Server-only by
+  file location (`app/api/...`); `runtime = "nodejs"`, `dynamic =
+  "force-dynamic"`. Validates the JSON body (`command` from a known set,
+  optional `question` up to 500 chars), then:
+  1. Reads `UPSTASH_VECTOR_REST_URL` / `UPSTASH_VECTOR_REST_TOKEN` (missing
+     → `503` "Vector store is not configured.").
+  2. Reads `RAG_UPSTASH_EMBEDDING_DIMENSIONS` and compares it against
+     `client.info().dimension` on first call; mismatch is loud (`503` with
+     "Recreate the Upstash index at dimension N…"). Result cached on the
+     module scope so subsequent calls don't re-hit `info()`.
+  3. Resolves the chat client via `getRagModelClient()`. Missing provider
+     key → `503`.
+  4. Retrieves in parallel: (a) `kind: "system-prompt"` chunks via
+     `data`-query + code-side filter (avoids depending on Upstash metadata
+     filtering being enabled on the index); (b) `kind: "voice"` chunks
+     the same way; (c) top-5 grounded context for the user question.
+  5. Composes the system message from system-prompt → voice rules →
+     retrieved context (separated by `\n---\n`).
+  6. Streams via `modelClient.streamChat([system, user], req.signal)`.
+     The `AbortSignal` propagates into the Fireworks chat completions
+     call so the upstream connection actually closes when the client
+     cancels.
+- `lib/rag/command-map.ts` — exported `RAG_COMMAND_KEYS`, label map,
+  question map (same six chips `whoami` / `projects` / `stack` /
+  `latest` / `contact` / `help` documented in `ARCHITECTURE.md`).
+  `isRagCommand()` is the route-side guard against unknown keys.
+- `lib/rag/providers.ts` lazy-loaded from the route via
+  `await import("@/lib/rag/providers")` so the `openai` + `dotenv`
+  surface lands in a single dynamic chunk that the browser never sees.
+
+### Decisions
+
+- Code-side kind filtering, not Upstash metadata `filter`. The portfolio
+  index was created without explicit metadata-filtering enabled; relying
+  on the SDK's `filter` param would 4xx today. Re-evaluate once the
+  index is recreated.
+- The route caches the dim-parity answer (`indexInfoCache`) so we don't
+  ping `info()` on every request. A failure is also cached
+  (`indexInfoError`) so a bad cold start keeps surfacing `503` until the
+  process restarts.
+- No `includeVectors` on any query — saves bandwidth and avoids leaking
+  1536-dim arrays through route code.
+- The system prompt + voice + context split uses `\n\n---\n\n` between
+  sections. `---\n\n` is a common LLM section separator (works with
+  Fireworks' chat-completions and OpenAI-compat APIs). Keeps each
+  section's role obvious in the rendered stream.
+- `dynamic = "force-dynamic"` because `index.info()` reads env at
+  request time. Acceptable cost; dynamic mode isn't the static default.
+
+### Caveats / pending
+
+- The route's 5-section prompt order is the assumed good shape; we'll
+  tweak in T33.9 once we see the first answers on real env vars.
+- The route does *not* currently rate limit. T33.8 adds the per-IP guard.
+- Body validation is "command valid + question ≤ 500 chars". Multi-turn
+  follow-ups aren't supported in v1 (chips-only per architecture doc).
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean. Route listed as `ƒ /api/rag` in the bundle.
+- `pnpm dev` + curl smoke (env vars not set):
+  - `POST {"command":"whoami"}` → `503 Vector store is not configured…`
+  - `POST {"command":"bogus"}` → `400 Unknown or missing command key.`
+  - `POST 'garbage'` → `400 Invalid JSON body.`
+- With real `FIREWORKS_API_KEY` + `UPSTASH_VECTOR_REST_URL` /
+  `_TOKEN` the route streams `200 text/plain; charset=utf-8`. (Real
+  env smoke deferred to T33.7/T33.9 when keys are added locally.)
