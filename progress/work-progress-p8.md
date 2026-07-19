@@ -3009,3 +3009,89 @@ card fills the vacated FAQ slot.
     accent-green-dot bullets; "Probably doesn't" has 4
     muted-dot bullets.
 
+---
+
+# Phase 27 — /lets-connect right sidebar gap fill
+
+**Phase:** 27 — sidebar polish
+
+**Phase status:** done
+
+**Date:** 2026-07-19
+
+**Goal:** Phase 26's contact page redesign left the right
+sidebar visibly shorter than the FAQ on the left. Fill the
+vertical gap with 3 small pragmatic cards so the bottoms
+roughly align on lg+.
+
+---
+
+## T27.1 — Right sidebar gap fill
+
+**Task status:** done
+**Commit:** `0581815`
+**Date:** 2026-07-19
+
+### What shipped
+
+3 new sidebar cards, all data-driven from `data/contact.ts`:
+
+- **`WHAT_I_READ_FIRST: WhatIReadFirstItem[]`** — 4 bullets
+  describing what lands at the top of inbox. Subject line +
+  opening line, role context, specific problem, JD link.
+- **`RESPONSE_TIME_LINES: ResponseTimeLine[]`** — 3
+  timezone + cadence lines. IST + weekdays 1–6pm,
+  async-first within a working day, [urgent] for
+  same-day reads.
+- **`HOW_THE_FORM_GETS_USED: FormDataLine[]`** — 4 quiet
+  privacy + data-handling lines. Relays to Gmail via
+  Resend, I read every email myself, your address
+  goes nowhere else, form data isn't stored.
+
+`components/contact/ContactSidebar.tsx` — 3 new card
+components (`WhatIReadFirstCard`, `ResponseTimeCard`,
+`HowTheFormGetsUsedCard`) appended after the existing 3.
+Same visual chrome as `QuickContextCard`: `bg-surface`
+rounded card, mono eyebrow label, accent-mint arrow
+bullets, `text-t1` body.
+
+### Decisions
+
+- **Visual order: Availability + DirectLinks +
+  QuickContext first, then 3 new cards below** — the
+  user picked this order during planning. Reads as:
+  status → contact info → context → practical guidance.
+- **Cards 4-6 use accent-mint `→` arrow bullets** —
+  same as QuickContext's "fits" treatment but with a
+  mono arrow glyph instead of a dot. Distinguishes the
+  read-first/time/privacy beats from the binary
+  fits/doesn't contrast.
+- **No "Before you hit send" checklist** — the user
+  reviewed the draft and decided it read too corporate.
+  Dropped before commit.
+- **All copy in `data/contact.ts`** — same registry
+  pattern as FAQ + QuickContext. Single source of truth
+  for /lets-connect copy.
+- **Card titles stay short** — every eyebrow reads
+  honestly ("What I read first" reads as how I read
+  first; "Response time" reads as what my response
+  times look like; "How the form gets used" reads
+  as data-handling disclosure).
+- **No CTA** — none of the 3 cards has a click target.
+  They're read-only context. The form is right there at
+  the top of the page.
+- **No analytics on card presence** — Phase 6 territory.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR (dev) smoke on `/lets-connect`:
+  - Right sidebar now has 6 stacked cards: Availability,
+    DirectLinks, QuickContext, What I read first,
+    Response time, How the form gets used.
+  - Bottom edge of the right sidebar now roughly aligns
+    with the bottom edge of the FAQ on the left on lg+.
+  - All 11 new bullets read directly from
+    `data/contact.ts` — no strings hardcoded in JSX.
+
