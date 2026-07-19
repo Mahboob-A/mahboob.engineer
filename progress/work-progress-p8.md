@@ -3368,3 +3368,129 @@ line or a layout-side fix (gap adjustment, vertical
 alignment in the grid) would be the next moves. Out of
 scope for Phase 30.
 
+---
+
+# Phase 31 — OG / favicon visual refresh
+
+**Phase:** 31 — OG / favicon ChatGPT prompts + asset
+integration plan
+
+**Phase status:** done
+
+**Date:** 2026-07-19
+
+**Goal:** Replace the `@vercel/og` dynamic generators
+(`app/icon.tsx`, `app/opengraph-image.tsx`) with real
+designed assets generated via ChatGPT. Two deliverables:
+
+1. **5 ChatGPT prompts** — locked to the site's exact
+   palette + fonts so generated assets match the live
+   chrome. Each prompt carries explicit anti-AI-slop
+   "do NOT" rules.
+2. **Integration plan** — 7-commit rollout that drops
+   the static PNGs into `/public/`, rewrites
+   `lib/og-helpers.ts`, deletes the dynamic generators,
+   updates `app/layout.tsx`, and removes the
+   `@vercel/og` dependency.
+
+---
+
+## T31.1 — ChatGPT prompts + integration plan
+
+**Task status:** done
+**Commit:** `5d239cd`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`docs/OG-FAVICON-PROMPTS.md`** (new, ~190 lines) —
+  five concrete ChatGPT image-generation prompts:
+  1. **Favicon** (512×512 source, mono-stroke "M/A"
+     ligature on dark forest-green, mint accent).
+  2. **OG default card** (1200×630, personal / landing
+     surface — current Hero H1 + description).
+  3. **OG writing card** (1200×630, writing surface —
+     "Long-form breakdowns of how the systems I build
+     actually work.").
+  4. **OG project template** (1200×630, project surface
+     with placeholder title + tagline + minimal
+     CLIENT/SERVICE/DATA diagram).
+  5. **Apple touch icon** (180×180 source, thicker
+     stroke variant of the favicon for iOS home-screen
+     rendering).
+
+  Each prompt carries the **locked brand spec** (exact
+  hex palette + font stack) at the top so ChatGPT can
+  re-use it across the session without drift. The
+  prompts include explicit "do NOT ask for" rules
+  (gradients, drop shadows, glow, neon, abstract
+  shapes, "tech futurism" 3D, AI-art-pattern circuits,
+  blueprint grids, hex patterns, marble or
+  photographic textures, decorative serif monograms).
+
+  Generation order documented: favicon first
+  (locks the visual vocabulary), then the 3 OG cards
+  in sequence, then the apple-touch derivative last.
+
+- **`docs/OG-FAVICON-INTEGRATION.md`** (new, ~225
+  lines) — 7-commit integration plan:
+  1. Drop 5 PNGs + a favicon.ico into `/public/`.
+  2. Rewrite `lib/og-helpers.ts` to return absolute
+     paths to the static PNGs (per-page `surface`
+     arg: `default | writing | project`).
+  3-4. Delete `app/icon.tsx` + `app/opengraph-image.tsx`.
+  5. Update `app/layout.tsx` icons object to point at
+     the new static asset paths.
+  6. Optional follow-up: per-project OG cards (one per
+     PROJECTS entry).
+  7. Remove `@vercel/og` from `package.json` (~600 KB
+     server bundle savings).
+
+### Decisions
+
+- **Generate via ChatGPT, not DALL-E or Midjourney**
+  — ChatGPT is the user's tool of choice. The prompts
+  are deliberately descriptive (composition, palette,
+  font, vibe) rather than keyword-stuffed.
+- **Lock the brand spec at the top of every prompt** —
+  if the user opens a new ChatGPT session for each
+  prompt, the palette + fonts don't drift.
+- **3 OG variants + 1 project template** — matches the
+  3 page surfaces (personal / writing / projects). The
+  project template ships with `{{TITLE}}` + `{{TAGLINE}}`
+  placeholders; per-project baked PNGs are a follow-up
+  (T31.2.6) that ships when the user generates them.
+- **Apple touch icon is a separate derivative** —
+  the favicon's thin stroke vanishes at 60px on iOS;
+  the apple icon needs a thicker stroke (~18% canvas
+  height vs. 14% for the favicon).
+- **No `@vercel/og` keep-around** — once the static
+  PNGs land, the dynamic generators are dead code.
+  Removing the dep cuts ~600 KB off the server bundle
+  (per Phase 6 T6.1 docstring).
+- **No per-project OG cards in Phase 31.2** — the
+  template card is good enough for first deploy. The
+  per-project follow-up is T31.2.6 in the integration
+  doc.
+
+### Verified
+
+- `pnpm typecheck` → clean. (No code changes; just
+  docs.)
+- `pnpm build` → unchanged from Phase 30 (19 routes +
+  middleware, 0 warnings).
+- Live HTML inspection: `app/icon.tsx` and
+  `app/opengraph-image.tsx` still generate dynamic PNGs
+  at the existing routes. Phase 31.2 (after assets
+  ship) deletes both files.
+- **No actual asset generation yet** — the user runs
+  the ChatGPT prompts, drops the resulting PNGs into
+  `/public/`, then I execute the integration plan in
+  7 atomic commits per the doc.
+
+---
+
+Phase 31 status: **done** (prompts + plan only — asset
+generation + integration is a follow-up once the user
+runs the prompts in ChatGPT).
+
