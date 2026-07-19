@@ -17,6 +17,11 @@ function redactVectorUrl(url: string): string {
 async function main() {
   const args = new Set(process.argv.slice(2));
   const dryRun = args.has("--dry-run");
+  const reset = args.has("--reset");
+  const resetAll = args.has("--reset-all");
+  if (reset && resetAll) {
+    throw new Error("Pass only one of --reset or --reset-all, not both.");
+  }
   const corpus = await buildRagCorpus();
   const byKind = countByKind(corpus.chunks);
 
@@ -86,6 +91,18 @@ async function main() {
   console.log(`Upstash embed model: ${embeddingModel} (${embeddingDimensions}d, server-side)`);
   console.log(`Upstash endpoint: ${redactVectorUrl(url)}`);
   console.log(`Vector namespace: ${namespace}`);
+
+  // Optional reset before upsert. Production deploys pass --reset so the
+  // namespace is wiped clean before re-indexing — that way deleted /
+  // renamed chunks don't leave stale vectors behind that pollute
+  // retrieval. Local dev reindexes stay additive (no flag = no reset).
+  if (reset) {
+    const message = await index.reset();
+    console.log(`Reset: ${message}`);
+  } else if (resetAll) {
+    const message = await client.reset({ all: true });
+    console.log(`Reset all namespaces: ${message}`);
+  }
 
   let upserted = 0;
   for (const batch of batches(corpus.chunks, BATCH_SIZE)) {

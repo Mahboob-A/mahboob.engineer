@@ -263,3 +263,64 @@ real Upstash index** — six dynamic chips should now answer:
 
 All grounded in the corpus, all in first-person, all below the
 80-word cap because the system prompt enforces it.
+
+---
+
+## T34.4 — Reindex `--reset` flag
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `scripts/rag-reindex.ts` — added `--reset` and `--reset-all` CLI
+  flags. `--reset` runs `index.reset()` on the `portfolio-rag`
+  namespace before the upsert loop; `--reset-all` runs
+  `client.reset({ all: true })` to wipe every namespace under the
+  index. Both flags default to off, so additive local-dev reindexes
+  stay unchanged.
+- Mutual-exclusion guard: passing both `--reset` and `--reset-all`
+  throws `Pass only one of --reset or --reset-all, not both.` before
+  any network call.
+- `docs/rag/OPERATIONS.md` — replaced the single-command reindex
+  section with the three-flag surface (`--dry-run`, `--reset`,
+  `--reset-all`), added a "Why `--reset`" subsection that documents
+  the per-chunk vector caching behaviour so future agents understand
+  what gets re-embedded vs reused, and updated the Deployment
+  Checklist to recommend `pnpm rag:reindex -- --reset` for every
+  production deploy.
+
+### Decisions
+
+- Default to `--reset` on every production reindex. Cost is
+  fractions of a cent (Upstash proxies `text-embedding-3-small`);
+  benefit is that the namespace is always exactly current and the
+  retrieval never has stale vectors polluting queries.
+- Kept `--reset-all` as a separate flag for the rare case where the
+  namespace name changes or the index is recycled. Sharing the same
+  flag would have made the wrong path too easy to hit.
+- Output is `Reset: <message>` between the namespace log and the
+  upsert progress, so a CI run can grep for "Reset: Success" to
+  confirm the wipe ran.
+
+### Caveats / pending
+
+- `--reset` is destructive. A typo could wipe the namespace before
+  the upsert starts. The script's current order is: dim-check →
+  reset → upsert, so a dim mismatch still throws before the wipe.
+  This is the right safety order (don't wipe until you know the
+  index exists and the configured dim matches).
+- No `--dry-run` integration with `--reset`; if a user wants to see
+  what would be reset, they'd need to script it. Not worth
+  complicating the CLI for a one-button action.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm rag:reindex -- --dry-run` → still prints the corpus
+  breakdown, no network calls.
+- `pnpm rag:reindex -- --reset --reset-all` → throws the
+  mutual-exclusion guard before any network call.
+- Real Upstash call deferred to first production deploy (real env
+  vars not available locally).

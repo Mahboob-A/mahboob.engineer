@@ -57,19 +57,38 @@ Run after changing:
 - `data/stack.ts`
 - `docs/rag/corpus/*.md`
 
-Command:
+Commands:
 
 ```txt
-pnpm rag:reindex
+pnpm rag:reindex -- --dry-run     # local: count + sample, no network
+pnpm rag:reindex -- --reset       # production: wipe namespace, then re-embed
+pnpm rag:reindex -- --reset-all   # rare: wipe every namespace, then re-embed
 ```
+
+`--reset` is the production-default behavior. Wipes the `portfolio-rag`
+namespace before upserting, so any chunk whose id no longer matches the
+current corpus is dropped from the index. Upstash re-embeds every chunk
+fresh — for the current ~430 chunks this costs fractions of a cent.
+
+Without `--reset` the reindex is additive: existing ids re-use their cached
+vectors, new chunk ids get fresh embeddings, deleted chunks stay in the
+index as stale vectors. Use `--reset` on every production deploy so the
+namespace always matches the corpus exactly.
+
+`--reset-all` is the rare escape hatch when you rename `RAG_VECTOR_NAMESPACE`
+or recycle the index. It wipes every namespace under the index, so use it
+only when you specifically mean to.
 
 Expected output:
 
 ```txt
-RAG corpus: 352 chunks
+RAG corpus: 429 chunks
 Corpus hash: <sha256>
 Upstash embed model: openai/text-embedding-3-small (1536d, server-side)
 Vector namespace: portfolio-rag
+Reset: Success                              # only when --reset (or --reset-all)
+Upsert: 429/429
+
 Upstash upsert: complete
 ```
 
@@ -77,7 +96,21 @@ The script does **not** print an "Embedding: complete" line — Upstash
 embeds server-side during upsert, so there is no separate embedding loop to
 audit. The chunk counts come from `--dry-run`.
 
-The script should skip when the corpus hash has not changed.
+## Why `--reset` (and what changes get re-embedded)
+
+Upstash caches vectors by chunk id. The reindex script's chunk ids are
+content-hashed (`sha256(text).slice(0, 12)` plus the source-path, kind, and
+slug). Re-running the reindex **without** `--reset`:
+
+- A new project / blog post / corpus section → new chunk text → new id →
+  new embedding on Upsert. Other vectors re-used.
+- An edited project's `notes` → changed chunk text → new id → new embedding.
+  The old id stays in the index as a stale vector until you pass `--reset`.
+- An untouched chunk → identical id → vector re-used, metadata refreshed.
+
+`--reset` makes every production deploy a clean slate: the namespace is
+emptied, then the new corpus is upserted in one pass. For ~430 chunks the
+re-embedding cost is negligible and the cleanliness is worth it.
 
 ## Smoke Tests
 
@@ -112,7 +145,9 @@ Invalid payload should return `400`. Missing env vars should return `503`.
 ## Deployment Checklist
 
 - Env vars set in Vercel.
-- `pnpm rag:reindex` run against the production Upstash index.
+- `pnpm rag:reindex -- --reset` run against the production Upstash index.
+  `--reset` wipes the `portfolio-rag` namespace first so stale chunks
+  don't accumulate across deploys.
 - Vercel redeployed after env var setup.
 - Six dynamic commands tested on preview.
 - Static mode still works if `/api/rag` fails.
