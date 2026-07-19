@@ -43,21 +43,53 @@ UPSTASH_VECTOR_REST_TOKEN=
 
 ## Fireworks Defaults
 
-Use Fireworks through its OpenAI-compatible API.
+Use Fireworks through its OpenAI-compatible API for chat only. Embeddings are
+**not** served by Fireworks — they are owned by Upstash Vector (see
+"Embeddings" below).
 
 ```txt
 LLM_PROVIDER=fireworks
 FIREWORKS_API_KEY=
 RAG_CHAT_MODEL=accounts/fireworks/models/gpt-oss-120b
-RAG_EMBEDDING_MODEL=accounts/fireworks/models/qwen3-embedding-8b
-RAG_OPENAI_COMPAT_BASE_URL=https://api.fireworks.ai/inference/v1
 ```
 
-The Fireworks docs also show `fireworks/qwen3-embedding-8b` as an embedding
-model name. Mahboob's requested value is
-`accounts/fireworks/models/qwen3-embedding-8b`; use that first. If Fireworks
-returns `404`, switch only `RAG_EMBEDDING_MODEL` to
-`fireworks/qwen3-embedding-8b` and document the change in progress.
+The Fireworks chat base URL (`https://api.fireworks.ai/inference/v1`) is fixed
+inside `lib/rag/providers.ts`; there is no environment override. Every
+provider in this file is chat-only.
+
+## Embeddings
+
+Embeddings are produced and stored by Upstash Vector itself — the application
+never imports an embeddings SDK or calls any LLM embedding endpoint.
+
+```txt
+RAG_UPSTASH_EMBEDDING_MODEL=openai/text-embedding-3-small
+RAG_UPSTASH_EMBEDDING_DIMENSIONS=1536
+UPSTASH_VECTOR_REST_URL=
+UPSTASH_VECTOR_REST_TOKEN=
+```
+
+Defaults map to the index already created in the Upstash console for this
+portfolio (`dense`, `cosine`, `openai/text-embedding-3-small`, 1536 dims,
+`us1` region).
+
+`RAG_UPSTASH_EMBEDDING_MODEL` and `RAG_UPSTASH_EMBEDDING_DIMENSIONS` are
+overridable. Both must match what was selected at index creation in the
+Upstash console — the index is dimension-locked at that point. Swapping to a
+different model later means:
+
+1. Update the two env vars.
+2. Recreate the Upstash index at the new dimension.
+3. Re-run `pnpm rag:reindex`.
+
+The API route validates dimension parity on first call (via the SDK's
+`index.info()`) and returns `503` with a clear message if the configured
+dimension does not match what Upstash reports. This makes misconfiguration
+loud rather than silent.
+
+`OPENAI_API_KEY` in `.env.example` is **not** required for embeddings —
+Upstash proxies the model. `OPENAI_API_KEY` is used only when
+`LLM_PROVIDER=openai` is selected for chat.
 
 ## Provider Interface
 

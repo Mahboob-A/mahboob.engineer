@@ -30,11 +30,11 @@ landing page.
 | Layer | Choice | Why |
 |---|---|---|
 | Provider toggle | `LLM_PROVIDER=fireworks` default | Lets the implementation switch later to `gemini`, `groq`, or `openai` without rewriting the terminal route. |
-| LLM | Fireworks OpenAI-compatible API | Mahboob has Fireworks credits; default model: `accounts/fireworks/models/gpt-oss-120b`. |
-| Embeddings | Fireworks OpenAI-compatible embeddings API | Default model: `accounts/fireworks/models/qwen3-embedding-8b`. |
-| Vector store | Upstash Vector | Serverless, free tier, Vercel-friendly, REST API. No infra. |
+| LLM | Fireworks OpenAI-compatible API | Mahboob has Fireworks credits; default model: `accounts/fireworks/models/gpt-oss-120b`. Chat only — no embeddings. |
+| Embeddings | Upstash Vector built-in (server-side) | The application never calls an embeddings SDK. Default: `openai/text-embedding-3-small`, 1536 dims, server-side. |
+| Vector store | Upstash Vector | Serverless, free tier, Vercel-friendly, REST API. No infra. Embeds and stores in one call. |
 | Streaming | OpenAI-compatible streaming | Fireworks supports streaming chat completions; client reads the streamed text into `<HeroTerminal>`. |
-| Chunker | Local Node script (`scripts/rag-reindex.mjs`) | Reads `data/projects.ts` + `data/experience.ts` + `data/blog.ts`, emits chunks with metadata. |
+| Chunker | Local TypeScript script (`scripts/rag-reindex.ts`) | Reads `data/projects.ts` + `data/experience.ts` + `data/blog.ts` + `docs/rag/corpus/*.md`, emits chunks; Upstash embeds them on upsert. |
 
 The provider contract is now expanded in `docs/rag/PROVIDERS.md`.
 
@@ -44,15 +44,15 @@ Added to `.env.example` in T7.7:
 
 ```
 LLM_PROVIDER=fireworks           # fireworks | gemini | groq | openai
-FIREWORKS_API_KEY=               # required when LLM_PROVIDER=fireworks
+FIREWORKS_API_KEY=               # required when LLM_PROVIDER=fireworks (chat only)
 GEMINI_API_KEY=                  # required when LLM_PROVIDER=gemini
 GROQ_API_KEY=                    # required when LLM_PROVIDER=groq
-OPENAI_API_KEY=                  # required when LLM_PROVIDER=openai
+OPENAI_API_KEY=                  # required when LLM_PROVIDER=openai (chat only — not used for embeddings)
 RAG_CHAT_MODEL=accounts/fireworks/models/gpt-oss-120b
-RAG_EMBEDDING_MODEL=accounts/fireworks/models/qwen3-embedding-8b
-RAG_OPENAI_COMPAT_BASE_URL=https://api.fireworks.ai/inference/v1
+RAG_UPSTASH_EMBEDDING_MODEL=openai/text-embedding-3-small   # must match Upstash index creation
+RAG_UPSTASH_EMBEDDING_DIMENSIONS=1536                      # index is dimension-locked
 UPSTASH_VECTOR_REST_URL=         # console.upstash.com → Vector
-UPSTASH_VECTOR_REST_TOKEN=       # same
+UPSTASH_VECTOR_REST_TOKEN=       # same — secret; never commit
 ```
 
 Set them in **Vercel** → Project Settings → Environment Variables →
@@ -89,19 +89,22 @@ export async function POST(req: Request) {
     return new Response("Bad request", { status: 400 });
   }
 
-  // 1. Select the configured provider and embed the question.
-  const modelClient = getRagModelClient();
-  const { embedding: queryVector } = await modelClient.embed(question);
+  // 1. Vector search. Upstash embeds the question server-side using the model
+  //    selected at index creation (default openai/text-embedding-3-small, 1536d).
+  //    The route does not call any embeddings SDK.
+  const results = await index.query({
+    data: question,
+    topK: 5,
+    includeMetadata: true,
+  });
 
-  // 2. Top-5 from the vector store.
-  const results = await index.query({ vector: queryVector, topK: 5, includeMetadata: true });
-
-  // 3. Build context.
+  // 2. Build context.
   const context = results
     .map((r) => `[${r.metadata!.kind}] ${r.metadata!.title}: ${r.metadata!.text}`)
     .join("\n\n");
 
-  // 4. Stream the answer. Provider implementation decides the SDK/base URL.
+  // 3. Stream the answer through the configured chat provider (Fireworks by default).
+  const modelClient = getRagModelClient();
   return modelClient.streamChat([
     {
       role: "system",
@@ -115,35 +118,38 @@ export async function POST(req: Request) {
 (`r.metadata.kind` is `"project"` / `"experience"` / `"blog"` so the
 LLM can attribute its answers.)
 
-## Reindex script — `scripts/rag-reindex.mjs`
+## Reindex script — `scripts/rag-reindex.ts`
 
-```js
-#!/usr/bin/env node
+```ts
 /**
- * Reads every entry from data/{projects,experience,blog}.ts,
- * embeds via text-embedding-3-small, writes to Upstash Vector.
+ * Reads every entry from data/{projects,experience,blog}.ts and the
+ * docs/rag/corpus/ notes, then upserts to Upstash Vector.
  *
  * Run: pnpm rag:reindex
- *   (requires OPENAI_API_KEY + UPSTASH_VECTOR_REST_URL + _TOKEN)
+ *   (requires UPSTASH_VECTOR_REST_URL + UPSTASH_VECTOR_REST_TOKEN;
+ *    no provider key needed — Upstash embeds server-side.)
  *
- * Idempotent: tags each chunk with a content hash key. Re-running
- * overwrites the same key.
+ * Idempotent: each chunk id is stable for its source content.
+ * Re-running overwrites the same id.
+ *
+ * The script does NOT call any embeddings SDK. Upstash embeds each
+ * chunk on upsert using the model selected at index creation.
  */
 import { Index } from "@upstash/vector";
-import { getRagModelClient } from "../lib/rag/providers";
+import { buildRagCorpus } from "../lib/rag/chunks";
 
 const index = new Index({
-  url: process.env.UPSTASH_VECTOR_REST_URL,
-  token: process.env.UPSTASH_VECTOR_REST_TOKEN,
+  url: process.env.UPSTASH_VECTOR_REST_URL!,
+  token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
 });
-const modelClient = getRagModelClient();
 
-// …read PROJECTS, EXPERIENCE, BLOG_POSTS, write chunks with metadata
+const corpus = await buildRagCorpus();
+// …upsert each chunk with `data: chunk.text` — Upstash handles embedding
 ```
 
 `package.json` script:
 ```
-"rag:reindex": "tsx scripts/rag-reindex.mjs"
+"rag:reindex": "tsx scripts/rag-reindex.ts"
 ```
 
 The script runs locally on demand and again as part of CI on content

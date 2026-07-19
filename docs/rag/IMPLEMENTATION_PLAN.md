@@ -102,12 +102,16 @@ Add `scripts/rag-reindex.mjs` or `scripts/rag-reindex.ts` and package script:
 
 Behavior:
 
-- Validate env vars.
-- Build chunks.
-- Embed each chunk through the selected provider adapter.
-- Upsert to Upstash Vector.
-- Store a corpus hash marker.
+- Validate env vars (`UPSTASH_VECTOR_REST_URL`, `UPSTASH_VECTOR_REST_TOKEN`).
+- Build chunks from `lib/rag/chunks.ts:buildRagCorpus()`.
+- **No embedding step in the script.** Each chunk is upserted to Upstash via
+  `index.upsert({ id, data: text, metadata })`; Upstash embeds it server-side
+  using the configured model. The script never calls an embeddings SDK.
+- Store a corpus hash marker per vector.
 - Skip if hash has not changed unless `--force` is passed.
+- If the configured `RAG_UPSTASH_EMBEDDING_DIMENSIONS` does not match what
+  Upstash reports via `index.info()`, abort with a clear error so the user
+  recreates the index at the right dimension.
 
 Verification:
 

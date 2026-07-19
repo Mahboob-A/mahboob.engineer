@@ -5,16 +5,18 @@ the dynamic hero terminal.
 
 ## Required Services
 
-1. Fireworks API key for the first chat + embeddings implementation.
-2. Upstash Vector index.
+1. Fireworks API key for chat.
+2. Upstash Vector index (embeddings + storage; server-side).
 3. Vercel environment variables for production and preview.
 
 Recommended Upstash Vector settings:
 
-- Dimension: match Fireworks `qwen3-embedding-8b` output. If using the
-  `dimensions` request parameter later, match that configured value exactly.
+- Type: dense.
 - Distance metric: cosine.
-- Region: closest reasonable region to Vercel deployment.
+- Embedding model: `openai/text-embedding-3-small`.
+- Dimensions: 1536 (native dim of `text-embedding-3-small`). **Index is
+  dimension-locked at creation.**
+- Region: closest to Vercel deployment. The portfolio index lives in `us1`.
 
 ## Environment Variables
 
@@ -27,16 +29,22 @@ GEMINI_API_KEY=
 GROQ_API_KEY=
 OPENAI_API_KEY=
 RAG_CHAT_MODEL=accounts/fireworks/models/gpt-oss-120b
-RAG_EMBEDDING_MODEL=accounts/fireworks/models/qwen3-embedding-8b
-RAG_OPENAI_COMPAT_BASE_URL=https://api.fireworks.ai/inference/v1
+RAG_UPSTASH_EMBEDDING_MODEL=openai/text-embedding-3-small
+RAG_UPSTASH_EMBEDDING_DIMENSIONS=1536
 UPSTASH_VECTOR_REST_URL=
 UPSTASH_VECTOR_REST_TOKEN=
 ```
 
+`RAG_UPSTASH_EMBEDDING_MODEL` and `RAG_UPSTASH_EMBEDDING_DIMENSIONS` must
+match what you selected at Upstash index creation. The index is
+dimension-locked; the API route reads `index.info()` on first call and returns
+`503` if the configured dimension does not match the index.
+
 Vercel:
 
-- Add all three variables to Production.
-- Add all three to Preview if dynamic mode should be tested before release.
+- Add all required variables to Production.
+- Add all required variables to Preview if dynamic mode should be tested
+  before release.
 - Redeploy after adding or changing variables.
 
 ## Reindex Flow
@@ -58,12 +66,16 @@ pnpm rag:reindex
 Expected output:
 
 ```txt
-RAG corpus: 64 chunks
+RAG corpus: 352 chunks
 Corpus hash: <sha256>
-Embedding: complete
+Upstash embed model: openai/text-embedding-3-small (1536d, server-side)
+Vector namespace: portfolio-rag
 Upstash upsert: complete
-Index status: ready
 ```
+
+The script does **not** print an "Embedding: complete" line — Upstash
+embeds server-side during upsert, so there is no separate embedding loop to
+audit. The chunk counts come from `--dry-run`.
 
 The script should skip when the corpus hash has not changed.
 
@@ -81,7 +93,7 @@ Then test:
 - Static command chips behave exactly as before.
 - Switching to dynamic shows `$ mehboob@portfolio-bastion:`.
 - Each dynamic chip streams a response.
-- Fireworks requests use `https://api.fireworks.ai/inference/v1`.
+- Fireworks chat requests use `https://api.fireworks.ai/inference/v1`.
 - Fireworks requests omit `reasoning_effort`, `thinking`, and
   `reasoning_content` handling.
 - Clearing output aborts any active stream.
@@ -121,6 +133,8 @@ Check:
   - `openai` → `OPENAI_API_KEY`
 - `UPSTASH_VECTOR_REST_URL` exists.
 - `UPSTASH_VECTOR_REST_TOKEN` exists.
+- `RAG_UPSTASH_EMBEDDING_MODEL` and `RAG_UPSTASH_EMBEDDING_DIMENSIONS` match
+  what was selected at Upstash index creation.
 - Vercel was redeployed after adding env vars.
 
 ### Fireworks returns 404 for embeddings

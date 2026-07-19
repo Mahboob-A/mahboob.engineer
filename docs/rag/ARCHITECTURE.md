@@ -41,10 +41,10 @@ terminal cursor animation from `HeroTerminal.css`.
 flowchart LR
   A["Visitor clicks dynamic command"] --> B["HeroTerminal client component"]
   B --> C["POST /api/rag"]
-  C --> D["Embed question"]
-  D --> E["Vector search"]
+  C --> D["Vector query (server-side embedding)"]
+  D --> E["Retrieve top-k chunks"]
   E --> F["Build grounded context"]
-  F --> G["Stream concise answer"]
+  F --> G["Stream concise answer (Fireworks)"]
   G --> B
   B --> H["Terminal output"]
 ```
@@ -54,11 +54,11 @@ flowchart LR
 | Layer | Choice | Notes |
 |---|---|---|
 | Provider switch | `LLM_PROVIDER=fireworks` by default | Future values: `gemini`, `groq`, `openai`. See `docs/rag/PROVIDERS.md`. |
-| Chat model | Fireworks OpenAI-compatible API | Default: `accounts/fireworks/models/gpt-oss-120b`. |
-| Embeddings | Fireworks OpenAI-compatible embeddings API | Default: `accounts/fireworks/models/qwen3-embedding-8b`. |
-| Vector store | Upstash Vector | Serverless, Vercel-friendly REST API. |
+| Chat model | Fireworks OpenAI-compatible API | Default: `accounts/fireworks/models/gpt-oss-120b`. Chat only — no embeddings from Fireworks. |
+| Embeddings | Upstash Vector built-in (server-side) | Model + dims overridable via `RAG_UPSTASH_EMBEDDING_MODEL` / `RAG_UPSTASH_EMBEDDING_DIMENSIONS`. Default: `openai/text-embedding-3-small`, 1536 dims. The application never calls an embeddings SDK. |
+| Vector store | Upstash Vector | Serverless, Vercel-friendly REST API. Index pre-created at `us1`, `dense`, `cosine`. |
 | Streaming | OpenAI-compatible streaming response | Server route streams text; client reads the response. |
-| Indexer | Local script | Reads registries and docs, embeds chunks, upserts to vector store. |
+| Indexer | Local script | Reads registries and docs, sends chunk text to Upstash (`data`-mode upsert); Upstash embeds server-side. |
 
 ## Provider Toggle
 

@@ -258,3 +258,58 @@ where static remains the default and dynamic is backed by a RAG API.
 ### Verified
 
 - `pnpm typecheck` → clean.
+
+---
+
+## T33.5b — Embedding strategy pivot (docs + env)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- Dropped the Fireworks embeddings path from the RAG design. Embeddings are
+  now owned by Upstash Vector (server-side), keeping Fireworks chat-only.
+- `docs/rag/PROVIDERS.md`: replaced the `RAG_EMBEDDING_MODEL` block with a
+  new "Embeddings" section that records the server-side model +
+  `RAG_UPSTASH_EMBEDDING_MODEL` / `RAG_UPSTASH_EMBEDDING_DIMENSIONS` env
+  pair, plus the recreate-index caveat for future model swaps.
+- `docs/rag/ARCHITECTURE.md`: updated the "Proposed Stack" table and the
+  mermaid flowchart so `Embed question` is now `Vector query (server-side
+  embedding)`.
+- `docs/rag/IMPLEMENTATION_PLAN.md`: rewrote the T33.5 spec so the reindex
+  script does not import an embeddings SDK and embeds via `data`-mode upsert.
+- `docs/rag/OPERATIONS.md`: refreshed the env table, the expected reindex
+  output, and the "not configured" troubleshooting checklist.
+- `docs/RAG_TERMINAL.md`: refreshed the stack table, the env block, and the
+  API route snippet to remove the `modelClient.embed(question)` step and
+  the reindex-script body to drop the provider import.
+- `.env.example`: removed `RAG_EMBEDDING_MODEL` and
+  `RAG_OPENAI_COMPAT_BASE_URL`. Added `RAG_UPSTASH_EMBEDDING_MODEL=
+  openai/text-embedding-3-small` and `RAG_UPSTASH_EMBEDDING_DIMENSIONS=1536`
+  with comments that the index is dimension-locked.
+
+### Decisions
+
+- Server-side embedding removes the second LLM SDK from the runtime and
+  keeps the Fireworks adapter chat-only. The plan, the docs, and the env
+  contract now line up with the actual Upstash index Mahboob has already
+  created.
+- `OPENAI_API_KEY` is kept in `.env.example` for `LLM_PROVIDER=openai` chat
+  but documented as unused for embeddings (Upstash proxies the model).
+- The dimension lock-in is enforced loudly: a future T33.6 route guard
+  reads `index.info()` and returns `503` if `RAG_UPSTASH_EMBEDDING_DIMENSIONS`
+  does not match Upstash's report.
+
+### Caveats / pending
+
+- `RAG_OPENAI_COMPAT_BASE_URL` is still kept as a fallback inside
+  `lib/rag/providers.ts` (defaulting to Fireworks' URL); future cleanup can
+  drop it once we're confident no provider will need a custom base URL.
+- No runtime code changes in this task. The reindex script and provider
+  adapter still call embeddings client-side until T33.5c lands.
+
+### Verified
+
+- `pnpm typecheck` → clean.
