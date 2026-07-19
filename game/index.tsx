@@ -92,13 +92,14 @@ export default function GameRoot() {
      immediately re-open). */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (overlay) return;
       if (e.key === "Escape" && !paused) {
         setPaused(true);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [paused]);
+  }, [overlay, paused]);
 
   /* T4.11: when paused, freeze the WorldScene. Scene.pause() halts
      update() + physics callbacks but does NOT pause the BGM (the
@@ -187,7 +188,8 @@ function OverlaySlot({
   }, [onClose]);
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-bg/80 p-6 backdrop-blur-sm">
+    <div className="absolute inset-0 overflow-y-auto bg-bg/80 p-4 backdrop-blur-sm md:p-6">
+      <div className="flex min-h-full items-start justify-center py-2 md:items-center">
       {overlay.overlayType === "project" ? (
         <ProjectOverlay slug={overlay.slug} onClose={onClose} />
       ) : overlay.overlayType === "villain" ? (
@@ -200,6 +202,7 @@ function OverlaySlot({
            SpecialOverlay handles slug-not-found safety internally. */
         <SpecialOverlay slug={overlay.slug} onClose={onClose} />
       )}
+      </div>
     </div>
   );
 }

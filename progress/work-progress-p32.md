@@ -166,3 +166,31 @@
 - `pnpm typecheck`
 - `pnpm exec eslint components/overlay/CaseStudyOverlay.tsx game/entities/Player.ts game/scenes/WorldScene.ts`
 - Existing dev server: `curl -sS 'http://localhost:3000/game?entered=1' -o /tmp/game-page.html -w '%{http_code}\n'` returned `200`.
+
+---
+
+## T32.7 — Fix clipped game overlays and villain close loop
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+- Updated `game/index.tsx` so the overlay shell scrolls inside the game canvas instead of centering tall dialogs in a clipped 640px area.
+- Updated `components/overlay/CaseStudyOverlay.tsx` to size against the parent overlay shell with `max-h-full` and a scrollable body, keeping header/footer controls visible.
+- Updated `game/scenes/overlays/VillainOverlay.tsx` to match the same fixed header/body/footer pattern and expose a clear `back to game` button.
+- Added a short villain encounter cooldown in `game/scenes/WorldScene.ts` so closing a villain overlay does not instantly reopen it while the player is still overlapping the villain.
+- Prevented Escape from opening the pause menu when a project/villain/special overlay is already active.
+
+### Decisions
+- Fixed the root overlay shell rather than only shrinking individual popups. The game canvas is 640px tall, so viewport-based dialog sizing can still be too tall inside the Phaser wrapper.
+- Kept the close action as `onClose` from `OverlaySlot`, preserving the React/Phaser bridge contract.
+- Used a small cooldown for villain encounters because villain overlays are triggered by collision overlap, unlike project overlays which require pressing `E`.
+
+### Caveats / pending
+- Manual browser QA is still needed for every project overlay because each diagram has different dimensions.
+- Escape behavior now avoids pause while overlays are open, but a future polish pass can make Escape close the topmost overlay with clearer focus management.
+
+### Verified
+- `pnpm typecheck`
+- `pnpm exec eslint game/index.tsx components/overlay/CaseStudyOverlay.tsx game/scenes/overlays/VillainOverlay.tsx game/scenes/WorldScene.ts`
+- Existing dev server: `curl -sS 'http://localhost:3000/game?entered=1' -o /tmp/game-page.html -w '%{http_code}\n'` returned `200`.

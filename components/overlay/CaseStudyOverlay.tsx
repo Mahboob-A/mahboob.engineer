@@ -58,7 +58,7 @@ export function CaseStudyOverlay({
 
   return (
     <div
-      className="bg-surface border-acc/40 mx-auto flex h-[min(760px,90vh)] w-full max-w-[820px] flex-col overflow-hidden rounded-[12px] border shadow-2xl"
+      className="bg-surface border-acc/40 mx-auto flex max-h-full min-h-0 w-full max-w-[820px] flex-col overflow-hidden rounded-[12px] border shadow-2xl"
       role="dialog"
       aria-label={`${project.name} case study`}
     >
@@ -94,7 +94,7 @@ export function CaseStudyOverlay({
         </button>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-5">
+      <main className="min-h-0 flex-1 overflow-y-auto p-5">
         {/* ─── Body — 2-col (notes left, diagram right) ──────────────── */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]">
           {/* LEFT — first 2 paragraphs of notes */}

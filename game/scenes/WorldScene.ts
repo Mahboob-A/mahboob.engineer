@@ -56,6 +56,7 @@ export class WorldScene extends Phaser.Scene {
   private movementKeys!: MovementKeys;
   private currentZone: Building | null = null;
   private villainEncounterActive = false;
+  private villainEncounterCooldownUntil = 0;
   private collisionZones: Phaser.GameObjects.Zone[] = [];
   private villains: Villain[] = [];
   private closeOverlayListener?: () => void;
@@ -143,6 +144,7 @@ export class WorldScene extends Phaser.Scene {
   private wireEncounterHandlers(): void {
     this.closeOverlayListener = () => {
       this.villainEncounterActive = false;
+      this.villainEncounterCooldownUntil = this.time.now + 900;
     };
     bridge.on("CLOSE_OVERLAY", this.closeOverlayListener);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -373,6 +375,7 @@ export class WorldScene extends Phaser.Scene {
 
   private onVillainContact(villain: Villain): void {
     if (this.villainEncounterActive) return;
+    if (this.time.now < this.villainEncounterCooldownUntil) return;
     this.villainEncounterActive = true;
     this.player?.setVelocity(0, 0);
     bridge.openOverlay({

@@ -46,76 +46,87 @@ export function VillainOverlay({ villainId, onClose }: VillainOverlayProps) {
 
   return (
     <div
-      className="bg-surface border-amber/40 mx-auto flex max-h-[90vh] w-full max-w-[640px] flex-col gap-4 overflow-y-auto rounded-[12px] border p-6 shadow-2xl"
+      className="bg-surface border-amber/40 mx-auto flex max-h-full min-h-0 w-full max-w-[680px] flex-col overflow-hidden rounded-[12px] border shadow-2xl"
       role="dialog"
       aria-label={`${villain.name} encounter`}
     >
       {/* ─── Header ─────────────────────────────────────────────────── */}
-      <header className="border-border flex flex-col gap-2 border-b pb-4">
-        <p className="text-amber font-mono text-[11px] tracking-[1.5px] uppercase">
-          ⚠ Learning area encountered
-        </p>
-        <h2 className="font-display text-t1 text-[24px] leading-[1.1] font-bold tracking-[-0.5px]">
-          {villain.name}
-          <span className="text-t3 font-mono text-[16px] font-medium">
-            {" — "}
-            {villain.learningArea}
-          </span>
-        </h2>
-        <p className="text-t3 font-mono text-[13px] italic">{villain.title}</p>
+      <header className="border-border bg-surface flex shrink-0 items-start justify-between gap-4 border-b p-5">
+        <div className="flex min-w-0 flex-col gap-2">
+          <p className="text-amber font-mono text-[11px] tracking-[1.5px] uppercase">
+            Learning area encountered
+          </p>
+          <h2 className="font-display text-t1 text-[24px] leading-[1.1] font-bold tracking-[-0.5px]">
+            {villain.name}
+            <span className="text-t3 font-mono text-[16px] font-medium">
+              {" — "}
+              {villain.learningArea}
+            </span>
+          </h2>
+          <p className="text-t3 font-mono text-[13px] italic">{villain.title}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="bg-amber text-bg hover:bg-t1 shrink-0 rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold transition-colors"
+        >
+          back to game
+        </button>
       </header>
 
-      {/* ─── Encounter line ─────────────────────────────────────────── */}
-      <blockquote className="border-l-2 border-amber/60 text-t2 pl-4 text-[14px] leading-[1.6] italic">
-        “{villain.encounterLine}”
-      </blockquote>
+      <main className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
+        {/* ─── Encounter line ─────────────────────────────────────────── */}
+        <blockquote className="border-l-2 border-amber/60 text-t2 pl-4 text-[14px] leading-[1.6] italic">
+          “{villain.encounterLine}”
+        </blockquote>
 
-      {/* ─── HP bar ────────────────────────────────────────────────── */}
-      <section>
-        <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
-          Current strength
-        </p>
-        <div className="flex items-center gap-3">
-          <div className="border-border bg-code-bg relative h-3 flex-1 overflow-hidden rounded-[3px] border">
-            {/* Filled portion = hp / 100 of bar width. */}
-            <div
-              className="bg-acc absolute top-0 left-0 h-full transition-[width] duration-300"
-              style={{ width: `${villain.hp}%` }}
-            />
-          </div>
-          <span className="text-acc font-mono text-[13px] font-semibold tabular-nums">
-            {villain.hp}/100
-          </span>
-        </div>
-        <p className="text-t3 mt-2 font-mono text-[11px]">
-          {villain.hp < 50 ? "still learning" : "growing confidence"}
-        </p>
-      </section>
-
-      {/* ─── What I know + What I'm learning ──────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <BulletSection label="What I know" items={villain.whatIKnow} />
-        <BulletSection label="What I'm learning" items={villain.whatImLearning} />
-      </div>
-
-      {/* ─── Active training (chip row) ──────────────────────────── */}
-      {villain.activeResources.length > 0 ? (
+        {/* ─── HP bar ────────────────────────────────────────────────── */}
         <section>
           <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
-            Active training
+            Current strength
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            {villain.activeResources.map((r) => (
-              <Chip key={r} color="sage">
-                {r}
-              </Chip>
-            ))}
+          <div className="flex items-center gap-3">
+            <div className="border-border bg-code-bg relative h-3 flex-1 overflow-hidden rounded-[3px] border">
+              {/* Filled portion = hp / 100 of bar width. */}
+              <div
+                className="bg-acc absolute top-0 left-0 h-full transition-[width] duration-300"
+                style={{ width: `${villain.hp}%` }}
+              />
+            </div>
+            <span className="text-acc font-mono text-[13px] font-semibold tabular-nums">
+              {villain.hp}/100
+            </span>
           </div>
+          <p className="text-t3 mt-2 font-mono text-[11px]">
+            {villain.hp < 50 ? "still learning" : "growing confidence"}
+          </p>
         </section>
-      ) : null}
+
+        {/* ─── What I know + What I'm learning ──────────────────────── */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <BulletSection label="What I know" items={villain.whatIKnow} />
+          <BulletSection label="What I'm learning" items={villain.whatImLearning} />
+        </div>
+
+        {/* ─── Active training (chip row) ──────────────────────────── */}
+        {villain.activeResources.length > 0 ? (
+          <section>
+            <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
+              Active training
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {villain.activeResources.map((r) => (
+                <Chip key={r} color="sage">
+                  {r}
+                </Chip>
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </main>
 
       {/* ─── Footer (Retreat + View full stack) ──────────────────── */}
-      <div className="border-border mt-auto flex items-center justify-between gap-3 border-t pt-4">
+      <footer className="border-border bg-surface flex shrink-0 items-center justify-between gap-3 border-t p-5">
         <Link
           href="/stack"
           className="text-acc hover:text-t1 font-mono text-[12px] underline-offset-4 hover:underline"
@@ -127,9 +138,9 @@ export function VillainOverlay({ villainId, onClose }: VillainOverlayProps) {
           onClick={onClose}
           className="bg-amber text-bg hover:bg-t1 rounded-[6px] px-5 py-2 font-mono text-[12px] font-semibold transition-colors"
         >
-          retreat for now ↩
+          back to game
         </button>
-      </div>
+      </footer>
     </div>
   );
 }
