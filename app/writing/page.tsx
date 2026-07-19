@@ -22,6 +22,7 @@
  *   - Final list is sorted newest-first by `publishedAt`.
  */
 
+import { Suspense } from "react";
 import { InnerLayout } from "@/components/layout/InnerLayout";
 import { WritingShell } from "@/components/writing/WritingShell";
 import { fetchMediumPosts, staticMediumPosts } from "@/lib/medium-rss";
@@ -169,10 +170,12 @@ export default async function WritingPage() {
           "How I think, not just what I shipped. Long-form breakdowns of systems, internals, and the bugs that taught me the most.",
       }}
     >
-      <WritingShell
-        allPosts={allPosts as BlogPostItem[]}
-        series={series}
-      />
+      <Suspense fallback={null}>
+        <WritingShell
+          allPosts={allPosts as BlogPostItem[]}
+          series={series}
+        />
+      </Suspense>
     </InnerLayout>
   );
 }

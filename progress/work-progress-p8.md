@@ -2556,3 +2556,65 @@ as deliberate prose. Mapping (locked in during planning):
   rendered HTML body of `/`, `/log`, `/work`, `/stack`,
   `/writing`, `/lets-connect`, `/game`.
 
+---
+
+## T24.5 — `/writing` 9-card collapse
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`components/writing/WritingShell.tsx`** — added
+  `useState<boolean>` for `expanded` plus a `COLLAPSE_AT = 9`
+  cap. The main grid renders `expanded ? visible : visible.slice(0, 9)`.
+  When `visible.length > 9`, a "Show all N" button renders
+  below the grid (toggles to "Show fewer" when expanded).
+  Cancel by clicking again — same button toggles both ways.
+  Hidden entirely when `visible.length <= 9` so narrow
+  categories (e.g. Linux with 5 posts) don't render a
+  no-op button.
+- **URL persistence via `?all=1`** — `router.replace` keeps
+  the collapse state shareable via direct link. Same pattern
+  as the landing Blog section (T6.4 polish).
+- **`app/writing/page.tsx`** — wrapped `<WritingShell>` in
+  `<Suspense fallback={null}>` to satisfy Next 16's
+  `useSearchParams` requirement (Client Components using
+  `useSearchParams` must be inside a Suspense boundary at
+  the page level, or the page bails out of static prerender).
+- **`useEffect` on `searchParams`** — keeps the local
+  `expanded` state in sync with the URL when the user
+  navigates between `/writing` and `/writing?all=1` in the
+  same session.
+
+### Decisions
+
+- **Collapse applies on every category, not just `All`** —
+  per user's planning decision. The 9-card cap is uniform
+  across the registry; the button only renders when
+  `visible.length > 9`, so a narrow-category view (Linux
+  has 5 posts) gets no button.
+- **`COLLAPSE_AT = 9` not 6** — the user explicitly asked
+  for 9 on `/writing` (vs the landing Blog's 6) because the
+  blog list is the canonical archive surface; a longer
+  default reads as more browsable.
+- **`router.replace` not `push`** — back button skips the
+  toggle state, matching the landing Blog pattern.
+- **`aria-expanded` + `aria-controls="writing-list"`** —
+  screen readers announce the toggle as a disclosure widget
+  pointing at the post grid. Same a11y pattern as T6.4.
+- **No fade animation** — same minimal-v1 polish level as
+  the landing Blog section. Toggle is instant.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- `curl /writing` (dev): grid renders 9 cards; toggle
+  button reads `Show all 17` (assuming 17 default visible),
+  `aria-expanded="false"`, `aria-controls="writing-list"`.
+- `curl /writing?all=1`: grid renders all 17; toggle reads
+  `Show fewer`, `aria-expanded="true"`.
+- Narrow category (Linux, 5 posts): no toggle button rendered.
+

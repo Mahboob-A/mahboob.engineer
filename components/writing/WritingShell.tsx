@@ -8,6 +8,8 @@
  *   - Computes filtered posts on each state change via useMemo.
  *   - Picks the featured post (most recent native, or first medium).
  *   - Renders the featured card, filter, grid, and SeriesRail.
+ *   - Phase 24 (T24.5): 9-card collapse on every category.
+ *     URL-seeded `?all=1` so refresh + deep links keep state.
  *
  * The component is fed:
  *   - `allPosts`: the merged native + medium list, already sorted
@@ -21,7 +23,8 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   BlogCard,
 } from "@/components/writing/BlogCard";
@@ -35,13 +38,33 @@ import {
 import { SeriesRail } from "@/components/writing/SeriesRail";
 import type { BlogPostItem } from "@/data/blog";
 
+const COLLAPSE_AT = 9;
+
 export interface WritingShellProps {
   allPosts: BlogPostItem[];
   series: Record<string, BlogPostItem[]>;
 }
 
 export function WritingShell({ allPosts, series }: WritingShellProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [filter, setFilter] = useState<BlogFilterValue>(INITIAL_FILTER);
+
+  // Phase 24 (T24.5): URL-seeded collapse state via ?all=1.
+  // Read once on mount via lazy init. The page is wrapped in
+  // <Suspense> so useSearchParams is allowed here.
+  const [expanded, setExpanded] = useState<boolean>(
+    () => searchParams.get("all") === "1",
+  );
+
+  // Sync expanded from the URL when searchParams changes (e.g.
+  // direct-link to /writing?all=1). One-shot per change — no
+  // infinite loop because the toggle updates the URL before
+  // next render.
+  useEffect(() => {
+    setExpanded(searchParams.get("all") === "1");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Featured post: prefer the most recent native; fallback to the
   // first medium post. Unfiltered — the featured post is always shown.
@@ -92,6 +115,20 @@ export function WritingShell({ allPosts, series }: WritingShellProps) {
     return out;
   }, [visible, series]);
 
+  // Collapse: apply on every category, not just `All`. The user
+  // explicitly asked for this — every category view shows the
+  // first 9 cards with a "Show all N" toggle.
+  const shownPosts = expanded
+    ? visible
+    : visible.slice(0, COLLAPSE_AT);
+  const remaining = visible.length - shownPosts.length;
+
+  const toggleCollapse = () => {
+    const next = !expanded;
+    setExpanded(next);
+    router.replace(next ? "/writing?all=1" : "/writing", { scroll: false });
+  };
+
   return (
     <>
       {/* Featured post (always rendered, never filtered out) */}
@@ -109,7 +146,9 @@ export function WritingShell({ allPosts, series }: WritingShellProps) {
 
       {/* Main grid — phase 6 (T6.9): wrapped in <section> + <h2>
          so the BlogCard <h3> titles have a valid heading hierarchy.
-         axe-core flagged h1 (from InnerPageHeader) → h3 skip. */}
+         axe-core flagged h1 (from InnerPageHeader) → h3 skip.
+         Phase 24 (T24.5): id="writing-list" so the toggle's
+         aria-controls can point at it. */}
       {visible.length === 0 ? (
         <section>
           <h2 className="sr-only">No matching posts</h2>
@@ -118,11 +157,31 @@ export function WritingShell({ allPosts, series }: WritingShellProps) {
       ) : (
         <section>
           <h2 className="sr-only">All posts</h2>
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {visible.map((post) => (
+          <div
+            id="writing-list"
+            className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {shownPosts.map((post) => (
               <BlogCard key={post.slug} post={post} />
             ))}
           </div>
+
+          {/* Collapse toggle. Hidden when visible fits in COLLAPSE_AT
+             cards (no-op for narrow categories like Linux with 5 posts). */}
+          {remaining > 0 && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={toggleCollapse}
+                aria-expanded={expanded}
+                aria-controls="writing-list"
+                className="border-border text-t1 hover:border-acc hover:text-acc inline-flex items-center gap-2 rounded-md border px-5 py-2.5 font-mono text-[12px] font-medium transition-colors"
+              >
+                {expanded ? "Show fewer" : `Show all ${visible.length}`}
+                <span aria-hidden>{expanded ? "↑" : "↓"}</span>
+              </button>
+            </div>
+          )}
         </section>
       )}
 
