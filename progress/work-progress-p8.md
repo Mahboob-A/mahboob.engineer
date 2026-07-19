@@ -2618,3 +2618,82 @@ as deliberate prose. Mapping (locked in during planning):
   `Show fewer`, `aria-expanded="true"`.
 - Narrow category (Linux, 5 posts): no toggle button rendered.
 
+---
+
+## T24.6 — Story-stage labels in /work/[slug]
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`components/work/StorySection.tsx`** (new, ~70 lines).
+  Takes `notes` + a fallback paragraph. Splits `notes` on
+  `\n\n+`, renders each paragraph as a labeled stage:
+  `[Idea]` / `[Framing]` / `[Build]` / `[Deploy]` /
+  `[What's next]`. Stage label sits on its own line above
+  the paragraph, styled as amber mono 13px uppercase
+  tracked (`text-amber font-mono text-[13px] uppercase
+  tracking-[1.2px]`).
+- **`app/work/[slug]/page.tsx`** — the file-local
+  `BuildNotes` function now delegates to `<StorySection>`.
+  The wrapper keeps the existing call signature
+  (`<BuildNotes project={project} />`) so the page body
+  doesn't change. The old "idea → framing → build →
+  deploy → what's next" italic caption next to the section
+  H2 is gone — the labels now appear in-line with the
+  prose.
+- **5-stage map for 5-paragraph projects** (10 of 12).
+- **6-stage map for Taply + NexBell** (2 of 12) — they
+  keep their 6-paragraph form (per the Phase 19 copy pass);
+  the DEPLOY label covers paragraphs 4 and 5 in their
+  notes.
+
+### Decisions
+
+- **Taply + NexBell stay 6-paragraph** — per user's
+  planning decision. The 6-paragraph form preserves the
+  heavier detail those founder-track projects earned. The
+  DEPLOY label covers 2 paragraphs; reading the case study
+  flows naturally because the label carries the same
+  semantic across the boundary.
+- **Fallback paragraph uses `problem + built` joined with
+  `\n\n`** — same fallback the previous `BuildNotes`
+  function used, just normalized as a single string so the
+  splitting logic doesn't need to special-case two
+  sources.
+- **No `space-y-4` between paragraphs anymore** — the
+  per-stage `<div>` owns its own `mt-8` rhythm so the
+  stage label and the paragraph sit closer together
+  (they belong to each other) and the gap between stages
+  is more deliberate.
+- **Stage label styling matches the existing amber mono
+  treatment** — same pattern used by the
+  `KEY_ACHIEVEMENTS` metric labels on `/log`, the Hero
+  eyebrow, and the `HeroTerminal` chip-row border
+  treatment. The `[Brackets]` characters make the labels
+  read as deliberate section markers, not body text.
+- **`first:mt-0` via the `i === 0 ? "" : "mt-8"` ternary**
+  — no CSS `first:` selector needed; the conditional keeps
+  the markup symmetric.
+- **Defensive `labels[labels.length - 1]` fallback** in
+  case a future project ships more than 6 paragraphs (e.g.
+  7 paragraphs would render stage labels 1–6 then fall
+  through to `[What's next]` for paragraph 7). Reads as
+  graceful degradation.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR (dev) smoke across `/work/taply` (6
+  paragraphs → 6 stage labels, DEPLOY covers 2), `/work/
+  algocode` (5 → 5), `/work/imgtwist` (5 → 5). Every
+  case-study page renders the same 5 (or 6) stage labels
+  above its paragraphs in amber mono.
+- Existing sections above and below "The build" untouched:
+  Hero / MetricsRow / StackBreakdown / LinksRow /
+  RelatedWriting / RelatedStack / SeriesNav all render
+  unchanged.
+

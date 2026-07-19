@@ -33,6 +33,7 @@ import { InnerLayout } from "@/components/layout/InnerLayout";
 import { Chip } from "@/components/ui/Chip";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { pickDiagram } from "@/components/diagrams/pickDiagram";
+import { StorySection } from "@/components/work/StorySection";
 import { projectMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import { cn } from "@/lib/cn";
@@ -211,14 +212,11 @@ function MetricsRow({ project }: { project: ProjectItem }) {
   );
 }
 
-/* Build notes: split notes string on \n\n, render each as <p>. If notes
-   is missing, fall back to problem + built as a graceful default. */
+/* Build notes: Phase 24 (T24.6) now delegates to <StorySection>
+   for the labeled stage rendering. This wrapper keeps the
+   existing <BuildNotes project={project} /> call site stable. */
 function BuildNotes({ project }: { project: ProjectItem }) {
-  const notes = project.notes;
-  const paragraphs =
-    notes && notes.trim().length > 0
-      ? notes.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
-      : [project.problem, project.built]; // fallback
+  const fallback = `${project.problem}\n\n${project.built}`;
 
   return (
     <section>
@@ -227,15 +225,11 @@ function BuildNotes({ project }: { project: ProjectItem }) {
         <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
           The build
         </h2>
-        <span className="text-t3 font-mono text-[11px] italic">
-          idea → framing → build → deploy → what&apos;s next
-        </span>
       </div>
-      <div className="text-t1 max-w-[760px] space-y-4 text-[16.5px] leading-[1.7]">
-        {paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </div>
+      <StorySection
+        notes={project.notes}
+        fallbackParagraph={fallback}
+      />
     </section>
   );
 }
