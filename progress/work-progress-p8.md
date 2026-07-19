@@ -2401,3 +2401,64 @@ prose.
 - `pnpm build` → 19 routes + middleware, 0 warnings.
 - Tone-gate grep: `grep -rn '[a-zA-Z0-9\)\?\.!,;]—' app components --include='*.tsx' --include='*.ts'` returns no visible-prose hits.
 
+---
+
+## T24.3 — Hero H1 + description rewrite
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- **`components/sections/Hero.tsx`** — H1 + description paragraph
+  rewritten.
+  - H1: `"I build the infrastructure layer nobody sees — and
+    write about it."` → `"I build the infrastructure layer
+    nobody sees and I write about it."` (em-dash dropped, `and`
+    glued inline). Accent span on `infrastructure layer` keeps
+    its `text-acc` mint-green color.
+  - Description: replaced the corporate-context opener
+    (`"2.5+ years architecting distributed systems:
+    microservices, async pipelines, container isolation, and
+    video infrastructure. Currently leading backend architecture
+    at NexBell, while writing The Backend Diaries — deep dives
+    into the systems I build."`) with the locked copy from
+    planning: `"Distributed systems, async pipelines, kernel
+    isolation, video infrastructure, networking. I write the
+    code that doesn't show up in a screenshot and breaks the
+    second it stops working. Then I write about it in The
+    Backend Diaries."`
+- JSDoc block at the top of the file refreshed to reflect the
+  new copy (eyebrow now `·`, H1 em-dash dropped, description
+  reframed).
+
+### Decisions
+
+- **Kept the technical-list opener strong** — `<strong>` wraps
+  the 5-tech list so the eye lands on it first; the
+  calm-narrator sentence follows in regular weight.
+- **Wrote `networking` into the list** — per user's planning
+  direction. Networking is the surface that touches every
+  other item in the list (kernel isolation, video infra,
+  async pipelines all depend on it).
+- **The screenshot/breaks-when-stopped line** lands the "infra
+  is invisible until it breaks" beat the user wanted. Mirrors
+  the canonical infra-engineer narrative without sounding
+  boastful.
+- **Closing line "Then I write about it in The Backend
+  Diaries."** — explicit connection to the writing surface.
+  "Then" beats the comma-only "and I write about it" because
+  it frames writing as a deliberate second act, not a
+  parenthetical.
+- **JSDoc refresh** keeps the file header honest. Future
+  agents reading the file see the current copy.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- `curl /` (dev): H1 reads "I build the infrastructure layer
+  nobody sees and I write about it." with the accent span on
+  `infrastructure layer`. Description contains no em-dash.
+

@@ -5,15 +5,17 @@
  * lines 482–621:
  *
  *   ┌───────────────────────────────────────────────────────────────┐
- *   │ BACKEND & PLATFORM ENGINEER — BANGALORE / CHENNAI   (eyebrow)│
+ *   │ BACKEND & PLATFORM ENGINEER · BANGALORE / CHENNAI   (eyebrow)│
  *   │                                                              │
  *   │ I build the infrastructure layer                            │
- *   │ nobody sees — and write about it.        (h1 + accent span) │
+ *   │ nobody sees and I write about it.        (h1 + accent span) │
  *   │                                                              │
- *   │ 2.5+ years architecting distributed systems:                  │
- *   │ microservices, async pipelines, ...       (description)      │
+ *   │ Distributed systems, async pipelines, kernel isolation,      │
+ *   │ video infrastructure, networking.            (description)   │
+ *   │ I write the code that doesn't show up in a screenshot and   │
+ *   │ breaks the second it stops working.                          │
  *   │                                                              │
- *   │ [View systems →]  [Read the writing]  [Open an issue]  (CTAs)│
+ *   │ [View systems →]  [Read the writing]  [Let's connect] (CTAs)│
  *   │                                                              │
  *   │ ┌── 3 ──┬── 6+ ──┬── 35% ──┬── 12+ ──┐         (StatRow)    │
  *   │ │  ...  │  ...   │   ...   │   ...   │                      │
@@ -22,7 +24,11 @@
  *
  * Layout: 1-column on mobile (stack everything), 2-column on `lg+`
  * (text left, diagram right). The AlgocodeDiagram (T2.2) lives in the
- * right column.
+ * right column. Below the diagram sits the HeroTerminal (Phase 7).
+ *
+ * Phase 24 (T24.3) — replaced the corporate-context opener
+ * ("2.5+ years architecting distributed systems…") with a
+ * technical-list opener + the calm-narrator closer.
  */
 
 import Link from "next/link";
@@ -58,18 +64,21 @@ export function Hero() {
             <h1 className="font-display text-t1 text-[clamp(36px,5.5vw,64px)] leading-[1.08] font-bold tracking-[-1px]">
               I build the <span className="text-acc">infrastructure layer</span>
               <br />
-              nobody sees — and write about it.
+              nobody sees and I write about it.
             </h1>
 
             <p className="text-t2 mt-5 max-w-[560px] text-[18px]">
               <strong className="text-t1 font-semibold">
-                2.5+ years architecting distributed systems:
+                Distributed systems, async pipelines, kernel isolation,
+                video infrastructure, networking.
               </strong>{" "}
-              microservices, async pipelines, container isolation, and video
-              infrastructure. Currently leading backend architecture at NexBell, while
-              writing{" "}
-              <strong className="text-t1 font-semibold">The Backend Diaries</strong> —
-              deep dives into the systems I build.
+              I write the code that doesn't show up in a screenshot and
+              breaks the second it stops working. Then I write about
+              it in{" "}
+              <strong className="text-t1 font-semibold">
+                The Backend Diaries
+              </strong>
+              .
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3.5">
