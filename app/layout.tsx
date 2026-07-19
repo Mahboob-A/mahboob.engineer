@@ -104,14 +104,24 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true },
   },
-  // Icons — the Next.js metadata file convention generates an SVG monogram
-  // from `app/icon.tsx` (T6.5). The legacy `favicon.ico` URL is kept as a
-  // fallback for crawlers / older browsers.
+  // Icons — Phase 31.2. RealFaviconGenerator output dropped into
+  // /public root. The 32×32 PNG is the default (modern browsers
+  // pick the highest-res match); favicon.ico is the legacy
+  // fallback for crawlers + older browsers; apple-touch-icon
+  // covers iOS home-screen + bookmark icon.
   icons: {
-    icon: "/icon",
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
     shortcut: "/favicon.ico",
-    apple: "/apple-icon",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
+  // PWA manifest — Phase 31.2. RealFaviconGenerator output.
+  // Enables "Add to Home Screen" on Android Chrome + iOS Safari.
+  manifest: "/manifest.webmanifest",
 };
 
 /**

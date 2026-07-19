@@ -26,7 +26,7 @@
  */
 
 import type { Metadata } from "next";
-import { ogUrlFor, ogConstants } from "@/lib/og-helpers";
+import { ogUrlFor, ogConstants, type OgSurface } from "@/lib/og-helpers";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://mahboob.engineer";
@@ -34,17 +34,28 @@ const SITE_NAME = "mahboob.engineer";
 const DEFAULT_DESCRIPTION = ogConstants.defaultDescription;
 
 /**
- * Base OG image entry shared by all three helpers. The URL is built by
- * `ogUrlFor({ title, description })` so a single helper file owns the
- * query-string contract (T6.1).
+ * Base OG image entry shared by the helpers. The URL is built by
+ * `ogUrlFor({ title, description, surface, slug })` so a single
+ * helper file owns the static-asset URL contract (Phase 31.2).
+ *
+ * `surface: "writing"` routes /writing + /writing/[slug] to
+ * `/og-writing.png`. `surface: "project"` (with `slug`) routes
+ * /work/[slug] to `/og-projects/{slug}.png`. Default surface
+ * falls back to `/og-default.png`.
  */
-function ogImage(title: string, description: string) {
+function ogImage(args: {
+  title: string;
+  description: string;
+  surface?: OgSurface;
+  slug?: string;
+}) {
+  const url = ogUrlFor(args);
   return [
     {
-      url: ogUrlFor({ title, description }),
+      url,
       width: ogConstants.width,
       height: ogConstants.height,
-      alt: `${title} — ${SITE_NAME}`,
+      alt: `${args.title} — ${SITE_NAME}`,
     },
   ];
 }
@@ -55,6 +66,7 @@ function ogImage(title: string, description: string) {
 export function pageMetadata(
   title: string,
   description: string = DEFAULT_DESCRIPTION,
+  surface: OgSurface = "default",
 ): Metadata {
   return {
     title,
@@ -65,13 +77,13 @@ export function pageMetadata(
       url: SITE_URL,
       siteName: SITE_NAME,
       type: "website",
-      images: ogImage(title, description),
+      images: ogImage({ title, description, surface }),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: ogImage(title, description).map((i) => i.url),
+      images: ogImage({ title, description, surface }).map((i) => i.url),
     },
   };
 }
@@ -98,13 +110,23 @@ export function projectMetadata(args: {
       url: `${SITE_URL}${path}`,
       siteName: SITE_NAME,
       type: "article",
-      images: ogImage(title, description),
+      images: ogImage({
+        title,
+        description,
+        surface: "project",
+        slug: args.slug,
+      }),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: ogImage(title, description).map((i) => i.url),
+      images: ogImage({
+        title,
+        description,
+        surface: "project",
+        slug: args.slug,
+      }).map((i) => i.url),
     },
     alternates: {
       canonical: path,
@@ -133,13 +155,15 @@ export function blogMetadata(args: {
       url: `${SITE_URL}${path}`,
       siteName: SITE_NAME,
       type: "article",
-      images: ogImage(args.title, description),
+      images: ogImage({ title: args.title, description, surface: "writing" }),
     },
     twitter: {
       card: "summary_large_image",
       title: args.title,
       description,
-      images: ogImage(args.title, description).map((i) => i.url),
+      images: ogImage({ title: args.title, description, surface: "writing" }).map(
+        (i) => i.url,
+      ),
     },
     alternates: {
       canonical: path,

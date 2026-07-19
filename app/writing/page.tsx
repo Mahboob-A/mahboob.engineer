@@ -34,6 +34,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = pageMetadata(
   "Writing",
   "How I think, not just what I shipped. Long-form breakdowns of distributed systems, Linux internals, async pipelines, and the bugs that taught me the most.",
+  "writing",
 );
 
 export const dynamic = "force-dynamic"; // RSS fetch + native post reads → fresh on every render.
