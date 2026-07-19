@@ -626,3 +626,55 @@ where static remains the default and dynamic is backed by a RAG API.
     upstream connection terminates, UI resets to idle.
   - Switch back to `[static]` → aborts in-flight stream (if any), resets
     dynamic state, static chip behavior resumes.
+
+---
+
+## T33.8 — Per-IP rate limit (in-memory)
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `lib/rag/rate-limit.ts` — minimal in-memory limiter. Module-scope
+  `Map<ip, { count, resetAt }>` keyed by `x-forwarded-for` /
+  `x-real-ip` (Vercel sets both; the helper falls back to `unknown` so
+  the limiter stays on if neither header is present). Window is one
+  hour; cap is `RAG_RATE_LIMIT_PER_HOUR` (default `20`).
+- `app/api/rag/route.ts` — limiter runs **before** any heavy work
+  (body parse, Upstash query, Fireworks call). On overflow: `429` with
+  short terminal-safe body + `retry-after` header. The body parser
+  still runs for valid requests so the existing `400` smoke cases
+  continue to work.
+
+### Decisions
+
+- In-memory is correct for v1. The limiter is *not* shared across
+  Vercel cold starts, so it's grief-delay only — not abuse-proof. When
+  Upstash Redis or Vercel KV is provisioned later, swap the
+  `checkRateLimit()` body for a shared-store lookup; the route stays
+  the same.
+- The cap (20/hour) is intentionally low. RAG queries are heavier
+  than the static portfolio traffic the site gets and we want a noisy
+  scraper to back off fast. Default can be raised via env if real
+  visitor feedback shows the cap is too tight.
+
+### Caveats / pending
+
+- The limiter counts invalid payloads (400s) and dim-check failures
+  (503s) against the same bucket. That's intentional — it prevents a
+  flood of bad requests from holding the route busy — but a future
+  task could split the buckets so legitimate users behind a flaky
+  network aren't punished for retries.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm dev` with `RAG_RATE_LIMIT_PER_HOUR=2` + curl smoke:
+  - Request 1 → `503 Vector store is not configured…`
+  - Request 2 → `503 Vector store is not configured…`
+  - Request 3 → `429 Rate limit reached. Try again later.`
+  - Request 4 → `429 Rate limit reached. Try again later.`
+- The 400/503 smoke cases from T33.6 still pass under the default
+  `RAG_RATE_LIMIT_PER_HOUR=20` (only 3–4 calls in the suite).

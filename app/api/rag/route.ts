@@ -30,10 +30,8 @@ import {
   questionForCommand,
   type RagCommandKey,
 } from "@/lib/rag/command-map";
-import {
-  RagProviderConfigurationError,
-  getConfiguredProvider,
-} from "@/lib/rag/providers";
+import { RagProviderConfigurationError } from "@/lib/rag/providers";
+import { checkRateLimit, extractClientIp } from "@/lib/rag/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -168,6 +166,21 @@ function buildGroundedContext(results: readonly QueryHit[]): string {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  /* 0. Rate limit per IP. Returns 429 before any heavy work runs. */
+  const ip = extractClientIp(req);
+  const rl = checkRateLimit(ip);
+  if (!rl.allowed) {
+    return new Response("Rate limit reached. Try again later.", {
+      status: 429,
+      headers: {
+        "content-type": "text/plain; charset=utf-8",
+        "retry-after": Math.ceil(
+          (rl.resetAt - Date.now()) / 1000,
+        ).toString(),
+      },
+    });
+  }
+
   /* 1. Parse + validate the body. */
   let body: IncomingPayload;
   try {
