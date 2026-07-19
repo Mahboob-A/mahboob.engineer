@@ -208,6 +208,11 @@ export const HOW_THE_FORM_GETS_USED: FormDataLine[] = [
      privacy beats — the user won't get added to any
      newsletter / drip / outreach sequence. */
   { text: "I won't subscribe you to anything." },
+  /* Phase 30: 6th line. Calls out the AI-training
+     elephant in the room. Reads current + honest;
+     positions this site as not part of the training-
+     data pipeline. */
+  { text: "Nothing here trains an AI model." },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
