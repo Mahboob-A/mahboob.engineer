@@ -150,3 +150,35 @@ The system prompt must enforce:
 | Empty retrieval | Output says the corpus does not contain that answer. |
 
 Static mode should never depend on any dynamic dependency or env var.
+
+## Voice and System Prompt
+
+The dynamic terminal's tone is governed by two corpus files, both indexed and
+retrieved at runtime — so editing them ships via `pnpm rag:reindex` without
+a code redeploy:
+
+- `docs/rag/corpus/system-prompt.md` → `kind: "system-prompt"` chunks.
+  Carries the literal instruction:
+  > Answer as Mahboob Alam in first person. ≤ 80 words. Use short sentences.
+  > Name specific projects, companies, and tools. No greetings. No "I'd be
+  > happy to". No bullet salad — at most 2 bullets. If the retrieved context
+  > doesn't cover the question, say "I don't have that here — try
+  > /lets-connect." Do not invent dates, employers, or numbers.
+- `docs/rag/corpus/voice.md` → `kind: "voice"` chunks. Carries the writing
+  rules (first person, short sentences, named tools, no buzzwords, decline
+  gracefully).
+
+The route concatenates these chunks before the user message, in this order:
+
+1. System prompt (instruction).
+2. Voice rules (style).
+3. Retrieved grounding context.
+4. User question.
+
+The chat model is `accounts/fireworks/models/gpt-oss-120b` — non-reasoning.
+The route never sends `reasoning_effort`, `thinking`, `reasoning_history`,
+or reads `reasoning_content`.
+
+The existing `docs/rag/corpus/{bio,hiring,project-deep-cuts,writing-notes,contact-policy,private-boundaries}.md`
+files are reserved for richer first-person material that supplements the
+programmatic chunks. They do not define the terminal's tone.

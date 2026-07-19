@@ -1,5 +1,12 @@
 # Writing Corpus Notes
 
+> The dynamic terminal's voice and answer rules come from
+> [`voice.md`](./voice.md) and [`system-prompt.md`](./system-prompt.md), not
+> from this file. Edit those instead for terminal-output changes.
+>
+> This file is reserved for richer summaries / take-aways of writing than
+> the registry's `excerpt` already provides.
+
 Use this file to make the terminal better at recommending articles.
 
 ## Recommendation Rules

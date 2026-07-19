@@ -1,5 +1,12 @@
 # Contact Policy Corpus Notes
 
+> The dynamic terminal's voice and answer rules come from
+> [`voice.md`](./voice.md) and [`system-prompt.md`](./system-prompt.md), not
+> from this file. Edit those instead for terminal-output changes.
+>
+> This file is reserved for richer contact-policy detail beyond what the
+> `contact` chunk already pulls from `data/contact.ts`.
+
 Use this file to improve dynamic answers for contact, hiring, consulting, and
 partnership questions.
 

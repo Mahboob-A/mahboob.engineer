@@ -30,7 +30,9 @@ export type RagChunkKind =
   | "faq"
   | "question"
   | "doc"
-  | "boundary";
+  | "boundary"
+  | "voice"
+  | "system-prompt";
 
 export interface RagChunkMetadata {
   kind: RagChunkKind;
@@ -64,6 +66,12 @@ const ROOT_DOCS = [
 
 const DOC_EXTENSIONS = new Set([".md", ".mdx", ".txt"]);
 
+const DOC_CHUNK_WORD_CAP = 250;
+
+// Common visitor questions, answered in Mahboob's first-person voice. These
+// are retrieval targets so an LLM grounded on them sounds like the portfolio
+// owner, not a knowledge base. Each answer is intentionally short (≤ 80
+// words) and uses concrete project / company names.
 const COMMON_QUESTIONS: ReadonlyArray<{
   title: string;
   questions: string[];
@@ -78,7 +86,7 @@ const COMMON_QUESTIONS: ReadonlyArray<{
       "Is Mahboob a backend engineer or platform engineer?",
     ],
     answer:
-      "Mahboob is strongest where backend product work meets infrastructure: Django, DRF, FastAPI, Redis, PostgreSQL, queues, AWS, CI/CD, and system design. He has co-founded Taply, built production APIs, optimized cloud cost and queries, led PR review for a 9-person team, and shipped portfolio projects that prove distributed systems depth.",
+      "I'm a backend / platform engineer. My strongest work sits where product code meets infra — Django, DRF, FastAPI, PostgreSQL, Redis, queues, AWS, CI/CD. I co-founded Taply, owned production APIs, cut AWS spend and query latency, led PR review for a 9-person team, and shipped portfolio projects that prove I can build distributed systems end to end.",
     tags: ["hiring", "backend", "platform"],
   },
   {
@@ -89,7 +97,7 @@ const COMMON_QUESTIONS: ReadonlyArray<{
       "Which projects prove backend depth?",
     ],
     answer:
-      "Start with Taply for live SaaS ownership, Algocode for distributed systems and isolation, Movio for video infrastructure, DrishtiAI for real-time AI pipelines, and UnThink for current AI/backend product direction. The /work page lists all projects and /work/[slug] pages give the deeper architecture story.",
+      "Start with Taply — live SaaS I co-founded. Then Algocode for distributed systems, Movio for video infra, DrishtiAI for real-time AI pipelines, UnThink for what I'm building now. Each /work/[slug] page goes deep on architecture. If you only have time for two: Taply and Algocode.",
     tags: ["projects", "portfolio"],
   },
   {
@@ -100,7 +108,7 @@ const COMMON_QUESTIONS: ReadonlyArray<{
       "How can I contact Mahboob?",
     ],
     answer:
-      "Mahboob is currently shipping Taply and building UnThink. He is available for backend/platform roles, open to Taply partnership conversations, and prefers direct contact through /lets-connect, email, LinkedIn, or GitHub.",
+      "I spend most days on Taply (live) and UnThink (building). I'm open to backend / platform roles, Taply partnerships, and async-first teams. Best way to reach me: /lets-connect, email connect.mahboobalam@gmail.com, or LinkedIn. I respond within a day or two.",
     tags: ["contact", "availability"],
   },
   {
@@ -111,7 +119,7 @@ const COMMON_QUESTIONS: ReadonlyArray<{
       "Does Mahboob know distributed systems?",
     ],
     answer:
-      "Mahboob's strongest recurring stack is Python, Django/DRF, FastAPI, PostgreSQL, Redis, RabbitMQ/Celery, Docker, AWS, and CI/CD. His work shows practical distributed-system patterns: queues, rate limiting, isolation, caching, async workers, streaming, and deployment automation.",
+      "Python, Django, DRF, FastAPI, PostgreSQL, Redis, RabbitMQ, Celery, Docker, AWS, CI/CD. Real distributed-system work: queues, rate limiting, isolation, caching, async workers, streaming, deploy automation. Algocode and Movio are the two projects that show this depth in production-shaped code.",
     tags: ["stack", "systems"],
   },
   {
@@ -122,7 +130,7 @@ const COMMON_QUESTIONS: ReadonlyArray<{
       "Does Mahboob lead engineering process?",
     ],
     answer:
-      "Mahboob is comfortable with async-first work, long-form PRs, written decisions, CI gates, and production-focused review. At NexBell he led sprint planning and PR review for a 9-person team and introduced mandatory CI gates.",
+      "Async-first, long-form PRs, written decisions. At NexBell I ran sprint planning and PR review for a 9-person team and pushed mandatory CI gates. I'm comfortable with remote and overlapping-time-zone teams, and I keep PRs small enough to review in one sitting.",
     tags: ["work-style", "team"],
   },
   {
@@ -133,7 +141,7 @@ const COMMON_QUESTIONS: ReadonlyArray<{
       "What are Mahboob's growth areas?",
     ],
     answer:
-      "The portfolio is intentionally honest about learning areas. Go, Terraform, Kubernetes, and eBPF are represented as active learning/growth areas unless a specific project or role says otherwise. Do not overstate them as production expertise.",
+      "I'm honest about this in the portfolio. Go, Terraform, Kubernetes, and eBPF are flagged as learning / growth areas unless a specific project says otherwise. If you want someone to drop into a Go shop and own a service from day one, that's not me yet.",
     tags: ["learning", "boundaries"],
   },
 ];
@@ -170,30 +178,34 @@ function buildProjectChunks(): RagChunk[] {
     return [
       chunk({
         kind: "project",
-        title: `${project.name} project overview`,
+        title: `${project.name} — first-person overview`,
         slug: project.slug,
         sourcePath,
         text: [
-          `${project.name} (${project.year}) is a ${project.status} ${project.tier} project.`,
-          project.tagline,
-          `Problem: ${project.problem}`,
-          `Built: ${project.built}`,
-          `What it proves: ${project.name} proves ${project.domain.join(", ")} work with ${project.stack.slice(0, 8).join(", ")}.`,
-          `Metrics: ${project.metrics.join("; ")}.`,
+          `What it is: ${project.tagline}`,
+          `Status: ${project.status} (${project.tier}). Year: ${project.year}.`,
+          project.notes
+            ? `In my words: ${stripLeadingHeading(project.notes)}`
+            : `Why I built it: ${project.problem}`,
+          `How: ${project.built}`,
+          project.metrics.length
+            ? `Numbers: ${project.metrics.join("; ")}.`
+            : "",
           `Links: ${formatLinks(project)}`,
         ],
         metadata: shared,
       }),
       chunk({
         kind: "project",
-        title: `${project.name} architecture and deep notes`,
+        title: `${project.name} — architecture and deep notes`,
         slug: project.slug,
         sourcePath,
         text: [
-          `Architecture notes for ${project.name}.`,
-          project.notes ?? `${project.problem}\n\n${project.built}`,
+          project.notes
+            ? `## ${project.name}\n\n${stripLeadingHeading(project.notes)}`
+            : `## ${project.name}\n\n${project.problem}\n\n${project.built}`,
           `Stack: ${project.stack.join(", ")}.`,
-          `Game building: ${project.game_building} in ${project.game_district}.`,
+          `Domain: ${project.domain.join(", ")}.`,
         ],
         metadata: shared,
       }),
@@ -207,7 +219,7 @@ function buildExperienceChunks(): RagChunk[] {
     return [
       chunk({
         kind: "experience",
-        title: `${entry.company} role overview`,
+        title: `${entry.company} — first-person overview`,
         slug: entry.id,
         url: entry.url ?? undefined,
         sourcePath,
@@ -215,27 +227,28 @@ function buildExperienceChunks(): RagChunk[] {
         projects: entry.relatedProjects,
         stack: entry.tags,
         text: [
-          `${entry.company}: ${entry.role}${entry.roleSuffix ? ` (${entry.roleSuffix})` : ""}.`,
+          `${entry.role}${entry.roleSuffix ? ` (${entry.roleSuffix})` : ""} at ${entry.company}.`,
           `Period: ${entry.period}. Status: ${entry.status}.`,
-          `Impact bullets: ${entry.bullets.join(" ")}`,
+          entry.notes
+            ? `In my words: ${stripLeadingHeading(entry.notes)}`
+            : `What I did: ${entry.bullets.join(" ")}`,
           entry.relatedProjects?.length
-            ? `Related projects: ${entry.relatedProjects.join(", ")}.`
-            : "No related portfolio project is explicitly linked.",
+            ? `Projects from this role: ${entry.relatedProjects.join(", ")}.`
+            : "",
         ],
       }),
       chunk({
         kind: "experience",
-        title: `${entry.company} story and lessons`,
+        title: `${entry.company} — story and lessons`,
         slug: entry.id,
         url: entry.url ?? undefined,
         sourcePath,
         tags: entry.tags,
         projects: entry.relatedProjects,
         stack: entry.tags,
-        text: [
-          `Deep-dive story for ${entry.company}.`,
-          entry.notes ?? entry.bullets.join("\n\n"),
-        ],
+        text: entry.notes
+          ? `## ${entry.company}\n\n${stripLeadingHeading(entry.notes)}`
+          : `## ${entry.company}\n\n${entry.bullets.join("\n\n")}`,
       }),
     ];
   });
@@ -259,27 +272,68 @@ function buildEducationChunks(): RagChunk[] {
 }
 
 function buildBlogChunks(): RagChunk[] {
-  return BLOG_POSTS.map((post) =>
-    chunk({
-      kind: "blog",
-      title: post.title,
+  return BLOG_POSTS.flatMap((post) => {
+    const sourcePath = "data/blog.ts";
+    const shared = {
       slug: post.slug,
       url: post.url,
-      sourcePath: "data/blog.ts",
+      sourcePath,
       tags: [post.category, ...post.tags],
       projects: post.projects,
       stack: post.stack,
-      text: [
-        `${post.title} is a ${post.source} post in ${post.category}.`,
-        post.series ? `Series: ${post.series}, part ${post.part ?? "unknown"}.` : "",
-        `Read time: ${post.readMin} minutes.`,
-        post.excerpt ?? "",
-        post.projects?.length ? `Related projects: ${post.projects.join(", ")}.` : "",
-        post.stack?.length ? `Related stack: ${post.stack.join(", ")}.` : "",
-        `URL: ${post.url}.`,
-      ],
-    }),
-  );
+    };
+    const about = [
+      `Post: ${post.title}.`,
+      `Source: ${post.source}. Category: ${post.category}.`,
+      `Read time: ${post.readMin} minutes.`,
+      `URL: ${post.url}.`,
+    ].join("\n");
+    const why = post.series
+      ? [
+          `Series: ${post.series}, part ${post.part ?? "unknown"}.`,
+          post.projects?.length
+            ? `Linked projects: ${post.projects.join(", ")}.`
+            : "",
+          post.stack?.length
+            ? `Covers: ${post.stack.join(", ")}.`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n")
+      : "";
+    const claim = post.excerpt
+      ? `Main argument: ${post.excerpt}`
+      : post.tags.length
+        ? `Covers ${post.tags.join(", ")} from the ${post.category} angle.`
+        : `Post in the ${post.category} category.`;
+    const chunks: RagChunk[] = [
+      chunk({
+        kind: "blog",
+        title: `${post.title} — what it is`,
+        ...shared,
+        text: about,
+      }),
+    ];
+    if (why) {
+      chunks.push(
+        chunk({
+          kind: "blog",
+          title: `${post.title} — why I wrote it`,
+          ...shared,
+          text: why,
+        }),
+      );
+    }
+    chunks.push(
+      chunk({
+        kind: "blog",
+        title: `${post.title} — the takeaway`,
+        ...shared,
+        text: claim,
+      }),
+    );
+    return chunks;
+  });
 }
 
 function buildStackChunks(): RagChunk[] {
@@ -293,13 +347,13 @@ function buildStackChunks(): RagChunk[] {
       projects: tech.projects,
       stack: [tech.id, tech.name],
       text: [
-        `${tech.name} belongs to the ${tech.domain} domain.`,
+        `${tech.name} sits in the ${tech.domain} bucket.`,
         tech.projects.length
-          ? `Used in or referenced by: ${tech.projects.join(", ")}.`
-          : "Not yet wired into a shipped project; treat as learning or future-facing unless another source says otherwise.",
+          ? `Used in: ${tech.projects.join(", ")}.`
+          : "Not wired into a shipped project yet — treat as learning or future-facing unless another source says otherwise.",
         tech.blogs?.length ? `Written about in: ${tech.blogs.join(", ")}.` : "",
         typeof tech.depth === "number"
-          ? `Learning depth marker: ${tech.depth}/100. Do not overstate as production expertise without project evidence.`
+          ? `Self-rated depth: ${tech.depth}/100. Don't treat as production expertise without project evidence.`
           : "",
       ],
     }),
@@ -380,9 +434,6 @@ async function buildDocumentChunks(rootDir: string): Promise<RagChunk[]> {
   for (const absolutePath of docPaths) {
     const relativePath = path.relative(rootDir, absolutePath);
     if (relativePath.startsWith("progress/")) continue;
-    if (relativePath === "docs/RAG_TERMINAL.md") {
-      // This is still useful, but the split docs are richer. Keep both.
-    }
     const content = await readOptionalFile(absolutePath);
     if (!content) continue;
     chunks.push(...chunkDocument(relativePath, content));
@@ -412,9 +463,16 @@ async function readOptionalFile(absolutePath: string): Promise<string | null> {
 
 function chunkDocument(sourcePath: string, content: string): RagChunk[] {
   const title = firstMarkdownHeading(content) ?? sourcePath;
+  const kind: RagChunkKind = sourcePath.includes("voice.md")
+    ? "voice"
+    : sourcePath.includes("system-prompt.md")
+      ? "system-prompt"
+      : sourcePath.includes("private-boundaries")
+        ? "boundary"
+        : "doc";
   return splitByHeading(content).map((section, index) =>
     chunk({
-      kind: sourcePath.includes("private-boundaries") ? "boundary" : "doc",
+      kind,
       title: index === 0 ? title : `${title}: ${section.heading}`,
       sourcePath,
       tags: tagsForPath(sourcePath),
@@ -444,7 +502,7 @@ function splitByHeading(content: string): Array<{ heading: string; text: string 
   }
   return sections.map((section) => ({
     ...section,
-    text: clampWords(stripNoise(section.text), 650),
+    text: clampWords(stripNoise(section.text), DOC_CHUNK_WORD_CAP),
   }));
 }
 
@@ -525,6 +583,12 @@ function stripNoise(content: string): string {
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function stripLeadingHeading(text: string): string {
+  // Trim a leading "## Title" line so a project/experience notes section
+  // starts on its prose, not on a duplicate heading.
+  return text.replace(/^\s*#{1,3}\s+.+\n+/, "").trim();
 }
 
 function clampWords(text: string, maxWords: number): string {

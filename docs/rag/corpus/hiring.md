@@ -1,5 +1,13 @@
 # Hiring Corpus Notes
 
+> The dynamic terminal's voice and answer rules come from
+> [`voice.md`](./voice.md) and [`system-prompt.md`](./system-prompt.md), not
+> from this file. Edit those instead for terminal-output changes.
+>
+> This file is reserved for richer hiring-fit detail — interview topics,
+> team-shape preferences, compensation nuance — that the LLM can pull from
+> when a visitor asks a hiring question.
+
 Fill this with role-fit details before a serious production launch.
 
 ## Strong Fit

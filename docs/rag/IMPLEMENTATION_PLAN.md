@@ -222,3 +222,8 @@ Verification:
   private local-only notes.
 - Whether Gemini gets a separate first-class adapter in the first code pass or
   remains documented until the Fireworks path is stable.
+- **Resolved by T33.5d:** the dynamic terminal's voice is owned by
+  `lib/rag/chunks.ts:COMMON_QUESTIONS` (rewritten in first person) plus the
+  `voice.md` and `system-prompt.md` corpus files. The other corpus files
+  (`bio.md`, `hiring.md`, etc.) are reserved for richer fill-in content;
+  they do not define the tone.

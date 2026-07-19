@@ -373,3 +373,91 @@ where static remains the default and dynamic is backed by a RAG API.
 - `pnpm rag:reindex -- --dry-run` → 353 chunks across 10 kinds; output
   includes `Upstash embed model: openai/text-embedding-3-small
   (1536d, server-side)` placeholder (only printed in real reindex mode).
+
+---
+
+## T33.5d — Corpus voice + content pass
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `lib/rag/chunks.ts`:
+  - Rewrote `COMMON_QUESTIONS[]` in first person, ≤ 80 words per answer,
+    dropped "leverage / robust / comprehensive / in conclusion" phrases,
+    named specific tools and projects. Each entry reads like a direct
+    DM reply rather than a knowledge-base paragraph.
+  - Rewrote `buildProjectChunks()` overview chunks in first person. The
+    opening line now reads "What it is: <tagline>"; the next line is
+    "In my words: <project.notes>" when the registry carries a notes
+    block, otherwise "Why I built it: <problem>". Architecture chunks
+    surface `project.notes` verbatim under a `## <name>` heading with
+    the original heading stripped (via `stripLeadingHeading()`).
+  - Rewrote `buildExperienceChunks()` the same way — first-person
+    `In my words: <entry.notes>` when present, otherwise `What I did:
+    <bullets>`.
+  - Split `buildBlogChunks()` so each post becomes three small chunks:
+    (a) **About** — title, source, category, read time, URL; (b)
+    **Why** — series + linked projects + stack (omitted for posts that
+    don't have those fields); (c) **Claim** — the post's takeaway,
+    pulled from `excerpt` or built from tags + category.
+  - Tightened document chunks from 650 words → 250 words per chunk
+    (constant `DOC_CHUNK_WORD_CAP`). Project / experience / FAQ chunks
+    retain their existing short caps.
+  - Added `"voice"` and `"system-prompt"` to the `RagChunkKind` union.
+    The kind router in `chunkDocument()` now tags `docs/rag/corpus/
+    voice.md` as `voice` and `system-prompt.md` as `system-prompt`
+    (boundary kind stays reserved for `private-boundaries.md`).
+- New `docs/rag/corpus/voice.md` — 5–8 rules for the dynamic terminal's
+  tone. Indexed as `voice` chunks.
+- New `docs/rag/corpus/system-prompt.md` — the literal ≤-80-word
+  instruction the route sends to the chat model. Indexed as
+  `system-prompt` chunks. Includes a "Notes for future edits" footer
+  reminding future agents where to add / not add reasoning directives.
+- Existing `corpus/{bio,hiring,project-deep-cuts,writing-notes,contact-policy,private-boundaries}.md`
+  each got a small blockquote header: this file does NOT define the
+  terminal's voice (that lives in `voice.md` + `system-prompt.md`),
+  it's reserved for richer fill-in content.
+- `docs/rag/ARCHITECTURE.md` — appended a "Voice and System Prompt"
+  section recording the source-of-truth files, the route order
+  (system → voice → context → user), the chat model's
+  non-reasoning classification, and the rule that the corpus
+  fill-in files do not define tone.
+- `docs/rag/IMPLEMENTATION_PLAN.md` — closed the "Open Decisions"
+  bullet about FAQ-style questions by pointing at the rewritten
+  `COMMON_QUESTIONS`.
+
+### Decisions
+
+- Kept the system prompt short and opinionated. Anything longer makes
+  the model hedge. The voice rules in `voice.md` carry the nuance;
+  the system prompt enforces the shape.
+- Stripped leading headings from surfaced `project.notes` /
+  `entry.notes` so the chunk opens on prose. Duplicating the heading
+  in both the `title` and the body made some chunks read twice.
+- Kept the existing `data/*.ts` registries as the programmatic source
+  of truth. The corpus markdown files only supplement them; never the
+  other way around.
+
+### Caveats / pending
+
+- The literal system prompt in `system-prompt.md` is the v1 prompt.
+  Expect to tune after the first wave of production answers.
+- Mahboob-authored fill-in for `bio.md` / `hiring.md` /
+  `project-deep-cuts.md` / `writing-notes.md` / `contact-policy.md`
+  is still owed. The terminal will work without them; answers get
+  richer when filled.
+- The route that *retrieves* the system-prompt chunk and composes the
+  real system message lands in T33.6. Today's reindex is the indexing
+  half.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm rag:reindex -- --dry-run` → 385 chunks across 12 kinds:
+  26 project, 11 experience, 2 education, 42 blog, 29 stack, 1 contact,
+  9 FAQ, 6 question, 4 boundary, 250 doc, 2 voice, 3 system-prompt.
+  Sample chunks show first-person framing and notes-surfacing for
+  projects with `notes` set.

@@ -1,5 +1,13 @@
 # Bio Corpus Notes
 
+> The dynamic terminal's voice and answer rules come from
+> [`voice.md`](./voice.md) and [`system-prompt.md`](./system-prompt.md), not
+> from this file. Edit those instead for terminal-output changes.
+>
+> This file is reserved for richer first-person bio material — interview
+> answers, location nuance, current focus — that an LLM can pull from when
+> a visitor asks a personal question.
+
 Fill this with Mahboob's own voice before the first production reindex.
 
 ## Suggested Answers
