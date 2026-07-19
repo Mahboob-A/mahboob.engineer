@@ -404,3 +404,67 @@ All grounded in the corpus, all in first-person, all below the
   reuse?" table against the literal `scripts/rag-reindex.ts`
   flow and `lib/rag/chunks.ts:stableId()` definition. Numbers
   match.
+
+---
+
+## T34.6 — Reindex script loads `.env` via `dotenv`
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `package.json` — added `dotenv@^17` to `devDependencies`.
+- `scripts/rag-reindex.ts` — added `import "dotenv/config"` as
+  the very first line. The `tsx scripts/rag-reindex.ts` invocation
+  runs outside `next dev`, where Next.js' built-in `.env` loader
+  does not apply; this matches that behaviour.
+
+### Decisions
+
+- Used `dotenv/config` (top-level import) rather than
+  `dotenv-flow` or a hand-rolled chain — it's one line, works
+  with the existing `.env` file, and `dotenv` is the
+  Next.js-adjacent standard.
+- Single env load is fine for the current setup. If a future
+  task introduces a real `.env.local` that takes precedence
+  over `.env`, swap to `dotenv-flow` at the same import
+  location.
+
+### Caveats / pending
+
+- `.env` is currently untracked (intentional). The gitignore
+  tweak the user made locally is uncommitted; if/when committed
+  it should keep `.env` ignored. `.env.example` remains the
+  source of placeholder values for Vercel + new contributors.
+- `npm run build`, `pnpm dev`, and every Next.js-driven
+  invocation already load `.env` automatically. The new
+  import only matters for standalone tsx scripts.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm rag:reindex -- --dry-run` → 447 chunks, no missing-env
+  error, no Upstash calls (dry-run path unchanged).
+- `pnpm rag:reindex` (no flag) → real call:
+  ```
+  RAG corpus: 447 chunks
+  Upstash embed model: openai/text-embedding-3-small (1536d, server-side)
+  Upstash endpoint: https://***-reptile-17430-us1-vector.upstash.io
+  Vector namespace: portfolio-rag
+  Upsert: 20/447 ... 447/447
+  Upstash upsert: complete
+  ```
+  First successful production reindex. All 447 vectors now
+  live in the `portfolio-rag` namespace.
+- End-to-end smoke (`pnpm dev` + `curl /api/rag`):
+  ```
+  POST {"command":"whoami"} → HTTP 200 (262 bytes, 5s)
+  > I am Mahboob Alam, a backend and platform engineer based
+  > in Bangalore/Chennai. Co-founder of Taply (Django + DRF +
+  > Redis + Postgres + Stripe) and building UnThink. ...
+  ```
+  The dynamic terminal's first real answer, grounded in the
+  `bio.md` and `data/projects.ts` chunks the reindex just
+  embedded.

@@ -1,3 +1,9 @@
+// `tsx scripts/rag-reindex.ts` runs outside of `next dev`, so Next.js'
+// built-in `.env` loader does not apply here. Loading dotenv explicitly
+// keeps the script in sync with the dev server's env surface — the same
+// vars the route reads at request time are also what the script reads at
+// reindex time.
+import "dotenv/config";
 import { Index } from "@upstash/vector";
 import { buildRagCorpus, type RagChunk } from "@/lib/rag/chunks";
 
