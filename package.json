@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "extract:game-assets": "python3 scripts/extract-game-assets.py",
+    "rag:reindex": "tsx scripts/rag-reindex.ts",
     "screenshot": "node scripts/screenshots.mjs",
     "lighthouse": "node scripts/lighthouse.mjs"
   },
@@ -47,6 +48,7 @@
     "prettier": "^3.9.5",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.1",
     "typescript": "^5"
   }
 }

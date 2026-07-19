@@ -57,6 +57,54 @@ where static remains the default and dynamic is backed by a RAG API.
 
 ---
 
+## T33.5 — Reindex script with dry-run corpus audit
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- Added `scripts/rag-reindex.ts`, a TypeScript reindex command that builds the
+  corpus, prints per-kind counts, supports `--dry-run`, embeds chunks through
+  the selected provider adapter, and upserts vectors to an Upstash Vector
+  namespace.
+- Added `tsx` as a dev dependency so the script can import TypeScript
+  registries and `lib/rag/*` helpers directly.
+- Added the `pnpm rag:reindex` package script.
+- Real reindex mode validates `UPSTASH_VECTOR_REST_URL` and
+  `UPSTASH_VECTOR_REST_TOKEN`, uses `RAG_VECTOR_NAMESPACE` with a
+  `portfolio-rag` fallback, stores chunk text in vector metadata, and writes
+  the corpus hash/model/dimension metadata per vector.
+
+### Decisions
+
+- Kept `--dry-run` free of provider and Upstash env requirements so corpus
+  richness can be audited locally without spending model credits.
+- Upserted in batches of 20 to keep memory and request payload sizes modest.
+- Used the provider adapter from T33.4 for embeddings, so changing providers
+  later does not require changing the script.
+- Namespaced vectors under `portfolio-rag` by default to avoid touching other
+  possible data in the same Upstash index.
+
+### Caveats / pending
+
+- The script upserts current chunks but does not delete stale chunk ids from
+  older corpus hashes yet.
+- Real Fireworks/Upstash reindex was not run because the API keys are not
+  available in this environment.
+- The first sandboxed dry-run failed because `tsx` could not create its temp
+  IPC pipe; rerunning with approved permissions fixed it.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm rag:reindex -- --dry-run` → 352 chunks:
+  26 project, 11 experience, 2 education, 16 blog, 29 stack, 1 contact, 9 FAQ,
+  6 common-question, 4 boundary, 248 doc chunks.
+
+---
+
 ## T33.4 — Provider adapter + env contract
 
 **Task status:** done
