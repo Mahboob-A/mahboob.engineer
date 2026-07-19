@@ -45,6 +45,14 @@ export interface StackItem {
   blogs?: string[];
   /** Self-rated proficiency (0–100). Only set on `learning` domain items. */
   depth?: number;
+  /**
+   * Short first-person depth note that the dynamic RAG terminal surfaces
+   * alongside the `depth` marker. Used for techs where a one-line qualifier
+   * matters more than a `projects` cross-reference list — typically
+   * learning-area items or production techs that benefit from naming *where*
+   * they were used. Phase 34.
+   */
+  depthNotes?: string;
 }
 
 /** A graph edge between two techs — derived, not stored. */
@@ -78,6 +86,8 @@ export const STACK: StackItem[] = [
       "imgtwist",
     ],
     blogs: ["building-leetcode-online-judge"],
+    depthNotes:
+      "Primary backend framework. Eleven section types in Taply, three-service split in Algocode, ten-step Celery pipeline in Movio, Django Channels for AirPass. I reach for Django when the data model is relational and the read path needs a cache.",
   },
   {
     id: "drf",
@@ -114,6 +124,8 @@ export const STACK: StackItem[] = [
     name: "WebRTC",
     domain: "backend",
     projects: ["airpass", "drishti-ai"],
+    depthNotes:
+      "DrishtiAI's eye-screening pipeline runs over Stream SDK WebRTC; AirPass is P2P file transfer over a WebRTC data channel. Both projects share the same Django Channels signaling shape.",
   },
   /* Phase 12 (T12.5): added so resolveStackSlug() picks up
      "Python" → python from the SRM MCA curriculum chips. Not
@@ -126,6 +138,8 @@ export const STACK: StackItem[] = [
     domain: "backend",
     projects: [],
     depth: 90,
+    depthNotes:
+      "Production-grade. Primary language for every backend project on this portfolio.",
   },
 
   // Infra
@@ -162,6 +176,8 @@ export const STACK: StackItem[] = [
     domain: "infra",
     projects: [],
     depth: 85,
+    depthNotes:
+      "Comfortable on the command line. Namespaces, cgroups, seccomp show up in Algocode; the Linux Networking series on Medium is the public version of that muscle.",
   },
   {
     id: "pulumi",
@@ -183,6 +199,8 @@ export const STACK: StackItem[] = [
     domain: "async",
     projects: ["algocode", "movio", "drishti-ai"],
     blogs: ["message-queue-101"],
+    depthNotes:
+      "Primary async backbone for microservice splits. Algocode's three services communicate only through RabbitMQ, Movio's transcoder workers consume from the upload queue, and DrishtiAI's CV pipeline queues frames to the inference service.",
   },
   /* Phase 12 (T12.5): added so resolveStackSlug() picks up
      "Kafka internals" → kafka from the Poridhi covered chips.
@@ -195,6 +213,8 @@ export const STACK: StackItem[] = [
     domain: "async",
     projects: [],
     depth: 55,
+    depthNotes:
+      "Covered in Poridhi's backend curriculum; not in production projects yet. Confident with the mental model, haven't shipped a real consumer/producer pair at scale.",
   },
 
   // Data
@@ -203,6 +223,8 @@ export const STACK: StackItem[] = [
     name: "PostgreSQL",
     domain: "data",
     projects: ["taply", "algocode", "unthink", "drishti-ai", "imgtwist"],
+    depthNotes:
+      "Primary OLTP store. Comfortable with composite indexes, query plan reading, lazy-load discipline, and JSONB for schemaless data (Algocode notes that swap is next).",
   },
   {
     id: "mongodb",
@@ -215,6 +237,8 @@ export const STACK: StackItem[] = [
     name: "Redis",
     domain: "data",
     projects: ["taply", "algocode", "movio", "cutetube", "unthink", "imgtwist"],
+    depthNotes:
+      "Primary cache + Celery broker. Taply's <100ms profile reads hit Redis first; Movio's segment counter is Redis; UnThink's classify pipeline uses Redis pub/sub. The Redis HA series on Medium is the public version of how I think about replication and sentinel.",
   },
 
   // AI / Special
@@ -235,6 +259,8 @@ export const STACK: StackItem[] = [
     name: "FFmpeg",
     domain: "video",
     projects: ["movio", "cutetube"],
+    depthNotes:
+      "Movio's transcoder workers produce HLS and DASH renditions. CuteTube's monolith did the same in a single Celery flow before the microservice split. Known limitation: ffmpeg can't inject subtitle info into manifest.mpd, so Movio has Task 07 for that.",
   },
 
   // Auth
@@ -243,6 +269,8 @@ export const STACK: StackItem[] = [
     name: "JWT/OAuth2",
     domain: "auth",
     projects: ["taply", "algocode", "nexbell"],
+    depthNotes:
+      "Taply uses Django-Q2 for token rotation and JWT for session restore. NexBell's full rewrite from session cookies to OAuth2/JWT ran old and new in parallel for a month. Algocode uses JWT between Auth and Code Manager services.",
   },
   {
     id: "stripe",
@@ -279,6 +307,8 @@ export const STACK: StackItem[] = [
     domain: "learning",
     projects: [],
     depth: 70,
+    depthNotes:
+      "Comfortable with the API surface and the resource model. Haven't owned a production cluster day-to-day. The Pulumi AWS Infra project is the closest equivalent to a k8s deployment, and it stays on EC2 / ASG.",
   },
   {
     id: "terraform",
@@ -286,9 +316,15 @@ export const STACK: StackItem[] = [
     domain: "learning",
     projects: [],
     depth: 50,
+    depthNotes:
+      "Familiar with the language and the state model. I prefer Pulumi because it lets me write real Python and unit-test the infra code. Terraform is on the learning list, not the production list.",
   },
-  { id: "go", name: "Go", domain: "learning", projects: [], depth: 30 },
-  { id: "ebpf", name: "eBPF", domain: "learning", projects: [], depth: 40 },
+  { id: "go", name: "Go", domain: "learning", projects: [], depth: 30, depthNotes:
+      "Honest growth area. Algocode uses Linux namespaces, cgroups, and seccomp in production-shaped C++ code — that's the closest my work gets to Go-style infra. I'd learn fast on a real Go service but I'm not a Go engineer today.",
+  },
+  { id: "ebpf", name: "eBPF", domain: "learning", projects: [], depth: 40, depthNotes:
+      "Covered in Poridhi's backend curriculum. I understand the model (kernel hooks, maps, programs) but haven't shipped anything that uses eBPF in production. The Linux Networking series on Medium touches the adjacent kernel primitives.",
+  },
 ];
 
 /* ===========================================================================

@@ -160,3 +160,106 @@ Three tracks:
   `blog` chunks 42 → 58. `experience` chunks stayed at 11 (no count
   change; both Eve Healthcare chunks grew in text volume rather than
   count).
+
+---
+
+## T34.3 — Stack depth narrative
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `data/stack.ts:StackItem` — added optional `depthNotes?: string`
+  field. Doc comment explains it's the first-person qualifier the
+  dynamic RAG terminal surfaces alongside the `depth` marker for
+  techs where a one-line note matters more than the existing
+  `projects` cross-reference list.
+- `data/stack.ts` — wrote `depthNotes` for **13 stack entries**:
+  - The 4 learning-area items (kubernetes, terraform, go, ebpf) with
+    honest "what I'm learning, here's where I am" notes plus the
+    Kafka learning item.
+  - 8 production-grade techs (python, linux, postgresql, redis,
+    django, rabbitmq, ffmpeg, webrtc, jwt/oauth2) with one
+    sentence each that names *where* the tech was used and what
+    the muscle memory is.
+- `lib/rag/chunks.ts:buildStackChunks` — drops the "Don't treat as
+  production expertise" tagline (it was wrong for items with
+  `depthNotes` because they explicitly have production evidence) and
+  adds a new "In my words: <depthNotes>" line when the field is set.
+
+### Decisions
+
+- 13 of 29 items got prose; the remaining 16 (DRF, Celery, FastAPI,
+  WebSocket, SSE, Docker, AWS, Nginx, Pulumi, CI/CD, MongoDB,
+  OpenCV, Stripe, bKash, Gemini, plus the rest) intentionally don't
+  have notes — they're well-served by the existing `projects` and
+  `blogs` fields and adding prose would have diluted the chunk with
+  redundant cross-references. Future agents can add `depthNotes` to
+  any of them if a query surfaces their absence.
+- Removed the "Don't treat as production expertise without project
+  evidence" line from the chunker because it's now misleading when
+  `depthNotes` is explicitly production evidence. The same caveat
+  still applies to the `depth: <number>` line itself (e.g. `30/100`
+  for Go) and is implied by the depth value without the boilerplate.
+
+### Caveats / pending
+
+- Stack chunk count is unchanged (29) — the `depthNotes` content
+  rides inside the existing chunks rather than spawning a fourth
+  per-item chunk. That's intentional for retrieval: a stack item
+  isn't large enough to merit a separate "personal take" chunk the
+  way a blog post is, but it's still first-person enough to add
+  retrieval signal to the existing chunk.
+- No prose added for the static `/stack` page-rendered items
+  (DRF, Celery, etc.). The portfolio's `/stack` page renders the
+  registry without surfacing `depthNotes`; that's intentional —
+  the prose is for retrieval, not display. A future task could
+  surface it as a one-line annotation under each chip on `/stack`
+  if it earns its space.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm rag:reindex -- --dry-run` → 429 chunks unchanged in count.
+  Stack chunks gained "In my words:" lines for the 13 items with
+  `depthNotes`. Other entries unchanged.
+
+## Phase 34 Outcome
+
+**Before Phase 34:** 389 chunks, with thin personal fill-in files
+and missing `notes` on the Eve Healthcare entry and the 14 Medium
+posts. Stack item depths were numeric-only and didn't carry a
+first-person qualifier.
+
+**After Phase 34:** 429 chunks (+40 — 24 doc chunks from P34.1, 16
+blog personal-take chunks from P34.2, 0 count change from P34.3 but
+~13 chunks enriched with depthNotes prose). The dynamic RAG
+terminal now has:
+
+- 5 first-person bio sections retrievable independently.
+- 4 hiring-fit sections retrievable independently.
+- 14 per-post Medium notes retrievable as a fourth chunk per post.
+- 1 richer Eve Healthcare `notes` (4 paragraphs).
+- 13 stack entries with first-person depth qualifiers.
+
+**Manual smoke after deploying to Vercel + reindexing against the
+real Upstash index** — six dynamic chips should now answer:
+
+- `whoami` — "I'm a backend engineer first..." answer grounded in
+  bio.md, projects.ts notes, hiring.md.
+- `projects` — "Taply is my co-founder project, Algocode proves
+  distributed systems..." answer pulling project notes + the
+  project-deep-cuts demo-readiness section.
+- `stack` — "Python and Django are the strongest, Go and Kubernetes
+  are honest learning areas..." answer pulling stack.ts + the
+  depth-marker qualifiers + bio.md "Why backend + platform".
+- `latest` — "I'm shipping Taply v2 and UnThink..." answer from
+  NOW_STATUSES + project notes + bio.md "What I'm building now".
+- `contact` — direct links + FAQ + contact-policy.md "After you
+  hit send" section.
+- `help` — list of available commands.
+
+All grounded in the corpus, all in first-person, all below the
+80-word cap because the system prompt enforces it.

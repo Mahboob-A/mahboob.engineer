@@ -366,8 +366,9 @@ function buildStackChunks(): RagChunk[] {
           : "Not wired into a shipped project yet — treat as learning or future-facing unless another source says otherwise.",
         tech.blogs?.length ? `Written about in: ${tech.blogs.join(", ")}.` : "",
         typeof tech.depth === "number"
-          ? `Self-rated depth: ${tech.depth}/100. Don't treat as production expertise without project evidence.`
+          ? `Self-rated depth: ${tech.depth}/100.`
           : "",
+        tech.depthNotes ? `In my words: ${tech.depthNotes}` : "",
       ],
     }),
   );
