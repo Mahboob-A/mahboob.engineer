@@ -8,7 +8,9 @@
  * Contents:
  *   - AVAILABILITY + RESPONSE_TIME — sidebar "open for work" status
  *   - DIRECT_LINKS — 6 social + resume rows
- *   - FAQ — 3 always-expanded Q&A pairs (master §2.6 verbatim)
+ *   - FAQ — 9 always-expanded Q&A pairs (Phase 26 expansion)
+ *   - QUICK_CONTEXT_FITS + QUICK_CONTEXT_DOESNT — sidebar
+ *     "is this email for me?" two-list card (Phase 26)
  *   - CONTACT_LABELS + bucketFor() — the form's 5 label chips + color
  *
  * Source: portfolio-master-doc.md §0.2 + §2.6.
@@ -98,7 +100,7 @@ export const DIRECT_LINKS: DirectLinkItem[] = [
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
-   3. FAQ — always-expanded Q&A pairs (master §2.6 verbatim)
+   3. FAQ — always-expanded Q&A pairs
    ───────────────────────────────────────────────────────────────────── */
 
 export interface FAQItem {
@@ -106,6 +108,10 @@ export interface FAQItem {
   answer: string;
 }
 
+/* Phase 26: 9 pairs, grouped by topic (location → company fit →
+   engagement → logistics → work style → ramp). The first 3 are
+   the master §2.6 originals; the next 6 are the Phase 26
+   expansion. */
 export const FAQ: FAQItem[] = [
   {
     question: "Are you open to relocating?",
@@ -122,6 +128,57 @@ export const FAQ: FAQItem[] = [
     answer:
       "Case by case. Backend architecture, system design reviews, Django / FastAPI consulting.",
   },
+  {
+    question: "What's your timezone?",
+    answer:
+      "IST (UTC+5:30). Open to async-first workflows with US / EU teams. Overlap hours are 1–6pm IST for the Americas.",
+  },
+  {
+    question: "What's your notice period?",
+    answer:
+      "Two weeks for the right role. Faster for a Taply partnership conversation. NexBell was a 2-week handover.",
+  },
+  {
+    question: "Do you need visa sponsorship?",
+    answer:
+      "Indian passport, no sponsorship needed for remote-first roles. For in-office roles in the US / EU, the company has to sponsor. Happy to discuss specifics.",
+  },
+  {
+    question: "Are you okay with async-first work?",
+    answer:
+      "That's the only way I've worked for 3+ years. I document decisions in writing, prefer long-form PRs, and respond within a working day.",
+  },
+  {
+    question: "How long does it take you to ramp up?",
+    answer:
+      "Two weeks to first meaningful PR on a new codebase I've seen docs for. Three to four weeks for a green-field project. I'd rather over-estimate than promise.",
+  },
+  {
+    question: "Is there a tech stack you'd prefer?",
+    answer:
+      "Python / Django / FastAPI is where I'm strongest. Happy to work in Go or Node on the right team. Not a good fit for Java-only or mobile-only roles.",
+  },
+];
+
+/* ─────────────────────────────────────────────────────────────────────
+   3b. Quick context — fits / doesn't fit (Phase 26 sidebar slot)
+   ───────────────────────────────────────────────────────────────────── */
+
+export interface QuickContextItem {
+  text: string;
+}
+
+export const QUICK_CONTEXT_FITS: QuickContextItem[] = [
+  { text: "You're hiring for a backend or platform role (remote or Bangalore)." },
+  { text: "You want a Taply partnership or white-label conversation." },
+  { text: "You want a system design review on a Django / FastAPI stack." },
+];
+
+export const QUICK_CONTEXT_DOESNT: QuickContextItem[] = [
+  { text: "Frontend-only or design roles." },
+  { text: "Crypto / NFT outreach." },
+  { text: "Generic agency sales." },
+  { text: "Cold 'we're hiring 100 engineers' recruiter blasts." },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────

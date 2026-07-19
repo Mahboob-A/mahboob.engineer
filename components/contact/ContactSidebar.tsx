@@ -1,10 +1,14 @@
 /**
  * components/contact/ContactSidebar.tsx
  *
- * Right column on /contact. Three stacked cards:
+ * Right column on /lets-connect. Three stacked cards:
+ *
  *   1. Availability card  — 3 status lines + response time footer
  *   2. Direct links card  — 6 social/resume rows with hover affordance
- *   3. FAQ card           — 3 always-expanded Q&A pairs
+ *   3. Quick context card — "is this email for me?" two-list
+ *                           check (Phase 26). Replaces the old FAQ
+ *                           card; FAQ moved to a full-width
+ *                           section below the TerminalBlock.
  *
  * Server Component. All data comes from `data/contact.ts`. No state.
  */
@@ -14,10 +18,10 @@ import {
   AVAILABILITY,
   RESPONSE_TIME,
   DIRECT_LINKS,
-  FAQ,
+  QUICK_CONTEXT_FITS,
+  QUICK_CONTEXT_DOESNT,
   type AvailabilityKind,
   type DirectLinkItem,
-  type FAQItem,
 } from "@/data/contact";
 
 /* Status-dot color → CSS var. Matches the visual language of the
@@ -33,7 +37,7 @@ export function ContactSidebar() {
     <aside className="flex flex-col gap-5">
       <AvailabilityCard />
       <DirectLinksCard />
-      <FAQCard />
+      <QuickContextCard />
     </aside>
   );
 }
@@ -114,40 +118,44 @@ function DirectLinkRow({ link }: { link: DirectLinkItem }) {
   );
 }
 
-/* ─── FAQ ──────────────────────────────────────────────────────────── */
+/* ─── Quick context (Phase 26) ─────────────────────────────────────── */
 
-function FAQCard() {
+function QuickContextCard() {
   return (
     <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
-      {/* Phase 6 (T6.9): was `<p>FAQ</p>`. Promoting to `<h2>` so the
-         FAQRow's `<h3>` questions have a valid heading hierarchy
-         (h1 from InnerPageHeader → h2 FAQ section → h3 question).
-         axe-core flagged the original as "heading-order" violation. */}
-      <h2 className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
-        FAQ
-      </h2>
-      <ul className="space-y-5">
-        {FAQ.map((item, i) => (
-          <li key={i}>
-            <FAQRow item={item} />
+      <p className="text-t3 mb-4 font-mono text-[11px] tracking-[1.5px] uppercase">
+        Is this email for me?
+      </p>
+
+      <p className="text-t2 mb-2 font-mono text-[11.5px] tracking-[0.3px] uppercase">
+        Probably fits
+      </p>
+      <ul className="text-t1 mb-5 space-y-2 text-[13.5px] leading-[1.55]">
+        {QUICK_CONTEXT_FITS.map((item, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className="text-acc mt-[7px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-acc"
+            />
+            <span>{item.text}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="text-t2 mb-2 font-mono text-[11.5px] tracking-[0.3px] uppercase">
+        Probably doesn't
+      </p>
+      <ul className="text-t2 space-y-2 text-[13.5px] leading-[1.55]">
+        {QUICK_CONTEXT_DOESNT.map((item, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className="text-t3 mt-[7px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-t3/60"
+            />
+            <span>{item.text}</span>
           </li>
         ))}
       </ul>
     </section>
-  );
-}
-
-function FAQRow({ item }: { item: FAQItem }) {
-  return (
-    <div>
-      <h3 className="text-t1 font-body text-[14px] font-semibold">
-        <span className="text-acc mr-1.5 font-mono text-[12px]">Q:</span>
-        {item.question}
-      </h3>
-      <p className="text-t2 mt-1.5 text-[13.5px] leading-[1.6]">
-        <span className="text-t3 mr-1.5 font-mono text-[12px]">A:</span>
-        {item.answer}
-      </p>
-    </div>
   );
 }

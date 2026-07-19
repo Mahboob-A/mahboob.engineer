@@ -115,13 +115,13 @@ export function ContactForm() {
           <textarea
             id="cf-description"
             required
-            rows={5}
+            rows={3}
             maxLength={1500}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Context, links, constraints. The more specific, the better."
             disabled={isSubmitting}
-            className={cn(inputClass, "min-h-[120px] resize-y leading-[1.55]")}
+            className={cn(inputClass, "min-h-[80px] resize-y leading-[1.55]")}
           />
         </Field>
 

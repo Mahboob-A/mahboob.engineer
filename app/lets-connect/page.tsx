@@ -1,23 +1,26 @@
 /**
- * app/contact/page.tsx
+ * app/lets-connect/page.tsx
  *
- * The "05 / OPEN AN ISSUE" full-page contact route per master §2.6.
- * Composes InnerLayout + ContactForm (left) + ContactSidebar (right).
+ * Phase 26 layout:
+ *   - Left column: contact form (TerminalBlock) + FAQ section below
+ *     it. The FAQ fills the visual real estate the form used to
+ *     occupy when the description textarea was taller.
+ *   - Right column: Availability + DirectLinks + QuickContext.
+ *     QuickContext replaces the FAQ card (FAQ moved to the left).
  *
- * Server Component shell. Interactive form is a separate 'use client'
- * island (components/contact/ContactForm.tsx). Sidebar is also a
- * Server Component (no state).
+ * Server Component shell. Interactive form is a separate 'use
+ * client' island. Sidebar is also a Server Component.
  */
 
 import type { Metadata } from "next";
 import { InnerLayout } from "@/components/layout/InnerLayout";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { ContactSidebar } from "@/components/contact/ContactSidebar";
+import { FAQSection } from "@/components/contact/FAQSection";
+import { FAQ } from "@/data/contact";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata(
-  /* Post-Phase 6 bug fix: route renamed /contact → /lets-connect.
-     Page title and metadata reflect the new framing. */
   "Let's connect",
   "Form, availability, direct links, and answers to the questions I get asked most.",
 );
@@ -35,7 +38,13 @@ export default function ContactPage() {
       }}
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-        <ContactForm />
+        {/* Left column — contact form + FAQ below it */}
+        <div>
+          <ContactForm />
+          <FAQSection items={FAQ} />
+        </div>
+
+        {/* Right column — Availability + Direct links + Quick context */}
         <ContactSidebar />
       </div>
     </InnerLayout>
