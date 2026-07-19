@@ -57,6 +57,55 @@ where static remains the default and dynamic is backed by a RAG API.
 
 ---
 
+## T33.3 — Rich corpus builder + starter corpus notes
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- Added `lib/rag/chunks.ts`, a reusable corpus builder that aggregates the
+  existing portfolio registries (`PROJECTS`, `EXPERIENCE`, `EDUCATION`,
+  `BLOG_POSTS`, `STACK`, contact/FAQ/privacy data) into stable RAG chunks with
+  metadata and a whole-corpus hash.
+- Added common visitor-question chunks directly in the corpus builder so the
+  vector store has question-shaped retrieval targets for hiring fit, best
+  projects, current availability, technical strengths, work style, and learning
+  boundaries.
+- Added document ingestion for root docs (`README.md`, `portfolio-master-doc.md`,
+  `my-resources-for-portfolio.md`, `prompt-guide.md`, `portfolio-flat-mockup.html`),
+  `docs/**/*.md`, and `content/**/*.mdx`.
+- Added starter corpus files under `docs/rag/corpus/`: `bio.md`, `hiring.md`,
+  `project-deep-cuts.md`, `writing-notes.md`, `contact-policy.md`, and
+  `private-boundaries.md`.
+
+### Decisions
+
+- Excluded progress logs from the runtime corpus because they are
+  implementation history rather than visitor-facing portfolio knowledge.
+- Chunked by semantic object first (project overview, project notes, role
+  overview, role story, blog post, stack item, FAQ, contact policy, document
+  section), then used a conservative word clamp for large docs.
+- Kept all new corpus code dependency-free so it can typecheck before provider
+  packages and network-backed reindexing are introduced.
+- Stored `text` inside chunk metadata-compatible output so Upstash Vector can
+  return enough context directly from query results later.
+
+### Caveats / pending
+
+- The corpus builder is not yet wired to a reindex command.
+- The starter corpus files are intentionally sparse; Mahboob should enrich
+  them with first-person details before final production indexing.
+- Embedding dimensionality is not validated until the Fireworks provider and
+  Upstash reindex script ship.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+
+---
+
 ## T33.2 — Provider toggle + Fireworks defaults
 
 **Task status:** done
