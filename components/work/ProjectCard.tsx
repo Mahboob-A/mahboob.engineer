@@ -220,6 +220,14 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
                   ? "building"
                   : "shipped"}
             </Badge>
+            {project.stars ? (
+              <span
+                className="text-amber font-mono text-[10.5px]"
+                aria-label={`${project.stars} stars on GitHub`}
+              >
+                ★ {project.stars}
+              </span>
+            ) : null}
           </div>
           <p className="text-t2 mt-2 line-clamp-2 text-[12.5px] leading-[1.45]">
             {project.tagline}

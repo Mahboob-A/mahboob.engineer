@@ -43,7 +43,7 @@ export function DeployLog() {
   return (
     <FadeUp
       as="section"
-      className="border-border scroll-mt-20 border-t py-[90px]"
+      className="border-border scroll-mt-20 border-t pt-[45px] pb-[90px]"
       id="log"
     >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
