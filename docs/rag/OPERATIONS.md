@@ -222,3 +222,65 @@ If dynamic mode misbehaves:
 4. Re-enable after corpus or service issue is fixed.
 
 Static mode is the fallback path and must remain independent.
+
+## Security
+
+- `UPSTASH_VECTOR_REST_TOKEN` is a **secret**. Never commit. Never
+  paste into chat / screenshots / logs. The Upstash console's "Reset
+  Token" button regenerates it instantly; the old token becomes
+  invalid immediately.
+- If the token surfaces in the wrong place (git diff, terminal
+  scrollback pasted into a doc, screenshot), regenerate it in the
+  Upstash console and update `.env.local` + Vercel env vars before the
+  next deploy. Verify with `pnpm rag:reindex` after each rotation.
+- The route and reindex script must **never** log the token or the
+  full `UPSTASH_VECTOR_REST_URL`. `scripts/rag-reindex.ts` redacts the
+  URL to `https://***-us1-vector.upstash.io` before printing it.
+
+## Provider-Dashboard Caveats
+
+- Fireworks' usage/analytics dashboard counts requests that reach
+  Fireworks. **It does not count** pre-server timeouts, client-side
+  retries that fail before the API receives the request, or network
+  failures between the app and the API. If our route logs show errors
+  but the dashboard looks healthy, the bug is in our `timeout` /
+  `maxRetries` / network config — not on Fireworks' side.
+- Upstash Vector's free-tier quota is **10k queries/day**. Reindex
+  batches 20 chunks per request, so a 385-chunk reindex is ~20 REST
+  calls plus one `info()` call. Real production traffic is bounded by
+  the rate limit (default 20/IP/hour).
+
+## Tuning Notes
+
+- `temperature` is currently pinned to `0.2` in
+  `lib/rag/providers.ts:streamChat()`. Fireworks also auto-pulls
+  `temperature` from each model's `generation_config.json` when unset.
+  If dynamic-mode answers feel too flat, swap the pinned value to
+  `undefined` and let the model default surface.
+- `max_tokens` is pinned at `500`. The `<= 80 words` system prompt
+  doesn't need much headroom; raising this only helps if a question
+  drags the model past 500 tokens.
+- The route's per-IP rate limit (default 20/hour, configurable via
+  `RAG_RATE_LIMIT_PER_HOUR`) is in-memory. It resets on cold start
+  and is not shared across Vercel cold starts — so a single visitor
+  on a long session can get more than 20 requests/hour via a restart.
+  Acceptable for v1; tighten with Upstash Redis later.
+
+## Manual QA Checklist
+
+- Static mode works after hard reload (`Cmd+Shift+R`).
+- Dynamic mode idle prompt renders `$ mehboob@portfolio-bastion: █`.
+- Each of the six chips streams a response in dynamic mode
+  (`whoami` / `projects` / `stack` / `latest` / `contact` / `help`).
+- Press Esc mid-stream → the stream aborts, the body resets to idle.
+- Click `[static]` mid-stream → same reset behavior, no `/api/rag`
+  call on subsequent static chip clicks.
+- Remove `FIREWORKS_API_KEY` from `.env.local`, restart `pnpm dev`,
+  click a dynamic chip → friendly terminal text reading
+  "Chat provider is not configured." or similar.
+- Open DevTools → Network. Hit `/api/rag` and watch the panel: the
+  request shows `content-type: text/plain; charset=utf-8` and
+  streams chunks, not a single JSON blob.
+- No hydration warnings in the browser console.
+- No references to `upstash` or `fireworks` in DevTools → Sources
+  → Page.

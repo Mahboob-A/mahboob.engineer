@@ -237,23 +237,44 @@ Negligible. The upgrade pays for itself the first time a visitor spends
    should be selected only through `LLM_PROVIDER` and the matching
    env key (`GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`).
 
-## Rollout checklist
+## Rollout checklist (final — Phase 33 ships)
 
-- [ ] Fireworks + Upstash accounts created
-- [ ] `LLM_PROVIDER`, `FIREWORKS_API_KEY`, `UPSTASH_VECTOR_REST_URL`, `UPSTASH_VECTOR_REST_TOKEN` in `.env.local`
-- [ ] `pnpm add openai @upstash/vector`
-- [ ] `pnpm rag:reindex` populates the vector store (verify with `upstash` console)
-- [ ] `app/api/rag/route.ts` implemented (snippet above)
-- [ ] `HeroTerminal.tsx` swaps `buildPayload` for the streaming fetch
-- [ ] Phase 8 deploy: env vars in Vercel, redeploy, smoke-test 6 chips
-- [ ] Confirm Lighthouse still passes 96+ a11y, 100 SEO
+- [x] Fireworks + Upstash accounts created
+- [x] `LLM_PROVIDER`, `FIREWORKS_API_KEY`, `UPSTASH_VECTOR_REST_URL`,
+      `UPSTASH_VECTOR_REST_TOKEN`, `RAG_UPSTASH_EMBEDDING_MODEL`,
+      `RAG_UPSTASH_EMBEDDING_DIMENSIONS` in `.env.example`
+- [x] `pnpm add openai @upstash/vector`
+- [x] `pnpm rag:reindex` populates the vector store (verify with the
+      Upstash console under `portfolio-rag` namespace)
+- [x] `app/api/rag/route.ts` implemented
+- [x] `HeroTerminal.tsx` has the static/dynamic toggle + streaming fetch
+- [x] `lib/rag/rate-limit.ts` enforces 20/IP/hour (`RAG_RATE_LIMIT_PER_HOUR`
+      to override)
+- [x] `docs/rag/corpus/voice.md` + `system-prompt.md` indexed as
+      retrievable chunks; the route concatenates them into the system
+      message at request time
+- [ ] **Local**: add real `FIREWORKS_API_KEY` + Upstash vars to
+      `.env.local`, run `pnpm rag:reindex`, `pnpm dev`, click each of
+      the six chips in `[dynamic]` mode, verify streamed answers
+- [ ] **Vercel**: add the same env vars to Production (and Preview if
+      you want pre-release smoke). Redeploy.
+- [ ] Confirm Lighthouse still passes 96+ a11y, 100 SEO on `/`
 
 ## Notes
 
 - The `Server-Component` TerminalBlock wrapper remains. Only the
-  client-state in `HeroTerminal.tsx` changes.
+  client-state in `HeroTerminal.tsx` changed.
 - The vite-style `dynamic({ ssr: false })` boundary is NOT needed for
   the RAG version — the static chip handlers were the only thing
   requiring `'use client'`, and the streaming fetch keeps that.
-- No new build output. No new routes. Server only. The portfolio's
-  static / SEO story stays intact.
+- `openai` and `@upstash/vector` stay server-side because the route
+  uses `await import("@/lib/rag/providers")` — verified by a `pnpm
+  build` + grep for `upstash` / `fireworks` in `.next/static/chunks`
+  (zero matches).
+- The dynamic route returns `503` with a plain-text body when env vars
+  are missing. The HeroTerminal renders that text in muted terminal
+  style. Static mode is unaffected.
+- Per-IP rate limit is in-memory and resets on cold start. When the
+  portfolio gets Upstash Redis or Vercel KV, swap
+  `lib/rag/rate-limit.ts`'s `Map` for a shared store; the route stays
+  the same.

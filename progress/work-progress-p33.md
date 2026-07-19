@@ -678,3 +678,68 @@ where static remains the default and dynamic is backed by a RAG API.
   - Request 4 → `429 Rate limit reached. Try again later.`
 - The 400/503 smoke cases from T33.6 still pass under the default
   `RAG_RATE_LIMIT_PER_HOUR=20` (only 3–4 calls in the suite).
+
+---
+
+## T33.9 — QA + launch notes
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+- `docs/RAG_TERMINAL.md` — final-shape rollout checklist. The "Final —
+  Phase 33 ships" version records every shipped item as `[x]` and
+  leaves only the local-and-Vercel env-var steps as `[ ]` for the
+  human to walk through. Adds a `Notes` block confirming that the
+  server-only packages stay server-side (verified via
+  `pnpm build` + `.next/static/chunks` grep).
+- `docs/rag/OPERATIONS.md` — appended:
+  - **Security** subsection. Documents the
+    `UPSTASH_VECTOR_REST_TOKEN` rotation rule (Upstash "Reset Token"
+    button) and the redacted-log rule the reindex script already
+    follows.
+  - **Provider-Dashboard Caveats** subsection. Notes that the
+    Fireworks dashboard counts requests that reach the API but does
+    not count pre-server timeouts — so missing traffic + visible route
+    errors points at our `timeout` / `maxRetries` config, not
+    Fireworks. Also notes Upstash's 10k queries/day free-tier quota.
+  - **Tuning Notes** subsection. Records `temperature: 0.2` and
+    `max_tokens: 500` as pinned values in
+    `lib/rag/providers.ts:streamChat()` and points future agents at
+    the model's `generation_config.json` if answers feel too flat.
+    Also documents the cold-start-resets-rate-limit caveat.
+  - **Manual QA Checklist** subsection. Eight concrete checks for
+    browser smoke (hard reload, idle prompt, all six chips, Esc
+    abort, mode flip, missing-env behavior, Network panel headers,
+    hydration / bundle-leak checks).
+- `.env.example` — added the `RAG_RATE_LIMIT_PER_HOUR=20` line under
+  the existing RAG block, with a one-line comment explaining its
+  semantics and tuning knob.
+
+### Decisions
+
+- Skipped updating `progress-index.md` — the file does not exist in
+  this repo, and the rulebook says "if it exists". The per-task
+  progress entries in `work-progress-p33.md` are the canonical record.
+- The QA checklist is a copy-paste checklist for the browser, not a
+  Playwright suite. The portfolio already has Lighthouse + manual
+  smoke patterns in earlier phases (see `scripts/lighthouse.mjs`,
+  `scripts/screenshots.mjs`). A dedicated RAG smoke suite can land
+  later if the dynamic terminal needs regression coverage.
+
+### Caveats / pending
+
+- No automated smoke test against real Fireworks / Upstash env vars
+  in CI. The rate-limit and 400/503 cases are smoke-tested locally
+  with mock env. Real-env verification is the local-step / Vercel-step
+  in the rollout checklist.
+- The portfolio's "Documentation Index" (`progress/progress-index.md`
+  if it later exists) is not updated.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → clean.
+- Docs-only commit; no runtime behavior changed in this task.
