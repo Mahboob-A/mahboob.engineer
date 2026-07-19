@@ -62,10 +62,10 @@ export function Projects() {
         {/* Section header */}
         <div className="mb-12">
           <p className="text-acc mb-2.5 font-mono text-[13px] tracking-[1px]">
-            02 / SYSTEMS
+            Everything I&apos;ve built end-to-end
           </p>
           <h2 className="font-display text-t1 text-[clamp(28px,4vw,40px)] font-bold tracking-[-0.5px]">
-            Things I&apos;ve built end-to-end
+            Everything I&apos;ve built end-to-end
           </h2>
           <p className="text-t2 mt-3 max-w-[520px] text-[15px]">
             Research → design → implementation → production deployment. Each one has a

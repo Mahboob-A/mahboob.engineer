@@ -28,8 +28,7 @@ export default function ContactPage() {
       backHref="/"
       backLabel="← home"
       header={{
-        num: "05",
-        section: "OPEN AN ISSUE",
+        section: "Say hello",
         title: "Let's build something durable.",
         description:
           "Form, availability, direct links, and answers to the questions I get asked most.",

@@ -39,7 +39,7 @@ export function Contact() {
         {/* Section header */}
         <div className="mb-12">
           <p className="text-acc mb-2.5 font-mono text-[13px] tracking-[1px]">
-            05 / OPEN AN ISSUE
+            Say hello
           </p>
           <h2 className="font-display text-t1 text-[clamp(28px,4vw,40px)] font-bold tracking-[-0.5px]">
             Let&apos;s build something durable.

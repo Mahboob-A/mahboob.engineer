@@ -45,9 +45,8 @@ export default function LogPage() {
       backHref="/"
       backLabel="← home"
       header={{
-        num: "01",
-        section: "DEPLOYMENT LOG",
-        title: "The full record",
+        section: "Where I've shipped",
+        title: "Where I've shipped, what I built, and how it went.",
         description: "Work and education. In detail.",
       }}
     >

@@ -40,8 +40,7 @@ export default function StackPage() {
       backHref="/"
       backLabel="← home"
       header={{
-        num: "03",
-        section: "DEPENDENCY GRAPH",
+        section: "How the stack connects",
         title: "How the stack connects",
         description:
           "Every tech I've shipped with, plus what I'm currently leveling up. Hover or click a node to inspect.",

@@ -2462,3 +2462,97 @@ prose.
   nobody sees and I write about it." with the accent span on
   `infrastructure layer`. Description contains no em-dash.
 
+---
+
+## T24.4 — Section eyebrows + inner-page eyebrows
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-19
+
+### What shipped
+
+The `XX / LABEL` numbered-eyebrow pattern is gone site-wide.
+Each section now carries a single short human label that reads
+as deliberate prose. Mapping (locked in during planning):
+
+| Route | Old eyebrow | New eyebrow |
+|---|---|---|
+| Landing + `/log` | `01 / DEPLOYMENT LOG` | `Where I've shipped` |
+| Landing + `/work` | `02 / SYSTEMS` | `Everything I've built end-to-end` |
+| Landing + `/stack` | `03 / DEPENDENCY GRAPH` | `How the stack connects` |
+| Landing + `/writing` | `04 / THE BACKEND DIARIES` | `The Backend Diaries` |
+| Landing + `/lets-connect` | `05 / OPEN AN ISSUE` | `Say hello` |
+| `/game` | `06 / GAME MODE` | `Game mode` |
+
+11 files touched:
+
+- **`components/layout/InnerPageHeader.tsx`** — the `num`
+  rendering branch removed. The component now renders only
+  `section` (the eyebrow line). `num` stays on the prop
+  interface for backward compatibility with existing call
+  sites but is no longer rendered. JSDoc refreshed.
+- **`app/log/page.tsx`, `app/work/page.tsx`,
+  `app/stack/page.tsx`, `app/writing/page.tsx`,
+  `app/lets-connect/page.tsx`** — `num` dropped from the
+  `header={…}` object, `section` updated to the new label.
+- **`components/sections/DeployLog.tsx`,
+  `Projects.tsx`, `SkillGraph.tsx`, `Blog.tsx`,
+  `Contact.tsx`** — local `<p>` eyebrows updated from
+  `XX / LABEL` to the new label. H1/H2 reworded where the
+  previous H1 was just the section label repeated (DeployLog
+  H1 = `Where I've shipped, what I built, and how it went.`
+  — was `Where I've shipped`; Projects H1 = `Everything I've
+  built end-to-end` — was `Things I've built end-to-end`;
+  Blog H1 = `Writing, how I think, not just what I shipped.`
+  — was `Writing — how I think, not just what I shipped`).
+- **`app/game/page.tsx`** — `06 / GAME MODE` →
+  `Game mode`; description paragraph em-dash cleaned
+  (`Top-down pixel-art city — every building is a project,`
+  → period).
+
+### Decisions
+
+- **Eyebrow + H1 may match** when the section name is the
+  most natural title (e.g. `/log`, `/work`, `/stack`). On
+  the landing, the eyebrow is the human label and the H1
+  carries the section's emotional pitch. Both are
+  mono-cased where appropriate.
+- **Inner pages mirror the landing labels** — same
+  treatment, same voice. Consistency across surfaces.
+- **`InnerPageHeader.num` kept as a typed prop** — silently
+  unused. Dropping it would touch every call site a second
+  time and risk regressions; keeping it (with a
+  `// eslint-disable-next-line` for the unused-var warning)
+  preserves the call-site ergonomics for now. Future polish
+  can delete the prop entirely.
+- **`/game` didn't appear in the original planning list**
+  but the same `XX / LABEL` pattern lived there as well.
+  Fix landed in this commit since it's the same one-line
+  substitution + a sibling em-dash cleanup. Documented in
+  the table above.
+- **JSDoc comments at the top of every section component
+  still mention the old `XX / LABEL`** — those are developer
+  docs, not visible prose. Future cleanup commit.
+
+### Caveats / pending
+
+- **`num` prop is shadowed with `// eslint-disable-next-line`
+  unused-var** — keep the comment + rename (or drop the
+  prop) in a follow-up if it bothers anyone.
+- **`app/lets-connect/page.tsx` and `app/writing/page.tsx`
+  keep `num` literally in the `header={…}` object** — the
+  prop is now unused, but the literal `"num"` key passes
+  the typecheck because `num?: string` is optional. Linter
+  would not flag it. Future polish.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 19 routes + middleware, 0 warnings.
+- Live SSR (dev) smoke across all 6 changed routes: the
+  eyebrow now reads as a single human label on every
+  surface. No `01 / `, `02 / `, … substrings remain in the
+  rendered HTML body of `/`, `/log`, `/work`, `/stack`,
+  `/writing`, `/lets-connect`, `/game`.
+

@@ -1,22 +1,26 @@
 /**
  * components/layout/InnerPageHeader.tsx
  *
- * Section header for every inner page. Per master §1.3 + §2 specs:
+ * Section header for every inner page. Phase 24 (T24.4) dropped
+ * the `XX / LABEL` numbered-eyebrow pattern; the eyebrow now
+ * reads as a single short label (e.g. "Where I've shipped").
  *
- *   01 / DEPLOYMENT LOG                    ← eyebrow number + section name
- *   The full record                        ← title (display font, large)
- *   Every role, every result — not         ← one-line description (t2, muted)
+ *   Where I've shipped                       ← eyebrow (single line, no slash)
+ *   The full record                         ← title (display font, large)
+ *   Every role, every result — not          ← one-line description (t2, muted)
  *   summarised.
  *
- * All three are optional — pages can omit fields they don't need.
+ * `num` is kept on the prop interface for backward compatibility
+ * with existing call sites but is no longer rendered. Pages pass
+ * a human label in `section`.
  */
 
 import { cn } from "@/lib/cn";
 
 export interface InnerPageHeaderProps {
-  /** Section number ("01", "02", …). Optional. */
+  /** Section number (kept for backward compatibility — not rendered). */
   num?: string;
-  /** Section name in caps eyebrow ("DEPLOYMENT LOG", "SYSTEMS", etc.). */
+  /** Eyebrow label in mono caps ("Where I've shipped", etc.). */
   section: string;
   /** Big display-font title ("The full record", "Everything I've built end-to-end"). */
   title: string;
@@ -29,7 +33,8 @@ export interface InnerPageHeaderProps {
 }
 
 export function InnerPageHeader({
-  num,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  num: _num,
   section,
   title,
   description,
@@ -41,7 +46,7 @@ export function InnerPageHeader({
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div>
           <p className="text-acc font-mono text-[13px] tracking-[1px]">
-            {num ? `${num} / ${section}` : section}
+            {section}
           </p>
           <h1 className="font-display text-t1 mt-2.5 text-[clamp(28px,4vw,40px)] leading-[1.1] font-bold tracking-[-0.5px]">
             {title}
