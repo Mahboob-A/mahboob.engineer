@@ -43,7 +43,7 @@ export default function WorkPage() {
       backHref="/"
       backLabel="← home"
       header={{
-        section: "Everything I've built end-to-end",
+        section: "the build catalog",
         title: "Everything I've built end-to-end",
         description:
           "Founder projects, featured builds, and a long-tail of experiments. Filter by domain.",

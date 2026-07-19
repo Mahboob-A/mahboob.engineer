@@ -164,8 +164,8 @@ export default async function WritingPage() {
       backHref="/"
       backLabel="← home"
       header={{
-        section: "The Backend Diaries",
-        title: "Writing",
+        section: "how i think",
+        title: "The Backend Diaries",
         description:
           "How I think, not just what I shipped. Long-form breakdowns of systems, internals, and the bugs that taught me the most.",
       }}

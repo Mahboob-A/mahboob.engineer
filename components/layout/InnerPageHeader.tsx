@@ -1,18 +1,17 @@
 /**
  * components/layout/InnerPageHeader.tsx
  *
- * Section header for every inner page. Phase 24 (T24.4) dropped
- * the `XX / LABEL` numbered-eyebrow pattern; the eyebrow now
- * reads as a single short label (e.g. "Where I've shipped").
+ * Section header for every inner page. Phase 25 dropped the
+ * eyebrow line from the landing sections and switched the
+ * inner-page eyebrow to lowercase prose labels.
  *
- *   Where I've shipped                       ← eyebrow (single line, no slash)
- *   The full record                         ← title (display font, large)
- *   Every role, every result — not          ← one-line description (t2, muted)
- *   summarised.
+ *   the run so far                           ← eyebrow (lowercase mono)
+ *   Where I've shipped, what I built,        ← title (display font)
+ *   and how it went.
+ *   Work and education. In detail.           ← description (t2, muted)
  *
  * `num` is kept on the prop interface for backward compatibility
- * with existing call sites but is no longer rendered. Pages pass
- * a human label in `section`.
+ * with existing call sites but is no longer rendered.
  */
 
 import { cn } from "@/lib/cn";

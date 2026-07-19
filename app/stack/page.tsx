@@ -40,7 +40,7 @@ export default function StackPage() {
       backHref="/"
       backLabel="← home"
       header={{
-        section: "How the stack connects",
+        section: "every tool, every system",
         title: "How the stack connects",
         description:
           "Every tech I've shipped with, plus what I'm currently leveling up. Hover or click a node to inspect.",
