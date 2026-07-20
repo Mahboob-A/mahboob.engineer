@@ -2,11 +2,10 @@
  * components/hero/HeroTerminal.tsx
  *
  * Interactive terminal under the Hero's Algocode diagram on the landing page.
- * Phase 42 update:
- *   - Removed outer `$ ` prompt glyph from TerminalBlock via `prompt=""`.
- *   - Utilized the full height (`h-[280px]`) of the terminal body for chat in dynamic mode.
- *   - Removed `↵ Send` button box & wrapper frames; input is 100% frameless, borderless, shadowless inline text.
- *   - 15-msg sliding auto-trim & 8 engineer-in-the-zone error fallbacks.
+ * Phase 43 update:
+ *   - Pinned dynamic typing prompt line at the bottom of the terminal window in empty and active states.
+ *   - Removed all focus/click border rings and outlines on the input field (`outline-none focus:ring-0`).
+ *   - Enabled `noPadding` on TerminalBlock to utilize 100% space between header line and bottom line.
  */
 
 "use client";
@@ -481,6 +480,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     <TerminalBlock
       headerCenter={headerCenter}
       prompt=""
+      noPadding
       className={cn("mt-6", className)}
     >
       {/* Static Mode Chips */}
@@ -539,58 +539,60 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         </div>
       ) : null}
 
-      {/* Dynamic Mode: Full Height Chat Box + Borderless Input */}
+      {/* Dynamic Mode: Full Height Chat Box + Pinned Bottom Input */}
       {mode === "dynamic" ? (
-        <div
-          ref={scrollContainerRef}
-          className="hero-terminal-scroll font-mono text-[12.5px] h-[280px] max-h-[280px] overflow-y-auto pr-1"
-        >
-          {/* Render Persistent Chat Messages */}
-          {history.map((msg) => (
-            <div key={msg.id} className="mb-3">
-              {msg.role === "user" ? (
-                <p className="m-0 flex items-start text-t1 leading-[1.55]">
-                  <span className="text-acc font-semibold select-none shrink-0">
-                    mahboob@engineer
-                  </span>
-                  <span className="text-t3 select-none mr-1.5 shrink-0">:</span>
-                  <span className="text-t1 font-medium">{msg.content}</span>
+        <div className="flex flex-col justify-between font-mono text-[12.5px] h-[280px] min-h-[280px]">
+          {/* Scrollable Persistent Chat Messages */}
+          <div
+            ref={scrollContainerRef}
+            className="hero-terminal-scroll flex-1 overflow-y-auto pr-1"
+          >
+            {history.map((msg) => (
+              <div key={msg.id} className="mb-3">
+                {msg.role === "user" ? (
+                  <p className="m-0 flex items-start text-t1 leading-[1.55]">
+                    <span className="text-acc font-semibold select-none shrink-0">
+                      mahboob@engineer
+                    </span>
+                    <span className="text-t3 select-none mr-1.5 shrink-0">:</span>
+                    <span className="text-t1 font-medium">{msg.content}</span>
+                  </p>
+                ) : (
+                  <div className="mt-1 pl-3 border-l-2 border-acc/40">
+                    <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+                      {msg.content}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Render Active Thinking Phrase */}
+            {dynPhase === "loading" || (dynPhase === "streaming" && activeStreamingText === "") ? (
+              <div className="mb-3 pl-3">
+                <p className="m-0 font-mono text-[12.5px]">
+                  <ThinkingText />
                 </p>
-              ) : (
-                <div className="mt-1 pl-3 border-l-2 border-acc/40">
-                  <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-                    {msg.content}
-                  </pre>
-                </div>
-              )}
-            </div>
-          ))}
+              </div>
+            ) : null}
 
-          {/* Render Active Thinking Phrase */}
-          {dynPhase === "loading" || (dynPhase === "streaming" && activeStreamingText === "") ? (
-            <div className="mb-3 pl-3">
-              <p className="m-0 font-mono text-[12.5px]">
-                <ThinkingText />
-              </p>
-            </div>
-          ) : null}
+            {/* Render In-Flight Assistant Streaming Stream */}
+            {dynPhase === "streaming" && activeStreamingText.length > 0 ? (
+              <div className="mb-3 pl-3 border-l-2 border-acc/40" aria-live="polite">
+                <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+                  {activeStreamingText}
+                  <span className="hero-terminal-cursor" aria-hidden>
+                    █
+                  </span>
+                </pre>
+              </div>
+            ) : null}
+          </div>
 
-          {/* Render In-Flight Assistant Streaming Stream */}
-          {dynPhase === "streaming" && activeStreamingText.length > 0 ? (
-            <div className="mb-3 pl-3 border-l-2 border-acc/40" aria-live="polite">
-              <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-                {activeStreamingText}
-                <span className="hero-terminal-cursor" aria-hidden>
-                  █
-                </span>
-              </pre>
-            </div>
-          ) : null}
-
-          {/* Dynamic Input Line — Frameless & Borderless */}
+          {/* Dynamic Input Line — Always Pinned at Bottom */}
           <form
             onSubmit={handleDynamicSubmit}
-            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-1"
+            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-2 border-t border-border/30 shrink-0"
           >
             <span className="text-acc hero-terminal-prompt-blink font-semibold select-none shrink-0">
               mahboob@engineer
@@ -603,7 +605,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
               onChange={(e) => setInputVal(e.target.value)}
               disabled={dynPhase === "loading" || dynPhase === "streaming"}
               placeholder="ask anything about Mahboob's work..."
-              className="flex-1 bg-transparent text-t1 placeholder:text-t3/40 border-0 outline-none focus:outline-none focus:ring-0 shadow-none appearance-none p-0 m-0 font-mono text-[12.5px]"
+              className="flex-1 bg-transparent text-t1 placeholder:text-t3/40 border-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 shadow-none appearance-none p-0 m-0 font-mono text-[12.5px]"
               autoFocus
             />
           </form>

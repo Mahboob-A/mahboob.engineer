@@ -31,6 +31,8 @@ export interface TerminalBlockProps {
   prompt?: string;
   /** Optional extra classes on the outer wrapper. */
   className?: string;
+  /** If true, reduces body padding for full space utilization. */
+  noPadding?: boolean;
 }
 
 export function TerminalBlock({
@@ -39,6 +41,7 @@ export function TerminalBlock({
   children,
   prompt = "$",
   className,
+  noPadding = false,
 }: TerminalBlockProps) {
   return (
     <div
@@ -80,7 +83,12 @@ export function TerminalBlock({
 
       {/* Body — padded, prompt glyph on the left of each child block if prompt is provided */}
       <div className="text-t1 font-mono text-[13.5px] leading-[1.6]">
-        <div className="flex gap-3 px-5 py-4">
+        <div
+          className={cn(
+            "flex gap-3",
+            noPadding ? "p-3" : "px-5 py-4",
+          )}
+        >
           {prompt ? (
             <span aria-hidden className="text-acc select-none">
               {prompt}
