@@ -93,8 +93,10 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Native focus ring — accessible without being loud */
-*:focus-visible {
+/* Native focus ring — accessible without being loud. Excludes
+   inputs / textareas / selects so they fall back to UA-default focus
+   styling instead of drawing the accent rectangle. Phase 44. */
+*:focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--acc);
   outline-offset: 2px;
   border-radius: 2px;

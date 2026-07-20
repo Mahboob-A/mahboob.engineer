@@ -541,11 +541,11 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
       {/* Dynamic Mode: Full Height Chat Box + Pinned Bottom Input */}
       {mode === "dynamic" ? (
-        <div className="flex flex-col justify-between font-mono text-[12.5px] h-[280px] min-h-[280px]">
+        <div className="flex flex-col justify-between font-mono text-[12.5px] min-h-[420px]">
           {/* Scrollable Persistent Chat Messages */}
           <div
             ref={scrollContainerRef}
-            className="hero-terminal-scroll flex-1 overflow-y-auto pr-1"
+            className="hero-terminal-scroll flex-1 min-h-0 overflow-y-auto pr-1"
           >
             {history.map((msg) => (
               <div key={msg.id} className="mb-3">
@@ -592,7 +592,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           {/* Dynamic Input Line — Always Pinned at Bottom */}
           <form
             onSubmit={handleDynamicSubmit}
-            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-2 border-t border-border/30 shrink-0"
+            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-2 shrink-0"
           >
             <span className="text-acc hero-terminal-prompt-blink font-semibold select-none shrink-0">
               mahboob@engineer
