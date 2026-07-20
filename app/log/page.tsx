@@ -353,42 +353,55 @@ function NowGrid({ items }: { items: NowStatusItem[] }) {
 }
 
 /* PracticeRow — Phase 38 (T38.2). Single full-width card with a
-   horizontal pill row of 5 external problem-solving profile links.
+   horizontal row of 5 external problem-solving profile links.
    Sits on /log between AchievementGrid and NowGrid as a transitional
-   evidence moment — the daily habit that powers both. The pills reuse
-   the existing <Chip> shape (mauve color, mono font) so they read as
-   a continuation of the chip vocabulary used in Timeline tags and
-   EducationGrid covered/courses lists. Each pill is a <Link> with
-   target="_blank" so it doesn't disturb the in-page experience.
-   Stat lines are intentionally absent — problem counts must come from
-   the user, never invented (master §6 + Phase 33 voice rules).
+   evidence moment — the daily habit that powers both. Stat lines are
+   intentionally absent — problem counts must come from the user,
+   never invented (master §6 + Phase 33 voice rules).
 
    Phase 39 (T39.1) polish:
-     - Dropped the inner card-level "Practice & DSA" eyebrow.
-       The outer <SectionSeparator label="PRACTICE & DSA" /> above
-       already labels the section; two labels for one beat was the
-       bug.
-     - Switched the pill row from `flex flex-wrap` to a CSS Grid so
-       5 cells evenly span the card width (no empty right-side
-       space at md+). Each cell is a full-width click target that
-       horizontally centers its pill, keeping the chip vocabulary
-       while expanding the hit area for touch.
-     - Responsive cols: 2 / 3 / 5 (mobile / sm / md). 5 at md+ as
-       the user asked ("5 blocks cover the whole parent block"). */
+     - Dropped the inner card-level "Practice & DSA" eyebrow (the
+       outer <SectionSeparator label="PRACTICE & DSA" /> already
+       labels the section).
+     - Switched the row from `flex flex-wrap` to a CSS Grid so the
+       5 cells evenly span the card width (no empty right-side space
+       at md+). Responsive cols: 2 / 3 / 5 (mobile / sm / md).
+
+   Phase 40 (T40.1) restyle:
+     - Replaced the mauve <Chip> pill treatment (a purple color
+       outside the /log palette) with the established /lets-connect
+       DirectLinkRow pattern: each link is now a bordered inner block
+       with platform name + handle + external arrow, mint-on-hover
+       affordance, and card-surface tint. The grid cells themselves
+       become the inner blocks (h-full), so the rows fill the parent
+       card with no empty top/bottom space. */
 function PracticeRow({ items }: { items: PracticeLinkItem[] }) {
   return (
     <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
         {items.map((item) => (
-          <li key={item.id}>
+          <li key={item.id} className="h-full">
             <Link
               href={item.href}
               target="_blank"
               rel="noreferrer"
               aria-label={`View ${item.label} profile (@${item.handle})`}
-              className="hover:opacity-80 flex w-full items-center justify-center rounded-[4px] py-1 transition-opacity focus-visible:outline-acc focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="border-border hover:border-acc/40 hover:bg-card/40 group flex h-full w-full items-center justify-between gap-3 rounded-[6px] border px-3 py-2.5 transition-colors focus-visible:outline-acc focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              <Chip color="mauve">{item.label} ↗</Chip>
+              <span className="flex min-w-0 flex-col">
+                <span className="text-t1 group-hover:text-acc truncate font-mono text-[12.5px] font-semibold tracking-[0.5px] transition-colors">
+                  {item.label}
+                </span>
+                <span className="text-t3 truncate font-mono text-[11px]">
+                  @{item.handle}
+                </span>
+              </span>
+              <span
+                aria-hidden
+                className="text-t3 group-hover:text-acc text-[14px] transition-colors"
+              >
+                ↗
+              </span>
             </Link>
           </li>
         ))}
