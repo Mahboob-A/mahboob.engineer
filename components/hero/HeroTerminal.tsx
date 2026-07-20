@@ -2,11 +2,11 @@
  * components/hero/HeroTerminal.tsx
  *
  * Interactive terminal under the Hero's Algocode diagram on the landing page.
- * Phase 44 update:
- *   - Fixed height clamping (`h-[280px] max-h-[280px] overflow-hidden`) to guarantee 0 vertical terminal growth.
- *   - Restored clean internal scrolling (`flex-1 min-h-0 overflow-y-auto`).
+ * Phase 45 update:
+ *   - Pinned input bar (`mahboob@engineer:`) flush at the bottom edge of the terminal frame (`mt-auto shrink-0`).
+ *   - Configured chat scroll area with `flex-1 min-h-0 overflow-y-auto` to expand and fill all vertical space above the input bar.
+ *   - Locked outer container to `h-[280px] max-h-[280px] overflow-hidden` to guarantee 0 height expansion.
  *   - Preserved 100% frameless, borderless input focus resets (`outline-none focus:ring-0`).
- *   - Maintained full dark space utilization with `noPadding` on TerminalBlock.
  */
 
 "use client";
@@ -543,7 +543,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
       {/* Dynamic Mode: Strictly Clamped Height Chat Box + Pinned Bottom Input */}
       {mode === "dynamic" ? (
         <div className="flex flex-col justify-between font-mono text-[12.5px] h-[280px] max-h-[280px] overflow-hidden">
-          {/* Scrollable Persistent Chat Messages */}
+          {/* 1. Scrollable Chat History — flex-1 fills all vertical space above input */}
           <div
             ref={scrollContainerRef}
             className="hero-terminal-scroll flex-1 min-h-0 overflow-y-auto pr-1 mb-2"
@@ -590,10 +590,10 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
             ) : null}
           </div>
 
-          {/* Dynamic Input Line — Always Pinned at Bottom */}
+          {/* 2. Dynamic Input Line — Pinned Flush at Bottom Edge */}
           <form
             onSubmit={handleDynamicSubmit}
-            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-2 border-t border-border/30 shrink-0"
+            className="mt-auto flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-2 border-t border-border/30 shrink-0"
           >
             <span className="text-acc hero-terminal-prompt-blink font-semibold select-none shrink-0">
               mahboob@engineer
