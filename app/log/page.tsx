@@ -361,14 +361,24 @@ function NowGrid({ items }: { items: NowStatusItem[] }) {
    EducationGrid covered/courses lists. Each pill is a <Link> with
    target="_blank" so it doesn't disturb the in-page experience.
    Stat lines are intentionally absent — problem counts must come from
-   the user, never invented (master §6 + Phase 33 voice rules). */
+   the user, never invented (master §6 + Phase 33 voice rules).
+
+   Phase 39 (T39.1) polish:
+     - Dropped the inner card-level "Practice & DSA" eyebrow.
+       The outer <SectionSeparator label="PRACTICE & DSA" /> above
+       already labels the section; two labels for one beat was the
+       bug.
+     - Switched the pill row from `flex flex-wrap` to a CSS Grid so
+       5 cells evenly span the card width (no empty right-side
+       space at md+). Each cell is a full-width click target that
+       horizontally centers its pill, keeping the chip vocabulary
+       while expanding the hit area for touch.
+     - Responsive cols: 2 / 3 / 5 (mobile / sm / md). 5 at md+ as
+       the user asked ("5 blocks cover the whole parent block"). */
 function PracticeRow({ items }: { items: PracticeLinkItem[] }) {
   return (
     <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
-      <p className="text-t3 mb-5 font-mono text-[11px] tracking-[1.5px] uppercase">
-        Practice &amp; DSA
-      </p>
-      <ul className="flex flex-wrap gap-2">
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
         {items.map((item) => (
           <li key={item.id}>
             <Link
@@ -376,7 +386,7 @@ function PracticeRow({ items }: { items: PracticeLinkItem[] }) {
               target="_blank"
               rel="noreferrer"
               aria-label={`View ${item.label} profile (@${item.handle})`}
-              className="hover:opacity-80 inline-block rounded-[4px] transition-opacity focus-visible:outline-acc focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="hover:opacity-80 flex w-full items-center justify-center rounded-[4px] py-1 transition-opacity focus-visible:outline-acc focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <Chip color="mauve">{item.label} ↗</Chip>
             </Link>
