@@ -78,13 +78,15 @@ export function TerminalBlock({
         <div className="w-[46px]" aria-hidden />
       </div>
 
-      {/* Body — padded, prompt glyph on the left of each child block */}
+      {/* Body — padded, prompt glyph on the left of each child block if prompt is provided */}
       <div className="text-t1 font-mono text-[13.5px] leading-[1.6]">
         <div className="flex gap-3 px-5 py-4">
-          <span aria-hidden className="text-acc select-none">
-            {prompt}
-          </span>
-          <div className="flex-1">{children}</div>
+          {prompt ? (
+            <span aria-hidden className="text-acc select-none">
+              {prompt}
+            </span>
+          ) : null}
+          <div className="flex-1 min-w-0">{children}</div>
         </div>
       </div>
     </div>

@@ -2,13 +2,11 @@
  * components/hero/HeroTerminal.tsx
  *
  * Interactive terminal under the Hero's Algocode diagram on the landing page.
- * Phase 41 update:
- *   - Removed leading `$` prompt glyphs to optimize horizontal/vertical space.
- *   - Removed `clear ×` button from top action bar.
- *   - Reduced history max limit to 15 messages with sliding auto-trim.
- *   - Added 8 distinct engineer-in-the-zone error fallback variations.
- *   - Internal container scrolling with fixed max height lock (`max-h-[260px]`).
- *   - Silent `scrollTop = scrollHeight` internal scrolling.
+ * Phase 42 update:
+ *   - Removed outer `$ ` prompt glyph from TerminalBlock via `prompt=""`.
+ *   - Utilized the full height (`h-[280px]`) of the terminal body for chat in dynamic mode.
+ *   - Removed `↵ Send` button box & wrapper frames; input is 100% frameless, borderless, shadowless inline text.
+ *   - 15-msg sliding auto-trim & 8 engineer-in-the-zone error fallbacks.
  */
 
 "use client";
@@ -482,75 +480,81 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   return (
     <TerminalBlock
       headerCenter={headerCenter}
+      prompt=""
       className={cn("mt-6", className)}
     >
-      {/* Top action row: preset chips for static mode */}
+      {/* Static Mode Chips */}
       {mode === "static" ? (
-        <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2">
-          <span
-            role="group"
-            aria-label="Terminal commands"
-            className="flex flex-wrap gap-1.5"
-          >
-            {STATIC_CHIP_KEYS.map((k) => {
-              const isActive = activeKey === k;
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => onChipClick(k)}
-                  aria-pressed={isActive}
-                  className={[
-                    "border-border inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11.5px] font-medium tracking-[0.5px] transition-colors",
-                    isActive
-                      ? "bg-acc-dim text-acc border-acc/40"
-                      : "text-t2 hover:border-acc/40 hover:text-acc",
-                  ].join(" ")}
-                >
-                  [{RAG_COMMAND_LABEL[k]}]
-                </button>
-              );
-            })}
-          </span>
-        </div>
-      ) : null}
-
-      {/* Static Mode Output */}
-      {mode === "static" && activeKey !== null && activeKey !== "custom" ? (
-        <div className="border-border mt-1 border-t pt-3" aria-live="polite">
-          <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-            {typed}
-            <span className="hero-terminal-cursor" aria-hidden>
-              █
-            </span>
-          </pre>
-          {activeKey === "contact" ? (
-            <Link
-              href="/lets-connect"
-              className="text-acc mt-3 inline-flex items-center gap-1.5 font-mono text-[12px] hover:opacity-80"
+        <div>
+          <div className="flex flex-wrap items-center gap-1.5 pb-2">
+            <span
+              role="group"
+              aria-label="Terminal commands"
+              className="flex flex-wrap gap-1.5"
             >
-              open /lets-connect →
-            </Link>
-          ) : null}
+              {STATIC_CHIP_KEYS.map((k) => {
+                const isActive = activeKey === k;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => onChipClick(k)}
+                    aria-pressed={isActive}
+                    className={[
+                      "border-border inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11.5px] font-medium tracking-[0.5px] transition-colors",
+                      isActive
+                        ? "bg-acc-dim text-acc border-acc/40"
+                        : "text-t2 hover:border-acc/40 hover:text-acc",
+                    ].join(" ")}
+                  >
+                    [{RAG_COMMAND_LABEL[k]}]
+                  </button>
+                );
+              })}
+            </span>
+          </div>
+
+          {activeKey !== null && activeKey !== "custom" ? (
+            <div className="border-border mt-1 border-t pt-3" aria-live="polite">
+              <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+                {typed}
+                <span className="hero-terminal-cursor" aria-hidden>
+                  █
+                </span>
+              </pre>
+              {activeKey === "contact" ? (
+                <Link
+                  href="/lets-connect"
+                  className="text-acc mt-3 inline-flex items-center gap-1.5 font-mono text-[12px] hover:opacity-80"
+                >
+                  open /lets-connect →
+                </Link>
+              ) : null}
+            </div>
+          ) : (
+            <p className="text-t3 mt-2 font-mono text-[11.5px] italic">
+              Click a chip above to run a static command.
+            </p>
+          )}
         </div>
       ) : null}
 
-      {/* Dynamic Mode: Scrollable Internal Chat Box + Dynamic Bottom Prompt */}
+      {/* Dynamic Mode: Full Height Chat Box + Borderless Input */}
       {mode === "dynamic" ? (
         <div
           ref={scrollContainerRef}
-          className="hero-terminal-scroll border-border mt-1 border-t pt-3 font-mono text-[12.5px] max-h-[260px] overflow-y-auto pr-1"
+          className="hero-terminal-scroll font-mono text-[12.5px] h-[280px] max-h-[280px] overflow-y-auto pr-1"
         >
           {/* Render Persistent Chat Messages */}
           {history.map((msg) => (
             <div key={msg.id} className="mb-3">
               {msg.role === "user" ? (
-                <p className="m-0 flex items-start gap-1 text-t1 leading-[1.55]">
-                  <span className="text-acc font-semibold select-none">
+                <p className="m-0 flex items-start text-t1 leading-[1.55]">
+                  <span className="text-acc font-semibold select-none shrink-0">
                     mahboob@engineer
                   </span>
-                  <span className="text-t3 select-none">:</span>
-                  <span className="ml-1 text-t1 font-medium">{msg.content}</span>
+                  <span className="text-t3 select-none mr-1.5 shrink-0">:</span>
+                  <span className="text-t1 font-medium">{msg.content}</span>
                 </p>
               ) : (
                 <div className="mt-1 pl-3 border-l-2 border-acc/40">
@@ -583,48 +587,27 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
             </div>
           ) : null}
 
-          {/* Dynamic Input Line — Positions below the last chat message */}
+          {/* Dynamic Input Line — Frameless & Borderless */}
           <form
             onSubmit={handleDynamicSubmit}
-            className="flex w-full items-center gap-1 font-mono text-[12.5px] leading-[1.55] pt-1"
+            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-1"
           >
-            <div className="flex shrink-0 items-center gap-0.5 select-none">
-              <span className="text-acc hero-terminal-prompt-blink font-semibold">
-                mahboob@engineer
-              </span>
-              <span className="text-t3">:</span>
-            </div>
-            <div className="flex min-w-[180px] flex-1 items-center ml-1">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                disabled={dynPhase === "loading" || dynPhase === "streaming"}
-                placeholder="ask anything about Mahboob's work..."
-                className="text-t1 placeholder:text-t3/50 focus:ring-0 m-0 w-full border-none bg-transparent p-0 font-mono text-[12.5px] outline-none focus:outline-none"
-                autoFocus
-              />
-            </div>
-            {inputVal.trim() &&
-            dynPhase !== "loading" &&
-            dynPhase !== "streaming" ? (
-              <button
-                type="submit"
-                className="bg-acc-dim text-acc border-acc/40 hover:bg-acc/20 shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] transition-colors"
-              >
-                ↵ Send
-              </button>
-            ) : null}
+            <span className="text-acc hero-terminal-prompt-blink font-semibold select-none shrink-0">
+              mahboob@engineer
+            </span>
+            <span className="text-t3 select-none mr-1.5 shrink-0">:</span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              disabled={dynPhase === "loading" || dynPhase === "streaming"}
+              placeholder="ask anything about Mahboob's work..."
+              className="flex-1 bg-transparent text-t1 placeholder:text-t3/40 border-0 outline-none focus:outline-none focus:ring-0 shadow-none appearance-none p-0 m-0 font-mono text-[12.5px]"
+              autoFocus
+            />
           </form>
         </div>
-      ) : null}
-
-      {/* Helper Hints (Static mode empty state) */}
-      {mode === "static" && activeKey === null ? (
-        <p className="text-t3 mt-2 font-mono text-[11.5px] italic">
-          Click a chip above to run a static command.
-        </p>
       ) : null}
     </TerminalBlock>
   );
