@@ -21,6 +21,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import { CaseStudyOverlay } from "@/components/overlay/CaseStudyOverlay";
 import { PROJECTS_BY_SLUG } from "@/data/projects";
 import { bridge } from "@/game/EventBridge";
@@ -39,12 +40,26 @@ export interface ProjectOverlayProps {
 export function ProjectOverlay({ slug, onClose }: ProjectOverlayProps) {
   const project = PROJECTS_BY_SLUG[slug];
 
-  if (!project) {
-    /* Stale slug or future-data mismatch — close immediately rather
-       than render a broken overlay with a "?" name. */
-    if (typeof window !== "undefined") {
+  /* Stale slug or future-data mismatch — close immediately rather
+     than render a broken overlay with a "?" name.
+
+     Phase 35 bug fix: previously this branch called
+     bridge.closeOverlay() synchronously during render. Because
+     eventemitter3.emit is synchronous, that synchronously fired
+     the CLOSE_OVERLAY listener on GameRoot → setOverlay(null)
+     while ProjectOverlay was still mid-render. React raises
+     "Cannot update a component while rendering a different
+     component" in that case. Move the close into a useEffect so
+     the setState runs in a commit-phase effect, not during render.
+     Same hardening applied to SpecialOverlay and VillainOverlay
+     in the same commit. */
+  useEffect(() => {
+    if (!project && typeof window !== "undefined") {
       bridge.closeOverlay();
     }
+  }, [project]);
+
+  if (!project) {
     return null;
   }
 

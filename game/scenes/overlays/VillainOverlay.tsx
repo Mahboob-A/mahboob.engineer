@@ -22,6 +22,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { Chip } from "@/components/ui/Chip";
 import { VILLAIN_BY_ID } from "@/data/game/villains";
@@ -36,11 +37,25 @@ export function VillainOverlay({ villainId, onClose }: VillainOverlayProps) {
   const villain = VILLAIN_BY_ID[villainId];
 
   /* Slug-not-found safety — same pattern as ProjectOverlay. Close
-     instead of rendering a broken card. */
-  if (!villain) {
-    if (typeof window !== "undefined") {
+     instead of rendering a broken card.
+
+     Phase 35 bug fix: previously this branch called onClose()
+     synchronously during render. Because OverlaySlot's onClose
+     forwards to bridge.closeOverlay() and eventemitter3.emit is
+     synchronous, that synchronously fired the CLOSE_OVERLAY
+     listener on GameRoot → setOverlay(null) while VillainOverlay
+     was still mid-render. React raises "Cannot update a component
+     while rendering a different component" in that case. Move the
+     close into a useEffect so the setState runs in a commit-phase
+     effect, not during render. Same hardening applied to
+     SpecialOverlay and ProjectOverlay in the same commit. */
+  useEffect(() => {
+    if (!villain && typeof window !== "undefined") {
       onClose();
     }
+  }, [villain, onClose]);
+
+  if (!villain) {
     return null;
   }
 

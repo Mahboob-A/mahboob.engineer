@@ -22,21 +22,28 @@
 
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 
 export interface SpecialOverlayProps {
-  /** The special-building slug (e.g. "backend-diaries"). */
+  /** The special-building slug (e.g. "writing-hq"). */
   slug: string;
   /** Called when the user clicks the "back to game" button. */
   onClose: () => void;
 }
 
 /* Slug → flat-portfolio route mapping. Single source of truth for
-   the special overlay. The 3 slugs come from public/assets/maps/
-   backend-city.json (T4.2). The routes are real (T3.4 + T3.5 + T4.12
-   stub for /writing). */
+   the special overlay. The 3 slugs come from
+   game/world/city-layout.ts (Phase 32, T32.3). The routes are
+   real (T3.4 + T3.5 + T4.12 stub for /writing).
+
+   Phase 35 bug fix: the original key was "backend-diaries" but
+   city-layout.ts:212 defines the Backend Diaries HQ building
+   with slug "writing-hq", so the lookup never resolved and the
+   overlay crashed with a "Cannot update a component while
+   rendering" warning. Key aligned with city-layout. */
 const SPECIAL_ROUTES: Record<string, { href: string; label: string }> = {
-  "backend-diaries": {
+  "writing-hq": {
     href: "/writing",
     label: "Backend diary",
   },
@@ -54,12 +61,23 @@ const SPECIAL_ROUTES: Record<string, { href: string; label: string }> = {
 export function SpecialOverlay({ slug, onClose }: SpecialOverlayProps) {
   const route = SPECIAL_ROUTES[slug];
 
-  if (!route) {
-    /* Slug-not-found safety. Same pattern as ProjectOverlay + Villain
-       Overlay. Close immediately rather than render a broken overlay. */
-    if (typeof window !== "undefined") {
+  /* Slug-not-found safety. Phase 35 bug fix: previously this
+     branch called onClose() synchronously during render, which
+     routed through bridge.closeOverlay() → handleClose →
+     setOverlay(null) on GameRoot while SpecialOverlay was still
+     mid-render. eventemitter3.emit is synchronous, so React's
+     "Cannot update a component while rendering a different
+     component" warning fired. Move the close into a useEffect
+     so the setState runs in a commit-phase effect, not during
+     render. Same hardening applied to ProjectOverlay and
+     VillainOverlay in the same commit. */
+  useEffect(() => {
+    if (!route && typeof window !== "undefined") {
       onClose();
     }
+  }, [route, onClose]);
+
+  if (!route) {
     return null;
   }
 
@@ -81,7 +99,7 @@ export function SpecialOverlay({ slug, onClose }: SpecialOverlayProps) {
           {route.label}
         </h2>
         <p className="text-t2 text-[13px]">
-          This is a special building — it links to a page on the flat
+          This is a special building. It links to a page on the flat
           portfolio rather than a project case study.
         </p>
       </header>
