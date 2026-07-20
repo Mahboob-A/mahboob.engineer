@@ -111,8 +111,12 @@ export function Hero() {
           </div>
 
           {/* Right column: animated Algocode diagram inside a DiagramPanel
-              + an interactive terminal underneath (Phase 7 T7.6). */}
-          <div className="flex flex-col justify-between">
+              + an interactive terminal underneath (Phase 7 T7.6).
+              Phase 45: the right column has a defined min-h so the
+              terminal's `flex-1` has actual height to fill, and the
+              chat scroll is contained inside the terminal's dark
+              section. */}
+          <div className="flex min-h-[660px] flex-col lg:min-h-[640px]">
             <DiagramPanel
               title="algocode — distributed online judge"
               sub="live request trace · 3 services · rabbitmq · docker rce"
@@ -120,7 +124,7 @@ export function Hero() {
             >
               <AlgocodeDiagram />
             </DiagramPanel>
-            <HeroTerminal className="mt-6 flex-1 flex flex-col justify-between min-h-[280px]" />
+            <HeroTerminal className="mt-6 flex min-h-0 flex-1 flex-col" />
           </div>
         </div>
       </div>

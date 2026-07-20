@@ -46,12 +46,12 @@ export function TerminalBlock({
   return (
     <div
       className={cn(
-        "bg-code-bg border-border overflow-hidden rounded-[10px] border",
+        "bg-code-bg border-border flex min-h-0 flex-col overflow-hidden rounded-[10px] border",
         className,
       )}
     >
       {/* Title bar: 3 dots + label or custom headerCenter */}
-      <div className="border-border bg-surface/40 flex items-center justify-between border-b px-4 py-3">
+      <div className="border-border bg-surface/40 flex shrink-0 items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <span
             aria-hidden
@@ -81,11 +81,14 @@ export function TerminalBlock({
         <div className="w-[46px]" aria-hidden />
       </div>
 
-      {/* Body — padded, prompt glyph on the left of each child block if prompt is provided */}
-      <div className="text-t1 font-mono text-[13.5px] leading-[1.6]">
+      {/* Body — flex-1 so the dark area fills the rest of the terminal
+          when the parent (e.g. Hero's right column) gives TerminalBlock a
+          defined height. Phase 45: scroll containment so the chat only
+          scrolls inside this dark section, never the page. */}
+      <div className="text-t1 flex min-h-0 flex-1 flex-col font-mono text-[13.5px] leading-[1.6]">
         <div
           className={cn(
-            "flex gap-3",
+            "flex min-h-0 flex-1 gap-3",
             noPadding ? "p-3" : "px-5 py-4",
           )}
         >
@@ -94,7 +97,9 @@ export function TerminalBlock({
               {prompt}
             </span>
           ) : null}
-          <div className="flex-1 min-w-0">{children}</div>
+          <div className="flex min-h-0 flex-1 flex-col min-w-0">
+            {children}
+          </div>
         </div>
       </div>
     </div>

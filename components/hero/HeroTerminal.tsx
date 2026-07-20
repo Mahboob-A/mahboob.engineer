@@ -541,7 +541,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
       {/* Dynamic Mode: Full Height Chat Box + Pinned Bottom Input */}
       {mode === "dynamic" ? (
-        <div className="flex flex-col justify-between font-mono text-[12.5px] min-h-[420px]">
+        <div className="flex flex-1 min-h-0 flex-col justify-between font-mono text-[12.5px]">
           {/* Scrollable Persistent Chat Messages */}
           <div
             ref={scrollContainerRef}
