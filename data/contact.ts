@@ -102,6 +102,17 @@ export const DIRECT_LINKS: DirectLinkItem[] = [
     href: "https://drive.google.com/file/d/1fJzh3qcz3NHvCBGop9Yp4fJE4WecD8Q8/view",
     external: true,
   },
+  {
+    /* Phase 37 (T37.1): final row in "Find me elsewhere".
+       Kept after Resume per user preference so the existing
+       GitHub → LinkedIn → Medium → Taply → Email → Resume
+       scan order stays intact and Linktree reads as one last
+       catch-all destination. */
+    label: "Linktree",
+    handle: "linktr.ee/i_mahboob_alam",
+    href: "https://linktr.ee/i_mahboob_alam",
+    external: true,
+  },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -183,7 +194,10 @@ export const QUICK_CONTEXT_DOESNT: QuickContextItem[] = [
   { text: "Frontend-only or design roles." },
   { text: "Crypto / NFT outreach." },
   { text: "Generic agency sales." },
-  { text: "Cold 'we're hiring 100 engineers' recruiter blasts." },
+  /* Phase 37 (T37.1): the recruiter-blast line was removed per
+     user request to balance the +1 row added to DIRECT_LINKS,
+     keeping the right column's bottom edge aligned with the
+     left FAQ on lg+ viewports. */
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
