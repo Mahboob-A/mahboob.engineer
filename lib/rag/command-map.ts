@@ -45,7 +45,8 @@ export const RAG_COMMAND_QUESTION: Record<RagCommandKey, string> = {
     "Explain what this portfolio terminal can answer.",
 };
 
-export function isRagCommand(value: unknown): value is RagCommandKey {
+export function isRagCommand(value: unknown): value is RagCommandKey | "custom" {
+  if (value === "custom") return true;
   return (
     typeof value === "string" &&
     (RAG_COMMAND_KEYS as readonly string[]).includes(value)
