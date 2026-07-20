@@ -2,10 +2,11 @@
  * components/hero/HeroTerminal.tsx
  *
  * Interactive terminal under the Hero's Algocode diagram on the landing page.
- * Phase 43 update:
- *   - Pinned dynamic typing prompt line at the bottom of the terminal window in empty and active states.
- *   - Removed all focus/click border rings and outlines on the input field (`outline-none focus:ring-0`).
- *   - Enabled `noPadding` on TerminalBlock to utilize 100% space between header line and bottom line.
+ * Phase 44 update:
+ *   - Fixed height clamping (`h-[280px] max-h-[280px] overflow-hidden`) to guarantee 0 vertical terminal growth.
+ *   - Restored clean internal scrolling (`flex-1 min-h-0 overflow-y-auto`).
+ *   - Preserved 100% frameless, borderless input focus resets (`outline-none focus:ring-0`).
+ *   - Maintained full dark space utilization with `noPadding` on TerminalBlock.
  */
 
 "use client";
@@ -539,13 +540,13 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         </div>
       ) : null}
 
-      {/* Dynamic Mode: Full Height Chat Box + Pinned Bottom Input */}
+      {/* Dynamic Mode: Strictly Clamped Height Chat Box + Pinned Bottom Input */}
       {mode === "dynamic" ? (
-        <div className="flex flex-1 min-h-0 flex-col justify-between font-mono text-[12.5px]">
+        <div className="flex flex-col justify-between font-mono text-[12.5px] h-[280px] max-h-[280px] overflow-hidden">
           {/* Scrollable Persistent Chat Messages */}
           <div
             ref={scrollContainerRef}
-            className="hero-terminal-scroll flex-1 min-h-0 overflow-y-auto pr-1"
+            className="hero-terminal-scroll flex-1 min-h-0 overflow-y-auto pr-1 mb-2"
           >
             {history.map((msg) => (
               <div key={msg.id} className="mb-3">
@@ -592,7 +593,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           {/* Dynamic Input Line — Always Pinned at Bottom */}
           <form
             onSubmit={handleDynamicSubmit}
-            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-2 shrink-0"
+            className="flex w-full items-center font-mono text-[12.5px] leading-[1.55] pt-2 border-t border-border/30 shrink-0"
           >
             <span className="text-acc hero-terminal-prompt-blink font-semibold select-none shrink-0">
               mahboob@engineer
@@ -633,7 +634,7 @@ function ModeButton({
       onClick={() => onSelect(value)}
       aria-pressed={active}
       className={[
-        "border-border inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11px] tracking-[0.5px] transition-colors",
+        "border-border inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11px] tracking-[0.3px] transition-colors",
         active
           ? "bg-acc-dim text-acc border-acc/40 font-semibold"
           : "text-t2 hover:border-acc/40 hover:text-acc",
