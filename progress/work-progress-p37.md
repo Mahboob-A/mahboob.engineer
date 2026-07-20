@@ -33,3 +33,32 @@
 
 - `pnpm typecheck` → clean.
 - Code review: `isRagCommand("custom") === true`.
+
+---
+
+## T37.2 — TerminalBlock header customization and Hero right-column layout alignment
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-20
+
+### What shipped
+
+- `components/ui/TerminalBlock.tsx` — added `headerCenter?: ReactNode` prop to `TerminalBlockProps`. Updated the title bar flex layout to center custom controls (e.g. mode toggle buttons) cleanly between the traffic light dots and symmetric right-side filler.
+- `components/sections/Hero.tsx` — updated right column layout container from `self-start` to `flex flex-col justify-between` and passed `className="mt-6 flex-1 flex flex-col justify-between min-h-[280px]"` to `HeroTerminal` so the terminal's bottom border aligns visually with the `StatRow` bottom line on `lg+` screens.
+- `components/hero/HeroTerminal.tsx` — added `HeroTerminalProps` interface with optional `className`.
+- `progress/work-progress-p37.md` — this file.
+
+### Decisions
+
+- **Use `headerCenter` prop over fixed string label.** Adding `headerCenter` allows components like `HeroTerminal` to pass interactive header controls (the mode selector pills) directly into the terminal header bar while keeping `TerminalBlock` generic and reusable.
+- **Flexbox container alignment for Hero right column.** Setting `flex flex-col justify-between` on the right column container ensures the terminal block expands cleanly to match the left column's height.
+
+### Caveats / pending
+
+- Header mode controls will be rendered inside `headerCenter` in T37.3 when `HeroTerminal` is updated.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- Title bar layout verified for both string `label` and `headerCenter` rendering paths.

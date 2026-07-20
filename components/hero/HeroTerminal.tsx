@@ -150,7 +150,11 @@ function helpBlurb(k: Exclude<RagCommandKey, "help">): string {
   }
 }
 
-export function HeroTerminal() {
+export interface HeroTerminalProps {
+  className?: string;
+}
+
+export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   const reduced = useReducedMotion();
   const [mode, setMode] = useState<Mode>("static");
   const [activeKey, setActiveKey] = useState<RagCommandKey | null>(null);
