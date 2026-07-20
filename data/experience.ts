@@ -61,6 +61,16 @@ export interface ExperienceItem {
   relatedProjects?: string[];
 }
 
+/** One themed curriculum cluster inside an education card. */
+export interface EducationGroup {
+  /** Small uppercase eyebrow rendered above the chip row. */
+  name: string;
+  /** Coursework / technology labels. Each item renders as a Chip;
+   *  entries that resolve through resolveStackSlug() become clickable
+   *  deep-links to /stack#<id>. */
+  items: string[];
+}
+
 /** A single education / training entry. */
 export interface EducationItem {
   institution: string;
@@ -69,14 +79,13 @@ export interface EducationItem {
   period: string;
   /** "Chennai, India" / "Remote" / etc. */
   location: string;
-  /** For training programs: list of topics covered. Optional. */
-  covered?: string[];
-  /** For degree programs: list of subjects in the curriculum.
-   *  Phase 12 (T12.2): added so the SRM MCA entry can list its
-   *  formal courses. Distinct from `covered` (which describes a
-   *  short training program). Both are optional — backward-compatible.
-   *  Each string becomes a clickable chip on /log. */
-  courses?: string[];
+  /**
+   * Phase 41: grouped curriculum for both formal degree courses and
+   * specialization topics. Replaces the old parallel `courses[]` and
+   * `covered[]` fields so large coursework sets stay structured and
+   * both education cards use the same visual shape.
+   */
+  groups?: EducationGroup[];
 }
 
 /* ===========================================================================
@@ -237,26 +246,36 @@ export const EDUCATION: EducationItem[] = [
     degree: "Master of Computer Application (MCA)",
     period: "Jan 2025 – Dec 2026",
     location: "Chennai, India",
-    /* Phase 12 (T12.2): full curriculum — 13 courses across 5
-       themes. Displayed as clickable chips on /log. Each entry that
-       resolves through resolveStackSlug() (e.g. "Python") becomes
-       a deep-link to /stack#<slug>; the rest fall back to plain
-       non-clickable chips (most academic subjects don't have a
-       matching STACK id). */
-    courses: [
-      "Java",
-      "Python",
-      "Android",
-      "Operating Systems",
-      "Object-Oriented Design",
-      "DBMS",
-      "Networking",
-      "Data Analysis with R",
-      "Software Engineering",
-      "IT Infrastructure Management",
-      "Cloud Computing",
-      "Data Mining",
-      "Data Structures and Algorithms",
+    /* Phase 41: the original flat 13-course list is grouped into 4
+       themes. Same data, clearer scan path, parallel structure with
+       the Poridhi card below. Each item still renders through
+       ClickableChip → chipColor() + resolveStackSlug(). */
+    groups: [
+      {
+        name: "Languages & Frameworks",
+        items: ["Java", "Python", "Android"],
+      },
+      {
+        name: "Systems & Methodology",
+        items: [
+          "Operating Systems",
+          "Object-Oriented Design",
+          "Software Engineering",
+        ],
+      },
+      {
+        name: "Data Layer",
+        items: ["DBMS", "Data Analysis with R", "Data Mining"],
+      },
+      {
+        name: "Infrastructure & Theory",
+        items: [
+          "IT Infrastructure Management",
+          "Cloud Computing",
+          "Networking",
+          "Data Structures and Algorithms",
+        ],
+      },
     ],
   },
   {
@@ -264,13 +283,56 @@ export const EDUCATION: EducationItem[] = [
     degree: "Backend Engineering & Cloud Computing Specialization",
     period: "Mar 2024 – Aug 2025",
     location: "Remote",
-    covered: [
-      "Docker internals",
-      "Kubernetes",
-      "Linux networking",
-      "eBPF",
-      "Kafka internals",
-      "Observability stack (Prometheus, Grafana, Jaeger, OpenTelemetry)",
+    /* Phase 41: 6 original topics + user-supplied practical
+       coursework aggregated into 4 balanced themes so the card stays
+       scannable and aligns with SRM's grouped shape. Obvious spelling
+       normalization only: "ngixnx" → Nginx, "merkel" → Merkle,
+       "shortner" → shortener, "progress" → PostgreSQL. */
+    groups: [
+      {
+        name: "Backend Engineering",
+        items: [
+          "Distributed message queue",
+          "RabbitMQ",
+          "Rate limiting",
+          "Microservices networking",
+          "Full-stack chat app: design, build & deploy",
+          "URL shortener: practical design",
+          "Load balancer",
+        ],
+      },
+      {
+        name: "Data Layer",
+        items: [
+          "Redis",
+          "PostgreSQL internals",
+          "Citus for PostgreSQL",
+          "Database scaling & monitoring",
+        ],
+      },
+      {
+        name: "Cloud & Infrastructure",
+        items: [
+          "AWS architecture for scaling",
+          "Pulumi",
+          "Kubernetes",
+          "Nginx",
+          "SSH",
+          "DNS server from scratch",
+        ],
+      },
+      {
+        name: "Networking & Distributed",
+        items: [
+          "Mininet",
+          "Merkle tree",
+          "Kafka from scratch",
+          "OpenTelemetry",
+          "Linux networking",
+          "eBPF",
+          "Docker internals",
+        ],
+      },
     ],
   },
 ];

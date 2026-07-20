@@ -255,20 +255,27 @@ function buildExperienceChunks(): RagChunk[] {
 }
 
 function buildEducationChunks(): RagChunk[] {
-  return EDUCATION.map((item) =>
-    chunk({
+  return EDUCATION.map((item) => {
+    /* Phase 41: groups[].items replaces the parallel covered[] /
+       courses[] fields. Flatten every group into the tags corpus and
+       emit one sentence per group so retrieval surfaces the named
+       themes (Backend Engineering, Data Layer, …) alongside the
+       chip labels. */
+    const groupItems = (item.groups ?? []).flatMap((g) => g.items);
+    return chunk({
       kind: "education",
       title: item.institution,
       sourcePath: "data/experience.ts",
-      tags: [...(item.covered ?? []), ...(item.courses ?? [])],
+      tags: groupItems,
       text: [
         `${item.institution}: ${item.degree}.`,
         `Period: ${item.period}. Location: ${item.location}.`,
-        item.covered?.length ? `Covered: ${item.covered.join(", ")}.` : "",
-        item.courses?.length ? `Courses: ${item.courses.join(", ")}.` : "",
+        ...(item.groups ?? []).map(
+          (g) => `${g.name}: ${g.items.join(", ")}.`,
+        ),
       ],
-    }),
-  );
+    });
+  });
 }
 
 function buildBlogChunks(): RagChunk[] {

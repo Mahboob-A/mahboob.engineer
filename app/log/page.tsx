@@ -210,12 +210,12 @@ function Timeline({ entries }: { entries: ExperienceItem[] }) {
 }
 
 /* EducationGrid — 2-col on md+. Each card shows institution + degree +
-   period + location. Phase 12 (T12.2): SRM's `courses[]` renders
-   under a "curriculum" eyebrow (degree curriculum); Poridhi's
-   `covered[]` renders under "covered" (short training). Both chip
-   lists route through resolveStackSlug() (Phase 12 T12.3) — chips
-   that resolve become `<Link href="/stack#<slug}">`; the rest fall
-   back to plain chip. Same pattern as the Timeline component. */
+   period + location. Phase 41 replaces the parallel `courses[]` (SRM)
+   and `covered[]` (Poridhi) fields with one `groups[]` shape shared by
+   both cards. Each group renders a small uppercase eyebrow + chip row.
+   Every chip routes through ClickableChip → resolveStackSlug(), so
+   stack-relevant labels become /stack#<id> deep-links and unmatched
+   coursework stays a plain colored chip. */
 function EducationGrid({ entries }: { entries: EducationItem[] }) {
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -231,30 +231,19 @@ function EducationGrid({ entries }: { entries: EducationItem[] }) {
           <p className="text-t3 mt-2 font-mono text-[12px]">
             [{entry.period}] · {entry.location}
           </p>
-          {entry.courses?.length ? (
-            <div className="mt-5">
+
+          {entry.groups?.map((group) => (
+            <div key={group.name} className="mt-5">
               <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
-                curriculum
+                {group.name}
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {entry.courses.map((course) => (
-                  <ClickableChip key={course} label={course} />
+                {group.items.map((item) => (
+                  <ClickableChip key={item} label={item} />
                 ))}
               </div>
             </div>
-          ) : null}
-          {entry.covered?.length ? (
-            <div className="mt-5">
-              <p className="text-t3 mb-2 font-mono text-[11px] tracking-[1px] uppercase">
-                covered
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {entry.covered.map((topic) => (
-                  <ClickableChip key={topic} label={topic} />
-                ))}
-              </div>
-            </div>
-          ) : null}
+          ))}
         </article>
       ))}
     </div>

@@ -185,6 +185,38 @@ export function chipColor(tag: string): ChipColor {
     return "slate";
   }
 
+  /* ── ACADEMIC SUBJECTS (Phase 41) — fill coverage gaps in
+       chipColor() so coursework chips on /log don't all fall back
+       to sage. Each mapping mirrors the master's domain vocabulary
+       (slate = data / infra, amber = analytics, mauve = special). */
+  if (
+    /\b(dbms|database|data[ -]?mining|data[ -]?warehouse|olap|oltp|citus)\b/.test(
+      t,
+    )
+  ) {
+    return "slate";
+  }
+  if (
+    /\b(cloud[ -]?computing|it[ -]?infra(?:structure)?[ -]?management|infrastructure[ -]?management)\b/.test(
+      t,
+    )
+  ) {
+    return "slate";
+  }
+  if (/\b(ssh|mininet|dns|microservice|rate[ -]?limit)\b/.test(t)) {
+    return "slate";
+  }
+  if (
+    /\b(data[ -]?struct(?:ure)?s?(?:[ -]?and[ -]?algorithms)?|\bdsa\b|merkel|merkle|trie|recursion[ -]?trees?)\b/.test(
+      t,
+    )
+  ) {
+    return "mauve";
+  }
+  if (/\b(data[ -]?analysis|analytics|statistics|stat)\b/.test(t)) {
+    return "amber";
+  }
+
   /* ── SAGE: default → backend / language / framework ──────────────────── */
   if (
     /\b(python|django|drf|fastapi|flask|celery|tornado|asgi|wsgi|rest\b|api\b|graphql|grpc|rpc|orm|jinja|react|next\.?js|nextjs|typescript|javascript|node\.?js|nodejs|express|hono|nestjs|vue|svelte|go\b|rust|java\b|kotlin|swift|swiftui|react[ -]?native|expo|tailwind|css|html|sass|scss|webpack|vite|rollup|esbuild|turbopack|bun|deno|dart|flutter)\b/.test(
