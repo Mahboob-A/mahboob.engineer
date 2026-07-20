@@ -60,6 +60,8 @@ function getEngineerFallbackMessage(): string {
 
 const SINGLE_WORD_THINKING_TERMS = [
   "Mehboobing",
+  "Mahboobing",
+  "Engineering",
   "Waffling",
   "Overtweaking",
   "Catastrophizing",
@@ -111,6 +113,12 @@ const SINGLE_WORD_THINKING_TERMS = [
   "Prestidigitating",
   "Contemplating",
   "Ruminating",
+  "Optimizing",
+  "Architecting",
+  "Refactoring",
+  "Profiling",
+  "Benchmarking",
+  "Compiling",
 ] as const;
 
 function ThinkingText() {
@@ -160,7 +168,7 @@ function buildPayload(key: RagCommandKey): string[] {
         last
           ? `Last role: ${last.company} (${last.period}), ${last.role}.`
           : "—",
-        "Based in Bangalore / Chennai. Open to backend / platform roles.",
+        "Based in Kolkata (hometown). Open to remote or relocating to Bangalore / Chennai / NCR.",
       ];
     }
     case "projects": {
