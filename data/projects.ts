@@ -452,7 +452,7 @@ What's next, if I keep going. HMAC-signed session audit logs. Real auth on the d
     domain: ["backend", "distributed"],
     stack: ["Django", "Django Channels", "WebRTC", "WebSocket", "JavaScript"],
     metrics: [
-      "peer-to-peer, no server storage",
+      "peer-to-peer no server storage",
       "multiple file types",
       "room-based sharing",
     ],

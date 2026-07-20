@@ -2184,7 +2184,7 @@ data/contact.ts, data/game/villains.ts updates from this phase.
   broken the TypeScript parser when the new content introduced
   literal newlines.
 - Metric strings cleaned (e.g. "peer-to-peer — no server storage"
-  → "peer-to-peer, no server storage"; "team of 3 — 2 countries"
+  → "peer-to-peer no server storage"; "team of 3 — 2 countries"
   → "team of 3, 2 countries"; "IaC — fully reproducible" → "IaC,
   fully reproducible").
 
