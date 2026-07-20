@@ -2,14 +2,14 @@
  * components/hero/HeroTerminal.tsx
  *
  * Interactive terminal under the Hero's Algocode diagram on the landing page.
- * Phase 37 update:
- *   - Mode selection pills ("Static" / "Dynamic") centered in the terminal header bar.
- *   - Predefined command chips shown ONLY in Static mode.
- *   - Dynamic mode renders an interactive `$ mahboob@portfolio-bastion:` text prompt
- *     with an input field where users can ask any freeform question about Mahboob.
- *   - Dynamic query loading state cycles through 24 Claude Code technical thinking
- *     phrases every 2.5s with animated trailing dots and CSS shimmer animation.
- *   - Hardened streaming error handling and 100-120 word response count guidance.
+ * Phase 39 update:
+ *   - Prompt string changed to `mahboob@engineer:` with blinking CSS animation.
+ *   - Initial state positions `mahboob@engineer:` at the top-left with inline borderless input.
+ *   - In-memory & sessionStorage chat history persistence (up to 20 messages).
+ *   - Input prompt positions dynamically after the last chat message line.
+ *   - Clear button wipes history and returns prompt to top-left.
+ *   - Single-word thinking terms (including "Mehboobing") with shimmer sweep & animated dots.
+ *   - Hardened RAG provider streaming pipeline.
  */
 
 "use client";
@@ -34,56 +34,93 @@ import "./HeroTerminal.css";
 type Mode = "static" | "dynamic";
 type DynamicPhase = "idle" | "loading" | "streaming" | "done" | "error";
 
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+const STORAGE_KEY = "mahboob_terminal_chat_v1";
+const MAX_HISTORY_MESSAGES = 20;
+
 const STATIC_CHIP_KEYS = RAG_COMMAND_KEYS;
 
-const THINKING_PHRASES = [
-  "Synthesizing architectural context",
-  "Traversing system dependencies",
-  "Evaluating vector embeddings",
-  "Parsing microservice boundaries",
-  "Resolving domain registry",
-  "Analyzing blast radius",
-  "Inspecting kernel isolation policies",
-  "Auditing API contract schemas",
-  "Indexing technical documentation",
-  "Tracing async event pipelines",
-  "Evaluating Redis cache hits",
-  "Querying PostgreSQL execution plans",
-  "Decomposing monolith boundary",
-  "Validating WebRTC signaling path",
-  "Mapping HLS transcoding matrix",
-  "Reviewing OAuth2 security scope",
-  "Scanning Pulumi state graph",
-  "Measuring tail latency P99",
-  "Optimizing ORM query plan",
-  "Verifying cgroup memory limits",
-  "Inspecting RabbitMQ queue depth",
-  "Synthesizing career timeline",
-  "Checking gRPC protocol buffers",
-  "Filtering semantic vector hits",
+const SINGLE_WORD_THINKING_TERMS = [
+  "Mehboobing",
+  "Waffling",
+  "Overtweaking",
+  "Catastrophizing",
+  "Spiraling",
+  "Hedging",
+  "Faffing",
+  "Kerfuffling",
+  "Whatchamacalliting",
+  "Bouncing",
+  "Discombobulating",
+  "Cringing",
+  "Gerrymandering",
+  "Moonwalking",
+  "Guesstimating",
+  "Razzmatazzing",
+  "Flibbertigibetting",
+  "Partying",
+  "Combobulating",
+  "Sauteeing",
+  "Gallivanting",
+  "Caffeinating",
+  "Levitating",
+  "Osmosing",
+  "Clauding",
+  "Guzzling",
+  "Twinkling",
+  "Honking",
+  "Canoodling",
+  "Reticulating",
+  "Existentialising",
+  "Cooking",
+  "Skedaddling",
+  "Flexing",
+  "Finagling",
+  "Stupentifying",
+  "Booping",
+  "Sloppening",
+  "Sensing",
+  "Evaporating",
+  "Tokening",
+  "Procrastinating",
+  "Mulling",
+  "Gliding",
+  "Fishing",
+  "Incubating",
+  "Curling",
+  "Wrangling",
+  "Cerebrating",
+  "Prestidigitating",
+  "Contemplating",
+  "Ruminating",
 ] as const;
 
 function ThinkingText() {
-  const [phraseIndex, setPhraseIndex] = useState(() =>
-    Math.floor(Math.random() * THINKING_PHRASES.length),
+  const [termIndex, setTermIndex] = useState(() =>
+    Math.floor(Math.random() * SINGLE_WORD_THINKING_TERMS.length),
   );
   const [dotCount, setDotCount] = useState(1);
 
   useEffect(() => {
-    const phraseInterval = setInterval(() => {
-      setPhraseIndex(
+    const termInterval = setInterval(() => {
+      setTermIndex(
         (prev) =>
-          (prev + 1 + Math.floor(Math.random() * (THINKING_PHRASES.length - 1))) %
-          THINKING_PHRASES.length,
+          (prev + 1 + Math.floor(Math.random() * (SINGLE_WORD_THINKING_TERMS.length - 1))) %
+          SINGLE_WORD_THINKING_TERMS.length,
       );
-    }, 2500);
+    }, 2200);
 
     const dotInterval = setInterval(() => {
       setDotCount((prev) => (prev % 3) + 1);
     }, 400);
 
     return () => {
-      clearInterval(phraseInterval);
+      clearInterval(termInterval);
       clearInterval(dotInterval);
     };
   }, []);
@@ -92,7 +129,7 @@ function ThinkingText() {
 
   return (
     <span className="hero-terminal-thinking-shimmer font-mono text-[12.5px] font-medium italic">
-      {THINKING_PHRASES[phraseIndex]}
+      {SINGLE_WORD_THINKING_TERMS[termIndex]}
       {dots}
     </span>
   );
@@ -250,27 +287,61 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     };
   }, [mode, activeKey, staticPayload, reduced]);
 
-  /* ── Dynamic-mode state ────────────────────────────────────────────── */
+  /* ── Dynamic-mode state & persistent chat history ──────────────────── */
+  const [history, setHistory] = useState<ChatMessage[]>([]);
   const [dynPhase, setDynPhase] = useState<DynamicPhase>("idle");
-  const [dynText, setDynText] = useState<string>("");
+  const [activeStreamingText, setActiveStreamingText] = useState<string>("");
   const [inputVal, setInputVal] = useState<string>("");
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  /* Load persistent history from sessionStorage on mount */
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as ChatMessage[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setHistory(parsed.slice(-MAX_HISTORY_MESSAGES));
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  /* Save persistent history to sessionStorage */
+  const updateHistory = useCallback((updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+    setHistory((prev) => {
+      const next = updater(prev).slice(-MAX_HISTORY_MESSAGES);
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  }, []);
 
   const startDynamic = useCallback(
-    async (cmdKey: RagCommandKey | "custom", userQuery?: string) => {
+    async (cmdKey: RagCommandKey | "custom", userQuery: string) => {
       if (abortRef.current) abortRef.current.abort();
       const controller = new AbortController();
       abortRef.current = controller;
-      setDynPhase("loading");
-      setDynText("");
 
-      const questionText =
-        userQuery && userQuery.trim().length > 0
-          ? userQuery.trim()
-          : cmdKey !== "custom"
-            ? questionForCommand(cmdKey)
-            : "Summarize Mahboob Alam's software engineering background.";
+      const userMsgId = `user-${Date.now()}`;
+      const userMessage: ChatMessage = {
+        id: userMsgId,
+        role: "user",
+        content: userQuery,
+      };
+
+      updateHistory((prev) => [...prev, userMessage]);
+
+      setDynPhase("loading");
+      setActiveStreamingText("");
+      setInputVal("");
 
       try {
         const resp = await fetch("/api/rag", {
@@ -278,15 +349,20 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             command: cmdKey,
-            question: questionText,
+            question: userQuery,
           }),
           signal: controller.signal,
         });
 
         if (!resp.ok || !resp.body) {
           const message = await safeReadText(resp).catch(() => "");
-          const text = message || `${resp.status} ${resp.statusText}`;
-          setDynText(text.slice(0, 400));
+          const text = (message || `${resp.status} ${resp.statusText}`).slice(0, 400);
+          const assistantErrorMsg: ChatMessage = {
+            id: `asst-${Date.now()}`,
+            role: "assistant",
+            content: text,
+          };
+          updateHistory((prev) => [...prev, assistantErrorMsg]);
           setDynPhase("error");
           return;
         }
@@ -295,39 +371,53 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         const reader = resp.body.getReader();
         const decoder = new TextDecoder();
         let acc = "";
-        setDynText("");
+        setActiveStreamingText("");
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           acc += decoder.decode(value, { stream: true });
-          setDynText(acc);
+          setActiveStreamingText(acc);
         }
 
-        if (!acc.trim()) {
-          setDynText("No response received from model. Please try again.");
-          setDynPhase("error");
-        } else {
-          setDynPhase("done");
-        }
+        const finalText = acc.trim() || "No response received from model. Please try again.";
+        const assistantMsg: ChatMessage = {
+          id: `asst-${Date.now()}`,
+          role: "assistant",
+          content: finalText,
+        };
+        updateHistory((prev) => [...prev, assistantMsg]);
+        setActiveStreamingText("");
+        setDynPhase("done");
       } catch (error) {
         if (controller.signal.aborted) {
-          setDynText("");
+          setActiveStreamingText("");
           setDynPhase("idle");
           return;
         }
-        setDynText(
+        const errorText =
           error instanceof Error
             ? error.message.slice(0, 400)
-            : "Request failed.",
-        );
+            : "Request failed.";
+        const assistantErrorMsg: ChatMessage = {
+          id: `asst-${Date.now()}`,
+          role: "assistant",
+          content: errorText,
+        };
+        updateHistory((prev) => [...prev, assistantErrorMsg]);
+        setActiveStreamingText("");
         setDynPhase("error");
       } finally {
         if (abortRef.current === controller) abortRef.current = null;
       }
     },
-    [],
+    [updateHistory],
   );
+
+  /* Auto-scroll terminal body to bottom on content update */
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [history, activeStreamingText, dynPhase]);
 
   /* Clean up active stream on unmount */
   useEffect(() => {
@@ -336,15 +426,6 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     };
   }, []);
 
-  /* Reset dynamic state when switching modes */
-  useEffect(() => {
-    if (abortRef.current) abortRef.current.abort();
-    setActiveKey(null);
-    setDynText("");
-    setDynPhase("idle");
-    setInputVal("");
-  }, [mode]);
-
   /* Esc listener */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -352,7 +433,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         if (abortRef.current) abortRef.current.abort();
         setActiveKey(null);
         setDynPhase("idle");
-        setDynText("");
+        setActiveStreamingText("");
       }
     };
     window.addEventListener("keydown", onKey);
@@ -366,9 +447,15 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   const onClear = () => {
     if (abortRef.current) abortRef.current.abort();
     setActiveKey(null);
-    setDynText("");
+    setActiveStreamingText("");
     setDynPhase("idle");
     setInputVal("");
+    setHistory([]);
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore storage errors
+    }
   };
 
   const onModeChange = (next: Mode) => {
@@ -400,9 +487,9 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
       headerCenter={headerCenter}
       className={cn("mt-6", className)}
     >
-      {/* Static Mode Chip Row */}
-      {mode === "static" ? (
-        <div className="flex flex-wrap items-center gap-1.5 pb-3">
+      {/* Top action row: chips for static, clear button for both */}
+      <div className="flex flex-wrap items-center justify-between gap-1.5 pb-3">
+        {mode === "static" ? (
           <span
             role="group"
             aria-label="Terminal commands"
@@ -428,66 +515,23 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
               );
             })}
           </span>
-          {activeKey !== null ? (
-            <button
-              type="button"
-              onClick={onClear}
-              className="border-border text-t3 hover:text-t1 ml-auto inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11px] transition-colors"
-              aria-label="Clear terminal output"
-            >
-              clear ×
-            </button>
-          ) : null}
-        </div>
-      ) : null}
+        ) : (
+          <span className="text-t3 font-mono text-[11px] italic">
+            interactive session ({history.length}/{MAX_HISTORY_MESSAGES} msgs)
+          </span>
+        )}
 
-      {/* Dynamic Mode Interactive Input Form */}
-      {mode === "dynamic" ? (
-        <form
-          onSubmit={handleDynamicSubmit}
-          className="flex w-full flex-wrap items-center gap-2 font-mono text-[12.5px] leading-[1.55]"
-        >
-          <div className="flex shrink-0 items-center gap-1 select-none">
-            <span className="text-t3">$</span>
-            <span className="text-acc font-semibold">
-              mehboob@portfolio-bastion
-            </span>
-            <span className="text-t3">:</span>
-          </div>
-          <div className="flex min-w-[200px] flex-1 items-center">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputVal}
-              onChange={(e) => setInputVal(e.target.value)}
-              disabled={dynPhase === "loading" || dynPhase === "streaming"}
-              placeholder="ask anything about Mahboob's work..."
-              className="text-t1 placeholder:text-t3/50 focus:ring-0 w-full border-none bg-transparent font-mono text-[12.5px] outline-none focus:outline-none"
-              autoFocus
-            />
-          </div>
-          {inputVal.trim() &&
-          dynPhase !== "loading" &&
-          dynPhase !== "streaming" ? (
-            <button
-              type="submit"
-              className="bg-acc-dim text-acc border-acc/40 hover:bg-acc/20 shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] transition-colors"
-            >
-              ↵ Send
-            </button>
-          ) : null}
-          {dynPhase !== "idle" ? (
-            <button
-              type="button"
-              onClick={onClear}
-              className="border-border text-t3 hover:text-t1 border px-2 py-0.5 rounded font-mono text-[11px] transition-colors ml-auto shrink-0"
-              aria-label="Clear terminal output"
-            >
-              clear ×
-            </button>
-          ) : null}
-        </form>
-      ) : null}
+        {(activeKey !== null || history.length > 0 || dynPhase !== "idle") ? (
+          <button
+            type="button"
+            onClick={onClear}
+            className="border-border text-t3 hover:text-t1 ml-auto inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11px] transition-colors"
+            aria-label="Clear terminal output"
+          >
+            clear ×
+          </button>
+        ) : null}
+      </div>
 
       {/* Static Mode Output */}
       {mode === "static" && activeKey !== null && activeKey !== "custom" ? (
@@ -509,46 +553,95 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         </div>
       ) : null}
 
-      {/* Dynamic Mode Thinking State */}
-      {mode === "dynamic" &&
-      (dynPhase === "loading" ||
-        (dynPhase === "streaming" && dynText === "")) ? (
-        <div className="border-border mt-3 border-t pt-3" aria-live="polite">
-          <p className="m-0 font-mono text-[12.5px]">
-            <ThinkingText />
-          </p>
-        </div>
-      ) : null}
+      {/* Dynamic Mode: Chat History + Bottom Prompt Stream */}
+      {mode === "dynamic" ? (
+        <div className="border-border mt-1 border-t pt-3 font-mono text-[12.5px]">
+          {/* Render Persistent Chat Messages */}
+          {history.map((msg) => (
+            <div key={msg.id} className="mb-3">
+              {msg.role === "user" ? (
+                <p className="m-0 flex items-start gap-1 text-t1 leading-[1.55]">
+                  <span className="text-t3 select-none">$</span>
+                  <span className="text-acc font-semibold select-none">
+                    mahboob@engineer
+                  </span>
+                  <span className="text-t3 select-none">:</span>
+                  <span className="ml-1 text-t1 font-medium">{msg.content}</span>
+                </p>
+              ) : (
+                <div className="mt-1 pl-4 border-l-2 border-acc/40">
+                  <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+                    {msg.content}
+                  </pre>
+                </div>
+              )}
+            </div>
+          ))}
 
-      {/* Dynamic Mode Streaming Content Output */}
-      {mode === "dynamic" && dynText.length > 0 && dynPhase !== "error" ? (
-        <div className="border-border mt-3 border-t pt-3" aria-live="polite">
-          <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-            {dynText}
-            {dynPhase === "streaming" ? (
-              <span className="hero-terminal-cursor" aria-hidden>
-                █
+          {/* Render Active Thinking Phrase */}
+          {dynPhase === "loading" || (dynPhase === "streaming" && activeStreamingText === "") ? (
+            <div className="mb-3 pl-4">
+              <p className="m-0 font-mono text-[12.5px]">
+                <ThinkingText />
+              </p>
+            </div>
+          ) : null}
+
+          {/* Render In-Flight Assistant Streaming Stream */}
+          {dynPhase === "streaming" && activeStreamingText.length > 0 ? (
+            <div className="mb-3 pl-4 border-l-2 border-acc/40" aria-live="polite">
+              <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+                {activeStreamingText}
+                <span className="hero-terminal-cursor" aria-hidden>
+                  █
+                </span>
+              </pre>
+            </div>
+          ) : null}
+
+          {/* Dynamic Input Line — Positions below the last chat message */}
+          <form
+            onSubmit={handleDynamicSubmit}
+            className="flex w-full items-center gap-1.5 font-mono text-[12.5px] leading-[1.55] pt-1"
+          >
+            <div className="flex shrink-0 items-center gap-1 select-none">
+              <span className="text-t3">$</span>
+              <span className="text-acc hero-terminal-prompt-blink font-semibold">
+                mahboob@engineer
               </span>
+              <span className="text-t3">:</span>
+            </div>
+            <div className="flex min-w-[180px] flex-1 items-center">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                disabled={dynPhase === "loading" || dynPhase === "streaming"}
+                placeholder="ask anything about Mahboob's work..."
+                className="text-t1 placeholder:text-t3/50 focus:ring-0 m-0 w-full border-none bg-transparent p-0 font-mono text-[12.5px] outline-none focus:outline-none"
+                autoFocus
+              />
+            </div>
+            {inputVal.trim() &&
+            dynPhase !== "loading" &&
+            dynPhase !== "streaming" ? (
+              <button
+                type="submit"
+                className="bg-acc-dim text-acc border-acc/40 hover:bg-acc/20 shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] transition-colors"
+              >
+                ↵ Send
+              </button>
             ) : null}
-          </pre>
+          </form>
+          <div ref={bottomRef} />
         </div>
       ) : null}
 
-      {/* Dynamic Mode Error Output */}
-      {mode === "dynamic" && dynPhase === "error" ? (
-        <div className="border-border mt-3 border-t pt-3" aria-live="polite">
-          <pre className="hero-terminal-pre text-t3 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-            {dynText || "No response received from model. Please try again."}
-          </pre>
-        </div>
-      ) : null}
-
-      {/* Helper Hints */}
-      {activeKey === null && dynPhase === "idle" ? (
+      {/* Helper Hints (Static mode empty state) */}
+      {mode === "static" && activeKey === null ? (
         <p className="text-t3 mt-2 font-mono text-[11.5px] italic">
-          {mode === "static"
-            ? "Click a chip above to run a static command."
-            : "Type a question above to query Mahboob's RAG knowledge base."}
+          Click a chip above to run a static command.
         </p>
       ) : null}
     </TerminalBlock>

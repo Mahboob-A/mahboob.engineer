@@ -114,7 +114,11 @@ function createOpenAICompatibleClient(
         async start(controller) {
           try {
             for await (const part of stream) {
-              const text = part.choices[0]?.delta?.content;
+              const choice = part.choices[0];
+              const text =
+                choice?.delta?.content ||
+                (choice as { text?: string })?.text ||
+                "";
               if (text) controller.enqueue(encoder.encode(text));
             }
             controller.close();

@@ -55,3 +55,17 @@
     background-position: -100% 0;
   }
 }
+
+.hero-terminal-prompt-blink {
+  animation: hero-terminal-prompt-fade 1.8s ease-in-out infinite;
+}
+
+@keyframes hero-terminal-prompt-fade {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

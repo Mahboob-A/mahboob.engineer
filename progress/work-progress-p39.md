@@ -1,82 +1,42 @@
-# Phase 39 — PracticeRow polish: drop duplicate label, fill card width
+# Phase 39 — Terminal prompt update (`mahboob@engineer:`), blinking cursor, borderless inline input, persistent 20-msg chat history & single-word thinking terms
 
-**Phase:** 39 — PracticeRow polish: drop duplicate label, fill card width
+**Phase:** 39 — Terminal prompt update (`mahboob@engineer:`), blinking cursor, borderless inline input, persistent 20-msg chat history & single-word thinking terms
 **Phase status:** done
-**Date started:** 2026-07-20
+**Date started:** 2026-07-21
 
 ---
 
-## T39.1 — PracticeRow polish
+## T39.1 — Terminal prompt styling, blinking animation, inline input & single-word thinking terms
 
 **Task status:** done
 **Commit:** `<this commit>`
-**Date:** 2026-07-20
+**Date:** 2026-07-21
 
 ### What shipped
 
-- `app/log/page.tsx` — `PracticeRow` subcomponent:
-  - Dropped the inner card-level `<p>...Practice & DSA</p>`
-    eyebrow. The outer `<SectionSeparator label="PRACTICE &
-    DSA" />` above the card already labels the section;
-    keeping a second label inside the card was a duplicate
-    that doubled the section name on screen.
-  - Switched the pill `<ul>` from `flex flex-wrap gap-2` to
-    `grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2`
-    so the 5 cells span the full card width on md+ viewports.
-  - Each `<Link>` is now `flex w-full items-center justify-center
-    py-1` so its click target fills its grid cell and the pill
-    inside is horizontally centered. `py-1` adds vertical hit
-    area without changing the chip's visual size.
+- `components/hero/HeroTerminal.tsx` — updated terminal prompt and interactive input flow:
+  - Updated prompt label to `mahboob@engineer:` with `hero-terminal-prompt-blink` CSS animation.
+  - Placed prompt initially at top-left of the terminal body.
+  - Converted text input to a borderless, backgroundless inline field immediately to the right of the `:` colon.
+  - Added single-word thinking vocabulary (`Mehboobing`, `Waffling`, `Overtweaking`, `Catastrophizing`, `Spiraling`, `Clauding`, etc.) cycling every 2.2s with animated trailing dots and `.hero-terminal-thinking-shimmer` sweep.
+  - Added in-memory & `sessionStorage` chat history persistence supporting up to 20 messages (`mahboob_terminal_chat_v1`).
+  - Positioned active input line dynamically below the last chat message line.
+  - Updated `clear ×` button to clear history and reset prompt back to the initial top-left position.
+- `components/hero/HeroTerminal.css` — added `.hero-terminal-prompt-blink` keyframe animation rule for prompt text opacity pulsing.
+- `lib/rag/providers.ts` — hardened streaming text delta extraction to handle standard and non-standard stream choices (`delta?.content` || `text`).
 - `progress/work-progress-p39.md` — this file.
 
 ### Decisions
 
-- **Drop the inner eyebrow entirely, don't replace it with
-  smaller text.** Two labels for the same beat was the bug;
-  the fix is to keep only the canonical one (the
-  SectionSeparator above).
-- **Grid, not flex with `flex-1`.** Grid's `grid-cols-N` is
-  the idiomatic solution for "5 equal cells, evenly
-  distributed, wrap on narrow". Flex with `flex-1` would
-  handle a single row but break on the wrapped mobile row
-  (the orphaned pill would stretch to fill the row, looking
-  broken).
-- **Pill stays centered in its cell, doesn't stretch.** The
-  Phase 38 T38.2 plan's keyword was "compact" — the user
-  picked the lowest-weight of three options. Stretching
-  pills to fill cells would turn each one into a heavy
-  solid bar (dark mauve band filling its cell), fighting
-  the compact feel. Cells evenly distributed = "no empty
-  space at the row level". Pills centered = preserved chip
-  vocabulary.
-- **2 / 3 / 5 column progression.** 5 pills on mobile would
-  be too narrow to read; 2-col mobile is standard for short
-  label lists. The 3-col `sm` (≥ 640px) bridges mobile and
-  the 5-col desktop (`md` ≥ 768px) gracefully.
-- **`py-1` on the link, not the chip.** The `<Chip>` has
-  `py-[3px]` baked in; padding the chip would change its
-  rendered size. Padding the link wraps the chip with extra
-  vertical hit area (better touch ergonomics) without
-  changing the chip's visual.
+- **Session-level chat history persistence without database.** Storing up to 20 messages in React state backed by `sessionStorage` (`mahboob_terminal_chat_v1`) allows users to navigate across pages in the same session without losing their terminal conversation history.
+- **Dynamic bottom-positioned prompt.** Placing the `mahboob@engineer:` prompt immediately below the last message mimics native Unix/Linux terminal behavior as conversation turns progress.
+- **Single-word thinking vocabulary.** Switched from multi-word phrases to single-word terms (including "Mehboobing") to match the user's requested developer culture style.
 
 ### Caveats / pending
 
-- No browser smoke run from this session. User should run
-  `pnpm dev` and verify the row renders as expected at
-  mobile / sm / md+ breakpoints.
-- The chip's intrinsic width is ~80px on md+ viewports.
-  Each grid cell is roughly 200-220px wide, so there's
-  empty space on either side of each chip inside its cell.
-  That's intentional (preserves the chip vocabulary); if
-  the user wants pills to fill cells instead, that's a
-  one-className follow-up.
+- Chat history is stored in `sessionStorage` and automatically cleared when clicking `clear ×` or exceeding 20 messages.
 
 ### Verified
 
 - `pnpm typecheck` → clean.
-- Code review: outer `<SectionSeparator label="PRACTICE & DSA" />`
-  still labels the section; inner card eyebrow removed;
-  pill row is now a 2/3/5-col grid with full-width click
-  targets per cell.
-- All 5 pill hrefs unchanged (still point at the
-  Phase 38 T38.2 URLs).
+- `pnpm build` → 44/44 static pages compiled clean.
