@@ -542,7 +542,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
       {/* Dynamic Mode: Strictly Clamped Height Chat Box + Pinned Bottom Input */}
       {mode === "dynamic" ? (
-        <div className="flex flex-col justify-between font-mono text-[12.5px] h-[345px] max-h-[345px] overflow-hidden">
+        <div className="flex flex-col justify-between font-mono text-[12.5px] h-[380px] max-h-[380px] overflow-hidden">
           {/* 1. Scrollable Chat History — flex-1 fills all vertical space above input */}
           <div
             ref={scrollContainerRef}
