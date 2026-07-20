@@ -23,7 +23,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { Chip } from "@/components/ui/Chip";
 import { VILLAIN_BY_ID } from "@/data/game/villains";
 import type { VillainId } from "@/game/types";
@@ -142,12 +141,20 @@ export function VillainOverlay({ villainId, onClose }: VillainOverlayProps) {
 
       {/* ─── Footer (Retreat + View full stack) ──────────────────── */}
       <footer className="border-border bg-surface flex shrink-0 items-center justify-between gap-3 border-t p-5">
-        <Link
-          href="/stack"
-          className="text-acc hover:text-t1 font-mono text-[12px] underline-offset-4 hover:underline"
-        >
-          view full stack →
-        </Link>
+        {/* Phase 36 fix: cross-page link from inside a game-mode
+           overlay must drop the `mahboob_mode=game` cookie on the way
+           out. Same form-POST-through-/api/mode pattern as the navbar
+           logo and active-nav links (Phase 32, T32.1). */}
+        <form action="/api/mode" method="post" className="contents">
+          <input type="hidden" name="mode" value="flat" />
+          <input type="hidden" name="next" value="/stack" />
+          <button
+            type="submit"
+            className="text-acc hover:text-t1 cursor-pointer font-mono text-[12px] underline-offset-4 hover:underline"
+          >
+            view full stack →
+          </button>
+        </form>
         <button
           type="button"
           onClick={onClose}

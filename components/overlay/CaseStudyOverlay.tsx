@@ -24,7 +24,6 @@
 
 "use client";
 
-import Link from "next/link";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { type ProjectItem } from "@/data/projects";
@@ -181,12 +180,23 @@ export function CaseStudyOverlay({
 
       {/* ─── Footer (link to full case study + close button) ─────── */}
       <footer className="border-border bg-surface flex shrink-0 flex-wrap items-center justify-between gap-3 border-t p-5">
-        <Link
-          href={`/work/${project.slug}`}
-          className="text-acc hover:text-t1 font-mono text-[12px] underline-offset-4 hover:underline"
-        >
-          read full case study →
-        </Link>
+        {/* Phase 36 fix: cross-page link from inside a game-mode
+           overlay must drop the `mahboob_mode=game` cookie on the way
+           out, otherwise the destination page's navbar renders with
+           the "game" pill still active. POST through /api/mode with
+           mode=flat + next=<dest>, same pattern as ActiveNavLink and
+           LogoLink. <form className="contents"> makes the form a
+           transparent layout wrapper so the button drives the visual. */}
+        <form action="/api/mode" method="post" className="contents">
+          <input type="hidden" name="mode" value="flat" />
+          <input type="hidden" name="next" value={`/work/${project.slug}`} />
+          <button
+            type="submit"
+            className="text-acc hover:text-t1 cursor-pointer font-mono text-[12px] underline-offset-4 hover:underline"
+          >
+            read full case study →
+          </button>
+        </form>
         <button
           type="button"
           onClick={onClose}

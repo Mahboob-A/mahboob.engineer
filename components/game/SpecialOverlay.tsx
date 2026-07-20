@@ -23,7 +23,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 
 export interface SpecialOverlayProps {
   /** The special-building slug (e.g. "writing-hq"). */
@@ -123,12 +122,22 @@ export function SpecialOverlay({ slug, onClose }: SpecialOverlayProps) {
         >
           ← back to game
         </button>
-        <Link
-          href={route.href}
-          className="bg-acc text-bg hover:bg-t1 inline-flex items-center gap-1.5 rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold transition-colors"
-        >
-          go to {route.label.toLowerCase()} →
-        </Link>
+        {/* Phase 36 fix: cross-page CTA from inside a game-mode
+           overlay must drop the `mahboob_mode=game` cookie on the
+           way out, otherwise the destination page's navbar renders
+           with the "game" pill still active. POST through /api/mode
+           with mode=flat + next=<dest>. Same form-POST pattern used
+           by ActiveNavLink and LogoLink since Phase 32 (T32.1). */}
+        <form action="/api/mode" method="post" className="contents">
+          <input type="hidden" name="mode" value="flat" />
+          <input type="hidden" name="next" value={route.href} />
+          <button
+            type="submit"
+            className="bg-acc text-bg hover:bg-t1 inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] px-4 py-2 font-mono text-[12px] font-semibold transition-colors"
+          >
+            go to {route.label.toLowerCase()} →
+          </button>
+        </form>
       </div>
     </div>
   );
