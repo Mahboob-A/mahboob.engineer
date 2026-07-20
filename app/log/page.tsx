@@ -25,10 +25,12 @@ import {
   EXPERIENCE,
   EDUCATION,
   KEY_ACHIEVEMENTS,
+  DSA_PRACTICE,
   NOW_STATUSES,
   type ExperienceItem,
   type EducationItem,
   type AchievementItem,
+  type PracticeLinkItem,
   type NowStatusItem,
 } from "@/data/experience";
 import { chipColor } from "@/data/tokens";
@@ -58,6 +60,13 @@ export default function LogPage() {
 
       <SectionSeparator label="KEY ACHIEVEMENTS ACROSS ALL ROLES" />
       <AchievementGrid items={KEY_ACHIEVEMENTS} />
+
+      {/* Phase 38 (T38.2): DSA practice section. Sits between
+         achievements and "what I'm doing now" as a transitional
+         evidence moment — the daily habit that powers both the
+         shipping record above and the active projects below. */}
+      <SectionSeparator label="PRACTICE & DSA" />
+      <PracticeRow items={DSA_PRACTICE} />
 
       <SectionSeparator label="WHAT I'M DOING NOW" />
       <NowGrid items={NOW_STATUSES} />
@@ -340,5 +349,40 @@ function NowGrid({ items }: { items: NowStatusItem[] }) {
         );
       })}
     </div>
+  );
+}
+
+/* PracticeRow — Phase 38 (T38.2). Single full-width card with a
+   horizontal pill row of 5 external problem-solving profile links.
+   Sits on /log between AchievementGrid and NowGrid as a transitional
+   evidence moment — the daily habit that powers both. The pills reuse
+   the existing <Chip> shape (mauve color, mono font) so they read as
+   a continuation of the chip vocabulary used in Timeline tags and
+   EducationGrid covered/courses lists. Each pill is a <Link> with
+   target="_blank" so it doesn't disturb the in-page experience.
+   Stat lines are intentionally absent — problem counts must come from
+   the user, never invented (master §6 + Phase 33 voice rules). */
+function PracticeRow({ items }: { items: PracticeLinkItem[] }) {
+  return (
+    <section className="bg-surface border-border rounded-[10px] border p-5 md:p-6">
+      <p className="text-t3 mb-5 font-mono text-[11px] tracking-[1.5px] uppercase">
+        Practice &amp; DSA
+      </p>
+      <ul className="flex flex-wrap gap-2">
+        {items.map((item) => (
+          <li key={item.id}>
+            <Link
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`View ${item.label} profile (@${item.handle})`}
+              className="hover:opacity-80 inline-block rounded-[4px] transition-opacity focus-visible:outline-acc focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <Chip color="mauve">{item.label} ↗</Chip>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

@@ -299,6 +299,73 @@ export const EXPERIENCE_BY_ID: Readonly<Record<string, ExperienceItem>> =
   );
 
 /* ===========================================================================
+   DSA_PRACTICE — problem-solving profile links for /log
+   Phase 38 (T38.2): a compact section between KEY ACHIEVEMENTS and
+   WHAT I'M DOING NOW. 5 platforms where the user practices daily;
+   each entry renders as an external-link pill in the /log page.
+
+   The `stat?` field is intentionally optional and currently unset
+   for every entry — problem counts must come from the user, never
+   invented. The field exists so a future commit can add counts
+   without a registry refactor.
+   =========================================================================== */
+export interface PracticeLinkItem {
+  /** Stable id (kebab-case platform name). */
+  id: string;
+  /** Display label shown inside the pill (e.g. "LeetCode"). */
+  label: string;
+  /** Profile URL — always external. */
+  href: string;
+  /** Profile handle shown as hover/aria-label. */
+  handle: string;
+  /** Always true; typed explicitly so the renderer can rely on it
+   *  for the target=_blank + rel=noreferrer attributes. */
+  external: true;
+  /** Optional stat line ("240 total solved"). Unused for now — the
+   *  user hasn't supplied counts yet. Adding it later doesn't
+   *  require a renderer change. */
+  stat?: string;
+}
+
+export const DSA_PRACTICE: PracticeLinkItem[] = [
+  {
+    id: "codolio",
+    label: "Codolio",
+    href: "https://codolio.com/profile/yurious",
+    handle: "yurious",
+    external: true,
+  },
+  {
+    id: "leetcode",
+    label: "LeetCode",
+    href: "https://leetcode.com/u/mahboob-alam/",
+    handle: "mahboob-alam",
+    external: true,
+  },
+  {
+    id: "codeforces",
+    label: "Codeforces",
+    href: "https://codeforces.com/profile/yurious",
+    handle: "yurious",
+    external: true,
+  },
+  {
+    id: "code360",
+    label: "Code360",
+    href: "https://www.naukri.com/code360/profile/yurious",
+    handle: "yurious",
+    external: true,
+  },
+  {
+    id: "interviewbit",
+    label: "InterviewBit",
+    href: "https://www.interviewbit.com/profile/mahboob-a/",
+    handle: "mahboob-a",
+    external: true,
+  },
+];
+
+/* ===========================================================================
    KEY_ACHIEVEMENTS — cross-role metrics for /log
    Master §2.1 "KEY ACHIEVEMENTS ACROSS ALL ROLES" — 3 metric cards. Each
    entry maps back to a bullet somewhere in EXPERIENCE (so the data is
