@@ -46,7 +46,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's background?",
     ],
     answer:
-      "I'm a backend and platform engineer based in Bangalore, originally from Chennai. I co-founded Taply (live SaaS on Django 5.1 + DRF + Redis + Postgres + Stripe) and built portfolio projects that prove the same patterns I use at work — distributed systems, video pipelines, real-time AI. Async-first, document decisions in writing. Master's in CS at SRM, Poridhi backend specialization.",
+      "I'm a backend and platform engineer based in Bangalore, originally from Kolkata. I co-founded Taply (live SaaS on Django 5.1 + DRF + Redis + Postgres + Stripe) and built portfolio projects that prove the same patterns I use at work — distributed systems, video pipelines, real-time AI. Async-first, document decisions in writing. Master's in CS at SRM, Poridhi backend specialization.",
     tags: ["identity", "bio", "background"],
   },
   {
@@ -57,7 +57,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's location?",
     ],
     answer:
-      "Bangalore, currently in Chennai. Open to remote-first roles globally; on-site in India is fine. I keep IST hours with overlap windows for US and EU teams — 1–6pm IST works for the Americas, evenings for Europe.",
+      "Kolkata, currently in Bangalore. Open to remote-first roles globally; on-site in India is fine. I keep IST hours with overlap windows for US and EU teams — 1–6pm IST works for the Americas, evenings for Europe.",
     tags: ["location", "timezone", "remote"],
   },
   {

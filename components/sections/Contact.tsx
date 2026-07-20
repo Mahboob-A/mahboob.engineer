@@ -85,7 +85,7 @@ export function Contact() {
               ))}
             </ul>
             <p className="text-t3 mt-5 font-mono text-[11px] leading-[1.55]">
-              Based in Bangalore / Chennai. Open to remote-first roles
+              Based in Kolkata, relocate to Bangalore / Chennai / NCR. Open to remote-first roles
               globally.
             </p>
           </aside>

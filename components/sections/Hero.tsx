@@ -58,7 +58,7 @@ export function Hero() {
           <div>
             <p className="text-amber mb-[18px] flex items-center gap-[10px] font-mono text-[13px] tracking-[1px]">
               <span aria-hidden className="bg-amber inline-block h-px w-7" />
-              BACKEND &amp; PLATFORM ENGINEER · BANGALORE / CHENNAI
+              BACKEND &amp; PLATFORM ENGINEER · BANGALORE 
             </p>
 
             <h1 className="font-display text-t1 text-[clamp(36px,5.5vw,64px)] leading-[1.08] font-bold tracking-[-1px]">
