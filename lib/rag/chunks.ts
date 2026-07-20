@@ -20,6 +20,7 @@ import {
 } from "@/data/experience";
 import { PROJECTS } from "@/data/projects";
 import { STACK } from "@/data/stack";
+import { COMMON_QUESTIONS } from "@/lib/rag/common-questions";
 
 export type RagChunkKind =
   | "project"
@@ -70,83 +71,10 @@ const DOC_EXTENSIONS = new Set([".md", ".mdx", ".txt"]);
 
 const DOC_CHUNK_WORD_CAP = 250;
 
-// Common visitor questions, answered in Mahboob's first-person voice. These
-// are retrieval targets so an LLM grounded on them sounds like the portfolio
-// owner, not a knowledge base. Each answer is intentionally short (≤ 80
-// words) and uses concrete project / company names.
-const COMMON_QUESTIONS: ReadonlyArray<{
-  title: string;
-  questions: string[];
-  answer: string;
-  tags: string[];
-}> = [
-  {
-    title: "Hiring fit and role match",
-    questions: [
-      "Why should we hire Mahboob?",
-      "What roles is Mahboob best suited for?",
-      "Is Mahboob a backend engineer or platform engineer?",
-    ],
-    answer:
-      "I'm a backend / platform engineer. My strongest work sits where product code meets infra — Django, DRF, FastAPI, PostgreSQL, Redis, queues, AWS, CI/CD. I co-founded Taply, owned production APIs, cut AWS spend and query latency, led PR review for a 9-person team, and shipped portfolio projects that prove I can build distributed systems end to end.",
-    tags: ["hiring", "backend", "platform"],
-  },
-  {
-    title: "Best projects to inspect first",
-    questions: [
-      "Which project should I look at first?",
-      "What is Mahboob's strongest project?",
-      "Which projects prove backend depth?",
-    ],
-    answer:
-      "Start with Taply — live SaaS I co-founded. Then Algocode for distributed systems, Movio for video infra, DrishtiAI for real-time AI pipelines, UnThink for what I'm building now. Each /work/[slug] page goes deep on architecture. If you only have time for two: Taply and Algocode.",
-    tags: ["projects", "portfolio"],
-  },
-  {
-    title: "Current work and availability",
-    questions: [
-      "What is Mahboob doing now?",
-      "Is Mahboob available?",
-      "How can I contact Mahboob?",
-    ],
-    answer:
-      "I spend most days on Taply (live) and UnThink (building). I'm open to backend / platform roles, Taply partnerships, and async-first teams. Best way to reach me: /lets-connect, email connect.mahboobalam@gmail.com, or LinkedIn. I respond within a day or two.",
-    tags: ["contact", "availability"],
-  },
-  {
-    title: "Technical strengths",
-    questions: [
-      "What technologies does Mahboob know best?",
-      "Where has Mahboob used Redis or PostgreSQL?",
-      "Does Mahboob know distributed systems?",
-    ],
-    answer:
-      "Python, Django, DRF, FastAPI, PostgreSQL, Redis, RabbitMQ, Celery, Docker, AWS, CI/CD. Real distributed-system work: queues, rate limiting, isolation, caching, async workers, streaming, deploy automation. Algocode and Movio are the two projects that show this depth in production-shaped code.",
-    tags: ["stack", "systems"],
-  },
-  {
-    title: "Work style",
-    questions: [
-      "How does Mahboob work on a team?",
-      "Can Mahboob work async?",
-      "Does Mahboob lead engineering process?",
-    ],
-    answer:
-      "Async-first, long-form PRs, written decisions. At NexBell I ran sprint planning and PR review for a 9-person team and pushed mandatory CI gates. I'm comfortable with remote and overlapping-time-zone teams, and I keep PRs small enough to review in one sitting.",
-    tags: ["work-style", "team"],
-  },
-  {
-    title: "Learning areas and honesty",
-    questions: [
-      "What is Mahboob still learning?",
-      "Is Mahboob expert in Go, Terraform, Kubernetes, or eBPF?",
-      "What are Mahboob's growth areas?",
-    ],
-    answer:
-      "I'm honest about this in the portfolio. Go, Terraform, Kubernetes, and eBPF are flagged as learning / growth areas unless a specific project says otherwise. If you want someone to drop into a Go shop and own a service from day one, that's not me yet.",
-    tags: ["learning", "boundaries"],
-  },
-];
+// Phase 43: visitor Q/A corpus lives in its own file so it can be
+// edited without bloating chunks.ts. Imported at the top of this
+// module; buildQuestionChunks() below iterates it unchanged.
+
 
 export async function buildRagCorpus(rootDir = process.cwd()): Promise<RagCorpus> {
   const chunks = [
