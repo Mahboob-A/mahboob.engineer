@@ -1,7 +1,7 @@
 # Phase 37 — HeroTerminal redesign, freeform dynamic input, Claude Code thinking UI, system prompt guardrails & height alignment
 
 **Phase:** 37 — HeroTerminal redesign, freeform dynamic input, Claude Code thinking UI, system prompt guardrails & height alignment
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-20
 
 ---
@@ -9,7 +9,7 @@
 ## T37.1 — RAG API custom command support, 100-120 word limit, and strict system prompt guardrails
 
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `aee58c3`
 **Date:** 2026-07-20
 
 ### What shipped
@@ -39,7 +39,7 @@
 ## T37.2 — TerminalBlock header customization and Hero right-column layout alignment
 
 **Task status:** done
-**Commit:** `<this commit>`
+**Commit:** `8ebe872`
 **Date:** 2026-07-20
 
 ### What shipped
@@ -62,3 +62,38 @@
 
 - `pnpm typecheck` → clean.
 - Title bar layout verified for both string `label` and `headerCenter` rendering paths.
+
+---
+
+## T37.3 — HeroTerminal redesign, freeform dynamic input, Claude Code thinking UI & CSS shimmer
+
+**Task status:** done
+**Commit:** `<this commit>`
+**Date:** 2026-07-20
+
+### What shipped
+
+- `components/hero/HeroTerminal.tsx` — complete redesign of the hero terminal block:
+  - Header title bar renders mode selection pills (`[Static]` and `[Dynamic]`) centered via `headerCenter` prop (removed `"terminal"` label).
+  - Predefined command chips (`[whoami]`, `[projects]`, etc.) rendered **only** when `Static` mode is active.
+  - In `Dynamic` mode, prompt line displays `$ mahboob@portfolio-bastion:` with a real `<input>` field allowing freeform question submissions via Enter/Send button.
+  - Added `ThinkingText` component with a pool of 24 Claude Code technical thinking phrases (e.g. `Synthesizing architectural context...`, `Traversing system dependencies...`), cycling every 2.5s with animated trailing dots (`.`, `..`, `...`).
+  - Hardened streaming reader: handles empty text stream fallbacks cleanly and transitions to error state on failure.
+- `components/hero/HeroTerminal.css` — added `.hero-terminal-thinking-shimmer` CSS rule with left-to-right gradient sweep animation for Claude Code thinking text.
+- `progress/work-progress-p37.md` — this file.
+
+### Decisions
+
+- **24 Claude Code-style technical thinking phrases.** Replaced generic "thinking..." with technical system phrases to match the senior backend engineer aesthetic and provide visual delight while waiting for RAG responses.
+- **CSS Shimmer text sweep.** Used a CSS linear gradient background sweep (`-webkit-background-clip: text`) to replicate the signature left-to-right light sweep seen in modern AI developer tools.
+- **Freeform input in Dynamic mode.** Users can now ask any question directly via text input instead of being restricted to preset chip queries.
+
+### Caveats / pending
+
+- Live streaming responses require `FIREWORKS_API_KEY` and Upstash Vector environment credentials in `.env.local` / production. When unconfigured, 503 error text is displayed gracefully in the terminal.
+
+### Verified
+
+- `pnpm typecheck` → clean.
+- `pnpm build` → 44/44 pages compiled successfully.
+- Code review: mode buttons in header, preset chips hidden in dynamic mode, custom input form submits `command: "custom"` with query, 24 thinking phrases cycling with shimmer CSS.

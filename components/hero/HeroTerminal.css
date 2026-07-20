@@ -33,3 +33,25 @@
     animation: none;
   }
 }
+
+.hero-terminal-thinking-shimmer {
+  background: linear-gradient(
+    90deg,
+    #608870 0%,
+    #5cc9a0 50%,
+    #608870 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hero-terminal-shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes hero-terminal-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

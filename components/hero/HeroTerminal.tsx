@@ -1,25 +1,15 @@
 /**
  * components/hero/HeroTerminal.tsx
  *
- * Interactive terminal under the Hero's Algocode diagram on the landing
- * page. Phase 7 (T7.6) shipped the static v1 — pre-canned payloads per
- * command chip. Phase 33 adds the **dynamic** mode toggle: the same chip
- * row, but the chip click now fetches `/api/rag` and streams the answer
- * into the same typewriter block.
- *
- * Modes:
- *   - `static`  — default. The pre-canned payloads from data/*.ts
- *                 registries; unchanged from Phase 7.
- *   - `dynamic` — opt-in. Each chip fires `POST /api/rag` with
- *                 `{ command }` and streams the response into the
- *                 terminal body. AbortSignal cancels on chip switch,
- *                 Esc, or mode flip.
- *
- * Design rules (master §6):
- *   - Component state only — no localStorage, no cookie.
- *   - Honors `useReducedMotion()` for cursor blink.
- *   - Server-only packages (upstash / openai) stay server-side via
- *     `/api/rag`; this component never imports them.
+ * Interactive terminal under the Hero's Algocode diagram on the landing page.
+ * Phase 37 update:
+ *   - Mode selection pills ("Static" / "Dynamic") centered in the terminal header bar.
+ *   - Predefined command chips shown ONLY in Static mode.
+ *   - Dynamic mode renders an interactive `$ mahboob@portfolio-bastion:` text prompt
+ *     with an input field where users can ask any freeform question about Mahboob.
+ *   - Dynamic query loading state cycles through 24 Claude Code technical thinking
+ *     phrases every 2.5s with animated trailing dots and CSS shimmer animation.
+ *   - Hardened streaming error handling and 100-120 word response count guidance.
  */
 
 "use client";
@@ -35,16 +25,78 @@ import { BLOG_POSTS } from "@/data/blog";
 import {
   RAG_COMMAND_KEYS,
   RAG_COMMAND_LABEL,
-  isRagCommand,
   questionForCommand,
   type RagCommandKey,
 } from "@/lib/rag/command-map";
+import { cn } from "@/lib/cn";
 import "./HeroTerminal.css";
 
 type Mode = "static" | "dynamic";
 type DynamicPhase = "idle" | "loading" | "streaming" | "done" | "error";
 
 const STATIC_CHIP_KEYS = RAG_COMMAND_KEYS;
+
+const THINKING_PHRASES = [
+  "Synthesizing architectural context",
+  "Traversing system dependencies",
+  "Evaluating vector embeddings",
+  "Parsing microservice boundaries",
+  "Resolving domain registry",
+  "Analyzing blast radius",
+  "Inspecting kernel isolation policies",
+  "Auditing API contract schemas",
+  "Indexing technical documentation",
+  "Tracing async event pipelines",
+  "Evaluating Redis cache hits",
+  "Querying PostgreSQL execution plans",
+  "Decomposing monolith boundary",
+  "Validating WebRTC signaling path",
+  "Mapping HLS transcoding matrix",
+  "Reviewing OAuth2 security scope",
+  "Scanning Pulumi state graph",
+  "Measuring tail latency P99",
+  "Optimizing ORM query plan",
+  "Verifying cgroup memory limits",
+  "Inspecting RabbitMQ queue depth",
+  "Synthesizing career timeline",
+  "Checking gRPC protocol buffers",
+  "Filtering semantic vector hits",
+] as const;
+
+function ThinkingText() {
+  const [phraseIndex, setPhraseIndex] = useState(() =>
+    Math.floor(Math.random() * THINKING_PHRASES.length),
+  );
+  const [dotCount, setDotCount] = useState(1);
+
+  useEffect(() => {
+    const phraseInterval = setInterval(() => {
+      setPhraseIndex(
+        (prev) =>
+          (prev + 1 + Math.floor(Math.random() * (THINKING_PHRASES.length - 1))) %
+          THINKING_PHRASES.length,
+      );
+    }, 2500);
+
+    const dotInterval = setInterval(() => {
+      setDotCount((prev) => (prev % 3) + 1);
+    }, 400);
+
+    return () => {
+      clearInterval(phraseInterval);
+      clearInterval(dotInterval);
+    };
+  }, []);
+
+  const dots = ".".repeat(dotCount);
+
+  return (
+    <span className="hero-terminal-thinking-shimmer font-mono text-[12.5px] font-medium italic">
+      {THINKING_PHRASES[phraseIndex]}
+      {dots}
+    </span>
+  );
+}
 
 function buildPayload(key: RagCommandKey): string[] {
   switch (key) {
@@ -65,8 +117,9 @@ function buildPayload(key: RagCommandKey): string[] {
       const featured = [
         ...PROJECTS.filter((p) => p.status === "live").slice(0, 1),
         ...PROJECTS.filter((p) => p.status === "building").slice(0, 1),
-        ...PROJECTS.filter((p) => p.status === "complete" && p.stars && p.stars >= 20)
-          .slice(0, 1),
+        ...PROJECTS.filter(
+          (p) => p.status === "complete" && p.stars && p.stars >= 20,
+        ).slice(0, 1),
       ];
       return [
         `${featured.length} featured systems (live / building / most-starred):`,
@@ -157,19 +210,23 @@ export interface HeroTerminalProps {
 export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   const reduced = useReducedMotion();
   const [mode, setMode] = useState<Mode>("static");
-  const [activeKey, setActiveKey] = useState<RagCommandKey | null>(null);
+  const [activeKey, setActiveKey] = useState<RagCommandKey | "custom" | null>(
+    null,
+  );
 
   /* ── Static-mode state ─────────────────────────────────────────────── */
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [typed, setTyped] = useState<string>("");
   const staticPayload = useMemo(
-    () => (activeKey ? buildPayload(activeKey) : []),
+    () =>
+      activeKey && activeKey !== "custom" ? buildPayload(activeKey) : [],
     [activeKey],
   );
+
   useEffect(() => {
     if (mode !== "static") return;
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (activeKey === null) {
+    if (activeKey === null || activeKey === "custom") {
       setTyped("");
       return;
     }
@@ -196,32 +253,37 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   /* ── Dynamic-mode state ────────────────────────────────────────────── */
   const [dynPhase, setDynPhase] = useState<DynamicPhase>("idle");
   const [dynText, setDynText] = useState<string>("");
+  const [inputVal, setInputVal] = useState<string>("");
   const abortRef = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const startDynamic = useCallback(
-    async (key: RagCommandKey) => {
-      // Cancel any in-flight stream before starting a new one.
+    async (cmdKey: RagCommandKey | "custom", userQuery?: string) => {
       if (abortRef.current) abortRef.current.abort();
       const controller = new AbortController();
       abortRef.current = controller;
       setDynPhase("loading");
       setDynText("");
 
+      const questionText =
+        userQuery && userQuery.trim().length > 0
+          ? userQuery.trim()
+          : cmdKey !== "custom"
+            ? questionForCommand(cmdKey)
+            : "Summarize Mahboob Alam's software engineering background.";
+
       try {
         const resp = await fetch("/api/rag", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            command: key,
-            question: questionForCommand(key),
+            command: cmdKey,
+            question: questionText,
           }),
           signal: controller.signal,
         });
 
         if (!resp.ok || !resp.body) {
-          // Render the error body (e.g. "Dynamic mode is not configured yet.")
-          // directly as terminal text. Truncate to 400 chars so a runaway
-          // 503 message can't blow up the layout.
           const message = await safeReadText(resp).catch(() => "");
           const text = message || `${resp.status} ${resp.statusText}`;
           setDynText(text.slice(0, 400));
@@ -233,18 +295,23 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         const reader = resp.body.getReader();
         const decoder = new TextDecoder();
         let acc = "";
-        // Flush state immediately so the loading phase doesn't blink.
         setDynText("");
+
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           acc += decoder.decode(value, { stream: true });
           setDynText(acc);
         }
-        setDynPhase("done");
+
+        if (!acc.trim()) {
+          setDynText("No response received from model. Please try again.");
+          setDynPhase("error");
+        } else {
+          setDynPhase("done");
+        }
       } catch (error) {
         if (controller.signal.aborted) {
-          // Quiet reset; user cancelled or switched chip/mode.
           setDynText("");
           setDynPhase("idle");
           return;
@@ -262,25 +329,24 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     [],
   );
 
-  /* Cancel any active stream when the component unmounts, mode flips,
-     or the active key changes mid-flight. */
+  /* Clean up active stream on unmount */
   useEffect(() => {
     return () => {
       if (abortRef.current) abortRef.current.abort();
     };
   }, []);
 
+  /* Reset dynamic state when switching modes */
   useEffect(() => {
-    if (mode === "static") {
-      if (abortRef.current) abortRef.current.abort();
-      setDynText("");
-      setDynPhase("idle");
-    }
+    if (abortRef.current) abortRef.current.abort();
+    setActiveKey(null);
+    setDynText("");
+    setDynPhase("idle");
+    setInputVal("");
   }, [mode]);
 
-  /* ── Esc listener (both modes) ─────────────────────────────────────── */
+  /* Esc listener */
   useEffect(() => {
-    if (activeKey === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (abortRef.current) abortRef.current.abort();
@@ -291,13 +357,10 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeKey]);
+  }, []);
 
   const onChipClick = (key: RagCommandKey) => {
     setActiveKey(key);
-    if (mode === "dynamic") {
-      void startDynamic(key);
-    }
   };
 
   const onClear = () => {
@@ -305,43 +368,41 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     setActiveKey(null);
     setDynText("");
     setDynPhase("idle");
+    setInputVal("");
   };
 
   const onModeChange = (next: Mode) => {
-    if (abortRef.current) abortRef.current.abort();
-    setActiveKey(null);
-    setDynText("");
-    setDynPhase("idle");
+    if (mode === next) return;
     setMode(next);
   };
 
-  const showStaticBody = mode === "static" && activeKey !== null;
-  const showDynamicBody = mode === "dynamic" && activeKey !== null;
-  const showDynamicIdle =
-    mode === "dynamic" && activeKey === null && dynPhase === "idle";
-  const showDynamicLoading =
-    mode === "dynamic" && activeKey !== null && dynPhase === "loading";
-  const showDynamicError =
-    mode === "dynamic" && activeKey !== null && dynPhase === "error";
+  const handleDynamicSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = inputVal.trim();
+    if (!query || dynPhase === "loading" || dynPhase === "streaming") return;
+    setActiveKey("custom");
+    void startDynamic("custom", query);
+  };
+
+  const headerCenter = (
+    <div className="flex items-center gap-1.5 font-mono text-[11px]">
+      <ModeButton current={mode} value="static" onSelect={onModeChange}>
+        Static
+      </ModeButton>
+      <ModeButton current={mode} value="dynamic" onSelect={onModeChange}>
+        Dynamic
+      </ModeButton>
+    </div>
+  );
 
   return (
-    <div className="mt-6">
-      <TerminalBlock label="terminal">
-        {/* Mode toggle + chip row */}
+    <TerminalBlock
+      headerCenter={headerCenter}
+      className={cn("mt-6", className)}
+    >
+      {/* Static Mode Chip Row */}
+      {mode === "static" ? (
         <div className="flex flex-wrap items-center gap-1.5 pb-3">
-          <span
-            className="text-t3 mr-1 font-mono text-[11px]"
-            aria-hidden
-          >
-            mode:
-          </span>
-          <ModeButton current={mode} value="static" onSelect={onModeChange}>
-            static
-          </ModeButton>
-          <ModeButton current={mode} value="dynamic" onSelect={onModeChange}>
-            dynamic
-          </ModeButton>
-          <span aria-hidden className="mx-2 hidden h-4 w-px bg-border sm:inline-block" />
           <span
             role="group"
             aria-label="Terminal commands"
@@ -378,108 +439,119 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
             </button>
           ) : null}
         </div>
+      ) : null}
 
-        {/* Body */}
-        {showStaticBody ? (
-          <div
-            className="border-border mt-1 border-t pt-3"
-            aria-live="polite"
-          >
-            <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-              {typed}
+      {/* Dynamic Mode Interactive Input Form */}
+      {mode === "dynamic" ? (
+        <form
+          onSubmit={handleDynamicSubmit}
+          className="flex w-full flex-wrap items-center gap-2 font-mono text-[12.5px] leading-[1.55]"
+        >
+          <div className="flex shrink-0 items-center gap-1 select-none">
+            <span className="text-t3">$</span>
+            <span className="text-acc font-semibold">
+              mehboob@portfolio-bastion
+            </span>
+            <span className="text-t3">:</span>
+          </div>
+          <div className="flex min-w-[200px] flex-1 items-center">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              disabled={dynPhase === "loading" || dynPhase === "streaming"}
+              placeholder="ask anything about Mahboob's work..."
+              className="text-t1 placeholder:text-t3/50 focus:ring-0 w-full border-none bg-transparent font-mono text-[12.5px] outline-none focus:outline-none"
+              autoFocus
+            />
+          </div>
+          {inputVal.trim() &&
+          dynPhase !== "loading" &&
+          dynPhase !== "streaming" ? (
+            <button
+              type="submit"
+              className="bg-acc-dim text-acc border-acc/40 hover:bg-acc/20 shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] transition-colors"
+            >
+              ↵ Send
+            </button>
+          ) : null}
+          {dynPhase !== "idle" ? (
+            <button
+              type="button"
+              onClick={onClear}
+              className="border-border text-t3 hover:text-t1 border px-2 py-0.5 rounded font-mono text-[11px] transition-colors ml-auto shrink-0"
+              aria-label="Clear terminal output"
+            >
+              clear ×
+            </button>
+          ) : null}
+        </form>
+      ) : null}
+
+      {/* Static Mode Output */}
+      {mode === "static" && activeKey !== null && activeKey !== "custom" ? (
+        <div className="border-border mt-2 border-t pt-3" aria-live="polite">
+          <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+            {typed}
+            <span className="hero-terminal-cursor" aria-hidden>
+              █
+            </span>
+          </pre>
+          {activeKey === "contact" ? (
+            <Link
+              href="/lets-connect"
+              className="text-acc mt-3 inline-flex items-center gap-1.5 font-mono text-[12px] hover:opacity-80"
+            >
+              open /lets-connect →
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* Dynamic Mode Thinking State */}
+      {mode === "dynamic" &&
+      (dynPhase === "loading" ||
+        (dynPhase === "streaming" && dynText === "")) ? (
+        <div className="border-border mt-3 border-t pt-3" aria-live="polite">
+          <p className="m-0 font-mono text-[12.5px]">
+            <ThinkingText />
+          </p>
+        </div>
+      ) : null}
+
+      {/* Dynamic Mode Streaming Content Output */}
+      {mode === "dynamic" && dynText.length > 0 && dynPhase !== "error" ? (
+        <div className="border-border mt-3 border-t pt-3" aria-live="polite">
+          <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+            {dynText}
+            {dynPhase === "streaming" ? (
               <span className="hero-terminal-cursor" aria-hidden>
                 █
               </span>
-            </pre>
-            {activeKey === "contact" ? (
-              <Link
-                href="/lets-connect"
-                className="text-acc mt-3 inline-flex items-center gap-1.5 font-mono text-[12px] hover:opacity-80"
-              >
-                open /lets-connect →
-              </Link>
             ) : null}
-          </div>
-        ) : null}
+          </pre>
+        </div>
+      ) : null}
 
-        {showDynamicIdle ? (
-          <div
-            className="border-border mt-1 border-t pt-3"
-            aria-live="polite"
-          >
-            <p className="text-t2 m-0 font-mono text-[12.5px] leading-[1.55]">
-              <span className="text-t3">$ </span>
-              <span className="text-acc">mehboob@portfolio-bastion</span>
-              <span className="text-t3">:</span>
-              <span className="hero-terminal-cursor" aria-hidden>
-                {" "}█
-              </span>
-            </p>
-            <p className="text-t3 mt-2 font-mono text-[11.5px] italic">
-              Click a chip above to ask. Press Esc to clear.
-            </p>
-          </div>
-        ) : null}
+      {/* Dynamic Mode Error Output */}
+      {mode === "dynamic" && dynPhase === "error" ? (
+        <div className="border-border mt-3 border-t pt-3" aria-live="polite">
+          <pre className="hero-terminal-pre text-t3 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
+            {dynText || "No response received from model. Please try again."}
+          </pre>
+        </div>
+      ) : null}
 
-        {showDynamicLoading ? (
-          <div
-            className="border-border mt-1 border-t pt-3"
-            aria-live="polite"
-          >
-            <p className="text-t3 m-0 font-mono text-[12.5px] italic">
-              thinking…
-            </p>
-          </div>
-        ) : null}
-
-        {showDynamicBody &&
-        !showDynamicLoading &&
-        !showDynamicError &&
-        dynPhase !== "idle" ? (
-          <div
-            className="border-border mt-1 border-t pt-3"
-            aria-live="polite"
-          >
-            <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-              {dynText}
-              {dynPhase === "streaming" ? (
-                <span className="hero-terminal-cursor" aria-hidden>
-                  █
-                </span>
-              ) : null}
-            </pre>
-            {activeKey === "contact" ? (
-              <Link
-                href="/lets-connect"
-                className="text-acc mt-3 inline-flex items-center gap-1.5 font-mono text-[12px] hover:opacity-80"
-              >
-                open /lets-connect →
-              </Link>
-            ) : null}
-          </div>
-        ) : null}
-
-        {showDynamicError ? (
-          <div
-            className="border-border mt-1 border-t pt-3"
-            aria-live="polite"
-          >
-            <pre className="hero-terminal-pre text-t3 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
-              {dynText || "Request failed."}
-            </pre>
-          </div>
-        ) : null}
-
-        {/* Empty-state hint (only when nothing has run) */}
-        {activeKey === null && dynPhase === "idle" ? (
-          <p className="text-t3 mt-1 font-mono text-[11.5px] italic">
-            {mode === "static"
-              ? "Click a chip above to run a command."
-              : "Switch to dynamic and click a chip to ask the LLM."}
-          </p>
-        ) : null}
-      </TerminalBlock>
-    </div>
+      {/* Helper Hints */}
+      {activeKey === null && dynPhase === "idle" ? (
+        <p className="text-t3 mt-2 font-mono text-[11.5px] italic">
+          {mode === "static"
+            ? "Click a chip above to run a static command."
+            : "Type a question above to query Mahboob's RAG knowledge base."}
+        </p>
+      ) : null}
+    </TerminalBlock>
   );
 }
 
@@ -503,7 +575,7 @@ function ModeButton({
       className={[
         "border-border inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11px] tracking-[0.5px] transition-colors",
         active
-          ? "bg-acc-dim text-acc border-acc/40"
+          ? "bg-acc-dim text-acc border-acc/40 font-semibold"
           : "text-t2 hover:border-acc/40 hover:text-acc",
       ].join(" ")}
     >
@@ -513,8 +585,6 @@ function ModeButton({
 }
 
 async function safeReadText(resp: Response): Promise<string> {
-  // The route returns plain text bodies on non-200 status. Read up to
-  // 2KB so a streaming error doesn't blow up the layout.
   if (!resp.body) return "";
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
@@ -527,9 +597,3 @@ async function safeReadText(resp: Response): Promise<string> {
   }
   return acc;
 }
-
-// `isRagCommand` is imported for type narrowing only; we don't need to
-// call it at runtime because the chip keys are typed `RagCommandKey`.
-// Keeping the import documented in case a future feature routes freeform
-// text through the same predicate.
-void isRagCommand;
