@@ -12,6 +12,7 @@ import {
   RESPONSE_TIME,
 } from "@/data/contact";
 import {
+  DSA_PRACTICE,
   EDUCATION,
   EXPERIENCE,
   KEY_ACHIEVEMENTS,
@@ -29,6 +30,7 @@ export type RagChunkKind =
   | "contact"
   | "faq"
   | "question"
+  | "practice"
   | "doc"
   | "boundary"
   | "voice"
@@ -151,6 +153,7 @@ export async function buildRagCorpus(rootDir = process.cwd()): Promise<RagCorpus
     ...buildProjectChunks(),
     ...buildExperienceChunks(),
     ...buildEducationChunks(),
+    ...buildPracticeChunks(),
     ...buildBlogChunks(),
     ...buildStackChunks(),
     ...buildContactChunks(),
@@ -276,6 +279,46 @@ function buildEducationChunks(): RagChunk[] {
       ],
     });
   });
+}
+
+/* buildPracticeChunks — Phase 42. Emits a single structured chunk
+   that anchors the dynamic terminal's answer to "does Mahboob
+   practice DSA?" with explicit public profile URLs sourced from
+   the DSA_PRACTICE registry (data/experience.ts). The "yes,
+   active" framing plus every platform name and handle is
+   intentional so any phrasing of the visitor question (does he
+   practice, where, on which platform, problem-solving links)
+   retrieves this chunk. The narrative voice lives in
+   docs/rag/corpus/log-and-education.md; this chunk provides the
+   structured backup so profile URLs can never drift from the
+   registry. */
+function buildPracticeChunks(): RagChunk[] {
+  const profileLines = DSA_PRACTICE.map(
+    (item) => `${item.label}: @${item.handle} — ${item.href}`,
+  );
+  const platformTags = DSA_PRACTICE.map((item) => item.label.toLowerCase());
+  return [
+    chunk({
+      kind: "practice",
+      title: "DSA and problem-solving practice",
+      sourcePath: "data/experience.ts",
+      tags: [
+        "dsa",
+        "data-structures",
+        "algorithms",
+        "problem-solving",
+        "practice",
+        ...platformTags,
+      ],
+      text: [
+        "Yes — I actively practice data structures, algorithms, and problem solving.",
+        "Five public profiles (Codolio, LeetCode, Codeforces, Code360, InterviewBit) make the habit verifiable instead of a claim.",
+        "Codolio aggregates my total solved count across platforms; the others are per-platform records.",
+        profileLines.join("\n"),
+        "These profiles sit next to the shipping record on /log so visitors see the practice habit behind the projects.",
+      ],
+    }),
+  ];
 }
 
 function buildBlogChunks(): RagChunk[] {
