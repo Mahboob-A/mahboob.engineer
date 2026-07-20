@@ -2,11 +2,13 @@
  * components/hero/HeroTerminal.tsx
  *
  * Interactive terminal under the Hero's Algocode diagram on the landing page.
- * Phase 40 update:
+ * Phase 41 update:
+ *   - Removed leading `$` prompt glyphs to optimize horizontal/vertical space.
+ *   - Removed `clear ×` button from top action bar.
+ *   - Reduced history max limit to 15 messages with sliding auto-trim.
+ *   - Added 8 distinct engineer-in-the-zone error fallback variations.
  *   - Internal container scrolling with fixed max height lock (`max-h-[260px]`).
- *   - Removed window `scrollIntoView` page jump bug; internal `scrollTop = scrollHeight` handles scrolling silently.
- *   - Removed counter text label from top bar.
- *   - Custom scrollbar styling in `HeroTerminal.css`.
+ *   - Silent `scrollTop = scrollHeight` internal scrolling.
  */
 
 "use client";
@@ -38,9 +40,25 @@ interface ChatMessage {
 }
 
 const STORAGE_KEY = "mahboob_terminal_chat_v1";
-const MAX_HISTORY_MESSAGES = 20;
+const MAX_HISTORY_MESSAGES = 15;
 
 const STATIC_CHIP_KEYS = RAG_COMMAND_KEYS;
+
+const ENGINEER_FALLBACK_VARIANTS = [
+  "Sorry, I was deep in the zone mastering Docker internals and missed that. Could you say that again?",
+  "My bad, I was completely absorbed in debugging a Linux kernel networking trace. What were you asking?",
+  "Lost my train of thought for a second—I was tuning PostgreSQL query execution plans. Mind asking again?",
+  "Sorry about that! I was neck-deep in Kubernetes pod scheduling policies. Could you repeat your question?",
+  "Apologies, I was tracing an async event pipeline across microservices and got distracted. What did you say?",
+  "Whoops, I was optimizing AWS infrastructure auto-scaling capacity and didn't catch that. Say that one more time?",
+  "My fault—I was benchmarking WebRTC stream latency and lost context for a moment. Could you rephrase that?",
+  "Ah, sorry! I was reading up on distributed consensus protocols and spaced out. What were we talking about?",
+] as const;
+
+function getEngineerFallbackMessage(): string {
+  const idx = Math.floor(Math.random() * ENGINEER_FALLBACK_VARIANTS.length);
+  return ENGINEER_FALLBACK_VARIANTS[idx];
+}
 
 const SINGLE_WORD_THINKING_TERMS = [
   "Mehboobing",
@@ -308,7 +326,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     }
   }, []);
 
-  /* Save persistent history to sessionStorage */
+  /* Save persistent history to sessionStorage with 15-msg auto-trim */
   const updateHistory = useCallback((updater: (prev: ChatMessage[]) => ChatMessage[]) => {
     setHistory((prev) => {
       const next = updater(prev).slice(-MAX_HISTORY_MESSAGES);
@@ -352,12 +370,10 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         });
 
         if (!resp.ok || !resp.body) {
-          const message = await safeReadText(resp).catch(() => "");
-          const text = (message || `${resp.status} ${resp.statusText}`).slice(0, 400);
           const assistantErrorMsg: ChatMessage = {
             id: `asst-${Date.now()}`,
             role: "assistant",
-            content: text,
+            content: getEngineerFallbackMessage(),
           };
           updateHistory((prev) => [...prev, assistantErrorMsg]);
           setDynPhase("error");
@@ -377,7 +393,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           setActiveStreamingText(acc);
         }
 
-        const finalText = acc.trim() || "No response received from model. Please try again.";
+        const finalText = acc.trim() || getEngineerFallbackMessage();
         const assistantMsg: ChatMessage = {
           id: `asst-${Date.now()}`,
           role: "assistant",
@@ -392,14 +408,10 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           setDynPhase("idle");
           return;
         }
-        const errorText =
-          error instanceof Error
-            ? error.message.slice(0, 400)
-            : "Request failed.";
         const assistantErrorMsg: ChatMessage = {
           id: `asst-${Date.now()}`,
           role: "assistant",
-          content: errorText,
+          content: getEngineerFallbackMessage(),
         };
         updateHistory((prev) => [...prev, assistantErrorMsg]);
         setActiveStreamingText("");
@@ -443,20 +455,6 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     setActiveKey(key);
   };
 
-  const onClear = () => {
-    if (abortRef.current) abortRef.current.abort();
-    setActiveKey(null);
-    setActiveStreamingText("");
-    setDynPhase("idle");
-    setInputVal("");
-    setHistory([]);
-    try {
-      sessionStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Ignore storage errors
-    }
-  };
-
   const onModeChange = (next: Mode) => {
     if (mode === next) return;
     setMode(next);
@@ -486,9 +484,9 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
       headerCenter={headerCenter}
       className={cn("mt-6", className)}
     >
-      {/* Top action row: chips for static mode, clear button when active */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2">
-        {mode === "static" ? (
+      {/* Top action row: preset chips for static mode */}
+      {mode === "static" ? (
+        <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2">
           <span
             role="group"
             aria-label="Terminal commands"
@@ -514,19 +512,8 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
               );
             })}
           </span>
-        ) : null}
-
-        {(activeKey !== null || history.length > 0 || dynPhase !== "idle") ? (
-          <button
-            type="button"
-            onClick={onClear}
-            className="border-border text-t3 hover:text-t1 ml-auto inline-flex items-center rounded-[4px] border px-2.5 py-1 font-mono text-[11px] transition-colors"
-            aria-label="Clear terminal output"
-          >
-            clear ×
-          </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {/* Static Mode Output */}
       {mode === "static" && activeKey !== null && activeKey !== "custom" ? (
@@ -559,7 +546,6 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
             <div key={msg.id} className="mb-3">
               {msg.role === "user" ? (
                 <p className="m-0 flex items-start gap-1 text-t1 leading-[1.55]">
-                  <span className="text-t3 select-none">$</span>
                   <span className="text-acc font-semibold select-none">
                     mahboob@engineer
                   </span>
@@ -567,7 +553,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
                   <span className="ml-1 text-t1 font-medium">{msg.content}</span>
                 </p>
               ) : (
-                <div className="mt-1 pl-4 border-l-2 border-acc/40">
+                <div className="mt-1 pl-3 border-l-2 border-acc/40">
                   <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
                     {msg.content}
                   </pre>
@@ -578,7 +564,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
           {/* Render Active Thinking Phrase */}
           {dynPhase === "loading" || (dynPhase === "streaming" && activeStreamingText === "") ? (
-            <div className="mb-3 pl-4">
+            <div className="mb-3 pl-3">
               <p className="m-0 font-mono text-[12.5px]">
                 <ThinkingText />
               </p>
@@ -587,7 +573,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
           {/* Render In-Flight Assistant Streaming Stream */}
           {dynPhase === "streaming" && activeStreamingText.length > 0 ? (
-            <div className="mb-3 pl-4 border-l-2 border-acc/40" aria-live="polite">
+            <div className="mb-3 pl-3 border-l-2 border-acc/40" aria-live="polite">
               <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
                 {activeStreamingText}
                 <span className="hero-terminal-cursor" aria-hidden>
@@ -600,16 +586,15 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           {/* Dynamic Input Line — Positions below the last chat message */}
           <form
             onSubmit={handleDynamicSubmit}
-            className="flex w-full items-center gap-1.5 font-mono text-[12.5px] leading-[1.55] pt-1"
+            className="flex w-full items-center gap-1 font-mono text-[12.5px] leading-[1.55] pt-1"
           >
-            <div className="flex shrink-0 items-center gap-1 select-none">
-              <span className="text-t3">$</span>
+            <div className="flex shrink-0 items-center gap-0.5 select-none">
               <span className="text-acc hero-terminal-prompt-blink font-semibold">
                 mahboob@engineer
               </span>
               <span className="text-t3">:</span>
             </div>
-            <div className="flex min-w-[180px] flex-1 items-center">
+            <div className="flex min-w-[180px] flex-1 items-center ml-1">
               <input
                 ref={inputRef}
                 type="text"
@@ -672,18 +657,4 @@ function ModeButton({
       {children}
     </button>
   );
-}
-
-async function safeReadText(resp: Response): Promise<string> {
-  if (!resp.body) return "";
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let acc = "";
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    acc += decoder.decode(value, { stream: true });
-    if (acc.length > 2000) break;
-  }
-  return acc;
 }
