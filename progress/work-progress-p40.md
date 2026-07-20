@@ -1,81 +1,37 @@
-# Phase 40 — PracticeRow link-card restyle
+# Phase 40 — HeroTerminal internal scrolling, fixed height lock, page jump elimination & header cleanup
 
-**Phase:** 40 — PracticeRow link-card restyle
+**Phase:** 40 — HeroTerminal internal scrolling, fixed height lock, page jump elimination & header cleanup
 **Phase status:** done
-**Date started:** 2026-07-20
+**Date started:** 2026-07-21
 
 ---
 
-## T40.1 — Replace mauve chip with /lets-connect-style link blocks
+## T40.1 — Custom scrollbar styling and internal scroll container height lock
 
 **Task status:** done
 **Commit:** `<this commit>`
-**Date:** 2026-07-20
+**Date:** 2026-07-21
 
 ### What shipped
 
-- `app/log/page.tsx` — `PracticeRow` subcomponent:
-  - Removed `<Chip color="mauve">` from each practice link. The
-    mauve color sat outside the established /log palette
-    (mint, forest-green, neutral text) and didn't match the
-    /lets-connect direct-link treatment.
-  - Restyled each `<Link>` as a bordered inner block using the
-    established `/lets-connect` `DirectLinkRow` pattern:
-    `border-border` resting border, `hover:border-acc/40`
-    `hover:bg-card/40`, `group` for coordinated hover
-    transitions, label uses `text-t1 group-hover:text-acc
-    font-mono text-[12.5px] font-semibold`, handle uses
-    `text-t3 font-mono text-[11px]`, trailing arrow uses
-    `text-t3 group-hover:text-acc text-[14px]`.
-  - Each `<li>` carries `h-full` so the inner link block fills
-    its grid cell vertically (no empty top/bottom space in the
-    row).
-  - Showed the platform handle under the label (already present
-    in the data layer) so the block carries useful information
-    instead of decorative padding.
+- `components/hero/HeroTerminal.tsx` — updated terminal component for internal silent scrolling:
+  - Removed `bottomRef.current?.scrollIntoView()` (which was causing window viewport scroll jumps).
+  - Implemented silent container scrolling via `scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight` inside `useEffect` on message updates.
+  - Wrapped chat history, thinking state, streaming text, and input prompt inside a fixed-height scrollable container (`max-h-[260px] overflow-y-auto`).
+  - Removed the `(X/20 msgs)` counter label from the top action bar.
+- `components/hero/HeroTerminal.css` — added `.hero-terminal-scroll` CSS rules for forest-green custom scrollbar styling (`::-webkit-scrollbar` + `scrollbar-width: thin`).
 - `progress/work-progress-p40.md` — this file.
 
 ### Decisions
 
-- **Reuse the established DirectLinkRow visual language.** The
-  user explicitly named /lets-connect as the reference. Building
-  another chip variant would have introduced a fourth link
-  treatment on the portfolio, diluting the visual system.
-- **Visible `border-border` at rest, not `border-transparent`.**
-  /lets-connect uses a transparent resting border because its
-  links stack tightly; the grid cells here are discrete units
-  that need to read as bordered blocks, so the border stays
-  visible.
-- **Show the handle under the label.** The data already stores
-  `handle` on every entry. Showing it gives each block content
-  and helps fill the vertical space without decorative padding.
-- **`h-full` on the `<li>`.** Without it, the link block
-  collapses to its content height inside the grid cell. With
-  it, every link in a row stretches to the tallest sibling's
-  height — eliminates the "lots of empty space above/below the
-  pill" symptom MarkUp flagged.
-- **No `<Chip>` import removal.** `<Chip>` is still used by
-  Timeline and Education, so the import stays.
+- **Direct `scrollTop` update over `scrollIntoView`.** `scrollIntoView()` triggers main window viewport movement in browsers when elements are near page boundaries. Target-specific `scrollTop = scrollHeight` on the internal terminal container ensures 100% silent internal scrolling without touching `window.scrollY`.
+- **Fixed max-height lock (`max-h-[260px]`).** Locking the terminal container height keeps `HeroTerminal` visually aligned with the left `StatRow` card at all times, preventing page layout expansion as messages accumulate.
 
 ### Caveats / pending
 
-- No browser smoke run from this session. User should run
-  `pnpm dev` and verify the new link blocks: no mauve, hover
-  matches /lets-connect, handles visible, vertical whitespace
-  removed.
-- Handle rendering uses `truncate` so a very long handle would
-  clip rather than wrap. All current handles are ≤ 12 chars
-  (`yurious`, `mahboob-alam`, `mahboob-a`) — well under any
-  column width at every breakpoint.
+- Internal scroll container handles up to 20 stored messages smoothly with custom scrollbar styling.
 
 ### Verified
 
 - `pnpm typecheck` → clean.
-- Code review: no mauve/purple classes remain in `PracticeRow`;
-  every color comes from the established token system
-  (`border`, `card`, `t1`, `t3`, `acc`).
-- Hover semantics match `/lets-connect`'s `DirectLinkRow`
-  exactly: mint text + mint arrow on hover, subtle
-  `card`-tinted background, mint-tinted border.
-- All 5 pill hrefs unchanged (still point at the Phase 38
-  T38.2 URLs).
+- `pnpm build` → 44/44 static pages compiled clean.

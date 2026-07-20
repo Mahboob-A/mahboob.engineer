@@ -2,14 +2,11 @@
  * components/hero/HeroTerminal.tsx
  *
  * Interactive terminal under the Hero's Algocode diagram on the landing page.
- * Phase 39 update:
- *   - Prompt string changed to `mahboob@engineer:` with blinking CSS animation.
- *   - Initial state positions `mahboob@engineer:` at the top-left with inline borderless input.
- *   - In-memory & sessionStorage chat history persistence (up to 20 messages).
- *   - Input prompt positions dynamically after the last chat message line.
- *   - Clear button wipes history and returns prompt to top-left.
- *   - Single-word thinking terms (including "Mehboobing") with shimmer sweep & animated dots.
- *   - Hardened RAG provider streaming pipeline.
+ * Phase 40 update:
+ *   - Internal container scrolling with fixed max height lock (`max-h-[260px]`).
+ *   - Removed window `scrollIntoView` page jump bug; internal `scrollTop = scrollHeight` handles scrolling silently.
+ *   - Removed counter text label from top bar.
+ *   - Custom scrollbar styling in `HeroTerminal.css`.
  */
 
 "use client";
@@ -294,7 +291,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   const [inputVal, setInputVal] = useState<string>("");
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   /* Load persistent history from sessionStorage on mount */
   useEffect(() => {
@@ -414,9 +411,11 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     [updateHistory],
   );
 
-  /* Auto-scroll terminal body to bottom on content update */
+  /* Silent internal container scroll to bottom (prevents window page jumps) */
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
   }, [history, activeStreamingText, dynPhase]);
 
   /* Clean up active stream on unmount */
@@ -487,8 +486,8 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
       headerCenter={headerCenter}
       className={cn("mt-6", className)}
     >
-      {/* Top action row: chips for static, clear button for both */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 pb-3">
+      {/* Top action row: chips for static mode, clear button when active */}
+      <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2">
         {mode === "static" ? (
           <span
             role="group"
@@ -515,11 +514,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
               );
             })}
           </span>
-        ) : (
-          <span className="text-t3 font-mono text-[11px] italic">
-            interactive session ({history.length}/{MAX_HISTORY_MESSAGES} msgs)
-          </span>
-        )}
+        ) : null}
 
         {(activeKey !== null || history.length > 0 || dynPhase !== "idle") ? (
           <button
@@ -535,7 +530,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
       {/* Static Mode Output */}
       {mode === "static" && activeKey !== null && activeKey !== "custom" ? (
-        <div className="border-border mt-2 border-t pt-3" aria-live="polite">
+        <div className="border-border mt-1 border-t pt-3" aria-live="polite">
           <pre className="hero-terminal-pre text-t1 m-0 whitespace-pre-wrap font-mono text-[12.5px] leading-[1.55]">
             {typed}
             <span className="hero-terminal-cursor" aria-hidden>
@@ -553,9 +548,12 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         </div>
       ) : null}
 
-      {/* Dynamic Mode: Chat History + Bottom Prompt Stream */}
+      {/* Dynamic Mode: Scrollable Internal Chat Box + Dynamic Bottom Prompt */}
       {mode === "dynamic" ? (
-        <div className="border-border mt-1 border-t pt-3 font-mono text-[12.5px]">
+        <div
+          ref={scrollContainerRef}
+          className="hero-terminal-scroll border-border mt-1 border-t pt-3 font-mono text-[12.5px] max-h-[260px] overflow-y-auto pr-1"
+        >
           {/* Render Persistent Chat Messages */}
           {history.map((msg) => (
             <div key={msg.id} className="mb-3">
@@ -634,7 +632,6 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
               </button>
             ) : null}
           </form>
-          <div ref={bottomRef} />
         </div>
       ) : null}
 

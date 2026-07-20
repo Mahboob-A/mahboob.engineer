@@ -69,3 +69,25 @@
     opacity: 0.6;
   }
 }
+
+.hero-terminal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #334e3c transparent;
+}
+
+.hero-terminal-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.hero-terminal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hero-terminal-scroll::-webkit-scrollbar-thumb {
+  background: #334e3c;
+  border-radius: 4px;
+}
+
+.hero-terminal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #5cc9a0;
+}
