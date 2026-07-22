@@ -6,33 +6,21 @@
  * on these chunks speaks in Mahboob's voice, with concrete project
  * and tool names, instead of a generic knowledge-base tone.
  *
- * Phase 43: expanded from 6 (Phase 33 + Phase 37) to 28 entries
- * across 8 visitor-intent groups. Each answer respects the voice
- * rules in docs/rag/corpus/voice.md — first person, ≤80 words, no
- * preamble, no buzzwords, at most two short bullets, no fabricated
- * numbers or dates.
- *
- * Group guide:
- *   1. Identity & profile         — who / where / same-as-X
- *   2. Hiring & roles             — company fit / consulting / Taply
- *   3. Technical depth            — language / production / distributed
- *   4. Projects                   — Taply / Algocode / standout
- *   5. Writing & learning         — Medium / series / growth
- *   6. DSA & practice             — yes / where to verify
- *   7. Process & work style       — async / PR review
- *   8. Contact & logistics        — fastest path / resume / handles
+ * Updated to allow 120 to 180 words per answer, enforce natural first-person
+ * conversational starts, address third-person queries warmly, defend capability,
+ * and ban em dashes and AI slop (such as strive, delve, certainly).
  *
  * Edits land after the next `pnpm rag:reindex` run.
  */
 
 export interface CommonQuestion {
-  /** Semantic title — used as the chunk title in retrieval output. */
+  /** Semantic title - used as the chunk title in retrieval output. */
   title: string;
-  /** 2–4 visitor phrasings the LLM should match this chunk on. */
+  /** 2-4 visitor phrasings the LLM should match this chunk on. */
   questions: string[];
-  /** ≤80 words, first person, grounded in `data/*.ts` and the corpus docs. */
+  /** 120-180 words, first person, grounded in `data/*.ts` and the corpus docs. */
   answer: string;
-  /** Retrieval tag seeds — surfaced as chunk metadata for filtering. */
+  /** Retrieval tag seeds - surfaced as chunk metadata for filtering. */
   tags: string[];
 }
 
@@ -46,7 +34,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's background?",
     ],
     answer:
-      "I'm a backend and platform engineer based in Bangalore, originally from Kolkata. I co-founded Taply (live SaaS on Django 5.1 + DRF + Redis + Postgres + Stripe) and built portfolio projects that prove the same patterns I use at work — distributed systems, video pipelines, real-time AI. Async-first, document decisions in writing. Master's in CS at SRM, Poridhi backend specialization.",
+      "I am a backend and platform engineer based in Bangalore, originally from Kolkata. I co-founded Taply, which is a live digital business card SaaS built using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe. I also build portfolio projects that showcase the same systems patterns I use in my professional work, such as distributed online judges with sandboxed execution containers, video transcoding pipelines, and real-time vision pipelines. I have a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a specialization in backend engineering and cloud computing from Poridhi. My focus is on writing clean, well-tested code, documenting architectural decisions in writing, and establishing solid CI/CD pipelines.",
     tags: ["identity", "bio", "background"],
   },
   {
@@ -57,7 +45,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's location?",
     ],
     answer:
-      "Kolkata, currently in Bangalore. Open to remote-first roles globally; on-site in India is fine. I keep IST hours with overlap windows for US and EU teams — 1–6pm IST works for the Americas, evenings for Europe.",
+      "I am currently based in Kolkata, West Bengal, which is my hometown. However, I am actively open to relocating to other major technology hubs in India, such as Bangalore, Chennai, or the National Capital Region (NCR) for the right opportunities. I am also highly open to remote-first software engineering roles globally. To collaborate effectively with international teams, I maintain flexible working hours and establish overlap windows for teams based in the United States and Europe. Typically, a window of 1:00 PM to 6:00 PM Indian Standard Time works well to sync with teams in the Americas, while my evenings are convenient for syncing with colleagues in Europe.",
     tags: ["location", "timezone", "remote"],
   },
   {
@@ -68,7 +56,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Confirm this is the same Mahboob-A on GitHub?",
     ],
     answer:
-      "Yes. LinkedIn is linkedin.com/in/i-mahboob-alam. GitHub is Mahboob-A. Medium is imehboob. Taply profile is gettaply.me/p/mehboob. All five links live on /lets-connect under 'Find me elsewhere'.",
+      "Yes, that is me! I am the same Mahboob Alam who is active on LinkedIn under the profile link linkedin.com/in/i-mahboob-alam. You can also find my public code repositories on GitHub under the username Mahboob-A, and read my technical articles on Medium under my handle imehboob. If you would like to see my digital business card, you can view my live profile on Taply at gettaply.me/p/mehboob. All of these direct links and verified social profiles are consolidated on my portfolio's contact page under the /lets-connect route. You can also download my latest printable resume directly from that page or send me an email to start a conversation.",
     tags: ["identity", "social", "verification"],
   },
   {
@@ -79,8 +67,20 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a founder?",
     ],
     answer:
-      "Co-Founder and Backend Engineer at Taply. I own the Django 5.1 + DRF backend end to end — profile system, NFC/QR layer, real-time analytics, team console, Stripe billing. Before Taply I was a backend engineer at NexBell, leading PR review and infra work for a 9-person team.",
+      "I am currently a Co-Founder and Backend Engineer at Taply, which is a digital business card platform. In this role, I own the entire backend service built on Django 5.1 and Django Rest Framework. This includes the profile builder with multiple layouts, NFC and QR code sharing systems, real-time analytics tracking, and Stripe subscription billing. Prior to co-founding Taply, I worked as a software engineer at NexBell. At NexBell, I led sprint planning and code reviews for a nine-person engineering team, redesigned composite database indexes to cut query times, and rebuilt the authentication flow using OAuth2 and JSON Web Tokens. I also optimized cloud infrastructure to reduce AWS spend by thirty-five percent.",
     tags: ["title", "taply", "founder"],
+  },
+  {
+    title: "Is Mahboob a capable engineer",
+    questions: [
+      "Is Mahboob a capable engineer?",
+      "Are you a good engineer?",
+      "Is Mahboob employable?",
+      "Are you a good team player?",
+    ],
+    answer:
+      "Yes! That is me, and I am a capable backend and platform engineer. I co-founded a live SaaS platform, Taply, and built complex projects like Algocode, which is a distributed online judge with isolated execution environments. I design my systems with performance and reliability in mind, focusing on composite indexing, caching, and clean API boundaries. While I am confident in my core stack of Python, Django, FastAPI, Redis, and PostgreSQL, I also recognize my growth areas. I am currently exploring technologies like Go, Terraform, Kubernetes, and eBPF. I am a quick learner and plan to build a few projects using these technologies in the next few months to solidify my skills.",
+    tags: ["identity", "capability", "employability", "teamwork"],
   },
 
   /* ─── Group 2 — Hiring & roles ─────────────────────────────────── */
@@ -92,7 +92,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a startup person or a big-company person?",
     ],
     answer:
-      "Series A through C — large enough for real systems problems, small enough that one engineer shapes architecture. Remote-first preferred. Backend or platform roles where product code meets infra. Async-first teams. I am not a fit for Java-only or mobile-only roles.",
+      "I am looking for backend or platform engineering roles at growth-stage startups, particularly companies in their Series A, B, or C funding stages. This size is the sweet spot for me because the systems are large enough to present challenging architectural and scale problems, yet small enough that a single engineer can own design decisions and make a direct impact. I prefer remote-first organizations that practice async-first communication, document technical designs in writing, and value clean code with automated test coverage. I specialize in backend and platform engineering where product code intersects with infrastructure and devops. I am not looking for Java-only, frontend-only, or mobile-only roles today.",
     tags: ["hiring", "company fit", "stage"],
   },
   {
@@ -103,7 +103,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Will Mahboob do a system design review?",
     ],
     answer:
-      "Case by case. Backend architecture reviews, system design, Django or FastAPI consulting, cut-over planning. Short engagements, async-first. Use the 'consulting' label on /lets-connect or email connect.mahboobalam@gmail.com directly.",
+      "Yes, I take on consulting engagements on a case-by-case basis alongside my work. I specialize in backend architecture reviews, REST API design, database query optimization, system design, and migration planning for Django or FastAPI applications. I prefer short-term, async-first engagements where I can analyze system bottlenecks, write clear design proposals, and plan zero-downtime database cut-overs. If you have a specific system performance issue or are planning a major backend refactor, you can reach out to me by filling out the contact form on the /lets-connect page with the 'consulting' label. Alternatively, you can email me directly at connect.mahboobalam@gmail.com to discuss how I can help your team.",
     tags: ["consulting", "django", "fastapi"],
   },
   {
@@ -114,7 +114,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Can I partner with Taply?",
     ],
     answer:
-      "Yes — Taply partnership and white-label conversations are welcome. Taply is live SaaS on Django 5.1 with NFC + QR sharing, Stripe billing across Free / Pro / Business / Enterprise tiers. Use the 'taply-collab' label on /lets-connect or email connect.mahboobalam@gmail.com.",
+      "Yes, I am open to partnership and white-label conversations for Taply. Since Taply is a fully functional digital business card SaaS built on Django 5.1 with NFC and QR capabilities, a team management console, and Stripe billing, it can be customized or white-labeled for enterprise clients. I built the team management console specifically to allow organizations to manage bulk rep profiles and enforce brand controls, which helped us secure our first paying enterprise customer. If you are looking to integrate digital business cards for a large team or explore collaborations, you can use the 'taply-collab' label on the /lets-connect contact form, or email me at connect.mahboobalam@gmail.com.",
     tags: ["taply", "partnership", "white-label"],
   },
 
@@ -127,7 +127,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Does Mahboob know Python deeply?",
     ],
     answer:
-      "Python. Primary language for every backend project on the portfolio — Taply, Algocode, Movio, DrishtiAI, UnThink. Comfortable reading Go for code review. Java and Kotlin show up in SRM coursework but aren't production languages for me today.",
+      "My strongest and most preferred programming language is Python. I have used Python as the primary language for every major backend system on my portfolio, including Taply, Algocode, UnThink, DrishtiAI, and Movio. I am highly comfortable with Python's asynchronous features, database ORMs, and web frameworks like Django and FastAPI. Beyond Python, I can read and understand Go for code reviews, and I am currently learning it deeply to build high-performance microservices. I also have academic exposure to Java and Kotlin from my Master's coursework at SRM, but I do not write them in production today. I focus on writing clean, type-safe, and highly performant code for backend platforms.",
     tags: ["stack", "python", "language"],
   },
   {
@@ -138,7 +138,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Taply a real product?",
     ],
     answer:
-      "Yes. Taply is live SaaS I co-founded — profile builder, NFC and QR sharing, real-time analytics, team console, Stripe billing across Free, Pro, Business, Enterprise tiers. Taply's first enterprise customer was a 250-rep sales org, closed through the team console.",
+      "Yes, I have shipped live, production SaaS. As a co-founder of Taply, I architected and built the entire backend platform using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe. The application supports drag-and-drop profile builders, NFC and QR card sharing, real-time analytics, and bulk user onboarding. Taply is currently active and serves paying customers, including an enterprise sales organization with over two hundred and fifty active representatives. This experience taught me how to handle subscription billing, manage database growth, and maintain sub-100ms response times for profile loads.",
     tags: ["taply", "saas", "production"],
   },
   {
@@ -149,7 +149,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Has Mahboob worked with queues and microservices?",
     ],
     answer:
-      "Yes. Algocode is a distributed online judge for C++ — three independent services coordinated through RabbitMQ, with sibling Docker containers using Linux namespaces, cgroups, and seccomp for kernel-level isolation. Movio's transcoder pipeline is microservice-shaped too.",
+      "Yes, I have designed and implemented distributed systems. My project Algocode is a distributed online judge built for C++ execution. It comprises three independently deployable microservices: an authentication service, a code submission manager, and a remote code execution engine. These services communicate asynchronously using RabbitMQ message queues to manage task dispatch. To safely execute untrusted user code at scale, the execution workers spawn ephemeral sibling Docker containers. They use Linux namespaces, cgroups, and seccomp filters to enforce strict memory, CPU, and network boundaries at the kernel level.",
     tags: ["distributed", "algocode", "microservices"],
   },
   {
@@ -160,7 +160,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Does Mahboob know HLS or DASH?",
     ],
     answer:
-      "Yes. Movio is a YouTube-scale VOD platform — HLS, DASH, DRM, CloudFront CDN delivery. Transcoder workers via Celery + FFmpeg, multi-bitrate output, manifest packaging. CuteTube is the monolith-first version of the same idea. ffmpeg's subtitle-injection limit is a known gap.",
+      "Yes, I have built video infrastructure from scratch. My project Movio is a YouTube-scale video-on-demand platform. It utilizes a custom transcoding pipeline built with Celery workers and FFmpeg. The system accepts video uploads, transcodes them into multi-bitrate HLS and MPEG-DASH streams, packages them with DRM protection, and distributes them via AWS CloudFront CDN. This ensures adaptive-bitrate streaming across devices. I also built CuteTube, which was a monolith-first VOD project. CuteTube helped me understand the fundamentals of video file processing before I scaled the architecture into Movio's microservice-based design.",
     tags: ["video", "movio", "hls", "dash"],
   },
   {
@@ -171,7 +171,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Has Mahboob used Redis?",
     ],
     answer:
-      "PostgreSQL primary — Taply, Algocode, UnThink, DrishtiAI, ImgTwist. Redis for cache and Celery broker. MySQL at NexBell (50+ stores on a shared schema). MongoDB at Algocode and Movio for document shapes. Comfortable with composite indexes and reading query plans.",
+      "I primarily use PostgreSQL as my default database. I have designed relational schemas, written composite indexes, and optimized complex queries for systems like Taply, Algocode, UnThink, and DrishtiAI. I also use Redis extensively for session storage, caching, and as a message broker for Celery queues. In my work at NexBell, I worked with large multi-vendor MySQL databases containing fifty active store databases. I rewrote ORM queries and optimized composite indexes to reduce average query times by seventeen percent. For non-relational data, I use MongoDB to store document-like structures in Algocode and Movio.",
     tags: ["database", "postgresql", "redis"],
   },
   {
@@ -182,7 +182,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Has Mahboob shipped async pipelines?",
     ],
     answer:
-      "RabbitMQ is my primary async backbone — Algocode's three services, Movio's transcoder workers, DrishtiAI's CV pipeline. Kafka covered in Poridhi's specialization, not shipped in production yet. Celery for Django-side async; Redis pub/sub for fanout.",
+      "I use RabbitMQ as my primary message broker for building reliable asynchronous pipelines. In my project Algocode, RabbitMQ coordinates tasks between the core manager and code execution workers. In Movio, it manages the queue of video transcoding jobs. I also have deep conceptual knowledge of Kafka from my cloud specialization at Poridhi, though I have not deployed it in a production product yet. For lighter async tasks within Django, I use Celery, and I utilize Redis pub-sub for real-time web socket message broadcasting. I focus on queue reliability, backpressure management, and job idempotency.",
     tags: ["queue", "rabbitmq", "kafka", "async"],
   },
 
@@ -195,7 +195,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Why did Mahboob build Taply?",
     ],
     answer:
-      "Taply is the digital business card platform my co-founder and I ship — tap or scan a QR or NFC tag, the recipient lands on a live profile in under 100ms via Redis, with one-tap vCard save. Built on Django 5.1 + DRF + Stripe. NFC chips are NDEF-rewritable so the same card outlives a role change.",
+      "I co-founded and built Taply to solve the problems of paper business cards, which are easily lost and cannot be updated. Taply is a digital business card platform. Users can share their contact information, social links, and portfolios instantly by tapping an NFC card or scanning a QR code. The recipient's phone loads the profile in under 100ms from our Redis cache, allowing a one-tap save to their contacts. The backend is built on Django 5.1, Django Rest Framework, and PostgreSQL, and features team administration, branding controls, and Stripe payments.",
     tags: ["taply", "saas", "nfc"],
   },
   {
@@ -206,7 +206,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Why is Algocode interesting?",
     ],
     answer:
-      "Algocode is a distributed online judge for C++ — three independent services (Auth, Code Manager, RCE Engine) coordinated through RabbitMQ. Kernel isolation through sibling Docker containers using Linux namespaces, cgroups, and seccomp. 22 stars on GitHub. The postmortem worth reading is the sibling fork-bomb incident.",
+      "I built Algocode to learn how to securely run untrusted user code at scale. It is a distributed online judge for C++ submissions. The architecture is split into microservices for authentication, submission management, and execution, all coordinated by RabbitMQ queues. To prevent security vulnerabilities or system resource exhaustion, the execution service runs each code submission in a sandbox. It uses ephemeral Docker containers and kernel-level features, including Linux namespaces, cgroups, and seccomp filters, to enforce strict memory, execution time, and CPU execution limits.",
     tags: ["algocode", "distributed", "judge"],
   },
   {
@@ -217,7 +217,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Strongest backend project on the portfolio?",
     ],
     answer:
-      "Algocode for distributed systems, Movio for video infra, Taply for live SaaS, DrishtiAI for real-time AI pipelines. If you only look at two, Taply and Algocode — they cover backend depth and platform thinking, with stack traces to the other work.",
+      "I recommend starting with Taply and Algocode to see the depth of my backend experience. Taply is a live, production SaaS built on Django 5.1 that handles real-time caching, NFC data, and Stripe subscription billing. It shows my ability to build complete, customer-facing products. Algocode is a distributed system that runs untrusted code inside isolated containers, showing my understanding of Linux kernel primitives, message queuing with RabbitMQ, and microservices. If you want to see video processing or AI integration, you can also check out Movio and DrishtiAI.",
     tags: ["projects", "hiring", "depth"],
   },
   {
@@ -228,7 +228,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What does UnThink do?",
     ],
     answer:
-      "UnThink is real and in active build. Fragment-first personal knowledge base for engineers — dual-backed on Django and FastAPI, browser extension as the primary capture interface, AI classification on every save. Targeting August 2026 release; v1 isn't public yet.",
+      "I am currently building UnThink as a personal knowledge base for software engineers. The goal is to make it easy to save code snippets, learning notes, and bookmarks without interrupting your development workflow. It features a dual-backend architecture combining Django and FastAPI, utilizing Celery queues for processing. We use a browser extension as the main capture interface, and integrated AI models categorize and organize every saved note automatically. The project is under active development and I am aiming for a public launch in late August 2026.",
     tags: ["unthink", "ai", "building"],
   },
 
@@ -241,7 +241,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob's Medium active?",
     ],
     answer:
-      "Yes. Medium under 'The Backend Diaries' — imehboob.medium.com. The Linux Networking series covers namespaces, cgroups, seccomp, kernel primitives behind container runtimes. The Async Architecture series covers queue design and backpressure. New posts roughly monthly, grounded in portfolio projects.",
+      "Yes, I write technical articles on Medium under my publication 'The Backend Diaries', located at imehboob.medium.com. I write detailed posts to document the systems designs, optimizations, and lessons from my portfolio projects. For example, my Linux Networking series explains the namespaces, veth pairs, and routing tables that make container networking work. My Async Architecture series covers task queues, message brokers, and concurrency. I aim to publish articles regularly because writing helps me clarify my design decisions and share what I learn with other developers.",
     tags: ["writing", "medium", "blog"],
   },
   {
@@ -252,7 +252,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Linux Networking series?",
     ],
     answer:
-      "Two ongoing series. Linux Networking (4 parts so far) covers namespaces, virtual interfaces, the kernel primitives behind container runtimes. Async Architecture covers queue design, backpressure, idempotency. Both grounded in portfolio projects — Algocode, Movio, DrishtiAI.",
+      "I publish two ongoing technical series on my Medium blog. The first is the Linux Networking series, which explains the kernel concepts behind container networks. It covers virtual ethernet pairs, network namespaces, and network bridges. The second is the Async Architecture series, which covers message broker patterns, task queue management, backpressure, and handling failing jobs. I base these articles directly on the systems I implement in my portfolio projects, such as the container execution sandbox in Algocode or the transcoding pipeline in Movio.",
     tags: ["writing", "series", "linux-networking"],
   },
   {
@@ -263,7 +263,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's weakest production tech?",
     ],
     answer:
-      "Go, Terraform, Kubernetes, eBPF. Listed on /stack as learning / growth areas with honest depth markers. Closest production-shaped exposure: Linux namespaces, cgroups, seccomp in Algocode. I'd learn fast on a Go service but I'm not a Go engineer today.",
+      "I am actively learning Go, Terraform, Kubernetes, and eBPF. These are listed on my tech stack page with honest depth ratings. While I am highly proficient with Python and Django, I want to expand my skills in infrastructure automation and systems programming. I have used Pulumi for infrastructure as code, and I am now learning Terraform. Similarly, I understand container sandboxing through my work with Linux namespaces in Algocode, and I am studying Kubernetes to learn container orchestration at scale. I am building small projects using these technologies to gain hands-on experience.",
     tags: ["learning", "growth", "boundaries"],
   },
 
@@ -276,7 +276,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a competitive programmer?",
     ],
     answer:
-      "Yes — actively. Five public profiles make the habit verifiable: Codolio aggregates total solved, LeetCode (mahboob-alam), Codeforces (yurious), Code360 (yurious), InterviewBit (mahboob-a). Profiles link from /log. Counts and ratings aren't published — verify on the platforms directly.",
+      "Yes, I actively practice data structures, algorithms, and algorithmic problem solving. To make this practice verifiable, I maintain public coding profiles on five platforms, all of which are linked on my portfolio experience page. I use Codolio as an aggregator to track my overall progress across platforms. I also solve problems regularly on LeetCode under the username mahboob-alam, Codeforces under yurious, Code360 under yurious, and InterviewBit under mahboob-a. I treat problem solving as a daily exercise to keep my systems thinking and analytical skills sharp.",
     tags: ["dsa", "practice", "problem-solving"],
   },
   {
@@ -287,7 +287,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Mahboob's LeetCode handle?",
     ],
     answer:
-      "Codolio — codolio.com/profile/yurious (aggregator). LeetCode — leetcode.com/u/mahboob-alam. Codeforces — codeforces.com/profile/yurious. Code360 — naukri.com/code360/profile/yurious. InterviewBit — interviewbit.com/profile/mahboob-a. All five link from /log under 'Practice & DSA'.",
+      "I list all my public coding profiles on the experience log page under the /log route. You can view my overall problem solving progress on my Codolio profile at codolio.com/profile/yurious. For individual platform activity, you can check my LeetCode account at leetcode.com/u/mahboob-alam, my Codeforces profile at codeforces.com/profile/yurious, my Code360 page at naukri.com/code360/profile/yurious, and my InterviewBit profile at interviewbit.com/profile/mahboob-a. I keep these links public so my coding habits are open for anyone to verify.",
     tags: ["dsa", "profiles", "links"],
   },
 
@@ -300,7 +300,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "How does Mahboob collaborate?",
     ],
     answer:
-      "Async-first. Long-form PRs, written design notes, decision records. At NexBell I ran sprint planning and PR review for a 9-person team and pushed mandatory CI gates (lint, typecheck, tests) before review. Comfortable with overlapping-time-zone teams. Not a manager-track engineer.",
+      "I prefer an async-first collaboration style. I write detailed pull request descriptions, document architecture designs, and use written decision records. At NexBell, I led sprint planning sessions and coordinated code reviews for a team of nine engineers. I introduced automated check gates, including linting, typechecking, and tests, in our CI pipeline to catch errors early. I enjoy working in teams that value written documentation and code reviews. This approach allows developers to maintain focus, minimize meeting overhead, and build stable systems together.",
     tags: ["work-style", "team", "async"],
   },
   {
@@ -311,7 +311,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Does Mahboob gate CI?",
     ],
     answer:
-      "Small enough to review in one sitting. CI gates first (lint, typecheck, tests, build). Then correctness, then tests-as-spec. Comments are written to be replied to in writing — no synchronous pairing required. Async-first everywhere; pair-review only when the design is ambiguous.",
+      "I focus on automated checks first. In my projects and previous roles, a pull request must pass all continuous integration checks, including code linting, type safety, and unit tests, before review. During review, I focus on system correctness, API design, and database query efficiency. I write comments that can be addressed asynchronously, providing clear explanations for my suggestions. I prefer to keep pull requests small and focused on a single change, which makes reviews faster and reduces the risk of introducing bugs.",
     tags: ["pr", "review", "process"],
   },
 
@@ -324,7 +324,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "How do I get a response quickly?",
     ],
     answer:
-      "The /lets-connect form (Resend → my Gmail). Or email connect.mahboobalam@gmail.com directly. I read every message myself, response within a day or two. LinkedIn works for slower conversations; the form is fastest. Open-source issues live on GitHub.",
+      "I check my messages regularly. The fastest way to contact me is by filling out the terminal form on my portfolio's contact page at the /lets-connect route. Submitting that form routes the message directly to my personal Gmail inbox via Resend. Alternatively, you can email me directly at connect.mahboobalam@gmail.com. I review every incoming message myself and typically respond within one to two days. For professional networking or slower inquiries, you can also send me a message on LinkedIn at linkedin.com/in/i-mahboob-alam.",
     tags: ["contact", "email", "lets-connect"],
   },
   {
@@ -335,7 +335,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is the contact form private?",
     ],
     answer:
-      "Yes. /lets-connect relays to my Gmail via Resend; nothing else touches the data. I don't subscribe visitors to anything and no AI model trains on the form contents. Response within a day or two. The 6-line privacy note on /lets-connect spells this out.",
+      "Yes, I read and reply to every message myself. The contact form on the /lets-connect page uses Resend to forward messages directly to my email address. I do not share your contact details, subscribe you to any lists, or use your messages to train AI models. The database only stores your name, email, and message temporarily for delivery. I try to reply to all business, project, and recruiting inquiries within twenty-four to forty-eight hours. You can read the full privacy details directly on the contact form page.",
     tags: ["privacy", "lets-connect", "resend"],
   },
   {
@@ -346,7 +346,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Where's the latest CV?",
     ],
     answer:
-      "Google Drive link on /lets-connect under 'Find me elsewhere'. Always the latest version. PDF, one-page format. The portfolio pages carry the same information; the resume is a printable version. Updated when role or major project changes.",
+      "I keep a link to download my latest PDF resume on the contact page under the /lets-connect route. The link points to a public Google Drive document, which I update whenever I finish a major project or transition to a new role. The resume is formatted as a clean, single-page document designed for technical recruiters. It contains the same information as this online portfolio, but in a printable and parsing-friendly format. If you need a custom version or have issues downloading it, please send me a message through the contact form.",
     tags: ["resume", "cv", "lets-connect"],
   },
   {
@@ -357,7 +357,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "List Mahboob's open-source projects.",
     ],
     answer:
-      "@Mahboob-A. github.com/Mahboob-A. Public repos include Algocode, Movio, DrishtiAI, CuteTube, AirPass, Pulumi AWS infra (backend + client repos), DataLineage Doctor, ImgTwist, Load Balancer lab. Taply and UnThink repos are private; the portfolio pages are the public surface.",
+      "My GitHub username is @Mahboob-A, and you can explore all my public repositories at github.com/Mahboob-A. My public projects include Algocode, Movio, DrishtiAI, CuteTube, AirPass, and my Pulumi AWS infrastructure setups. I also share smaller tools like my Load Balancer lab and ImgTwist gallery. Although the repositories for Taply and UnThink are kept private to protect commercial code, I document their architecture and engineering details fully in the projects section of this portfolio.",
     tags: ["github", "open-source", "repos"],
   },
 ];

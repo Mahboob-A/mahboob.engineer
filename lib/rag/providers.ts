@@ -119,7 +119,10 @@ function createOpenAICompatibleClient(
                 choice?.delta?.content ||
                 (choice as { text?: string })?.text ||
                 "";
-              if (text) controller.enqueue(encoder.encode(text));
+              if (text) {
+                const cleanText = text.replace(/—/g, " - ");
+                controller.enqueue(encoder.encode(cleanText));
+              }
             }
             controller.close();
           } catch (error) {
