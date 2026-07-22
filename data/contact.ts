@@ -43,7 +43,7 @@ export interface AvailabilityItem {
 }
 
 export const AVAILABILITY: AvailabilityItem[] = [
-  { kind: "live", text: "Available for backend roles (remote)" },
+  { kind: "live", text: "Available for backend roles (remote / on-site)" },
   { kind: "live", text: "Open to backend / platform positions" },
   { kind: "mauve", text: "Taply partnership enquiries welcome" },
 ];

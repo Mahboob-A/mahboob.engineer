@@ -31,7 +31,7 @@ export default function ContactPage() {
       backHref="/"
       backLabel="← home"
       header={{
-        section: "Say hello",
+        section: "say hello",
         title: "Let's build something durable.",
         description:
           "Form, availability, direct links, and answers to the questions I get asked most.",

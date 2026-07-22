@@ -7,8 +7,9 @@
  * Storage backend:
  * - Dev: `local` — reads/writes directly to content/posts/.
  * - Prod: `github` — requires KEYSTATIC_GITHUB_CLIENT_ID,
- *   KEYSTATIC_GITHUB_CLIENT_SECRET, KEYSTATIC_SECRET, KEYSTATIC_GITHUB_REPO
- *   env vars; validated at module load via lib/env.ts.
+ *   KEYSTATIC_GITHUB_CLIENT_SECRET, KEYSTATIC_SECRET,
+ *   KEYSTATIC_GITHUB_REPO_OWNER, and KEYSTATIC_GITHUB_REPO_NAME.
+ *   Runtime validation lives in app/api/keystatic/[...params]/route.ts.
  *
  * Schema mirrors the BlogPostItem type in data/blog.ts so that:
  * - T5.6's seeded MDX files are loadable in the admin.
@@ -18,16 +19,15 @@
  * Built with Keystatic 0.5's `fields.*` namespace API (the v0.5
  * generation, not the legacy inline-{label,validation} schema).
  *
- * Phase 6 (T6.6): production storage hard-fails if GitHub OAuth env
- * vars are missing. Local dev still uses `local` storage. The dev
- * console prints a clear warning if env vars are missing so the user
- * knows to set them up before deploying.
+ * Phase 6 (T6.6): production API requests return a clear 500 if
+ * GitHub OAuth env vars are missing. Local dev still uses `local`
+ * storage. The dev console prints a clear warning if env vars are
+ * missing so the user knows to set them up before deploying.
  *
  * Source: master §2.5 schema spec; extended in T5.1.
  */
 
 import { config, collection, fields } from "@keystatic/core";
-import { env } from "@/lib/env";
 
 /** Categories — must mirror the BlogCategory union in data/blog.ts. */
 const CATEGORY_OPTIONS = [
@@ -56,7 +56,7 @@ const hasGithubEnvInDev =
   !!process.env.KEYSTATIC_SECRET;
 
 if (!hasGithubEnvInDev) {
-  if (env.isProd()) {
+  if (process.env.NODE_ENV === "production") {
     /* Production: don't throw — the build needs to succeed. Log a
        loud warning so the user sees it in Vercel's build logs. The
        runtime check happens lazily in app/api/keystatic/[...params]/route.ts. */
