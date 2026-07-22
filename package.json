@@ -23,6 +23,7 @@
     "@upstash/redis": "^1.38.0",
     "@upstash/vector": "^1.2.3",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "eventemitter3": "^5.0.4",
     "framer-motion": "^12.42.2",
     "gray-matter": "^4.0.3",

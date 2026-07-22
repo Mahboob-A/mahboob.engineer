@@ -116,3 +116,26 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T50.6: Vercel Speed Insights integration
+
+**Task status:** done
+**Commit:** b509854
+**Date:** 2026-07-22
+
+### What shipped
+
+- `package.json` & `pnpm-lock.yaml`:
+  - Installed `@vercel/speed-insights` package.
+- `app/layout.tsx`:
+  - Imported and rendered `<SpeedInsights />` from `@vercel/speed-insights/next` at the root layout level.
+
+### Decisions
+
+- **Performance telemetry**: Added Vercel Speed Insights to collect Core Web Vitals to monitor app loading speed and layout stability.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
