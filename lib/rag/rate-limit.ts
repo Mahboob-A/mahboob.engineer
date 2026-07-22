@@ -1,21 +1,32 @@
 /**
  * lib/rag/rate-limit.ts
  *
- * Tiny in-memory rate limiter for /api/rag. Tracks requests per IP key in
- * a module-scope Map; resets on cold start (not abuse-proof, but enough
- * grief delay).
- *
- * Production-grade abuse protection is out of scope for Phase 33. When
- * the project gets an Upstash Redis or Vercel KV instance, swap this for
- * a shared store and the route code stays the same.
- *
- * The rate-limit window is fixed at one hour and the per-IP cap is
- * `RAG_RATE_LIMIT_PER_HOUR` (default 20). These are deliberately small
- * because RAG queries are heavier than the static portfolio traffic the
- * site gets.
+ * Rate limiter for /api/rag. Uses Upstash Redis with a sliding window of
+ * 20 requests per 30 minutes. Falls back to a local in-memory Map during
+ * local development if Redis credentials are not configured.
  */
 
-const WINDOW_MS = 60 * 60 * 1000;
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+// Initialize Upstash Redis only if keys are present
+export const redis = redisUrl && redisToken
+  ? new Redis({ url: redisUrl, token: redisToken })
+  : null;
+
+export const ratelimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(20, "30 m"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/my-portfolio",
+    })
+  : null;
+
+const WINDOW_MS = 30 * 60 * 1000; // 30 minutes
 
 type Bucket = {
   count: number;
@@ -24,38 +35,35 @@ type Bucket = {
 
 const buckets = new Map<string, Bucket>();
 
-interface RateLimitConfig {
-  perHour: number;
-  windowMs: number;
-}
-
-function readConfig(): RateLimitConfig {
-  const raw = process.env.RAG_RATE_LIMIT_PER_HOUR;
-  const perHour = raw ? Number.parseInt(raw, 10) : 20;
-  if (!Number.isFinite(perHour) || perHour <= 0) {
-    return { perHour: 20, windowMs: WINDOW_MS };
-  }
-  return { perHour, windowMs: WINDOW_MS };
-}
-
 export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
   resetAt: number;
 }
 
-export function checkRateLimit(key: string): RateLimitResult {
-  const { perHour, windowMs } = readConfig();
+export async function checkRateLimit(key: string): Promise<RateLimitResult> {
+  // 1. Use Upstash Redis if configured (recommended for production)
+  if (ratelimit) {
+    const { success, limit, remaining, reset } = await ratelimit.limit(key);
+    return {
+      allowed: success,
+      remaining,
+      resetAt: reset,
+    };
+  }
+
+  // 2. Fall back to local in-memory rate-limiter for development / preview
+  const per30Min = 20;
   const now = Date.now();
   const existing = buckets.get(key);
 
   if (!existing || existing.resetAt <= now) {
-    const resetAt = now + windowMs;
+    const resetAt = now + WINDOW_MS;
     buckets.set(key, { count: 1, resetAt });
-    return { allowed: true, remaining: perHour - 1, resetAt };
+    return { allowed: true, remaining: per30Min - 1, resetAt };
   }
 
-  if (existing.count >= perHour) {
+  if (existing.count >= per30Min) {
     return {
       allowed: false,
       remaining: 0,
@@ -66,7 +74,7 @@ export function checkRateLimit(key: string): RateLimitResult {
   existing.count += 1;
   return {
     allowed: true,
-    remaining: perHour - existing.count,
+    remaining: per30Min - existing.count,
     resetAt: existing.resetAt,
   };
 }

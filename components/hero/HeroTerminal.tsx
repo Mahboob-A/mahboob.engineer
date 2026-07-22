@@ -375,7 +375,25 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           signal: controller.signal,
         });
 
-        if (!resp.ok || !resp.body) {
+        if (!resp.ok) {
+          let errorContent = getEngineerFallbackMessage();
+          try {
+            const errText = await resp.text();
+            if (errText) errorContent = errText;
+          } catch {
+            // Ignore
+          }
+          const assistantErrorMsg: ChatMessage = {
+            id: `asst-${Date.now()}`,
+            role: "assistant",
+            content: errorContent,
+          };
+          updateHistory((prev) => [...prev, assistantErrorMsg]);
+          setDynPhase("error");
+          return;
+        }
+
+        if (!resp.body) {
           const assistantErrorMsg: ChatMessage = {
             id: `asst-${Date.now()}`,
             role: "assistant",

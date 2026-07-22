@@ -32,6 +32,7 @@ import {
 } from "@/lib/rag/command-map";
 import { RagProviderConfigurationError } from "@/lib/rag/providers";
 import { checkRateLimit, extractClientIp } from "@/lib/rag/rate-limit";
+import { Langfuse } from "langfuse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -168,15 +169,18 @@ function buildGroundedContext(results: readonly QueryHit[]): string {
 export async function POST(req: Request): Promise<Response> {
   /* 0. Rate limit per IP. Returns 429 before any heavy work runs. */
   const ip = extractClientIp(req);
-  const rl = checkRateLimit(ip);
+  const rl = await checkRateLimit(ip);
   if (!rl.allowed) {
-    return new Response("Rate limit reached. Try again later.", {
+    const resetTimeSec = Math.max(0, Math.ceil((rl.resetAt - Date.now()) / 1000));
+    const minutes = Math.floor(resetTimeSec / 60);
+    const seconds = resetTimeSec % 60;
+    const message = `Too many requests. I am sorry for the inconvenience, but I have to limit queries to 20 per 30 minutes to stop spam, bots, and billing abuse. Please try again in ${minutes}m ${seconds}s.`;
+
+    return new Response(message, {
       status: 429,
       headers: {
         "content-type": "text/plain; charset=utf-8",
-        "retry-after": Math.ceil(
-          (rl.resetAt - Date.now()) / 1000,
-        ).toString(),
+        "retry-after": resetTimeSec.toString(),
       },
     });
   }
@@ -276,14 +280,110 @@ export async function POST(req: Request): Promise<Response> {
     .filter((section) => section.length > 0)
     .join("\n\n---\n\n");
 
-  /* 6. Stream the chat completion. */
-  return modelClient.streamChat(
-    [
-      { role: "system", content: systemContent },
-      { role: "user", content: userQuestion },
-    ],
-    req.signal,
-  );
+  /* 6. Stream the chat completion and trace it via Langfuse. */
+  const langfusePublic = process.env.LANGFUSE_PUBLIC_KEY;
+  const langfuseSecret = process.env.LANGFUSE_SECRET_KEY;
+  const langfuseHost = process.env.LANGFUSE_BASE_URL || "https://cloud.langfuse.com";
+
+  const langfuse = langfusePublic && langfuseSecret
+    ? new Langfuse({
+        publicKey: langfusePublic,
+        secretKey: langfuseSecret,
+        baseUrl: langfuseHost,
+      })
+    : null;
+
+  try {
+    const response = await modelClient.streamChat(
+      [
+        { role: "system", content: systemContent },
+        { role: "user", content: userQuestion },
+      ],
+      req.signal,
+    );
+
+    if (langfuse && response.ok && response.body) {
+      const trace = langfuse.trace({
+        name: "rag-chat",
+        userId: ip,
+        metadata: { command, question: userQuestion },
+      });
+
+      const generation = trace.generation({
+        name: "completion",
+        model: modelClient.chatModel,
+        input: [
+          { role: "system", content: systemContent },
+          { role: "user", content: userQuestion },
+        ],
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = "";
+
+      const newStream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          try {
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              const text = decoder.decode(value, { stream: true });
+              accumulatedText += text;
+              controller.enqueue(value);
+            }
+            controller.close();
+
+            generation.update({
+              output: accumulatedText,
+            });
+            generation.end();
+            await langfuse.flushAsync();
+          } catch (error) {
+            generation.update({
+              level: "ERROR",
+              statusMessage: error instanceof Error ? error.message : String(error),
+            });
+            generation.end();
+            await langfuse.flushAsync();
+            controller.error(error);
+          }
+        },
+        cancel() {
+          reader.cancel();
+        }
+      });
+
+      return new Response(newStream, {
+        headers: response.headers,
+      });
+    }
+
+    return response;
+  } catch (error) {
+    if (langfuse) {
+      const trace = langfuse.trace({
+        name: "rag-chat",
+        userId: ip,
+        metadata: { command, question: userQuestion },
+      });
+      const generation = trace.generation({
+        name: "completion",
+        model: modelClient.chatModel,
+        input: [
+          { role: "system", content: systemContent },
+          { role: "user", content: userQuestion },
+        ],
+      });
+      generation.update({
+        level: "ERROR",
+        statusMessage: error instanceof Error ? error.message : String(error),
+      });
+      generation.end();
+      await langfuse.flushAsync();
+    }
+    throw error;
+  }
 }
 
 /* Last-resort prompt if the system-prompt chunk can't be loaded. */
