@@ -313,6 +313,17 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   const [dynPhase, setDynPhase] = useState<DynamicPhase>("idle");
   const [activeStreamingText, setActiveStreamingText] = useState<string>("");
   const [inputVal, setInputVal] = useState<string>("");
+  const [sessionId] = useState(() => {
+    if (typeof window !== "undefined") {
+      let id = sessionStorage.getItem("portfolio_rag_session_id");
+      if (!id) {
+        id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem("portfolio_rag_session_id", id);
+      }
+      return id;
+    }
+    return "";
+  });
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -371,6 +382,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
           body: JSON.stringify({
             command: cmdKey,
             question: userQuery,
+            sessionId: sessionId || undefined,
           }),
           signal: controller.signal,
         });

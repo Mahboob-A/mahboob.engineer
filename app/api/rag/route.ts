@@ -47,6 +47,7 @@ type VectorMetadata = Record<string, unknown>;
 interface IncomingPayload {
   command?: unknown;
   question?: unknown;
+  sessionId?: unknown;
 }
 
 interface QueryableIndex {
@@ -58,6 +59,7 @@ interface QueryableIndex {
 }
 
 interface QueryHit {
+  id: string | number;
   score: number;
   metadata?: VectorMetadata;
 }
@@ -241,46 +243,7 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  /* 4. Retrieve system prompt, voice rules, and grounded context. */
-  const [systemPrompt, voiceRules, retrieval] = await Promise.all([
-    loadSystemPrompt(namespaceClient).catch((error: unknown) => {
-      console.error("[api/rag] system prompt load failed:", error);
-      return "";
-    }),
-    loadVoiceRules(namespaceClient).catch((error: unknown) => {
-      console.error("[api/rag] voice rules load failed:", error);
-      return "";
-    }),
-    namespaceClient
-      .query({
-        data: userQuestion,
-        topK: DEFAULT_TOP_K,
-        includeMetadata: true,
-      })
-      .catch((error: unknown) => {
-        throw new Error(
-          `Upstash query failed: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }),
-  ]);
-
-  // Filter out system prompt and voice rule chunks from the retrieved context
-  // so the user cannot extract the instructions via prompt query.
-  const cleanRetrieval = retrieval.filter(
-    (r) => r.metadata?.kind !== "system-prompt" && r.metadata?.kind !== "voice"
-  );
-  const context = buildGroundedContext(cleanRetrieval);
-
-  /* 5. Compose the system message. */
-  const systemContent = [
-    systemPrompt || FALLBACK_SYSTEM_PROMPT,
-    voiceRules ? `# Voice rules\n\n${voiceRules}` : "",
-    `# Retrieved context\n\n${context}`,
-  ]
-    .filter((section) => section.length > 0)
-    .join("\n\n---\n\n");
-
-  /* 6. Stream the chat completion and trace it via Langfuse. */
+  /* 4. Stream the chat completion and trace it via Langfuse. */
   const langfusePublic = process.env.LANGFUSE_PUBLIC_KEY;
   const langfuseSecret = process.env.LANGFUSE_SECRET_KEY;
   const langfuseHost = process.env.LANGFUSE_BASE_URL || "https://cloud.langfuse.com";
@@ -293,6 +256,126 @@ export async function POST(req: Request): Promise<Response> {
       })
     : null;
 
+  const trace = langfuse
+    ? langfuse.trace({
+        name: "rag-chat",
+        userId: ip,
+        sessionId: typeof body.sessionId === "string" ? body.sessionId : undefined,
+        tags: [process.env.NODE_ENV || "development"],
+        input: { command, question: userQuestion },
+      })
+    : null;
+
+  const loadPromptsSpan = trace?.span({
+    name: "load-prompts",
+    input: { namespace: VECTOR_NAMESPACE },
+  });
+
+  const retrieveContextSpan = trace?.span({
+    name: "retrieve-context",
+    input: { query: userQuestion },
+  });
+
+  let systemPrompt = "";
+  let voiceRules = "";
+  let retrieval: QueryHit[] = [];
+
+  try {
+    const results = await Promise.all([
+      loadSystemPrompt(namespaceClient).catch((error: unknown) => {
+        console.error("[api/rag] system prompt load failed:", error);
+        loadPromptsSpan?.update({
+          level: "WARNING",
+          statusMessage: `Failed to load system prompt: ${error instanceof Error ? error.message : String(error)}`,
+        });
+        return "";
+      }),
+      loadVoiceRules(namespaceClient).catch((error: unknown) => {
+        console.error("[api/rag] voice rules load failed:", error);
+        loadPromptsSpan?.update({
+          level: "WARNING",
+          statusMessage: `Failed to load voice rules: ${error instanceof Error ? error.message : String(error)}`,
+        });
+        return "";
+      }),
+      namespaceClient
+        .query({
+          data: userQuestion,
+          topK: DEFAULT_TOP_K,
+          includeMetadata: true,
+        })
+        .catch((error: unknown) => {
+          throw new Error(
+            `Upstash query failed: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }),
+    ]);
+    systemPrompt = results[0];
+    voiceRules = results[1];
+    retrieval = results[2];
+
+    loadPromptsSpan?.end({
+      output: {
+        systemPromptLength: systemPrompt.length,
+        voiceRulesLength: voiceRules.length,
+      },
+    });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    loadPromptsSpan?.update({ level: "ERROR", statusMessage: errorMsg });
+    loadPromptsSpan?.end();
+    retrieveContextSpan?.update({ level: "ERROR", statusMessage: errorMsg });
+    retrieveContextSpan?.end();
+    trace?.update({
+      output: `Error: ${errorMsg}`,
+    });
+    if (langfuse) {
+      await langfuse.flushAsync();
+    }
+    throw error;
+  }
+
+  // Filter out system prompt and voice rule chunks from the retrieved context
+  // so the user cannot extract the instructions via prompt query.
+  const cleanRetrieval = retrieval.filter(
+    (r) => r.metadata?.kind !== "system-prompt" && r.metadata?.kind !== "voice"
+  );
+  const context = buildGroundedContext(cleanRetrieval);
+
+  retrieveContextSpan?.end({
+    output: {
+      hitsCount: cleanRetrieval.length,
+      hits: cleanRetrieval.map((r) => ({
+        id: r.id.toString(),
+        score: r.score,
+        kind: r.metadata?.kind,
+        title: r.metadata?.title,
+      })),
+    },
+  });
+
+  /* 5. Compose the system message. */
+  const systemContent = [
+    systemPrompt || FALLBACK_SYSTEM_PROMPT,
+    voiceRules ? `# Voice rules\n\n${voiceRules}` : "",
+    `# Retrieved context\n\n${context}`,
+  ]
+    .filter((section) => section.length > 0)
+    .join("\n\n---\n\n");
+
+  /* 6. Stream chat completion. */
+  let generation: ReturnType<NonNullable<typeof trace>["generation"]> | null = null;
+  if (trace) {
+    generation = trace.generation({
+      name: "generate-response",
+      model: modelClient.chatModel,
+      input: [
+        { role: "system", content: systemContent },
+        { role: "user", content: userQuestion },
+      ],
+    });
+  }
+
   try {
     const response = await modelClient.streamChat(
       [
@@ -302,22 +385,7 @@ export async function POST(req: Request): Promise<Response> {
       req.signal,
     );
 
-    if (langfuse && response.ok && response.body) {
-      const trace = langfuse.trace({
-        name: "rag-chat",
-        userId: ip,
-        metadata: { command, question: userQuestion },
-      });
-
-      const generation = trace.generation({
-        name: "completion",
-        model: modelClient.chatModel,
-        input: [
-          { role: "system", content: systemContent },
-          { role: "user", content: userQuestion },
-        ],
-      });
-
+    if (response.ok && response.body) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let accumulatedText = "";
@@ -334,18 +402,33 @@ export async function POST(req: Request): Promise<Response> {
             }
             controller.close();
 
-            generation.update({
-              output: accumulatedText,
-            });
-            generation.end();
-            await langfuse.flushAsync();
+            if (generation) {
+              generation.end({
+                output: accumulatedText,
+              });
+            }
+            if (trace) {
+              trace.update({
+                output: accumulatedText,
+              });
+            }
+            if (langfuse) {
+              await langfuse.flushAsync();
+            }
           } catch (error) {
-            generation.update({
-              level: "ERROR",
-              statusMessage: error instanceof Error ? error.message : String(error),
-            });
-            generation.end();
-            await langfuse.flushAsync();
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            if (generation) {
+              generation.update({ level: "ERROR", statusMessage: errorMsg });
+              generation.end();
+            }
+            if (trace) {
+              trace.update({
+                output: `Error: ${errorMsg}`,
+              });
+            }
+            if (langfuse) {
+              await langfuse.flushAsync();
+            }
             controller.error(error);
           }
         },
@@ -359,27 +442,33 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
 
+    // Stream was not ok
+    const statusMsg = `Response status: ${response.status}`;
+    if (generation) {
+      generation.update({ level: "ERROR", statusMessage: statusMsg });
+      generation.end();
+    }
+    if (trace) {
+      trace.update({
+        output: `Error: ${statusMsg}`,
+      });
+    }
+    if (langfuse) {
+      await langfuse.flushAsync();
+    }
     return response;
   } catch (error) {
-    if (langfuse) {
-      const trace = langfuse.trace({
-        name: "rag-chat",
-        userId: ip,
-        metadata: { command, question: userQuestion },
-      });
-      const generation = trace.generation({
-        name: "completion",
-        model: modelClient.chatModel,
-        input: [
-          { role: "system", content: systemContent },
-          { role: "user", content: userQuestion },
-        ],
-      });
-      generation.update({
-        level: "ERROR",
-        statusMessage: error instanceof Error ? error.message : String(error),
-      });
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (generation) {
+      generation.update({ level: "ERROR", statusMessage: errorMsg });
       generation.end();
+    }
+    if (trace) {
+      trace.update({
+        output: `Error: ${errorMsg}`,
+      });
+    }
+    if (langfuse) {
       await langfuse.flushAsync();
     }
     throw error;

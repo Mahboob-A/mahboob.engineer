@@ -138,4 +138,35 @@
 - `pnpm typecheck` -> Clean.
 - `pnpm build` -> Compiled successfully (44/44 static pages).
 
+---
+
+## T49.5: Best-practices Langfuse tracing setup
+
+**Task status:** done
+**Commit:** f295e76
+**Date:** 2026-07-22
+
+### What shipped
+
+- `components/hero/HeroTerminal.tsx`:
+  - Instantiated a persistent `sessionId` using `sessionStorage` on mount.
+  - Passed `sessionId` in the payload request body to `/api/rag`.
+- `app/api/rag/route.ts`:
+  - Updated `IncomingPayload` to parse `sessionId`.
+  - Initialized the root trace with `userId`, `sessionId`, `tags`, and explicit `input`.
+  - Created a nested `load-prompts` span that wraps prompt loading operations.
+  - Created a nested `retrieve-context` span that wraps vector index queries.
+  - Created a nested `generate-response` generation observation.
+  - Captured error states, error messages, and output payloads across all observations, updating inputs/outputs correctly.
+
+### Decisions
+
+- **Node-Safe Nesting:** Used the manual nesting capabilities of the vanilla `"langfuse"` SDK to maintain Next.js edge-runtime compatibility without installing heavy OpenTelemetry dependencies.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+- `pnpm build` -> Compiled successfully (44/44 static pages).
+
+
 
