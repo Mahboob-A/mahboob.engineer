@@ -14,8 +14,8 @@
  * Card rendering lifted to components/writing/BlogCard (T5.4).
  */
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import { BLOG_POSTS } from "@/data/blog";
 import { BlogCard } from "@/components/writing/BlogCard";
 import { FadeUp } from "@/components/motion";
@@ -24,24 +24,21 @@ const COLLAPSE_AT = 6;
 
 export function Blog() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  /* URL-seeded initial state. Reading once on mount via lazy init. */
-  const [expanded, setExpanded] = useState<boolean>(
-    () => searchParams.get("all") === "1",
-  );
-
-  /* If the user navigates between / and /?all=1, sync state from
-     the URL (e.g. opened a deep link). One-shot on each searchParams
-     change — no infinite loop. */
-  useEffect(() => {
-    setExpanded(searchParams.get("all") === "1");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  /* URL is the single source of truth for the collapse state via ?all=1.
+     useSyncExternalStore also tracks browser back/forward navigation. */
+  const subscribe = useCallback((cb: () => void) => {
+    window.addEventListener("popstate", cb);
+    return () => window.removeEventListener("popstate", cb);
+  }, []);
+  const getSnapshot = () =>
+    typeof window === "undefined"
+      ? false
+      : new URLSearchParams(window.location.search).get("all") === "1";
+  const expanded = useSyncExternalStore(subscribe, getSnapshot, () => false);
 
   const toggle = () => {
     const next = !expanded;
-    setExpanded(next);
     router.replace(next ? "/?all=1" : "/", { scroll: false });
   };
 

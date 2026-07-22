@@ -112,7 +112,7 @@ export default async function ExperienceDeepDive({
         <RelatedWriting entry={entry} posts={relatedPosts} />
       ) : null}
       {relatedProjects.length > 0 ? (
-        <CaseStudyCrossLink entry={entry} projects={relatedProjects} />
+        <CaseStudyCrossLink projects={relatedProjects} />
       ) : null}
     </InnerLayout>
   );
@@ -332,10 +332,8 @@ function RelatedWriting({
 }
 
 function CaseStudyCrossLink({
-  entry,
   projects,
 }: {
-  entry: ExperienceItem;
   projects: ProjectItem[];
 }) {
   if (projects.length === 0) return null;

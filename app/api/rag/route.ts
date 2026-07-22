@@ -28,7 +28,6 @@ import { env } from "@/lib/env";
 import {
   isRagCommand,
   questionForCommand,
-  type RagCommandKey,
 } from "@/lib/rag/command-map";
 import { RagProviderConfigurationError } from "@/lib/rag/providers";
 import { checkRateLimit, extractClientIp } from "@/lib/rag/rate-limit";

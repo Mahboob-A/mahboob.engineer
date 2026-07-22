@@ -150,7 +150,7 @@ function QuickContextCard() {
       </ul>
 
       <p className="text-t2 mb-2 font-mono text-[11.5px] tracking-[0.3px] uppercase">
-        Probably doesn't
+        Probably doesn&apos;t
       </p>
       <ul className="text-t2 space-y-2 text-[13.5px] leading-[1.55]">
         {QUICK_CONTEXT_DOESNT.map((item, i) => (

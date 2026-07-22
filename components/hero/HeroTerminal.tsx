@@ -17,12 +17,11 @@ import { useReducedMotion } from "framer-motion";
 import { TerminalBlock } from "@/components/ui/TerminalBlock";
 import { PROJECTS } from "@/data/projects";
 import { STACK } from "@/data/stack";
-import { ACTIVE_EXPERIENCE, COMPLETED_EXPERIENCE } from "@/data/experience";
+import { COMPLETED_EXPERIENCE } from "@/data/experience";
 import { BLOG_POSTS } from "@/data/blog";
 import {
   RAG_COMMAND_KEYS,
   RAG_COMMAND_LABEL,
-  questionForCommand,
   type RagCommandKey,
 } from "@/lib/rag/command-map";
 import { cn } from "@/lib/cn";
@@ -159,7 +158,6 @@ function ThinkingText() {
 function buildPayload(key: RagCommandKey): string[] {
   switch (key) {
     case "whoami": {
-      const active = ACTIVE_EXPERIENCE[0];
       const last = COMPLETED_EXPERIENCE[0];
       return [
         "Mahboob Alam — Co-Founder & Backend Engineer.",
@@ -274,7 +272,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
   /* ── Static-mode state ─────────────────────────────────────────────── */
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [typed, setTyped] = useState<string>("");
+  const [typedIndex, setTypedIndex] = useState<number>(0);
   const staticPayload = useMemo(
     () =>
       activeKey && activeKey !== "custom" ? buildPayload(activeKey) : [],
@@ -285,19 +283,22 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     if (mode !== "static") return;
     if (timerRef.current) clearTimeout(timerRef.current);
     if (activeKey === null || activeKey === "custom") {
-      setTyped("");
+      // Defer the reset into the setTimeout callback so the React 19
+      // `set-state-in-effect` rule allows it (sync setState in effect
+      // body triggers cascading renders).
+      timerRef.current = setTimeout(() => setTypedIndex(0), 0);
       return;
     }
     const full = staticPayload.join("\n");
     if (reduced) {
-      setTyped(full);
+      timerRef.current = setTimeout(() => setTypedIndex(full.length), 0);
       return;
     }
-    setTyped("");
+    timerRef.current = setTimeout(() => setTypedIndex(0), 0);
     let i = 0;
     const tick = () => {
       i += 1;
-      setTyped(full.slice(0, i));
+      setTypedIndex(i);
       if (i < full.length) {
         timerRef.current = setTimeout(tick, 12);
       }
@@ -308,8 +309,27 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     };
   }, [mode, activeKey, staticPayload, reduced]);
 
+  const typed = useMemo(() => {
+    if (activeKey === null || activeKey === "custom") return "";
+    return staticPayload.join("\n").slice(0, typedIndex);
+  }, [activeKey, staticPayload, typedIndex]);
+
   /* ── Dynamic-mode state & persistent chat history ──────────────────── */
-  const [history, setHistory] = useState<ChatMessage[]>([]);
+  const [history, setHistory] = useState<ChatMessage[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as ChatMessage[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.slice(-MAX_HISTORY_MESSAGES);
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    return [];
+  });
   const [dynPhase, setDynPhase] = useState<DynamicPhase>("idle");
   const [activeStreamingText, setActiveStreamingText] = useState<string>("");
   const [inputVal, setInputVal] = useState<string>("");
@@ -327,21 +347,6 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
-  /* Load persistent history from sessionStorage on mount */
-  useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as ChatMessage[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setHistory(parsed.slice(-MAX_HISTORY_MESSAGES));
-        }
-      }
-    } catch {
-      // Ignore storage errors
-    }
-  }, []);
 
   /* Save persistent history to sessionStorage with 15-msg auto-trim */
   const updateHistory = useCallback((updater: (prev: ChatMessage[]) => ChatMessage[]) => {
@@ -438,7 +443,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         updateHistory((prev) => [...prev, assistantMsg]);
         setActiveStreamingText("");
         setDynPhase("done");
-      } catch (error) {
+      } catch {
         if (controller.signal.aborted) {
           setActiveStreamingText("");
           setDynPhase("idle");
@@ -456,7 +461,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
         if (abortRef.current === controller) abortRef.current = null;
       }
     },
-    [updateHistory],
+    [updateHistory, sessionId],
   );
 
   /* Silent internal container scroll to bottom (prevents window page jumps) */

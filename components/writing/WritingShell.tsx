@@ -23,8 +23,8 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import {
   BlogCard,
 } from "@/components/writing/BlogCard";
@@ -47,24 +47,21 @@ export interface WritingShellProps {
 
 export function WritingShell({ allPosts, series }: WritingShellProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [filter, setFilter] = useState<BlogFilterValue>(INITIAL_FILTER);
 
-  // Phase 24 (T24.5): URL-seeded collapse state via ?all=1.
-  // Read once on mount via lazy init. The page is wrapped in
-  // <Suspense> so useSearchParams is allowed here.
-  const [expanded, setExpanded] = useState<boolean>(
-    () => searchParams.get("all") === "1",
-  );
-
-  // Sync expanded from the URL when searchParams changes (e.g.
-  // direct-link to /writing?all=1). One-shot per change — no
-  // infinite loop because the toggle updates the URL before
-  // next render.
-  useEffect(() => {
-    setExpanded(searchParams.get("all") === "1");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  // Phase 24 (T24.5): URL is the single source of truth for the
+  // collapse state via ?all=1. useSyncExternalStore keeps the
+  // component in sync with browser back/forward and any external
+  // URL mutation. Server snapshot returns false for SSR parity.
+  const subscribe = useCallback((cb: () => void) => {
+    window.addEventListener("popstate", cb);
+    return () => window.removeEventListener("popstate", cb);
+  }, []);
+  const getSnapshot = () =>
+    typeof window === "undefined"
+      ? false
+      : new URLSearchParams(window.location.search).get("all") === "1";
+  const expanded = useSyncExternalStore(subscribe, getSnapshot, () => false);
 
   // Featured post: prefer the most recent native; fallback to the
   // first medium post. Unfiltered — the featured post is always shown.
@@ -125,7 +122,6 @@ export function WritingShell({ allPosts, series }: WritingShellProps) {
 
   const toggleCollapse = () => {
     const next = !expanded;
-    setExpanded(next);
     router.replace(next ? "/writing?all=1" : "/writing", { scroll: false });
   };
 

@@ -72,7 +72,7 @@ export function Hero() {
                 Distributed systems, async pipelines, kernel isolation,
                 video infrastructure, networking.
               </strong>{" "}
-              I write the code that doesn't show up in a screenshot and
+              I write the code that doesn&apos;t show up in a screenshot and
               breaks the second it stops working. Then I write about
               it in{" "}
               <strong className="text-t1 font-semibold">
@@ -103,7 +103,7 @@ export function Hero() {
                 href="/lets-connect"
                 className="border-border text-t1 hover:border-acc hover:text-acc inline-flex items-center gap-2 rounded-md border px-5 py-3 font-mono text-[13px] font-medium transition-colors"
               >
-                Let's connect
+                Let&apos;s connect
               </Link>
             </div>
 

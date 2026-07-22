@@ -44,3 +44,8 @@ lighthouse-report.json
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+skills-lock.json
+.agents/
+.pnpm-store/
+.puku-cli/

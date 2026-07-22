@@ -267,7 +267,7 @@ export function SkillGraph() {
           </h2>
           <p className="text-t2 mt-3 max-w-[520px] text-[15px]">
             Not a list of logos. Hover a node to trace what it actually works with,
-            including what I'm actively leveling up.
+            including what I&apos;m actively leveling up.
           </p>
         </div>
 
