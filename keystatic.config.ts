@@ -81,7 +81,7 @@ const storage = hasGithubEnvInDev
       kind: "github" as const,
       repo: {
         owner: process.env.KEYSTATIC_GITHUB_REPO_OWNER ?? "Mahboob-A",
-        name: process.env.KEYSTATIC_GITHUB_REPO_NAME ?? "my-portfolio",
+        name: process.env.KEYSTATIC_GITHUB_REPO_NAME ?? "mahboob.engineer",
       },
     }
   : { kind: "local" as const };
