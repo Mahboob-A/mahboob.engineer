@@ -49,3 +49,4 @@ skills-lock.json
 .agents/
 .pnpm-store/
 .puku-cli/
+progress/
