@@ -60,11 +60,11 @@ function getEngineerFallbackMessage(): string {
 }
 
 const LONG_QUERY_ERROR_VARIANTS = [
-  "That's a bit too long! Let's keep it simple and under 100 words so I can parse it cleanly.",
-  "Whoa, that's a massive query! Mind breaking it down or keeping it under 100 words?",
-  "Sorry, my local database is optimized for concise portfolio questions. Could you please rephrase it to under 100 words?",
-  "Too many tokens! Please keep your question under 100 words so I can reply quickly.",
-  "Let's keep it brief. Rephrase your question to under 100 words, and I'll be happy to answer.",
+  "That's a bit too long! Let's keep it simple and under 120 words so I can parse it cleanly.",
+  "Whoa, that's a massive query! Mind breaking it down or keeping it under 120 words?",
+  "Sorry, my local database is optimized for concise portfolio questions. Could you please rephrase it to under 120 words?",
+  "Too many tokens! Please keep your question under 120 words so I can reply quickly.",
+  "Let's keep it brief. Rephrase your question to under 120 words, and I'll be happy to answer.",
 ] as const;
 
 function getLongQueryErrorMessage(): string {
@@ -542,7 +542,7 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     }
 
     const wordCount = query.split(/\s+/).filter(Boolean).length;
-    if (wordCount > 100) {
+    if (wordCount > 120) {
       const userMsgId = `user-${Date.now()}`;
       const userMessage: ChatMessage = {
         id: userMsgId,

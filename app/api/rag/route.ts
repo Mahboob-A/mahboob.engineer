@@ -212,8 +212,8 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const wordCount = rawQuestion.split(/\s+/).filter(Boolean).length;
-    if (wordCount > 100) {
-      return badRequest("Your question is too long. Please keep it under 100 words.");
+    if (wordCount > 120) {
+      return badRequest("Your question is too long. Please keep it under 120 words.");
     }
   }
 

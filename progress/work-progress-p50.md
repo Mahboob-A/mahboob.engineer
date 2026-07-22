@@ -151,9 +151,9 @@
 ### What shipped
 
 - `components/hero/HeroTerminal.tsx`:
-  - Intercepted query submissions exceeding 100 words in dynamic mode client-side, showing a random friendly error message directly in the terminal stream without initiating network requests.
+  - Intercepted query submissions exceeding 120 words in dynamic mode client-side, showing a random friendly error message directly in the terminal stream without initiating network requests.
 - `app/api/rag/route.ts`:
-  - Added backend validation rejecting incoming queries with a `400 Bad Request` if the word count exceeds 100 words.
+  - Added backend validation rejecting incoming queries with a `400 Bad Request` if the word count exceeds 120 words.
 
 ### Decisions
 
@@ -183,6 +183,27 @@
 ### Decisions
 
 - **Defensive Rule Filtering**: Implemented deterministic preprocessing checks on the user question before passing it to the LLM. This prevents prompt leakage by denying queries containing system prompt patterns from ever reaching the model.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+
+---
+
+## T50.9: RAG terminal word limit adjustment to 120
+
+**Task status:** done
+**Commit:** 1e011cf
+**Date:** 2026-07-22
+
+### What shipped
+
+- `components/hero/HeroTerminal.tsx` & `app/api/rag/route.ts`:
+  - Updated validation constraint and fallback error messages to allow queries up to 120 words.
+
+### Decisions
+
+- **Expanded limit**: Raised user query limit to 120 words to allow slightly longer queries while maintaining strict guardrails against spam and long token abuse.
 
 ### Verified
 
