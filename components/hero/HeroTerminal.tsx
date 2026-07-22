@@ -57,6 +57,19 @@ function getEngineerFallbackMessage(): string {
   return ENGINEER_FALLBACK_VARIANTS[idx];
 }
 
+const LONG_QUERY_ERROR_VARIANTS = [
+  "That's a bit too long! Let's keep it simple and under 100 words so I can parse it cleanly.",
+  "Whoa, that's a massive query! Mind breaking it down or keeping it under 100 words?",
+  "Sorry, my local database is optimized for concise portfolio questions. Could you please rephrase it to under 100 words?",
+  "Too many tokens! Please keep your question under 100 words so I can reply quickly.",
+  "Let's keep it brief. Rephrase your question to under 100 words, and I'll be happy to answer.",
+] as const;
+
+function getLongQueryErrorMessage(): string {
+  const idx = Math.floor(Math.random() * LONG_QUERY_ERROR_VARIANTS.length);
+  return LONG_QUERY_ERROR_VARIANTS[idx];
+}
+
 const SINGLE_WORD_THINKING_TERMS = [
   "Mehboobing",
   "Mahboobing",
@@ -505,6 +518,28 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     e.preventDefault();
     const query = inputVal.trim();
     if (!query || dynPhase === "loading" || dynPhase === "streaming") return;
+
+    const wordCount = query.split(/\s+/).filter(Boolean).length;
+    if (wordCount > 100) {
+      const userMsgId = `user-${Date.now()}`;
+      const userMessage: ChatMessage = {
+        id: userMsgId,
+        role: "user",
+        content: query,
+      };
+
+      const assistantErrorMsg: ChatMessage = {
+        id: `asst-${Date.now()}`,
+        role: "assistant",
+        content: getLongQueryErrorMessage(),
+      };
+
+      updateHistory((prev) => [...prev, userMessage, assistantErrorMsg]);
+      setInputVal("");
+      setDynPhase("error");
+      return;
+    }
+
     setActiveKey("custom");
     void startDynamic("custom", query);
   };

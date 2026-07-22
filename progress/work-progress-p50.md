@@ -139,3 +139,26 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T50.7: RAG terminal input word count guardrail
+
+**Task status:** done
+**Commit:** 54855a9
+**Date:** 2026-07-22
+
+### What shipped
+
+- `components/hero/HeroTerminal.tsx`:
+  - Intercepted query submissions exceeding 100 words in dynamic mode client-side, showing a random friendly error message directly in the terminal stream without initiating network requests.
+- `app/api/rag/route.ts`:
+  - Added backend validation rejecting incoming queries with a `400 Bad Request` if the word count exceeds 100 words.
+
+### Decisions
+
+- **Two-tier Guardrails**: Implemented word-count validation on both frontend and backend to block lengthy, spammy, or role-injection attempts, reducing LLM token consumption and improving platform durability.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.

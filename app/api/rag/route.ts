@@ -197,9 +197,21 @@ export async function POST(req: Request): Promise<Response> {
     return badRequest("Unknown or missing command key.");
   }
   const command = body.command;
-  const userQuestion =
+  const rawQuestion =
     typeof body.question === "string" && body.question.trim().length > 0
-      ? body.question.trim().slice(0, MAX_QUESTION_CHARS)
+      ? body.question.trim()
+      : "";
+
+  if (rawQuestion) {
+    const wordCount = rawQuestion.split(/\s+/).filter(Boolean).length;
+    if (wordCount > 100) {
+      return badRequest("Your question is too long. Please keep it under 100 words.");
+    }
+  }
+
+  const userQuestion =
+    rawQuestion.length > 0
+      ? rawQuestion.slice(0, MAX_QUESTION_CHARS)
       : command !== "custom"
         ? questionForCommand(command)
         : "Summarize Mahboob Alam's software engineering background.";
