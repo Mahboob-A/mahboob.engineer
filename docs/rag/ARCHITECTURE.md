@@ -154,17 +154,18 @@ Static mode should never depend on any dynamic dependency or env var.
 ## Voice and System Prompt
 
 The dynamic terminal's tone is governed by two corpus files, both indexed and
-retrieved at runtime — so editing them ships via `pnpm rag:reindex` without
+retrieved at runtime, so editing them ships via `pnpm rag:reindex` without
 a code redeploy:
 
-- `docs/rag/corpus/system-prompt.md` → `kind: "system-prompt"` chunks.
+- `docs/rag/corpus/system-prompt.md` -> `kind: "system-prompt"` chunks.
   Carries the literal instruction:
-  > Answer as Mahboob Alam in first person. ≤ 80 words. Use short sentences.
-  > Name specific projects, companies, and tools. No greetings. No "I'd be
-  > happy to". No bullet salad — at most 2 bullets. If the retrieved context
-  > doesn't cover the question, say "I don't have that here — try
-  > /lets-connect." Do not invent dates, employers, or numbers.
-- `docs/rag/corpus/voice.md` → `kind: "voice"` chunks. Carries the writing
+  > Keep responses informative, polite, and helpful. Aim for 120 to 180 words.
+  > Start with natural first-person statements (like "My strengths are...")
+  > instead of technical lists. Transition third-person queries warmly to first
+  > person. For capability queries, defend capability in first person and balance
+  > with growth areas (Go, Terraform, Kubernetes, eBPF) positively. Avoid
+  > AI slop (strive, delve, certainly). At most 2 bullets.
+- `docs/rag/corpus/voice.md` -> `kind: "voice"` chunks. Carries the writing
   rules (first person, short sentences, named tools, no buzzwords, decline
   gracefully).
 

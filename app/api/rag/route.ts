@@ -260,7 +260,12 @@ export async function POST(req: Request): Promise<Response> {
       }),
   ]);
 
-  const context = buildGroundedContext(retrieval);
+  // Filter out system prompt and voice rule chunks from the retrieved context
+  // so the user cannot extract the instructions via prompt query.
+  const cleanRetrieval = retrieval.filter(
+    (r) => r.metadata?.kind !== "system-prompt" && r.metadata?.kind !== "voice"
+  );
+  const context = buildGroundedContext(cleanRetrieval);
 
   /* 5. Compose the system message. */
   const systemContent = [
