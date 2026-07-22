@@ -65,7 +65,7 @@ export const VILLAINS: VillainData[] = [
       "Container runtime internals series",
     ],
     encounterLine:
-      "You approach the Go territories. You know the basics, but concurrency at scale? Come back stronger.",
+      "Monster Message: You approach the Go territories. You know the basics, but concurrency at scale? Come back stronger.",
   },
   {
     id: "terraform-titan",
@@ -88,7 +88,7 @@ export const VILLAINS: VillainData[] = [
       "Official Terraform AWS provider docs",
     ],
     encounterLine:
-      "Half your infrastructure is already code. The other half still lives in someone's head. Finish the job.",
+      "Monster Message: Half your infrastructure is already code. The other half still lives in someone's head. Finish the job.",
   },
   {
     id: "ebpf-phantom",
@@ -97,9 +97,9 @@ export const VILLAINS: VillainData[] = [
     learningArea: "eBPF / Kernel Networking",
     hp: 40,
     whatIKnow: [
-      "Linux namespaces and cgroups — used in Algocode production",
+      "Linux namespaces and cgroups, used in Algocode production",
       "Network namespaces, veth pairs, bridges from Poridhi specialisation",
-      "eBPF conceptual understanding — what it hooks into and why",
+      "eBPF conceptual understanding: What it hooks into and why",
     ],
     whatImLearning: [
       "Writing actual eBPF programs (XDP, TC hooks)",
@@ -111,7 +111,7 @@ export const VILLAINS: VillainData[] = [
       "Brendan Gregg's BPF Performance Tools",
     ],
     encounterLine:
-      "You've touched the kernel surface. Namespaces, cgroups — good. But the real power is deeper. Much deeper.",
+      "Monster Message: You've touched the kernel surface. Namespaces, cgroups. Good. But the real power is deeper. Much deeper.",
   },
 ];
 
