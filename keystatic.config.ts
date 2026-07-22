@@ -50,33 +50,41 @@ const CATEGORY_OPTIONS = [
  *
  * In dev, fall back silently to `local` storage.
  */
-const hasGithubEnvInDev =
-  !!process.env.KEYSTATIC_GITHUB_CLIENT_ID &&
-  !!process.env.KEYSTATIC_GITHUB_CLIENT_SECRET &&
-  !!process.env.KEYSTATIC_SECRET;
+const isProd = process.env.NODE_ENV === "production";
 
-if (!hasGithubEnvInDev) {
-  if (process.env.NODE_ENV === "production") {
-    /* Production: don't throw — the build needs to succeed. Log a
-       loud warning so the user sees it in Vercel's build logs. The
-       runtime check happens lazily in app/api/keystatic/[...params]/route.ts. */
-    console.warn(
-      "[keystatic.config] PRODUCTION: GitHub OAuth env vars missing. " +
-        "Set KEYSTATIC_SECRET + KEYSTATIC_GITHUB_CLIENT_ID + " +
-        "KEYSTATIC_GITHUB_CLIENT_SECRET + KEYSTATIC_GITHUB_REPO_OWNER + " +
-        "KEYSTATIC_GITHUB_REPO_NAME in Vercel → Environment Variables. " +
-        "Until then, /keystatic will 500 at first access. " +
-        "See docs/DEPLOY.md for the full checklist.",
-    );
+// Log configuration warnings only on the server
+if (typeof window === "undefined") {
+  if (isProd) {
+    const missing = [
+      "KEYSTATIC_SECRET",
+      "KEYSTATIC_GITHUB_CLIENT_ID",
+      "KEYSTATIC_GITHUB_CLIENT_SECRET",
+      "KEYSTATIC_GITHUB_REPO_OWNER",
+      "KEYSTATIC_GITHUB_REPO_NAME"
+    ].filter((k) => !process.env[k]);
+
+    if (missing.length > 0) {
+      console.warn(
+        `[keystatic.config] PRODUCTION: GitHub OAuth env vars missing: ${missing.join(", ")}. ` +
+          `Set them in Vercel → Project Settings → Environment Variables. ` +
+          `Until then, Keystatic API routes will return a 500 error.`
+      );
+    }
   } else {
-    console.warn(
-      "[keystatic.config] GitHub OAuth env vars not set. Using local storage for dev. " +
-        "Set them before deploying (docs/DEPLOY.md).",
-    );
+    const missing = [
+      "KEYSTATIC_SECRET",
+      "KEYSTATIC_GITHUB_CLIENT_ID",
+      "KEYSTATIC_GITHUB_CLIENT_SECRET"
+    ].filter((k) => !process.env[k]);
+    if (missing.length > 0) {
+      console.warn(
+        `[keystatic.config] GitHub OAuth environment variables not set. Using local storage for development.`
+      );
+    }
   }
 }
 
-const storage = hasGithubEnvInDev
+const storage = isProd
   ? {
       kind: "github" as const,
       repo: {
