@@ -208,3 +208,24 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T50.10: RAG system prompt injection hardening
+
+**Task status:** done
+**Commit:** b75c6bc
+**Date:** 2026-07-22
+
+### What shipped
+
+- `lib/rag/command-map.ts`:
+  - Extended the `isPotentialPromptInjection` matching function to scan for broader, instruction-probing inputs (e.g. asking for "instructions", "rules", "voice rules", or requesting specific doc filenames like `prompt-guide.md`, `private-boundaries.md`, etc.).
+
+### Decisions
+
+- **Injection defense expansion**: Hardened keyword constraints and regular expression checks to stop users from forcing the agent to reveal internal developer commands or system instructions.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.

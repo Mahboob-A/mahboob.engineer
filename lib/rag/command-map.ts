@@ -72,7 +72,20 @@ export function isPotentialPromptInjection(query: string): boolean {
     q.includes("hidden prompt") ||
     q.includes("corpus/system-prompt") ||
     q.includes("voice.md") ||
-    q.includes("system-prompt.md");
+    q.includes("system-prompt.md") ||
+    q.includes("prompt-guide") ||
+    q.includes("private-boundaries") ||
+    q.includes("rag-management") ||
+    q.includes("your instructions") ||
+    q.includes("your rules") ||
+    q.includes("voice rules") ||
+    q.includes("writing rules") ||
+    q.includes("give me your prompt") ||
+    q.includes("reveal your prompt") ||
+    q.includes("what are your instructions") ||
+    q.includes("how are you programmed") ||
+    q.includes("system instructions") ||
+    q.includes("system guidelines");
 
   // Bypassing / jailbreak attempts
   const matchesJailbreak =
@@ -86,7 +99,9 @@ export function isPotentialPromptInjection(query: string): boolean {
     q.includes("switch roles") ||
     q.includes("developer mode") ||
     q.includes("ignore the rules") ||
-    /ignore\s+(?:previous|above|the\s+rules|instructions)/i.test(q);
+    /ignore\s+(?:previous|above|the\s+rules|instructions)/i.test(q) ||
+    /give\s+me\s+(?:instructions|rules|the\s+prompt|your\s+prompt)/i.test(q) ||
+    /reveal\s+(?:instructions|rules|the\s+prompt|your\s+prompt)/i.test(q);
 
   return matchesPromptRequest || matchesJailbreak;
 }
