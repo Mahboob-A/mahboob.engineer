@@ -162,3 +162,28 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T50.8: RAG system prompt injection mitigation
+
+**Task status:** done
+**Commit:** 2474039
+**Date:** 2026-07-22
+
+### What shipped
+
+- `lib/rag/command-map.ts`:
+  - Exported `isPotentialPromptInjection` matching helper function to scan for injection vectors (e.g. system prompt probe terms, ignore instructions, jailbreak attempts) and defined `RAG_REJECTION_MESSAGE`.
+- `components/hero/HeroTerminal.tsx`:
+  - Added client-side detection to intercept potential prompt injections, outputting the standard first-person rejection message instantly without making a network request.
+- `app/api/rag/route.ts`:
+  - Integrated backend injection validation, returning the same clean rejection message as a standard successful plain-text response when probing/jailbreaking queries bypass client constraints.
+
+### Decisions
+
+- **Defensive Rule Filtering**: Implemented deterministic preprocessing checks on the user question before passing it to the LLM. This prevents prompt leakage by denying queries containing system prompt patterns from ever reaching the model.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.

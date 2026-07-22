@@ -28,6 +28,8 @@ import { env } from "@/lib/env";
 import {
   isRagCommand,
   questionForCommand,
+  isPotentialPromptInjection,
+  RAG_REJECTION_MESSAGE,
 } from "@/lib/rag/command-map";
 import { RagProviderConfigurationError } from "@/lib/rag/providers";
 import { checkRateLimit, extractClientIp } from "@/lib/rag/rate-limit";
@@ -203,6 +205,12 @@ export async function POST(req: Request): Promise<Response> {
       : "";
 
   if (rawQuestion) {
+    if (isPotentialPromptInjection(rawQuestion)) {
+      return new Response(RAG_REJECTION_MESSAGE, {
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
     const wordCount = rawQuestion.split(/\s+/).filter(Boolean).length;
     if (wordCount > 100) {
       return badRequest("Your question is too long. Please keep it under 100 words.");

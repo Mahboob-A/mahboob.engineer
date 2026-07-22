@@ -56,3 +56,37 @@ export function isRagCommand(value: unknown): value is RagCommandKey | "custom" 
 export function questionForCommand(command: RagCommandKey): string {
   return RAG_COMMAND_QUESTION[command];
 }
+
+export const RAG_REJECTION_MESSAGE =
+  "I can only answer questions related to my software engineering work, projects, and portfolio. For other inquiries, please reach out via /lets-connect.";
+
+export function isPotentialPromptInjection(query: string): boolean {
+  const q = query.toLowerCase();
+
+  // Direct requests for instructions or prompts
+  const matchesPromptRequest =
+    q.includes("system prompt") ||
+    q.includes("system instruction") ||
+    q.includes("system message") ||
+    q.includes("initial prompt") ||
+    q.includes("hidden prompt") ||
+    q.includes("corpus/system-prompt") ||
+    q.includes("voice.md") ||
+    q.includes("system-prompt.md");
+
+  // Bypassing / jailbreak attempts
+  const matchesJailbreak =
+    q.includes("ignore previous instructions") ||
+    q.includes("ignore the instructions") ||
+    q.includes("ignore all instructions") ||
+    q.includes("bypass safety") ||
+    q.includes("jailbreak") ||
+    q.includes("pretend to be") ||
+    q.includes("you are now a") ||
+    q.includes("switch roles") ||
+    q.includes("developer mode") ||
+    q.includes("ignore the rules") ||
+    /ignore\s+(?:previous|above|the\s+rules|instructions)/i.test(q);
+
+  return matchesPromptRequest || matchesJailbreak;
+}

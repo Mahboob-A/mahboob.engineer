@@ -23,6 +23,8 @@ import {
   RAG_COMMAND_KEYS,
   RAG_COMMAND_LABEL,
   type RagCommandKey,
+  isPotentialPromptInjection,
+  RAG_REJECTION_MESSAGE,
 } from "@/lib/rag/command-map";
 import { cn } from "@/lib/cn";
 import "./HeroTerminal.css";
@@ -518,6 +520,26 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
     e.preventDefault();
     const query = inputVal.trim();
     if (!query || dynPhase === "loading" || dynPhase === "streaming") return;
+
+    if (isPotentialPromptInjection(query)) {
+      const userMsgId = `user-${Date.now()}`;
+      const userMessage: ChatMessage = {
+        id: userMsgId,
+        role: "user",
+        content: query,
+      };
+
+      const assistantRejectionMsg: ChatMessage = {
+        id: `asst-${Date.now()}`,
+        role: "assistant",
+        content: RAG_REJECTION_MESSAGE,
+      };
+
+      updateHistory((prev) => [...prev, userMessage, assistantRejectionMsg]);
+      setInputVal("");
+      setDynPhase("done");
+      return;
+    }
 
     const wordCount = query.split(/\s+/).filter(Boolean).length;
     if (wordCount > 100) {
