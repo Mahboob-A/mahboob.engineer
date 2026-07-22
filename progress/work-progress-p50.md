@@ -30,7 +30,7 @@
 ## T50.2: Resend contact form custom domain sender update
 
 **Task status:** done
-**Commit:** cd1f723
+**Commit:** 4c026d1
 **Date:** 2026-07-22
 
 ### What shipped
@@ -45,4 +45,28 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T50.3: Resend contact form email custom sender update (portfolio-dm@mahboob.engineer)
+
+**Task status:** done
+**Commit:** 0637773
+**Date:** 2026-07-22
+
+### What shipped
+
+- `app/api/contact/route.ts`:
+  - Updated the `FROM_EMAIL` constant from `"noreply@mahboob.engineer"` to `"portfolio-dm@mahboob.engineer"`.
+- `docs/DEPLOY.md`:
+  - Updated custom sender setup instructions to reference `portfolio-dm@mahboob.engineer`.
+
+### Decisions
+
+- **Distinguished Sender Address**: Changed the sender username from generic `noreply` to `portfolio-dm` to make outreach from the portfolio easily recognizable and separate from generic provider updates.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+
 

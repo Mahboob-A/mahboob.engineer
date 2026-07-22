@@ -29,7 +29,7 @@ import { CONTACT_LABELS } from "@/data/contact";
 const TO_EMAIL = "connect.mahboobalam@gmail.com";
 /* Resend's default verified sender. Replace with `noreply@mahboob.engineer`
    once the domain is verified in the Resend dashboard. */
-const FROM_EMAIL = "noreply@mahboob.engineer";
+const FROM_EMAIL = "portfolio-dm@mahboob.engineer";
 
 /* ─────────────────────────────────────────────────────────────────────
    Validation

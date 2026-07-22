@@ -139,14 +139,14 @@ Visit `https://mahboob.engineer` and check:
 ## 9. (Optional) Verify a custom Resend sender
 
 The contact form defaults to `onboarding@resend.dev` (Resend's free-tier
-verified sender). To use `noreply@mahboob.engineer`:
+verified sender). To use `portfolio-dm@mahboob.engineer`:
 
 1. Resend dashboard → Domains → Add Domain → `mahboob.engineer`.
 2. Add the DNS records Resend shows you.
 3. Wait for verification (usually <1h).
 4. Resend → Domains → `mahboob.engineer` → click → "Add Sender".
 5. Update `app/api/contact/route.ts`: replace `from: "onboarding@resend.dev"`
-   with `from: "noreply@mahboob.engineer"`.
+   with `from: "portfolio-dm@mahboob.engineer"`.
 6. Commit + push.
 
 ---
