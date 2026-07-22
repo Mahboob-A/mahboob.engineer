@@ -174,7 +174,7 @@ export async function POST(req: Request): Promise<Response> {
     const resetTimeSec = Math.max(0, Math.ceil((rl.resetAt - Date.now()) / 1000));
     const minutes = Math.floor(resetTimeSec / 60);
     const seconds = resetTimeSec % 60;
-    const message = `Too many requests. I am sorry for the inconvenience, but I have to limit queries to 20 per 30 minutes to stop spam, bots, and billing abuse. Please try again in ${minutes}m ${seconds}s.`;
+    const message = `Too many requests. I am sorry for the inconvenience, but I have to limit queries to ${rl.limit} per 30 minutes to stop spam, bots, and billing abuse. Please try again in ${minutes}m ${seconds}s.`;
 
     return new Response(message, {
       status: 429,

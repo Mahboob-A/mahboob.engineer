@@ -109,3 +109,33 @@
   - Third consecutive query correctly returned a 429 response showing: "Too many requests. I am sorry for the inconvenience, but I have to limit queries to 20 per 30 minutes to stop spam, bots, and billing abuse. Please try again in 29m 39s."
   - Verified that the terminal screen successfully outputs the countdown message.
 
+---
+
+## T49.4: RAG dynamic rate-limiting variable rename
+
+**Task status:** done
+**Commit:** c77ec76
+**Date:** 2026-07-22
+
+### What shipped
+
+- `.env.example`:
+  - Renamed `RAG_RATE_LIMIT_PER_HOUR` to `RAG_RATE_LIMIT_PER_THIRTY_MINUTES`.
+- `lib/rag/rate-limit.ts`:
+  - Re-wrote to dynamically read from `process.env.RAG_RATE_LIMIT_PER_THIRTY_MINUTES` instead of hardcoding `20`.
+  - Returned the parsed `limit` count in `RateLimitResult`.
+- `app/api/rag/route.ts`:
+  - Updated the polite 429 error message to dynamically interpolate the current limit from `rl.limit` instead of hardcoding `20`.
+- `docs/RAG_TERMINAL.md` & `docs/rag/OPERATIONS.md`:
+  - Updated configuration names and text descriptions to match the new `RAG_RATE_LIMIT_PER_THIRTY_MINUTES` variable.
+
+### Decisions
+
+- **Dynamic Limit Interpolation:** Added the current limit count directly into `RateLimitResult` so the API route has clean access to the resolved count.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+- `pnpm build` -> Compiled successfully (44/44 static pages).
+
+

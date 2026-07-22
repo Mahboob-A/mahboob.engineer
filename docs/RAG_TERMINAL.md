@@ -251,7 +251,7 @@ Negligible. The upgrade pays for itself the first time a visitor spends
       Upstash console under `portfolio-rag` namespace)
 - [x] `app/api/rag/route.ts` implemented
 - [x] `HeroTerminal.tsx` has the static/dynamic toggle + streaming fetch
-- [x] `lib/rag/rate-limit.ts` enforces 20/IP/hour (`RAG_RATE_LIMIT_PER_HOUR`
+- [x] `lib/rag/rate-limit.ts` enforces 20/IP/30 mins (`RAG_RATE_LIMIT_PER_THIRTY_MINUTES`
       to override)
 - [x] `docs/rag/corpus/voice.md` + `system-prompt.md` indexed as
       retrievable chunks; the route concatenates them into the system

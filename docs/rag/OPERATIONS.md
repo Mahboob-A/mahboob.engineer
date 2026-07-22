@@ -300,11 +300,9 @@ Static mode is the fallback path and must remain independent.
 - `max_tokens` is pinned at `500`. The `<= 80 words` system prompt
   doesn't need much headroom; raising this only helps if a question
   drags the model past 500 tokens.
-- The route's per-IP rate limit (default 20/hour, configurable via
-  `RAG_RATE_LIMIT_PER_HOUR`) is in-memory. It resets on cold start
-  and is not shared across Vercel cold starts — so a single visitor
-  on a long session can get more than 20 requests/hour via a restart.
-  Acceptable for v1; tighten with Upstash Redis later.
+- The route's per-IP rate limit (default 20/30 mins, configurable via
+  `RAG_RATE_LIMIT_PER_THIRTY_MINUTES`) uses Upstash Redis with a sliding window
+  (and falls back to in-memory locally if Redis is not configured).
 
 ## Manual QA Checklist
 
