@@ -21,15 +21,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { CONTACT_LABELS } from "@/data/contact";
+import { env } from "@/lib/env";
 
-/* ─────────────────────────────────────────────────────────────────────
-   Constants
-   ───────────────────────────────────────────────────────────────────── */
-
-const TO_EMAIL = "connect.mahboobalam@gmail.com";
-/* Resend's default verified sender. Replace with `noreply@mahboob.engineer`
-   once the domain is verified in the Resend dashboard. */
-const FROM_EMAIL = "portfolio-dm@mahboob.engineer";
 
 /* ─────────────────────────────────────────────────────────────────────
    Validation
@@ -116,6 +109,9 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
+  const fromEmail = env.required("CONTACT_FROM_EMAIL");
+  const toEmail = env.required("CONTACT_TO_EMAIL");
+
   /* 4. Compose email. */
   const subjectLabel = result.label ?? "note";
   const subject = `[${subjectLabel}] ${result.title}`;
@@ -130,8 +126,8 @@ export async function POST(req: Request): Promise<Response> {
   try {
     const resend = new Resend(apiKey);
     const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: TO_EMAIL,
+      from: fromEmail,
+      to: toEmail,
       replyTo: result.email,
       subject,
       text,

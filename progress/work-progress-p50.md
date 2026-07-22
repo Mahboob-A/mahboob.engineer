@@ -92,5 +92,27 @@
 
 - `pnpm typecheck` -> Clean.
 
+---
 
+## T50.5: Dynamic contact emails environment configuration
 
+**Task status:** done
+**Commit:** e9e70f5
+**Date:** 2026-07-22
+
+### What shipped
+
+- `app/api/contact/route.ts`:
+  - Refactored `FROM_EMAIL` and `TO_EMAIL` constants to load dynamically from `CONTACT_FROM_EMAIL` and `CONTACT_TO_EMAIL` environment variables using the `env.required()` helper.
+- `.env.example` & `.env`:
+  - Appended `CONTACT_FROM_EMAIL` and `CONTACT_TO_EMAIL` variables.
+- `docs/DEPLOY.md`:
+  - Updated environment variables reference list and verified custom sender instructions to use the new environment configuration.
+
+### Decisions
+
+- **Environment-Driven Configuration**: Replaced hardcoded values with runtime environment variables to enable email destination/sender updates without code changes or redeploys, satisfying dynamic configuration standards.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.

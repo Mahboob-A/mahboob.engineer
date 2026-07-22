@@ -67,6 +67,8 @@ on preview deploys):
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | `https://mahboob.engineer` | Public; embedded in OG images |
 | `RESEND_API_KEY` | resend.com → API Keys | Contact form backend |
+| `CONTACT_FROM_EMAIL` | e.g. `portfolio-dm@mahboob.engineer` | Outgoing sender address |
+| `CONTACT_TO_EMAIL` | e.g. `connect.mahboobalam@gmail.com` | Destination inbox for submissions |
 | `KEYSTATIC_SECRET` | `openssl rand -hex 32` | Signs admin session cookies |
 | `KEYSTATIC_GITHUB_CLIENT_ID` | GitHub OAuth App (step 6) | |
 | `KEYSTATIC_GITHUB_CLIENT_SECRET` | GitHub OAuth App (step 6) | |
@@ -138,16 +140,14 @@ Visit `https://mahboob.engineer` and check:
 
 ## 9. (Optional) Verify a custom Resend sender
 
-The contact form defaults to `onboarding@resend.dev` (Resend's free-tier
-verified sender). To use `portfolio-dm@mahboob.engineer`:
+The contact form uses the environment variables `CONTACT_FROM_EMAIL` and `CONTACT_TO_EMAIL` for dynamic email routing. To set up and verify a custom domain sender like `portfolio-dm@mahboob.engineer`:
 
 1. Resend dashboard → Domains → Add Domain → `mahboob.engineer`.
 2. Add the DNS records Resend shows you.
 3. Wait for verification (usually <1h).
 4. Resend → Domains → `mahboob.engineer` → click → "Add Sender".
-5. Update `app/api/contact/route.ts`: replace `from: "onboarding@resend.dev"`
-   with `from: "portfolio-dm@mahboob.engineer"`.
-6. Commit + push.
+5. Add `CONTACT_FROM_EMAIL=portfolio-dm@mahboob.engineer` and `CONTACT_TO_EMAIL=your-recipient@email.com` in Vercel → Project Settings → Environment Variables.
+6. The server will dynamically load these values at request time. No further code edits or git commits are required to change sender/recipient emails.
 
 ---
 
