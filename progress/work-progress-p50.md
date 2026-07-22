@@ -51,7 +51,7 @@
 ## T50.3: Resend contact form email custom sender update (portfolio-dm@mahboob.engineer)
 
 **Task status:** done
-**Commit:** 0637773
+**Commit:** 8cc43ee
 **Date:** 2026-07-22
 
 ### What shipped
@@ -68,5 +68,29 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T50.4: Vercel Web Analytics integration
+
+**Task status:** done
+**Commit:** 7b3d6ae
+**Date:** 2026-07-22
+
+### What shipped
+
+- `package.json` & `pnpm-lock.yaml`:
+  - Installed `@vercel/analytics` package.
+- `app/layout.tsx`:
+  - Imported and rendered `<Analytics />` from `@vercel/analytics/next` at the root layout level.
+
+### Decisions
+
+- **Framework-optimized integration**: Utilized the Next.js App Router-specific `@vercel/analytics/next` package to track page views and interactions cleanly.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+
 
 

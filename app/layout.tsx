@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/motion";
 import { ogUrlFor, ogConstants } from "@/lib/og-helpers";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "@/components/diagrams/diagrams.css";
 import "@/components/sections/skill-graph.css";
@@ -160,6 +161,7 @@ export default function RootLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
