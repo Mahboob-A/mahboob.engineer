@@ -1,8 +1,9 @@
 # Phase 59: True Root-Cause Fix for Duplicate Game Mount
 
 **Phase:** 59: True Root-Cause Fix for Duplicate Game Mount (Suspense + dynamic + useSearchParams)
-**Phase status:** done
+**Phase status:** reverted
 **Date started:** 2026-07-25
+**Date reverted:** 2026-07-25
 
 ---
 
@@ -101,3 +102,87 @@
 5. DevTools Console: temporarily add `console.log("[GameRoot] useEffect")`
    to the top of the useEffect to verify the effect runs only ONCE.
    Remove the log before committing.
+
+---
+
+## T59.2: Reverted Phase 59 Fix (Diagnosis Was Wrong)
+
+**Task status:** done
+**Commit:** <filled in after commit>
+**Date:** 2026-07-25
+
+### What shipped
+
+- `game/index.tsx`: reverted to the pre-Phase 59 state at commit
+  `1811c29`. The `mountedOnce` ref and its guard are removed. The
+  useEffect is back to its original form: `if (gameRef.current) return;`
+  as the only guard, with cleanup that nulls `gameRef.current`.
+- `progress/work-progress-p59.md`: phase status updated to `reverted`.
+
+### Decisions
+
+- **The Phase 59 diagnosis was wrong.** I theorized that Next.js 16's
+  `useSearchParams` + `<Suspense>` + `dynamic(..., { ssr: false })`
+  combination caused a double-mount in the same render cycle, and
+  that the existing `gameRef` guard was insufficient because the
+  cleanup nulls `gameRef.current` between mounts. I added a persistent
+  `mountedOnce` ref to catch the second mount.
+
+- **Actual sequence with my fix (the bug):**
+  1. Mount #1: `mountedOnce.current = false` → set to `true` →
+     `gameRef.current = null` → `new Phaser.Game(config)` →
+     Phaser instance #1 starts loading assets.
+  2. Cleanup of mount #1 runs: `gameRef.current?.destroy(true)` →
+     **Phaser instance #1 destroyed mid-preload** → asset batch 1
+     cancelled (requests already in flight continue to network).
+  3. Mount #2: `mountedOnce.current = true` → **bail out**, no
+     Phaser instance created.
+
+- **Result:** no game at all. The asset batch the user sees loading
+  once is from Phaser #1's cancelled preload (HTTP responses still
+  arrived for already-in-flight requests). But no Phaser canvas was
+  ever rendered.
+
+- **The existing `gameRef` guard is correct.** When the cleanup
+  nulls `gameRef.current`, mount #2 correctly proceeds to create a
+  fresh Phaser instance (replacing the destroyed #1). `useRef` is
+  per-mount — a fresh ref is created on each mount, so the
+  cleanup-time null correctly resets the guard for the next mount's
+  useEffect.
+
+- **The reported "audio loads once" result is from Phase 58's fix,
+  not Phase 59's.** Phase 58 removed the URL mutation that triggered
+  the RSC re-fetch. Phase 58's fix is the actual fix for the
+  duplicate-download bug. Phase 57 + Phase 58 + Phase 59 were a
+  sequence of attempts where each identified a partial layer of the
+  problem; Phase 58 alone resolves the duplicate downloads.
+
+### Caveats / pending
+
+- **Lesson logged:** I committed a fix based on a theorized
+  framework-level bug without first verifying the theory empirically.
+  The plan file called for temporary `console.log` instrumentation
+  to confirm the double-mount, but I skipped that verification step
+  and committed directly. The user caught the regression.
+  **Going forward: any fix involving a multi-mount scenario must
+  include empirical instrumentation before committing.**
+
+- **The duplicate-asset-download bug is fixed by Phase 58 alone.**
+  The user confirmed "the sound files are loaded for once" after
+  Phase 58. No further code changes are needed for the duplicate
+  download issue.
+
+- **If the user observes any remaining duplicate requests in the
+  Network panel:** the next step is empirical instrumentation
+  (conditional `console.log`) to verify whether the component is
+  actually double-mounting, or whether the duplicates are a
+  caching artifact. **No code changes without observation.**
+
+### Verified
+
+- `game/index.tsx` restored to commit `1811c29` state via
+  `git checkout 1811c29 -- game/index.tsx`.
+- `pnpm typecheck` and `pnpm test:security` clean (running).
+- The existing `gameRef.current` guard is the only defense against
+  double Phaser instantiation. This guard works correctly because
+  `useRef` is per-mount.
