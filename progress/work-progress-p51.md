@@ -1,7 +1,7 @@
 # Phase 51: Analytics & Bounce Rate Optimization
 
 **Phase:** 51: Analytics & Bounce Rate Optimization
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-24
 
 ---
@@ -44,6 +44,27 @@
 ### Decisions
 
 - **Direct Route Visibility**: Surfaced the D3 dependency graph route (`/stack`) directly in the hero CTA button row to entice visitors to explore technical skills immediately upon landing.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+
+---
+
+## T51.3: Interactive Game Mode Banner & Quick Access
+
+**Task status:** done
+**Commit:** pending
+**Date:** 2026-07-24
+
+### What shipped
+
+- `components/sections/Hero.tsx`:
+  - Added an interactive Game Mode banner directly under the Hero CTA button row inviting visitors to explore "Backend City" (`/game`).
+
+### Decisions
+
+- **Hero-Level Game Discovery**: Highlighted the 2D Phaser game mode directly in the main hero fold so recruiters and visitors looking for interactive experiences navigate to `/game` instead of exiting after a single page scroll.
 
 ### Verified
 

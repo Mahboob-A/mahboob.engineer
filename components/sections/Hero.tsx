@@ -113,6 +113,24 @@ export function Hero() {
               </Link>
             </div>
 
+            {/* Phase 51 T51.3: Game Mode Banner for interactive exploration */}
+            <div className="border-border/60 bg-surface/40 mt-6 flex items-center justify-between gap-4 rounded-lg border px-4 py-3 font-mono text-[12.5px]">
+              <div className="flex items-center gap-2.5">
+                <span className="bg-amber/20 text-amber flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold">
+                  🎮
+                </span>
+                <span className="text-t2">
+                  Prefer a 2D RPG exploration of Backend City?
+                </span>
+              </div>
+              <Link
+                href="/game"
+                className="text-amber hover:text-amber/80 flex items-center gap-1 font-semibold transition-colors shrink-0"
+              >
+                Launch Game Mode →
+              </Link>
+            </div>
+
             <StatRow stats={[...STATS]} className="mt-12" />
           </div>
 
