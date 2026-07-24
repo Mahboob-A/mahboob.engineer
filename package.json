@@ -12,6 +12,7 @@
     "format:check": "prettier --check .",
     "extract:game-assets": "python3 scripts/extract-game-assets.py",
     "rag:reindex": "tsx scripts/rag-reindex.ts",
+    "test:security": "tsx tests/api/run-all.ts",
     "screenshot": "node scripts/screenshots.mjs",
     "lighthouse": "node scripts/lighthouse.mjs"
   },
