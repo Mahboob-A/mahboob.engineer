@@ -108,7 +108,7 @@
 ## T59.2: Reverted Phase 59 Fix (Diagnosis Was Wrong)
 
 **Task status:** done
-**Commit:** <filled in after commit>
+**Commit:** 9ce6602
 **Date:** 2026-07-25
 
 ### What shipped
