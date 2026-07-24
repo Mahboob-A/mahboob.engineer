@@ -9,7 +9,7 @@
 ## T51.1: Track Terminal & Interactive Component Events
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 7a7782e
 **Date:** 2026-07-24
 
 ### What shipped
