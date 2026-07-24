@@ -1,7 +1,7 @@
 # Phase 54: Enhanced Vercel Analytics Event Tracking
 
 **Phase:** 54: Enhanced Vercel Analytics Event Tracking
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-24
 
 ---
@@ -51,3 +51,30 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T54.3: Social Links & Resume Access Event Tracking
+
+**Task status:** done
+**Commit:** pending
+**Date:** 2026-07-24
+
+### What shipped
+
+- `components/contact/ContactSidebar.tsx`:
+  - Added `track("resume_click", { href })` when the Resume link is clicked.
+  - Added `track("social_link_click", { label, href })` for all social links (GitHub, LinkedIn, Medium, Taply, Email).
+- `components/contact/LandingQuickLinkRow.tsx`:
+  - Created client quick-link row tracking landing page social clicks (`social_link_click`).
+- `components/sections/Contact.tsx`:
+  - Integrated `LandingQuickLinkRow` for landing page quick-links.
+
+### Decisions
+
+- **Outbound Link & Resume Telemetry**: Wrapped all external social profiles and resume downloads with custom event tracking to measure visitor engagement beyond pageviews.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+- `pnpm test:security` -> Passed.

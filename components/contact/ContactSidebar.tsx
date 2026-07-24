@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * components/contact/ContactSidebar.tsx
  *
@@ -15,9 +17,10 @@
  * the alignment. Two of them were dropped before commit;
  * `HowTheFormGetsUsedCard` stays with tighter spacing.
  *
- * Server Component. All data comes from `data/contact.ts`. No state.
+ * All data comes from `data/contact.ts`.
  */
 
+import { track } from "@vercel/analytics";
 import { cn } from "@/lib/cn";
 import {
   AVAILABILITY,
@@ -100,9 +103,22 @@ function DirectLinksCard() {
 }
 
 function DirectLinkRow({ link }: { link: DirectLinkItem }) {
+  const handleClick = () => {
+    try {
+      if (link.label === "Resume") {
+        track("resume_click", { href: link.href });
+      } else {
+        track("social_link_click", { label: link.label, href: link.href });
+      }
+    } catch {
+      // Ignore analytics failures
+    }
+  };
+
   return (
     <a
       href={link.href}
+      onClick={handleClick}
       target={link.external ? "_blank" : undefined}
       rel={link.external ? "noreferrer" : undefined}
       className="hover:border-acc/40 hover:bg-card/40 border-border group flex items-center justify-between gap-3 rounded-[6px] border border-transparent px-3 py-2.5 transition-colors"
