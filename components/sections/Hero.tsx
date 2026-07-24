@@ -94,6 +94,12 @@ export function Hero() {
                 View systems →
               </Link>
               <Link
+                href="/stack"
+                className="border-border text-t1 hover:border-acc hover:text-acc inline-flex items-center gap-2 rounded-md border px-5 py-3 font-mono text-[13px] font-medium transition-colors"
+              >
+                Explore stack
+              </Link>
+              <Link
                 href="/writing"
                 className="border-border text-t1 hover:border-acc hover:text-acc inline-flex items-center gap-2 rounded-md border px-5 py-3 font-mono text-[13px] font-medium transition-colors"
               >

@@ -27,3 +27,24 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T51.2: Hero & Page Section CTA Enhancements
+
+**Task status:** done
+**Commit:** pending
+**Date:** 2026-07-24
+
+### What shipped
+
+- `components/sections/Hero.tsx`:
+  - Added an explicit "Explore stack" CTA link pointing directly to `/stack` alongside existing "View systems →", "Read the writing", and "Let's connect" actions to improve route discovery and reduce homepage bounce rate.
+
+### Decisions
+
+- **Direct Route Visibility**: Surfaced the D3 dependency graph route (`/stack`) directly in the hero CTA button row to entice visitors to explore technical skills immediately upon landing.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
