@@ -9,7 +9,7 @@
 ## T54.1: Navigation Links & Game Mode Switch Tracking
 
 **Task status:** done
-**Commit:** pending
+**Commit:** e5c3d0c
 **Date:** 2026-07-24
 
 ### What shipped
