@@ -31,7 +31,7 @@
 ## T56.2: Player Texture Validity & Frame Index Guard
 
 **Task status:** done
-**Commit:** pending
+**Commit:** ad98e32
 **Date:** 2026-07-24
 
 ### What shipped
