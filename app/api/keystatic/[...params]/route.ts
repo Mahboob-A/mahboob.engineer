@@ -53,6 +53,21 @@ function missingEnvResponse() {
   );
 }
 
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.searchParams.has("code")) {
+      parsed.searchParams.set("code", "[REDACTED]");
+    }
+    if (parsed.searchParams.has("state")) {
+      parsed.searchParams.set("state", "[REDACTED]");
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 export async function GET(request: Request): Promise<Response> {
   if (process.env.NODE_ENV === "production" && isMissingOAuthEnv()) {
     return missingEnvResponse();
@@ -68,7 +83,7 @@ export async function GET(request: Request): Promise<Response> {
         body = `Failed to read body: ${e}`;
       }
       console.error(
-        `[Keystatic API GET Error] Status: ${response.status} | URL: ${request.url} | Response: ${body}`
+        `[Keystatic API GET Error] Status: ${response.status} | URL: ${sanitizeUrl(request.url)} | Response: ${body}`
       );
     }
     return response;
@@ -93,7 +108,7 @@ export async function POST(request: Request): Promise<Response> {
         body = `Failed to read body: ${e}`;
       }
       console.error(
-        `[Keystatic API POST Error] Status: ${response.status} | URL: ${request.url} | Response: ${body}`
+        `[Keystatic API POST Error] Status: ${response.status} | URL: ${sanitizeUrl(request.url)} | Response: ${body}`
       );
     }
     return response;
