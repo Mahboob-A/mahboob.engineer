@@ -43,12 +43,12 @@ export function GameGate({ children }: { children: ReactNode }) {
         <SelectorCard
           onEnter={() => {
             setAccepted(true);
-            /* Persist "I've entered before" via URL. `router.replace`
-               (not `push`) so the selector doesn't show in the
-               browser's back-button history. The next visit to
-               /game — refresh, new tab, or link click — sees the
-               flag and skips the selector. */
-            router.replace("/game?entered=1");
+            /* Phase 57: Persist "I've entered before" via window.history.replaceState
+               to update the URL query string without triggering a Next.js App Router
+               RSC server re-render that destroys and recreates the Phaser Game instance mid-preload. */
+            if (typeof window !== "undefined") {
+              window.history.replaceState(null, "", "/game?entered=1");
+            }
           }}
           onBack={() => router.back()}
         />
