@@ -30,7 +30,7 @@
 ## T55.2: Player Movement Footstep Audio Integration
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 7a0001b
 **Date:** 2026-07-24
 
 ### What shipped
