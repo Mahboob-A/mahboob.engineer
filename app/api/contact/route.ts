@@ -46,14 +46,18 @@ interface ValidatedPayload {
    compliant. Good enough to catch typos before they reach Resend. */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function sanitizeText(input: string): string {
+  return input.replace(/<[^>]*>/g, "").trim();
+}
+
 function validate(payload: IncomingPayload): ValidatedPayload | { error: string } {
-  const title = typeof payload.title === "string" ? payload.title.trim() : "";
+  const title = typeof payload.title === "string" ? sanitizeText(payload.title) : "";
   const description =
-    typeof payload.description === "string" ? payload.description.trim() : "";
-  const email = typeof payload.email === "string" ? payload.email.trim() : "";
+    typeof payload.description === "string" ? sanitizeText(payload.description) : "";
+  const email = typeof payload.email === "string" ? sanitizeText(payload.email) : "";
   const label =
     typeof payload.label === "string" && payload.label.length > 0
-      ? payload.label
+      ? sanitizeText(payload.label)
       : null;
 
   if (title.length < 1 || title.length > 120) {
