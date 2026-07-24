@@ -35,7 +35,7 @@
 ## T54.2: Contact Email Submission Event Tracking
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 4a784f4
 **Date:** 2026-07-24
 
 ### What shipped
