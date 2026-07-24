@@ -33,7 +33,7 @@
 ## T51.2: Hero & Page Section CTA Enhancements
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 60286b5
 **Date:** 2026-07-24
 
 ### What shipped
