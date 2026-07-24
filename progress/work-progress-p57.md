@@ -9,7 +9,7 @@
 ## T57.1: Client-side URL History State Update
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 83ca06e
 **Date:** 2026-07-24
 
 ### What shipped
