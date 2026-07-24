@@ -10,6 +10,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { track } from "@vercel/analytics";
 import { cn } from "@/lib/cn";
 import type { Mode } from "@/lib/mode";
 
@@ -52,6 +53,14 @@ export function ActiveNavLink({
       : "text-t3 hover:text-t1",
   );
 
+  const handleClick = () => {
+    try {
+      track("nav_link_click", { label, href, variant });
+    } catch {
+      // Ignore analytics failures
+    }
+  };
+
   if (mode === "game") {
     return (
       <form action="/api/mode" method="post" className="contents">
@@ -59,6 +68,7 @@ export function ActiveNavLink({
         <input type="hidden" name="next" value={href} />
         <button
           type="submit"
+          onClick={handleClick}
           aria-current={isActive ? "page" : undefined}
           className={cn(className, "cursor-pointer")}
           data-eyebrow={eyebrow}
@@ -72,6 +82,7 @@ export function ActiveNavLink({
   return (
     <Link
       href={href}
+      onClick={handleClick}
       aria-current={isActive ? "page" : undefined}
       className={className}
       data-eyebrow={eyebrow}
