@@ -52,7 +52,7 @@
 ## T55.3: Zone, Overlay & Villain Bump SFX Audio Triggers
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 01bc7b6
 **Date:** 2026-07-24
 
 ### What shipped
