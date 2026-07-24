@@ -57,7 +57,7 @@
 ## T54.3: Social Links & Resume Access Event Tracking
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 220ff20
 **Date:** 2026-07-24
 
 ### What shipped
