@@ -53,7 +53,7 @@
 ## T52.3: Keystatic API Log Sanitization & Sensitive Token Redaction
 
 **Task status:** done
-**Commit:** pending
+**Commit:** dbe8be8
 **Date:** 2026-07-24
 
 ### What shipped
@@ -74,7 +74,7 @@
 ## T52.4: Environment Variables & Secrets Hygiene Audit
 
 **Task status:** done
-**Commit:** pending
+**Commit:** dbe8be8
 **Date:** 2026-07-24
 
 ### What shipped
