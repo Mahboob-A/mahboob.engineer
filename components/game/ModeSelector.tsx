@@ -42,13 +42,22 @@ export function GameGate({ children }: { children: ReactNode }) {
       {!accepted && (
         <SelectorCard
           onEnter={() => {
+            /* Phase 58: NO URL mutation here. The previous attempt used
+               window.history.replaceState("/game?entered=1") to suppress the
+               selector on refresh, but Next.js 16's useSearchParams() hook
+               is reactive to the URL — any change (pushState, replaceState,
+               router.replace, address bar) triggers an RSC re-fetch for the
+               current route. The RSC payload arrival re-renders the /game
+               tree, unmounting and remounting the dynamic-imported <GameRoot />
+               and spawning a second Phaser Game instance. The two parallel
+               Phaser Loaders each request all 33 assets (23 PNGs + 6 wavs +
+               4 mp3s) from scratch, producing the duplicate downloads.
+
+               Fix: keep the entered-by-user state in React only. The
+               ?entered=1 deep-link suppression still works on initial mount
+               via the hasEnteredFlag read on line 37 (useSearchParams does
+               not re-subscribe for further reads). */
             setAccepted(true);
-            /* Phase 57: Persist "I've entered before" via window.history.replaceState
-               to update the URL query string without triggering a Next.js App Router
-               RSC server re-render that destroys and recreates the Phaser Game instance mid-preload. */
-            if (typeof window !== "undefined") {
-              window.history.replaceState(null, "", "/game?entered=1");
-            }
           }}
           onBack={() => router.back()}
         />
