@@ -30,42 +30,20 @@
 
 ---
 
-## T51.2: Hero & Page Section CTA Enhancements
+## T51.2: Hero & Page Section CTA Enhancements [REVERTED / NOT NEEDED]
 
-**Task status:** done
-**Commit:** 60286b5
+**Task status:** cancelled
 **Date:** 2026-07-24
 
-### What shipped
-
-- `components/sections/Hero.tsx`:
-  - Added an explicit "Explore stack" CTA link pointing directly to `/stack` alongside existing "View systems →", "Read the writing", and "Let's connect" actions to improve route discovery and reduce homepage bounce rate.
-
-### Decisions
-
-- **Direct Route Visibility**: Surfaced the D3 dependency graph route (`/stack`) directly in the hero CTA button row to entice visitors to explore technical skills immediately upon landing.
-
-### Verified
-
-- `pnpm typecheck` -> Clean.
+### Note
+- **Reverted**: User decided that modifying hero layout CTAs is not needed. Code changes in `components/sections/Hero.tsx` were undone.
 
 ---
 
-## T51.3: Interactive Game Mode Banner & Quick Access
+## T51.3: Interactive Game Mode Banner & Quick Access [REVERTED / NOT NEEDED]
 
-**Task status:** done
-**Commit:** f497511
+**Task status:** cancelled
 **Date:** 2026-07-24
 
-### What shipped
-
-- `components/sections/Hero.tsx`:
-  - Added an interactive Game Mode banner directly under the Hero CTA button row inviting visitors to explore "Backend City" (`/game`).
-
-### Decisions
-
-- **Hero-Level Game Discovery**: Highlighted the 2D Phaser game mode directly in the main hero fold so recruiters and visitors looking for interactive experiences navigate to `/game` instead of exiting after a single page scroll.
-
-### Verified
-
-- `pnpm typecheck` -> Clean.
+### Note
+- **Reverted**: User decided that an interactive Game Mode banner in the hero is not needed. Code changes in `components/sections/Hero.tsx` were undone.
