@@ -9,7 +9,7 @@
 ## T52.1: Security Headers & Content Security Policy (CSP) Enforcement
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 46d1667
 **Date:** 2026-07-24
 
 ### What shipped
@@ -32,7 +32,7 @@
 ## T52.2: Contact API Input Sanitization & HTML/Script Stripping
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 46d1667
 **Date:** 2026-07-24
 
 ### What shipped
