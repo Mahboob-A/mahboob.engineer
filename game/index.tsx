@@ -35,6 +35,17 @@ import type { OverlayPayload, VillainId } from "@/game/types";
 
 export default function GameRoot() {
   const gameRef = useRef<Phaser.Game | null>(null);
+  /* Phase 59: Persistent one-way "have we ever initialized" flag.
+     Survives the useEffect cleanup so that when Next.js 16's
+     Suspense + dynamic + useSearchParams interaction causes the
+     component to mount twice in the same render cycle, the second
+     mount's effect bails before creating a second Phaser Game
+     instance (which would otherwise spawn a second Loader and
+     duplicate all 33 asset requests). The `gameRef` guard below is
+     necessary but not sufficient — the cleanup nulls `gameRef.current`
+     back to null between mounts. Do NOT reset `mountedOnce.current`
+     in the cleanup; that is the whole point. */
+  const mountedOnce = useRef(false);
   const [overlay, setOverlay] = useState<OverlayPayload | null>(null);
   /* T4.11 — pause menu state. Toggled by Escape / "Resume" button.
      Defaults to false; the player has to enter the game first. */
@@ -45,6 +56,11 @@ export default function GameRoot() {
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
+    /* Phase 59: Persistent mount-once guard. Set synchronously here
+       and NEVER reset by the cleanup, so a remount within the same
+       component instance bails out cleanly. */
+    if (mountedOnce.current) return;
+    mountedOnce.current = true;
     /* React strict-mode safety: the effect runs twice in dev.
        Guard against spawning two Phaser instances. */
     if (gameRef.current) return;
