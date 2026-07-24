@@ -9,7 +9,7 @@
 ## T53.1: Contact API Security & Validation Test Suite
 
 **Task status:** done
-**Commit:** pending
+**Commit:** b60ba17
 **Date:** 2026-07-24
 
 ### What shipped
@@ -31,7 +31,7 @@
 ## T53.2: RAG Terminal Prompt Injection & Leakage Test Suite
 
 **Task status:** done
-**Commit:** pending
+**Commit:** b60ba17
 **Date:** 2026-07-24
 
 ### What shipped
@@ -53,7 +53,7 @@
 ## T53.3: Keystatic & Route OAuth Security Test Suite
 
 **Task status:** done
-**Commit:** pending
+**Commit:** b60ba17
 **Date:** 2026-07-24
 
 ### What shipped
