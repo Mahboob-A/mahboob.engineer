@@ -1,7 +1,7 @@
 # Phase 55: Game Mode Audio & SFX Improvements
 
 **Phase:** 55: Game Mode Audio & SFX Improvements
-**Phase status:** in-progress
+**Phase status:** done
 **Date started:** 2026-07-24
 
 ---
@@ -46,3 +46,28 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T55.3: Zone, Overlay & Villain Bump SFX Audio Triggers
+
+**Task status:** done
+**Commit:** pending
+**Date:** 2026-07-24
+
+### What shipped
+
+- `game/scenes/WorldScene.ts`:
+  - Added `this.sound.play("overlay-open", { volume: 0.5 })` on `OPEN_OVERLAY` bridge event.
+  - Added `this.sound.play("overlay-close", { volume: 0.5 })` on `CLOSE_OVERLAY` bridge event.
+  - Added `this.sound.play("zone-enter", { volume: 0.4 })` in `onEnterBuildingZone()`.
+  - Added `this.sound.play("villain-bump", { volume: 0.6 })` in `onVillainContact()`.
+
+### Decisions
+
+- **Event-Driven Gameplay SFX**: Connected loaded Phaser audio buffers directly to game engine interaction hooks for audible feedback on world exploration and modal states.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
+- `pnpm test:security` -> Passed.
