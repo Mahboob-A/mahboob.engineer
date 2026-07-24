@@ -200,6 +200,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public stopMoving(): void {
     this.setVelocity(0, 0);
     this.anims.stop();
-    this.setFrame(ROWS[this.facing].start + IDLE_FRAME_OFFSET);
+    const frameIndex = ROWS[this.facing].start + IDLE_FRAME_OFFSET;
+    if (
+      this.texture &&
+      this.texture.key !== "__MISSING" &&
+      this.texture.has(String(frameIndex))
+    ) {
+      this.setFrame(frameIndex);
+    }
   }
 }
