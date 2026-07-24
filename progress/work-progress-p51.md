@@ -54,7 +54,7 @@
 ## T51.3: Interactive Game Mode Banner & Quick Access
 
 **Task status:** done
-**Commit:** pending
+**Commit:** f497511
 **Date:** 2026-07-24
 
 ### What shipped
