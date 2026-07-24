@@ -29,3 +29,25 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T54.2: Contact Email Submission Event Tracking
+
+**Task status:** done
+**Commit:** pending
+**Date:** 2026-07-24
+
+### What shipped
+
+- `components/contact/ContactForm.tsx`:
+  - Imported `track` from `@vercel/analytics`.
+  - Added `track("contact_email_sent", { label })` event tracking when contact form payload receives a `200 OK` response from `/api/contact`.
+
+### Decisions
+
+- **Conversion Telemetry**: Logged successful email dispatches to measure portfolio outreach conversion rates cleanly.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.

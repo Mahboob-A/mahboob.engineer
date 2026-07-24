@@ -20,6 +20,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { track } from "@vercel/analytics";
 import { TerminalBlock } from "@/components/ui/TerminalBlock";
 import { Toast } from "@/components/ui/Toast";
 import {
@@ -68,6 +69,11 @@ export function ContactForm() {
       }
       setToastVariant("ok");
       setToastMessage("Message received. I'll reply within 24h.");
+      try {
+        track("contact_email_sent", { label: label ?? "(none)" });
+      } catch {
+        // Ignore analytics failures
+      }
       setStatus("success");
       setTitle("");
       setDescription("");
