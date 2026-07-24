@@ -9,7 +9,7 @@
 ## T59.1: Persistent mountedOnce Guard in GameRoot
 
 **Task status:** done
-**Commit:** <filled in after commit>
+**Commit:** cbe8cb3
 **Date:** 2026-07-25
 
 ### What shipped
