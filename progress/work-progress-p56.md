@@ -9,7 +9,7 @@
 ## T56.1: Content Security Policy Update for Phaser Blob Asset URLs
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 2e27107
 **Date:** 2026-07-24
 
 ### What shipped
