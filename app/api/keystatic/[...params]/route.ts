@@ -21,6 +21,9 @@ import config from "../../../../keystatic.config";
 
 const { GET: keystaticGet, POST: keystaticPost } = makeRouteHandler({
   config,
+  clientId: process.env.KEYSTATIC_GITHUB_CLIENT_ID,
+  clientSecret: process.env.KEYSTATIC_GITHUB_CLIENT_SECRET,
+  secret: process.env.KEYSTATIC_SECRET,
 });
 
 function isMissingOAuthEnv(): boolean {
@@ -54,12 +57,48 @@ export async function GET(request: Request): Promise<Response> {
   if (process.env.NODE_ENV === "production" && isMissingOAuthEnv()) {
     return missingEnvResponse();
   }
-  return keystaticGet(request);
+  try {
+    const response = await keystaticGet(request);
+    if (response.status >= 400) {
+      const cloned = response.clone();
+      let body = "";
+      try {
+        body = await cloned.text();
+      } catch (e) {
+        body = `Failed to read body: ${e}`;
+      }
+      console.error(
+        `[Keystatic API GET Error] Status: ${response.status} | URL: ${request.url} | Response: ${body}`
+      );
+    }
+    return response;
+  } catch (error) {
+    console.error(`[Keystatic API GET Exception]:`, error);
+    throw error;
+  }
 }
 
 export async function POST(request: Request): Promise<Response> {
   if (process.env.NODE_ENV === "production" && isMissingOAuthEnv()) {
     return missingEnvResponse();
   }
-  return keystaticPost(request);
+  try {
+    const response = await keystaticPost(request);
+    if (response.status >= 400) {
+      const cloned = response.clone();
+      let body = "";
+      try {
+        body = await cloned.text();
+      } catch (e) {
+        body = `Failed to read body: ${e}`;
+      }
+      console.error(
+        `[Keystatic API POST Error] Status: ${response.status} | URL: ${request.url} | Response: ${body}`
+      );
+    }
+    return response;
+  } catch (error) {
+    console.error(`[Keystatic API POST Exception]:`, error);
+    throw error;
+  }
 }
