@@ -9,7 +9,7 @@
 ## T55.1: BGM Track Registry Update (bgm-1 to bgm-4)
 
 **Task status:** done
-**Commit:** pending
+**Commit:** b57a7f7
 **Date:** 2026-07-24
 
 ### What shipped
