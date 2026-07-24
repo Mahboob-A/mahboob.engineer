@@ -72,6 +72,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    *  in backend-city.json which leaves the player facing the camera). */
   public facing: Facing = "down";
 
+  /** Timestamp for footstep audio cadence (~320ms per step). */
+  private nextFootstepTime = 0;
+
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -157,6 +160,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (vx === 0 && vy === 0) {
       this.stopMoving();
       return;
+    }
+
+    /* Play footstep audio cadence while moving (~320ms step interval). */
+    const now = this.scene.time.now;
+    if (now >= this.nextFootstepTime) {
+      this.scene.sound.play("footstep", { volume: 0.35 });
+      this.nextFootstepTime = now + 320;
     }
 
     /* Pick animation by dominant direction. */

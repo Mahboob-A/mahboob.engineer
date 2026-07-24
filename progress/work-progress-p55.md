@@ -24,3 +24,25 @@
 ### Verified
 
 - `pnpm typecheck` -> Clean.
+
+---
+
+## T55.2: Player Movement Footstep Audio Integration
+
+**Task status:** done
+**Commit:** pending
+**Date:** 2026-07-24
+
+### What shipped
+
+- `game/entities/Player.ts`:
+  - Added `nextFootstepTime` timer property to `Player`.
+  - Added `this.scene.sound.play("footstep", { volume: 0.35 })` invocation inside `updateMovement()` with 320ms step cadence throttling whenever WASD or arrow key velocity is non-zero.
+
+### Decisions
+
+- **Step Cadence Throttling**: Throttled footstep sound triggers to 320ms intervals so diagonal/straight movement plays clear, rhythmic steps without audio clipping.
+
+### Verified
+
+- `pnpm typecheck` -> Clean.
