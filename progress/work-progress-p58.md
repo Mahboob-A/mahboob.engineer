@@ -9,7 +9,7 @@
 ## T58.1: Drop URL Mutation in ModeSelector.onEnter
 
 **Task status:** done
-**Commit:** <filled in after commit>
+**Commit:** 0c92674
 **Date:** 2026-07-25
 
 ### What shipped
