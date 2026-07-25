@@ -39,7 +39,29 @@ const securityHeaders = [
   },
 ];
 
+const getBuildDate = (): string => {
+  if (process.env.VERCEL_GIT_COMMIT_DATE) {
+    return new Date(process.env.VERCEL_GIT_COMMIT_DATE).toISOString().slice(0, 7);
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { execSync } = require("child_process");
+    const dateStr = execSync("git log -1 --format=%cd --date=format:%Y-%m", {
+      encoding: "utf-8",
+    }).trim();
+    if (dateStr && /^\d{4}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+  } catch {
+    /* Fallback to current month if git command is unavailable */
+  }
+  return new Date().toISOString().slice(0, 7);
+};
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_DATE: getBuildDate(),
+  },
   async headers() {
     return [
       {

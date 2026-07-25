@@ -6,6 +6,7 @@
  */
 
 import { siteConstants } from "@/lib/metadata";
+import { SITE_VERSION, BUILD_DATE } from "@/lib/build-info";
 
 export function Footer() {
   return (
@@ -14,7 +15,9 @@ export function Footer() {
         <span>
           {siteConstants.name} — built with Passion, love, and too much coffee.
         </span>
-        <span className="text-t3">v2.0 · last deployed 2026-07</span>
+        <span className="text-t3">
+          {SITE_VERSION} · last deployed {BUILD_DATE}
+        </span>
       </div>
     </footer>
   );
