@@ -9,7 +9,7 @@
 ## T58.1: Dynamic Build Metadata Provider & Footer Component Update
 
 **Task status:** done
-**Commit:** pending
+**Commit:** 54d28f9
 **Date:** 2026-07-25
 
 ### What shipped
