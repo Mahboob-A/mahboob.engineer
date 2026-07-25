@@ -14,6 +14,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
+import { track } from "@vercel/analytics";
 import { TerminalBlock } from "@/components/ui/TerminalBlock";
 import { PROJECTS } from "@/data/projects";
 import { STACK } from "@/data/stack";
@@ -509,17 +510,33 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
 
   const onChipClick = (key: RagCommandKey) => {
     setActiveKey(key);
+    try {
+      track("terminal_chip_click", { key });
+    } catch {
+      // Ignore analytics failures
+    }
   };
 
   const onModeChange = (next: Mode) => {
     if (mode === next) return;
     setMode(next);
+    try {
+      track("terminal_mode_change", { mode: next });
+    } catch {
+      // Ignore analytics failures
+    }
   };
 
   const handleDynamicSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const query = inputVal.trim();
     if (!query || dynPhase === "loading" || dynPhase === "streaming") return;
+
+    try {
+      track("terminal_query_submit", { queryLength: query.length });
+    } catch {
+      // Ignore analytics failures
+    }
 
     if (isPotentialPromptInjection(query)) {
       const userMsgId = `user-${Date.now()}`;

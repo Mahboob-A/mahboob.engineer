@@ -20,6 +20,7 @@ import Link from "next/link";
 import { getModeFromCookies } from "@/lib/mode";
 import { cn } from "@/lib/cn";
 import { ActiveNavLink } from "@/components/layout/ActiveNavLink";
+import { ModeTogglePill } from "@/components/layout/ModeTogglePill";
 
 interface NavLink {
   label: string;
@@ -160,45 +161,4 @@ function LogoLink({ mode }: { mode: "flat" | "game" }) {
   );
 }
 
-interface ModeTogglePillProps {
-  active: boolean;
-  value: "flat" | "game";
-  nextPath: string;
-  label: string;
-}
 
-/**
- * One pill in the mode toggle. A real <button> inside a <form> so the
- * submit hits /api/mode, flips the cookie, and redirects to `nextPath`.
- * No client JS required.
- */
-function ModeTogglePill({ active, value, nextPath, label }: ModeTogglePillProps) {
-  /* Phase 6 (T6.4): aria-label so screen readers announce the action
-     ("Switch to flat portfolio mode") instead of just reading the
-     visible text "flat" / "game". */
-  const ariaLabel =
-    value === "flat"
-      ? "Switch to flat portfolio mode"
-      : "Switch to game mode";
-  return (
-    <form action="/api/mode" method="post" className="contents">
-      <input type="hidden" name="mode" value={value} />
-      <input type="hidden" name="next" value={nextPath} />
-      <button
-        type="submit"
-        aria-pressed={active}
-        aria-current={active ? "true" : undefined}
-        aria-label={ariaLabel}
-        className={cn(
-          "cursor-pointer rounded-full px-3.5 py-1.5 transition-all",
-          /* Phase 6 (T6.9): inactive pill is on bg-surface. `text-t3`
-             on bg-surface fails WCAG AA (3.6:1). Using `text-t2` for
-             inactive restores the contrast (7.1:1). */
-          active ? "text-acc bg-acc-dim font-semibold" : "text-t2 hover:text-t1",
-        )}
-      >
-        {label}
-      </button>
-    </form>
-  );
-}

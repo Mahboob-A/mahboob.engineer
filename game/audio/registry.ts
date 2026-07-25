@@ -46,10 +46,6 @@ export const BGM_TRACKS = [
   `${AUDIO_BASE}/bgm-2.mp3`,
   `${AUDIO_BASE}/bgm-3.mp3`,
   `${AUDIO_BASE}/bgm-4.mp3`,
-  `${AUDIO_BASE}/bgm-5.mp3`,
-  `${AUDIO_BASE}/bgm-6.mp3`,
-  `${AUDIO_BASE}/bgm-7.mp3`,
-  `${AUDIO_BASE}/bgm-8.mp3`,
 ] as const;
 
 /* ─────────────────────────────────────────────────────────────────────

@@ -113,12 +113,14 @@ export class WorldScene extends Phaser.Scene {
 
   private wireBridgeDuck(): void {
     const onOpen = (): void => {
+      this.sound.play("overlay-open", { volume: 0.5 });
       if (!this.isDucked) {
         this.setBgmVolume(BGM_VOLUME.ducked);
         this.isDucked = true;
       }
     };
     const onClose = (): void => {
+      this.sound.play("overlay-close", { volume: 0.5 });
       if (this.isDucked) {
         this.setBgmVolume(BGM_VOLUME.base);
         this.isDucked = false;
@@ -370,6 +372,7 @@ export class WorldScene extends Phaser.Scene {
   private onEnterBuildingZone(zone: Building): void {
     if (this.currentZone === zone) return;
     this.currentZone = zone;
+    this.sound.play("zone-enter", { volume: 0.4 });
     bridge.showInteractionHint(zone.hint);
   }
 
@@ -377,6 +380,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.villainEncounterActive) return;
     if (this.time.now < this.villainEncounterCooldownUntil) return;
     this.villainEncounterActive = true;
+    this.sound.play("villain-bump", { volume: 0.6 });
     this.player?.setVelocity(0, 0);
     bridge.openOverlay({
       slug: villain.villainId,
