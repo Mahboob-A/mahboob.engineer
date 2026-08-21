@@ -176,9 +176,9 @@ function buildPayload(key: RagCommandKey): string[] {
     case "whoami": {
       const last = COMPLETED_EXPERIENCE[0];
       return [
-        "Mahboob Alam — Co-Founder & Backend Engineer.",
-        `Currently shipping Taply (NFC + QR business cards) and`,
-        `building UnThink (fragment-first knowledge base).`,
+        "Mahboob Alam — Founder & Full-Stack Systems Engineer.",
+        `Founder of UnThink (AI knowledge capture) and`,
+        `Co-Founder at Taply (NFC + QR business cards).`,
         last
           ? `Last role: ${last.company} (${last.period}), ${last.role}.`
           : "—",
@@ -187,14 +187,13 @@ function buildPayload(key: RagCommandKey): string[] {
     }
     case "projects": {
       const featured = [
-        ...PROJECTS.filter((p) => p.status === "live").slice(0, 1),
-        ...PROJECTS.filter((p) => p.status === "building").slice(0, 1),
+        ...PROJECTS.filter((p) => p.status === "live").slice(0, 2),
         ...PROJECTS.filter(
           (p) => p.status === "complete" && p.stars && p.stars >= 20,
         ).slice(0, 1),
       ];
       return [
-        `${featured.length} featured systems (live / building / most-starred):`,
+        `${featured.length} featured systems (live / most-starred):`,
         ...featured.map((p, i) => {
           const num = String(i + 1).padStart(2, " ");
           const status =
@@ -238,6 +237,7 @@ function buildPayload(key: RagCommandKey): string[] {
     }
     case "contact": {
       return [
+        "UnThink: letsunthink.tech",
         "Taply: gettaply.me/p/mehboob",
         "GitHub: github.com/Mahboob-A",
         "LinkedIn: linkedin.com/in/i-mahboob-alam",

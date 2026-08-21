@@ -228,8 +228,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What does UnThink do?",
     ],
     answer:
-      "I am currently building UnThink as a personal knowledge base for software engineers. The goal is to make it easy to save code snippets, learning notes, and bookmarks without interrupting your development workflow. It features a dual-backend architecture combining Django and FastAPI, utilizing Celery queues for processing. We use a browser extension as the main capture interface, and integrated AI models categorize and organize every saved note automatically. The project is under active development and I am aiming for a public launch in late August 2026.",
-    tags: ["unthink", "ai", "building"],
+      "Yes, UnThink is a live, production AI-native knowledge base and web capture engine for software engineers, accessible at letsunthink.tech with an approved Chromium Manifest V3 extension on the Chrome Web Store. It eliminates manual tagging friction through zero-decision dual-directory AI categorization, sub-300ms capture SLA, a dual-backend micro-orchestration (Django 5.1 CRUD and FastAPI SSE streaming), 3 Celery queues, multi-key Redis cache with deterministic epoch versioning, and hardened non-root AWS EC2 infrastructure.",
+    tags: ["unthink", "ai", "live", "founder"],
   },
 
   /* ─── Group 5 — Writing & learning ────────────────────────────── */

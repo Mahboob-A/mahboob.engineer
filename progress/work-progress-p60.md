@@ -63,7 +63,7 @@
 ## T60.3: Enhance UnThink Architecture Diagram
 
 **Task status:** done
-**Commit:** —
+**Commit:** f27d4ce
 **Date:** 2026-08-21
 
 ### What shipped
@@ -80,7 +80,34 @@
 - Maintained exact pure SVG + SMIL spec conforming to the design system tokens without JS runtime dependency.
 
 ### Caveats / pending
-- Next task (T60.4) will update Hero Terminal, site metadata, and RAG knowledge base answers.
+- None.
+
+### Verified
+- `pnpm typecheck` passed with 0 errors.
+
+---
+
+## T60.4: Update Metadata, Hero Terminal, and RAG Knowledge Base
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/hero/HeroTerminal.tsx`:
+  - Updated `whoami` payload to describe Founder of UnThink and Co-Founder at Taply.
+  - Updated `projects` payload to include both live founder systems (UnThink and Taply) along with top starred systems.
+  - Updated `contact` payload to list `UnThink: letsunthink.tech`.
+- `app/layout.tsx`:
+  - Updated global metadata, Open Graph, and Twitter tags to "Founder & Backend Systems Engineer", highlighting UnThink and Taply.
+- `lib/rag/common-questions.ts`:
+  - Updated "Is UnThink a real product" question with live production URLs and complete architecture details.
+
+### Decisions
+- Kept phrasing aligned across terminal interactive help and SEO meta descriptions.
+
+### Caveats / pending
+- Next task (T60.5) will run full production verification (typecheck, lint, build).
 
 ### Verified
 - `pnpm typecheck` passed with 0 errors.
