@@ -8,9 +8,9 @@
  *
  * Implements:
  *   1. 7 Specialized User Personas (Engineers, Tech-Pros, Lawyers, Doctors, Researchers, Writers, Knowledge Seekers)
- *   2. Interactive Article Highlighting & Floating Extension Context Popup
- *   3. Sub-300ms Async Ingestion Workflow with Real-time Loading Transition
- *   4. Full Interactive Mock Dashboard with:
+ *   2. Interactive Fragment Click with authentic Chrome Right-Click Context Menu
+ *   3. Sub-300ms Async Ingestion Workflow with Real-time Loading Transition to Step 2
+ *   4. Full Interactive Mock Dashboard (Step 2) with:
  *      - Recursive Collapsible Taxonomy Tree Navigation
  *      - Source Origin and Tag Filters
  *      - In-Card Expandable AI Summary Panels
@@ -20,9 +20,10 @@
  * Strictly free of emojis and em dashes across all UI and data layers.
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   PersonaId,
+  ArticleParagraph,
   MockFragment,
   PERSONA_THEMES,
   PERSONA_ARTICLES,
@@ -31,12 +32,17 @@ import {
 } from "./unthink-simulation-data";
 
 export default function UnThinkSimulation() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [activePersona, setActivePersona] = useState<PersonaId>("engineers");
   const [dashboardFragments, setDashboardFragments] = useState<MockFragment[]>(
     () => INITIAL_MOCK_DATA["engineers"] || []
   );
-  const [selectedText, setSelectedText] = useState("");
-  const [selectionCoords, setSelectionCoords] = useState<{ top: number; left: number } | null>(null);
+  const [selectedFragment, setSelectedFragment] = useState<ArticleParagraph | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    fragment: ArticleParagraph;
+  } | null>(null);
   const [showDashboard, setShowDashboard] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [cookingToast, setCookingToast] = useState(false);
@@ -63,8 +69,8 @@ export default function UnThinkSimulation() {
   const handleSelectPersona = (key: PersonaId) => {
     setActivePersona(key);
     setDashboardFragments(INITIAL_MOCK_DATA[key] || []);
-    setSelectedText("");
-    setSelectionCoords(null);
+    setSelectedFragment(null);
+    setContextMenu(null);
     setShowDashboard(false);
     setIsProcessing(false);
     setCookingToast(false);
@@ -85,7 +91,7 @@ export default function UnThinkSimulation() {
     setExpandedFolders(initialExpanded);
   };
 
-  // Keyboard shortcut listener for Cmd+K search
+  // Keyboard shortcut listener for Cmd+K search and Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -95,60 +101,46 @@ export default function UnThinkSimulation() {
       if (e.key === "Escape") {
         setSearchOpen(false);
         setExpandedCard(null);
+        setContextMenu(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Handle text selection in article container
-  const handleSelection = () => {
-    if (typeof window === "undefined") return;
-    const selection = window.getSelection();
-    const text = selection ? selection.toString().trim() : "";
+  // Handle clicking a fragment card in Step 1 to spawn the Chrome context menu
+  const handleCardClick = (para: ArticleParagraph, e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const container = containerRef.current;
+    if (!container) return;
 
-    if (text.length > 0 && selection && selection.rangeCount > 0) {
-      setSelectedText(text);
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      setSelectionCoords({
-        top: rect.bottom + window.scrollY + 8,
-        left: Math.max(16, rect.left + window.scrollX + rect.width / 2 - 130),
-      });
-    } else {
-      setSelectedText("");
-      setSelectionCoords(null);
-    }
+    const rect = container.getBoundingClientRect();
+    const rawX = e.clientX - rect.left;
+    const rawY = e.clientY - rect.top;
+
+    // Clamp coordinates so menu stays neatly inside container bounds
+    const x = Math.max(12, Math.min(rawX, rect.width - 260));
+    const y = Math.max(12, Math.min(rawY + 4, rect.height - 180));
+
+    setSelectedFragment(para);
+    setContextMenu({ x, y, fragment: para });
   };
 
-  const handleParagraphClick = (paraText: string, e: React.MouseEvent<HTMLDivElement>) => {
-    setSelectedText(paraText);
-    const rect = e.currentTarget.getBoundingClientRect();
-    setSelectionCoords({
-      top: rect.bottom + window.scrollY - 10,
-      left: Math.max(16, rect.left + window.scrollX + rect.width / 2 - 130),
-    });
-  };
+  // Trigger Send to UnThink from the context menu
+  const handleSendToUnThink = (para?: ArticleParagraph) => {
+    const target = para || selectedFragment;
+    if (!target) return;
 
-  const handleSendToUnThink = () => {
-    if (!selectedText) return;
+    setContextMenu(null);
     setIsProcessing(true);
-    setSelectionCoords(null);
-
-    const matchedPara = PERSONA_ARTICLES[activePersona].find(
-      (p) => p.text.includes(selectedText) || selectedText.includes(p.text)
-    );
-    const firstFolder = PERSONA_FOLDERS[activePersona][0]?.path || "Infrastructure";
-    const targetFolder = matchedPara?.folder || firstFolder;
-    const targetDomain = matchedPara?.domain || "extension-clipper.dev";
 
     const newFragment: MockFragment = {
       id: `capture-${Date.now()}`,
       title: "Simulated Capture",
-      content: selectedText,
-      folder: targetFolder,
-      sourceDomain: targetDomain,
-      summary: `Automated summary from ${targetDomain}: "${selectedText.substring(0, 50)}..."`,
+      content: target.text,
+      folder: target.folder,
+      sourceDomain: target.domain,
+      summary: `Automated summary from ${target.domain}: "${target.text.substring(0, 50)}..."`,
       tags: ["Clips", "Ingested"],
       date: "Just now",
       status: "processing",
@@ -157,8 +149,8 @@ export default function UnThinkSimulation() {
     setDashboardFragments((prev) => [newFragment, ...prev]);
 
     // Expand ancestor folders
-    if (targetFolder) {
-      const parts = targetFolder.split("/");
+    if (target.folder) {
+      const parts = target.folder.split("/");
       let current = "";
       const nextExpanded = { ...expandedFolders };
       for (let i = 0; i < parts.length - 1; i++) {
@@ -271,7 +263,7 @@ export default function UnThinkSimulation() {
           Experience the Zero-Friction Capture Loop
         </h3>
         <p className="text-sm text-[#A7D4B2] mt-2 max-w-xl mx-auto font-sans leading-relaxed">
-          Test UnThink&apos;s real product workflow: Select text below, trigger the simulated web clipper, and watch the automated dual-tree pipeline classify and file it instantly.
+          Test UnThink&apos;s real product workflow: Click any fragment below to open the simulated browser context menu, click &quot;Send selection to UnThink&quot;, and watch the automated dual-tree pipeline classify and file it instantly.
         </p>
       </div>
 
@@ -300,74 +292,80 @@ export default function UnThinkSimulation() {
 
       {/* Step 1: Article Ingestion Sandbox */}
       {!showDashboard && (
-        <div className="space-y-6">
-          <div className="rounded-xl bg-[#172318] p-6 border border-[#2B4A3A]/50">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-[#2B4A3A]/40">
+        <div className="space-y-6" onClick={() => setContextMenu(null)}>
+          <div ref={containerRef} className="relative rounded-xl bg-[#172318] p-6 border border-[#2B4A3A]/50">
+            <div className="mb-4 pb-3 border-b border-[#2B4A3A]/40">
               <p className="text-xs text-[#A7D4B2] font-mono m-0 font-semibold">
-                Step 1: Highlight any sentence below (or click a card), then hit &quot;Send to UnThink&quot; from the simulated extension widget.
+                Step 1: Click any fragment card below to open the simulated browser context menu and clip to UnThink.
               </p>
-              <button
-                onClick={() => setShowDashboard(true)}
-                className="text-[11px] font-mono text-[#5CC9A0] hover:underline bg-transparent border-none cursor-pointer"
-              >
-                Jump Straight to Dashboard &gt;
-              </button>
             </div>
 
-            <div onMouseUp={handleSelection} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {PERSONA_ARTICLES[activePersona].map((para, i) => (
-                <div
-                  key={i}
-                  onClick={(e) => handleParagraphClick(para.text, e)}
-                  className="p-4 rounded-xl border border-[#2B4A3A]/40 bg-[#1C2C1E]/60 hover:bg-[#1C2C1E] transition-all cursor-pointer relative group"
-                >
-                  <span className="absolute top-2.5 right-3 text-[10px] uppercase font-mono font-bold text-[#5CC9A0] opacity-0 group-hover:opacity-100 transition-opacity">
-                    Click to Select
-                  </span>
-                  <span className="text-[10px] font-mono font-bold bg-[#121C13] border border-[#2B4A3A]/60 px-2 py-0.5 rounded text-[#5CC9A0] block w-fit mb-2">
-                    Source: {para.domain}
-                  </span>
-                  <p className="m-0 text-xs md:text-[13px] text-[#E8F5E9] leading-relaxed selection:bg-[#5CC9A0]/30 selection:text-[#5CC9A0]">
-                    {para.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Simulated Web Clipper Floating Widget */}
-            {selectedText && selectionCoords && (
-              <div
-                className="absolute z-50 bg-[#121C13] text-[#F0FDF4] p-3.5 rounded-xl shadow-2xl flex flex-col gap-2.5 border border-[#5CC9A0]/40 max-w-[280px] animate-in zoom-in-95 duration-100"
-                style={{
-                  top: selectionCoords.top,
-                  left: selectionCoords.left,
-                }}
-              >
-                <div className="flex justify-between items-center w-full">
-                  <span className="text-[9px] font-mono uppercase font-bold text-[#5CC9A0] tracking-wider">
-                    UNTHINK EXTENSION
-                  </span>
-                  <button
-                    onClick={() => {
-                      setSelectedText("");
-                      setSelectionCoords(null);
-                    }}
-                    className="text-[#A7D4B2] hover:text-white bg-transparent border-none cursor-pointer text-sm font-bold p-0.5"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {PERSONA_ARTICLES[activePersona].map((para, i) => {
+                const isSelected = selectedFragment?.text === para.text && Boolean(contextMenu);
+                return (
+                  <div
+                    key={i}
+                    onClick={(e) => handleCardClick(para, e)}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer relative group ${
+                      isSelected
+                        ? "border-[#5CC9A0] bg-[#1C2C1E] shadow-lg"
+                        : "border-[#2B4A3A]/40 bg-[#1C2C1E]/60 hover:bg-[#1C2C1E] hover:border-[#5CC9A0]/60"
+                    }`}
                   >
-                    x
-                  </button>
-                </div>
-                <div className="text-[11px] text-[#A7D4B2] line-clamp-2 italic">
-                  &quot;{selectedText}&quot;
-                </div>
-                <button
-                  onClick={handleSendToUnThink}
-                  disabled={isProcessing}
-                  className="bg-[#5CC9A0] text-[#121C13] font-bold text-xs py-2 px-3 rounded-lg border-none cursor-pointer hover:bg-[#4ebfad] disabled:opacity-50 transition-colors font-mono"
+                    <span className="text-[10px] font-mono font-bold bg-[#121C13] border border-[#2B4A3A]/60 px-2 py-0.5 rounded text-[#5CC9A0] block w-fit mb-2">
+                      Source: {para.domain}
+                    </span>
+                    <p className="m-0 text-xs md:text-[13px] text-[#E8F5E9] leading-relaxed">
+                      {para.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Authentic Chrome Right-Click Style Context Menu */}
+            {contextMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setContextMenu(null);
+                  }}
+                />
+                <div
+                  className="absolute z-50 bg-[#142016] border border-[#2B4A3A] rounded-lg shadow-2xl py-1.5 min-w-[240px] font-sans text-xs text-[#F0FDF4] select-none animate-in zoom-in-95 duration-100"
+                  style={{
+                    top: contextMenu.y,
+                    left: contextMenu.x,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  {isProcessing ? "Ingesting..." : "Send to UnThink >"}
-                </button>
-              </div>
+                  <div className="px-3 py-1.5 text-[11px] text-[#6E8B75] flex justify-between cursor-not-allowed opacity-60">
+                    <span>Copy</span>
+                    <span className="font-mono text-[10px]">Ctrl+C</span>
+                  </div>
+                  <div className="px-3 py-1.5 text-[11px] text-[#6E8B75] truncate cursor-not-allowed opacity-60">
+                    Search Google for selection
+                  </div>
+                  <div className="border-b border-[#2B4A3A]/60 my-1" />
+                  <button
+                    onClick={() => handleSendToUnThink(contextMenu.fragment)}
+                    className="w-full px-3 py-2 text-left text-xs font-bold text-[#5CC9A0] bg-[#5CC9A0]/15 hover:bg-[#5CC9A0] hover:text-[#121C13] flex items-center justify-between transition-colors cursor-pointer border-none font-mono"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold">[-&gt;]</span> Send selection to UnThink
+                    </span>
+                    <span className="text-[10px] opacity-75">Alt+Shift+S</span>
+                  </button>
+                  <div className="border-b border-[#2B4A3A]/60 my-1" />
+                  <div className="px-3 py-1.5 text-[11px] text-[#6E8B75] flex justify-between cursor-not-allowed opacity-60">
+                    <span>Inspect</span>
+                    <span className="font-mono text-[10px]">Ctrl+Shift+I</span>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>

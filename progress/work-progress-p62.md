@@ -107,3 +107,29 @@
 
 ### Verified
 - `pnpm build` verified 45/45 static pages built with 0 errors.
+
+---
+
+## T62.6: Refactor Fragment Click to Authentic Chrome Context Menu & Remove Jump Shortcut
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/UnThinkSimulation.tsx`:
+  - Replaced text selection and hover badges with single-click card interaction.
+  - Implemented container-relative coordinate calculation (`clientX - containerRect.left`) to ensure the Chrome right-click context menu popup appears directly at the cursor location.
+  - Designed authentic dark Chrome context menu with `Copy`, `Search Google...`, `Send selection to UnThink (Alt+Shift+S)`, and `Inspect`.
+  - Removed "Jump straight to dashboard" button so Step 2 is reached purely via the simulated context menu workflow.
+  - Clicking `Send selection to UnThink` immediately triggers the async ingestion transition and navigates into the Mock Dashboard.
+  - Maintained zero emojis and zero em dashes throughout.
+
+### Decisions
+- Positioned context menu with container boundary clamping to prevent viewport overflow while preserving authentic browser feel.
+
+### Caveats / pending
+- None.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed cleanly.
