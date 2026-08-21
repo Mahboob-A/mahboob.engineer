@@ -40,7 +40,7 @@ docs/rag/corpus/
 Use this for first-person context that is not naturally stored in a registry:
 
 - How you describe yourself in one paragraph.
-- Why backend/platform engineering is your lane.
+- Why backend/devops engineering is your lane.
 - What you want visitors to remember after 30 seconds.
 - Location and work preference nuance.
 - Current focus: Taply, UnThink, portfolio, writing, learning areas.

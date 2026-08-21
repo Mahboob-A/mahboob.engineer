@@ -44,7 +44,7 @@ export interface AvailabilityItem {
 
 export const AVAILABILITY: AvailabilityItem[] = [
   { kind: "live", text: "Available for backend roles (remote / on-site)" },
-  { kind: "live", text: "Open to backend / platform positions" },
+  { kind: "live", text: "Open to backend / devops positions" },
   { kind: "mauve", text: "Taply partnership enquiries welcome" },
 ];
 
@@ -185,7 +185,7 @@ export interface QuickContextItem {
 }
 
 export const QUICK_CONTEXT_FITS: QuickContextItem[] = [
-  { text: "You're hiring for a backend or platform role (remote or anywhere in India)." },
+  { text: "You're hiring for a backend or devops role (remote or anywhere in India)." },
   { text: "You want a Taply partnership or white-label conversation." },
   { text: "You want a system design review on a Django / FastAPI stack." },
 ];

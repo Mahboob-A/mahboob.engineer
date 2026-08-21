@@ -5,7 +5,7 @@
  * lines 482–621:
  *
  *   ┌───────────────────────────────────────────────────────────────┐
- *   │ BACKEND & PLATFORM ENGINEER · BANGALORE / CHENNAI   (eyebrow)│
+ *   │ BACKEND & DEVOPS ENGINEER · BANGALORE / CHENNAI   (eyebrow)│
  *   │                                                              │
  *   │ I build the infrastructure layer                            │
  *   │ nobody sees and I write about it.        (h1 + accent span) │
