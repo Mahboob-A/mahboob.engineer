@@ -34,6 +34,7 @@ import { Chip } from "@/components/ui/Chip";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { StorySection } from "@/components/work/StorySection";
+import { UnthinkInteractiveExplorer } from "@/components/work/UnthinkInteractiveExplorer";
 import { projectMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import { cn } from "@/lib/cn";
@@ -220,11 +221,32 @@ function MetricsRow({ project }: { project: ProjectItem }) {
   );
 }
 
-/* Build notes: Phase 24 (T24.6) now delegates to <StorySection>
-   for the labeled stage rendering. This wrapper keeps the
-   existing <BuildNotes project={project} /> call site stable. */
+/* Build notes: For UnThink, renders the rich interactive system exploration pipeline simulator;
+   for other projects, delegates to <StorySection> for the 5 labeled story stages. */
 function BuildNotes({ project }: { project: ProjectItem }) {
   const fallback = `${project.problem}\n\n${project.built}`;
+
+  if (project.slug === "unthink") {
+    return (
+      <section>
+        <div className="border-border mb-6 flex flex-wrap items-baseline justify-between gap-2 border-t pt-6">
+          <div className="flex items-baseline gap-3">
+            <span className="bg-amber inline-block h-[6px] w-[6px] rounded-full shadow-[0_0_8px_var(--amber)]" />
+            <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
+              Interactive System Exploration
+            </h2>
+            <span className="text-t3 font-mono text-[11px] italic">
+              capture → normalize → dual taxonomy → epoch invalidation → sse
+            </span>
+          </div>
+          <span className="text-amber font-mono text-[11px]">
+            ● interactive simulator
+          </span>
+        </div>
+        <UnthinkInteractiveExplorer />
+      </section>
+    );
+  }
 
   return (
     <section>
