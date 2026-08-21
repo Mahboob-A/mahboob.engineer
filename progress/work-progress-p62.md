@@ -167,3 +167,20 @@
 
 ### Verified
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed cleanly.
+
+---
+
+## T62.9: Harmonize Writer and Knowledge-Seeker Persona Palettes
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/unthink-simulation-data.ts`:
+  - Updated Writer theme to Sky/Cyan Blue (`#38BDF8`).
+  - Updated Knowledge-Seeker theme to Soft Periwinkle / Slate Indigo (`#A5B4FC`).
+  - All 7 persona themes now belong to a cohesive, elegant cool palette matching the dark forest portfolio aesthetic.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed.
