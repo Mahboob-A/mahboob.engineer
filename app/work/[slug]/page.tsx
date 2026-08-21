@@ -253,20 +253,6 @@ function BuildNotes({ project }: { project: ProjectItem }) {
         <section>
           <UnThinkSimulation />
         </section>
-
-        {/* Section 3: Deep Architectural Build Notes & Case Study */}
-        <section>
-          <div className="border-border mb-5 flex items-baseline gap-3 border-t pt-6">
-            <span className="bg-acc inline-block h-[6px] w-[6px] rounded-full" />
-            <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
-              The build notes
-            </h2>
-          </div>
-          <StorySection
-            notes={project.notes}
-            fallbackParagraph={fallback}
-          />
-        </section>
       </div>
     );
   }

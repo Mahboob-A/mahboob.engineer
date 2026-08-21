@@ -148,3 +148,22 @@
 
 ### Verified
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed.
+
+---
+
+## T62.8: Update Persona Palette Tints and Remove The Build Notes from /work/unthink
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/unthink-simulation-data.ts`:
+  - Updated Lawyer persona theme to Indigo (`#818CF8`).
+  - Updated Writer persona theme to Rose Crimson (`#F43F5E`).
+  - Updated Knowledge-Seeker persona theme to Violet (`#C084FC`).
+- `app/work/[slug]/page.tsx`:
+  - Removed "The build notes" textual story section from `/work/unthink` so the case study purely features the two interactive simulations.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed cleanly.
