@@ -6,9 +6,11 @@
  * on these chunks speaks in Mahboob's voice, with concrete project
  * and tool names, instead of a generic knowledge-base tone.
  *
- * Updated to allow 120 to 180 words per answer, enforce natural first-person
- * conversational starts, address third-person queries warmly, defend capability,
- * and ban em dashes and AI slop (such as strive, delve, certainly).
+ * Updated to enforce natural first-person conversational tone,
+ * Backend & DevOps Engineer title, proud promotion of UnThink & Taply
+ * live simulation suites, direct links (https://gettaply.me,
+ * https://gettaply.me/p/mehboob, https://letsunthink.tech/),
+ * and strict zero-emoji and zero-em-dash compliance.
  *
  * Edits land after the next `pnpm rag:reindex` run.
  */
@@ -34,7 +36,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's background?",
     ],
     answer:
-      "I am a backend and platform engineer based in Bangalore, originally from Kolkata. I co-founded Taply, which is a live digital business card SaaS built using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe. I also build portfolio projects that showcase the same systems patterns I use in my professional work, such as distributed online judges with sandboxed execution containers, video transcoding pipelines, and real-time vision pipelines. I have a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a specialization in backend engineering and cloud computing from Poridhi. My focus is on writing clean, well-tested code, documenting architectural decisions in writing, and establishing solid CI/CD pipelines.",
+      "I am a backend and devops engineer based in Bangalore, originally from Kolkata. I co-founded Taply (https://gettaply.me), which is a live digital business card SaaS built using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe, with my personal card at https://gettaply.me/p/mehboob and an interactive dual simulation suite on /work/taply. I also built UnThink (https://letsunthink.tech/), an AI-powered personal knowledge base with an interactive dual simulation suite on /work/unthink. My portfolio projects demonstrate the same production systems patterns I use in my work, including distributed online judges with sandboxed containers, video transcoding pipelines, and real-time vision systems. I hold a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a cloud specialization from Poridhi.",
     tags: ["identity", "bio", "background"],
   },
   {
@@ -56,7 +58,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Confirm this is the same Mahboob-A on GitHub?",
     ],
     answer:
-      "Yes, that is me! I am the same Mahboob Alam who is active on LinkedIn under the profile link linkedin.com/in/i-mahboob-alam. You can also find my public code repositories on GitHub under the username Mahboob-A, and read my technical articles on Medium under my handle imehboob. If you would like to see my digital business card, you can view my live profile on Taply at gettaply.me/p/mehboob. All of these direct links and verified social profiles are consolidated on my portfolio's contact page under the /lets-connect route. You can also download my latest printable resume directly from that page or send me an email to start a conversation.",
+      "Yes, that is me! I am the same Mahboob Alam who is active on LinkedIn under the profile link linkedin.com/in/i-mahboob-alam. You can also find my public code repositories on GitHub under the username Mahboob-A, and read my technical articles on Medium under my handle imehboob. If you would like to see my digital business card, you can view my live profile on Taply at https://gettaply.me/p/mehboob. All of these direct links and verified social profiles are consolidated on my portfolio's contact page under the /lets-connect route. You can also download my latest printable resume directly from that page or send me an email to start a conversation.",
     tags: ["identity", "social", "verification"],
   },
   {
@@ -67,8 +69,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a founder?",
     ],
     answer:
-      "I am currently a Co-Founder and Backend Engineer at Taply, which is a digital business card platform. In this role, I own the entire backend service built on Django 5.1 and Django Rest Framework. This includes the profile builder with multiple layouts, NFC and QR code sharing systems, real-time analytics tracking, and Stripe subscription billing. Prior to co-founding Taply, I worked as a software engineer at NexBell. At NexBell, I led sprint planning and code reviews for a nine-person engineering team, redesigned composite database indexes to cut query times, and rebuilt the authentication flow using OAuth2 and JSON Web Tokens. I also optimized cloud infrastructure to reduce AWS spend by thirty-five percent.",
-    tags: ["title", "taply", "founder"],
+      "I am currently a Co-Founder and Backend and DevOps Engineer at Taply, which is a live digital business card platform accessible at https://gettaply.me. In this role, I architected and own the entire backend service built on Django 5.1 and Django Rest Framework. This includes the profile customizer with multiple layouts, NFC and QR code sharing systems, real-time analytics tracking, and Stripe subscription billing. Prior to co-founding Taply, I worked as a software engineer at NexBell. At NexBell, I led sprint planning and code reviews for a nine-person engineering team, redesigned composite database indexes to cut query times, and rebuilt the authentication flow using OAuth2 and JSON Web Tokens.",
+    tags: ["title", "taply", "founder", "devops"],
   },
   {
     title: "Is Mahboob a capable engineer",
@@ -79,7 +81,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Are you a good team player?",
     ],
     answer:
-      "Yes! That is me, and I am a capable backend and platform engineer. I co-founded a live SaaS platform, Taply, and built complex projects like Algocode, which is a distributed online judge with isolated execution environments. I design my systems with performance and reliability in mind, focusing on composite indexing, caching, and clean API boundaries. While I am confident in my core stack of Python, Django, FastAPI, Redis, and PostgreSQL, I also recognize my growth areas. I am currently exploring technologies like Go, Terraform, Kubernetes, and eBPF. I am a quick learner and plan to build a few projects using these technologies in the next few months to solidify my skills.",
+      "Yes! That is me, and I am a capable backend and devops engineer. I co-founded a live SaaS platform, Taply (https://gettaply.me), and built complex systems like UnThink (https://letsunthink.tech/) and Algocode, which is a distributed online judge with isolated execution environments. I design my systems with performance and reliability in mind, focusing on composite indexing, in-memory caching, and clean API boundaries. While I am confident in my core stack of Python, Django, FastAPI, Redis, Docker, and PostgreSQL, I also recognize my growth areas. I am currently exploring technologies like Go, Terraform, Kubernetes, and eBPF. I am a quick learner and plan to build several projects using these technologies to solidify my skills.",
     tags: ["identity", "capability", "employability", "teamwork"],
   },
 
@@ -92,7 +94,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a startup person or a big-company person?",
     ],
     answer:
-      "I am looking for backend or platform engineering roles at growth-stage startups, particularly companies in their Series A, B, or C funding stages. This size is the sweet spot for me because the systems are large enough to present challenging architectural and scale problems, yet small enough that a single engineer can own design decisions and make a direct impact. I prefer remote-first organizations that practice async-first communication, document technical designs in writing, and value clean code with automated test coverage. I specialize in backend and platform engineering where product code intersects with infrastructure and devops. I am not looking for Java-only, frontend-only, or mobile-only roles today.",
+      "I am looking for backend or devops engineering roles at growth-stage startups, particularly companies in their Series A, B, or C funding stages. This size is the sweet spot for me because the systems are large enough to present challenging architectural and scale problems, yet small enough that a single engineer can own design decisions and make a direct impact. I prefer remote-first organizations that practice async-first communication, document technical designs in writing, and value clean code with automated test coverage. I specialize in backend engineering and cloud devops where product code intersects with infrastructure and reliability. I am not looking for Java-only, frontend-only, or mobile-only roles today.",
     tags: ["hiring", "company fit", "stage"],
   },
   {
@@ -114,7 +116,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Can I partner with Taply?",
     ],
     answer:
-      "Yes, I am open to partnership and white-label conversations for Taply. Since Taply is a fully functional digital business card SaaS built on Django 5.1 with NFC and QR capabilities, a team management console, and Stripe billing, it can be customized or white-labeled for enterprise clients. I built the team management console specifically to allow organizations to manage bulk rep profiles and enforce brand controls, which helped us secure our first paying enterprise customer. If you are looking to integrate digital business cards for a large team or explore collaborations, you can use the 'taply-collab' label on the /lets-connect contact form, or email me at connect.mahboobalam@gmail.com.",
+      "Yes, I am open to partnership and white-label conversations for Taply. Since Taply is a fully functional digital business card SaaS built on Django 5.1 with NFC and QR capabilities, a team management console, and Stripe billing at https://gettaply.me, it can be customized or white-labeled for enterprise clients. I built the team management console specifically to allow organizations to manage bulk rep profiles and enforce brand controls, which helped us secure our first paying enterprise customer. If you are looking to integrate digital business cards for a large team or explore collaborations, you can use the 'taply-collab' label on the /lets-connect contact form, or email me at connect.mahboobalam@gmail.com.",
     tags: ["taply", "partnership", "white-label"],
   },
 
@@ -127,7 +129,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Does Mahboob know Python deeply?",
     ],
     answer:
-      "My strongest and most preferred programming language is Python. I have used Python as the primary language for every major backend system on my portfolio, including Taply, Algocode, UnThink, DrishtiAI, and Movio. I am highly comfortable with Python's asynchronous features, database ORMs, and web frameworks like Django and FastAPI. Beyond Python, I can read and understand Go for code reviews, and I am currently learning it deeply to build high-performance microservices. I also have academic exposure to Java and Kotlin from my Master's coursework at SRM, but I do not write them in production today. I focus on writing clean, type-safe, and highly performant code for backend platforms.",
+      "My strongest and most preferred programming language is Python. I have used Python as the primary language for every major backend system on my portfolio, including Taply, UnThink, Algocode, DrishtiAI, and Movio. I am highly comfortable with Python's asynchronous features, database ORMs, and web frameworks like Django and FastAPI. Beyond Python, I can read and understand Go for code reviews, and I am currently learning it deeply to build high-performance microservices. I also have academic exposure to Java and Kotlin from my Master's coursework at SRM, but I do not write them in production today. I focus on writing clean, type-safe, and highly performant code for backend platforms.",
     tags: ["stack", "python", "language"],
   },
   {
@@ -138,8 +140,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Taply a real product?",
     ],
     answer:
-      "Yes, I have shipped live, production SaaS. As a co-founder of Taply, I architected and built the entire backend platform using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe. The application supports drag-and-drop profile builders, NFC and QR card sharing, real-time analytics, and bulk user onboarding. Taply is currently active and serves paying customers, including an enterprise sales organization with over two hundred and fifty active representatives. This experience taught me how to handle subscription billing, manage database growth, and maintain sub-100ms response times for profile loads.",
-    tags: ["taply", "saas", "production"],
+      "Yes, I have shipped live, production SaaS products. As co-founder of Taply (https://gettaply.me), I architected and built the entire backend platform using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe. The platform supports live profile builders with 4 layout variants, NFC and QR card sharing, real-time analytics, and bulk user onboarding. Taply is currently active and serves paying customers. I also built UnThink (https://letsunthink.tech/), a live AI-powered knowledge base with a published Chrome Web Store extension. On my portfolio at /work/taply and /work/unthink, you can experience full interactive simulation suites that demonstrate these architectures live.",
+    tags: ["taply", "unthink", "saas", "production"],
   },
   {
     title: "Has Mahboob built a distributed system",
@@ -171,7 +173,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Has Mahboob used Redis?",
     ],
     answer:
-      "I primarily use PostgreSQL as my default database. I have designed relational schemas, written composite indexes, and optimized complex queries for systems like Taply, Algocode, UnThink, and DrishtiAI. I also use Redis extensively for session storage, caching, and as a message broker for Celery queues. In my work at NexBell, I worked with large multi-vendor MySQL databases containing fifty active store databases. I rewrote ORM queries and optimized composite indexes to reduce average query times by seventeen percent. For non-relational data, I use MongoDB to store document-like structures in Algocode and Movio.",
+      "I primarily use PostgreSQL as my default database. I have designed relational schemas, written composite indexes, and optimized complex queries for systems like Taply, UnThink, Algocode, and DrishtiAI. I also use Redis extensively for session storage, caching, atomic HINCRBY counters, and as a message broker for Celery queues. In my work at NexBell, I worked with large multi-vendor MySQL databases containing fifty active store databases. I rewrote ORM queries and optimized composite indexes to reduce average query times by seventeen percent. For non-relational data, I use MongoDB to store document-like structures in Algocode and Movio.",
     tags: ["database", "postgresql", "redis"],
   },
   {
@@ -182,21 +184,46 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Has Mahboob shipped async pipelines?",
     ],
     answer:
-      "I use RabbitMQ as my primary message broker for building reliable asynchronous pipelines. In my project Algocode, RabbitMQ coordinates tasks between the core manager and code execution workers. In Movio, it manages the queue of video transcoding jobs. I also have deep conceptual knowledge of Kafka from my cloud specialization at Poridhi, though I have not deployed it in a production product yet. For lighter async tasks within Django, I use Celery, and I utilize Redis pub-sub for real-time web socket message broadcasting. I focus on queue reliability, backpressure management, and job idempotency.",
-    tags: ["queue", "rabbitmq", "kafka", "async"],
+      "I use RabbitMQ as my primary message broker for building reliable asynchronous pipelines. In my project Algocode, RabbitMQ coordinates tasks between the core manager and code execution workers. In Movio, it manages the queue of video transcoding jobs. In UnThink, I use Redis and Celery across 3 priority queues (ai_urgent, default, and bulk) to manage real-time AI classification and ingestion. I also have deep conceptual knowledge of Kafka from my cloud specialization at Poridhi. For lighter async tasks within Django, I use Celery, and I utilize Redis pub-sub for real-time web socket message broadcasting.",
+    tags: ["queue", "rabbitmq", "celery", "async"],
   },
 
-  /* ─── Group 4 — Projects ───────────────────────────────────────── */
+  /* ─── Group 4 — Projects & Simulation Suites ───────────────────── */
   {
-    title: "What is Taply",
+    title: "Tell me about Taply",
     questions: [
+      "Tell me about Taply",
       "What is Taply?",
-      "Taply in one sentence?",
+      "How does Taply work?",
       "Why did Mahboob build Taply?",
     ],
     answer:
-      "I co-founded and built Taply to solve the problems of paper business cards, which are easily lost and cannot be updated. Taply is a digital business card platform. Users can share their contact information, social links, and portfolios instantly by tapping an NFC card or scanning a QR code. The recipient's phone loads the profile in under 100ms from our Redis cache, allowing a one-tap save to their contacts. The backend is built on Django 5.1, Django Rest Framework, and PostgreSQL, and features team administration, branding controls, and Stripe payments.",
-    tags: ["taply", "saas", "nfc"],
+      "I co-founded and built Taply to solve the problem of paper business cards, which get discarded quickly and cannot be updated. Taply is a live digital business card platform at https://gettaply.me, with my personal card at https://gettaply.me/p/mehboob. Users can share their contact information, social links, and portfolios instantly by tapping an NFC card or scanning a QR code. The recipient's phone loads the profile in under 80ms from our Redis cache, allowing a one-tap vCard save to their contacts. I am extremely proud of our interactive simulation suite on /work/taply, where you can test our 5-module System Explorer and interact with 8 attendees in a 2D NFC Networking Hall. I warmly encourage you to try it out!",
+    tags: ["taply", "saas", "nfc", "simulation"],
+  },
+  {
+    title: "Tell me about UnThink",
+    questions: [
+      "Tell me about UnThink",
+      "What is UnThink?",
+      "How does UnThink work?",
+      "Is UnThink a real product?",
+    ],
+    answer:
+      "UnThink is my live AI-powered, fragment-first personal knowledge base and web capture engine for developers, available at https://letsunthink.tech/ with a published Chrome Web Store extension. It eliminates manual tagging friction through zero-decision dual-taxonomy AI categorization, a sub-300ms capture SLA, and a unified monorepo with specialized API and AI streaming services (Django 5.1 CRUD and FastAPI SSE streaming). It features 3 Celery queues, multi-key Redis caching with deterministic epoch versioning, and hardened AWS EC2 deployment. On my portfolio at /work/unthink, you can interact with a live simulated browser viewport and 3-stage AI pipeline. I am very proud of this engineering and highly encourage you to test the simulation!",
+    tags: ["unthink", "ai", "live", "simulation", "founder"],
+  },
+  {
+    title: "What are the interactive simulations on your portfolio",
+    questions: [
+      "What are the interactive simulations on your work pages?",
+      "Tell me about the simulation engines",
+      "How do the simulations on /work work?",
+      "What demos can I test on your portfolio?",
+    ],
+    answer:
+      "I have engineered comprehensive dual-simulation suites for my flagship projects on this portfolio. On /work/unthink, you can test a 5-module System Architecture Explorer (DOM capture, Trafilatura cleaner, Dual-Taxonomy pipeline, Redis epoch cache invalidator, and EC2 security) and a Master Dual-AI Sandbox with simulated browser highlighting and live Server-Sent Events streaming. On /work/taply, you can explore a 5-module NFC Architectural Explorer and a Master Product Sandbox featuring a live profile customizer with 4 layout variants and an interactive 2D Conference Networking Hall where you can tap 8 attendees to exchange NFC cards in real time. I am immensely proud of these interactive engines and invite you to explore both case studies!",
+    tags: ["simulation", "demos", "taply", "unthink", "interactive"],
   },
   {
     title: "What is Algocode",
@@ -217,19 +244,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Strongest backend project on the portfolio?",
     ],
     answer:
-      "I recommend starting with Taply and Algocode to see the depth of my backend experience. Taply is a live, production SaaS built on Django 5.1 that handles real-time caching, NFC data, and Stripe subscription billing. It shows my ability to build complete, customer-facing products. Algocode is a distributed system that runs untrusted code inside isolated containers, showing my understanding of Linux kernel primitives, message queuing with RabbitMQ, and microservices. If you want to see video processing or AI integration, you can also check out Movio and DrishtiAI.",
-    tags: ["projects", "hiring", "depth"],
-  },
-  {
-    title: "Is UnThink a real product",
-    questions: [
-      "Is UnThink a real product?",
-      "Is UnThink shipped?",
-      "What does UnThink do?",
-    ],
-    answer:
-      "Yes, UnThink is a live, production AI-native knowledge base and web capture engine for software engineers, accessible at letsunthink.tech with an approved Chromium Manifest V3 extension on the Chrome Web Store. It eliminates manual tagging friction through zero-decision dual-directory AI categorization, sub-300ms capture SLA, a unified monorepo with specialized API and AI streaming services (Django 5.1 CRUD and FastAPI SSE streaming), 3 Celery queues, multi-key Redis cache with deterministic epoch versioning, and hardened non-root AWS EC2 infrastructure.",
-    tags: ["unthink", "ai", "live", "founder"],
+      "I recommend starting with Taply (https://gettaply.me, case study at /work/taply) and UnThink (https://letsunthink.tech/, case study at /work/unthink). Taply is a live, production SaaS built on Django 5.1 that handles real-time caching, NFC data, and Stripe subscription billing. UnThink demonstrates asynchronous micro-orchestration, dual-AI model fallback routing, and real-time Server-Sent Events (SSE) streaming. Both case studies feature full interactive simulation engines directly on this portfolio. If you want to see Linux kernel isolation and microservices, Algocode is also a great showcase of distributed systems.",
+    tags: ["projects", "hiring", "depth", "taply", "unthink"],
   },
 
   /* ─── Group 5 — Writing & learning ────────────────────────────── */
@@ -263,7 +279,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's weakest production tech?",
     ],
     answer:
-      "I am actively learning Go, Terraform, Kubernetes, and eBPF. These are listed on my tech stack page with honest depth ratings. While I am highly proficient with Python and Django, I want to expand my skills in infrastructure automation and systems programming. I have used Pulumi for infrastructure as code, and I am now learning Terraform. Similarly, I understand container sandboxing through my work with Linux namespaces in Algocode, and I am studying Kubernetes to learn container orchestration at scale. I am building small projects using these technologies to gain hands-on experience.",
+      "I am actively learning Go, Terraform, Kubernetes, and eBPF. These are listed on my tech stack page with honest depth ratings. While I am highly proficient with Python, Django, Docker, and DevOps automation, I want to expand my skills in infrastructure orchestration and systems programming. I have used Pulumi for infrastructure as code, and I am now learning Terraform. Similarly, I understand container sandboxing through my work with Linux namespaces in Algocode, and I am studying Kubernetes to learn container orchestration at scale. I am building small projects using these technologies to gain hands-on experience.",
     tags: ["learning", "growth", "boundaries"],
   },
 
