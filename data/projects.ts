@@ -61,6 +61,8 @@ export interface ProjectItem {
   year: number;
   /** Live product URL, if public. */
   url: string | null;
+  /** Browser extension URL, if applicable. */
+  extension?: string | null;
   /** Canonical GitHub URL, if open-sourced. */
   github: string | null;
   /** Some projects (pulumi-infra) have a second client repo. */
@@ -104,6 +106,63 @@ export type ProjectCardData = ProjectItem;
    =========================================================================== */
 
 export const PROJECTS: ProjectItem[] = [
+  {
+    slug: "unthink",
+    name: "UnThink",
+    tagline:
+      "AI-powered, fragment-first personal knowledge base and web capture engine.",
+    status: "live",
+    tier: "founder",
+    year: 2026,
+    url: "https://letsunthink.tech",
+    extension:
+      "https://chromewebstore.google.com/detail/unthink/lnbjgaieajhiidbicphgckpojaphhono",
+    github: null,
+    demo: "https://chromewebstore.google.com/detail/unthink/lnbjgaieajhiidbicphgckpojaphhono",
+    youtube: null,
+    domain: ["ai", "backend", "platform", "saas"],
+    stack: [
+      "Django 5.1",
+      "FastAPI",
+      "PostgreSQL 16",
+      "Redis 7.2",
+      "Celery",
+      "Gemini 2.0 Flash",
+      "Fireworks AI",
+      "Chrome Manifest V3",
+      "React 18",
+      "Tailwind CSS",
+      "Docker",
+      "AWS",
+      "SSE",
+      "Firecrawl",
+    ],
+    metrics: [
+      "<300ms Save SLA",
+      "Zero-Decision Dual Taxonomy",
+      "Deterministic Epochs",
+      "3 Celery Queues",
+      "<$100/mo per 1k users",
+    ],
+    problem:
+      "Every major knowledge tool (Notion, Obsidian, Readwise) suffers from high capture friction and manual tagging overhead, turning 85%+ of saved bookmarks into an unorganized digital graveyard.",
+    built:
+      "Sole founder build: dual backend (Django 5.1 relational CRUD + FastAPI SSE streaming), 3 isolated Celery queues for zero-shot AI taxonomy, Manifest V3 Chrome Extension, multi-key Redis cache with epoch invalidation, and hardened non-root AWS EC2 deployment.",
+    notes:
+      `UnThink came out of a fundamental paradox with personal knowledge management. Every major capture tool—Notion, Obsidian, Readwise, Evernote—imposes high cognitive friction at the moment of capture. Asking a developer to stop reading, switch windows, create a note, pick a folder, and assign tags destroys flow state. The result is what I call the 85%+ digital graveyard: bookmarks and full-page HTML clippings saved with good intentions that are never opened again. The core product thesis was simple: don't make the user name or organize anything. The atomic unit of storage is a fragment—two to eight lines of focused code, terminal commands, or insights—and autonomous AI handles the rest.
+
+The product's key innovation is zero-decision dual taxonomy. Every captured fragment is classified by AI into two parallel folder structures simultaneously: a conceptual topic hierarchy (e.g., Technology / Backend / Distributed Systems / Redis) and a source context hierarchy (e.g., Medium / The Backend Diaries or GitHub / Docs). Ingestion is built for speed: highlighting text and right-clicking 'Send to UnThink' returns a sub-300ms acknowledgement so the user never leaves their reading flow, while background workers strip HTML clutter, advertising, and tracking scripts into clean GitHub-flavored Markdown.
+
+Architecturally, the dual-backend micro-orchestration was the pivotal design choice. Django 5.1 and DRF provide the transactional backbone for ACID CRUD, user authentication (JWT/OAuth2), daily/monthly quota tiering, and Stripe billing. FastAPI powers the asynchronous streaming pipeline, orchestrating real-time Server-Sent Events (SSE) and token streaming. The services communicate asynchronously via Redis pub/sub and three isolated Celery queues—one for high-priority AI classification, one for DOM scraping with Firecrawl fallback, and one for background digests. A multi-model failover cascade (Fireworks AI for fast open LLM inference, Google Gemini 2.0 Flash for complex reasoning, and local heuristic regexes) guarantees 99.9% classification availability.
+
+Multi-key caching and cache invalidation was the most difficult engineering challenge. In a multidimensional system where users query paginated fragment feeds, recursive folder trees with live counts, global tag clouds, and quota counters, naive KEYS * queries or global flushes caused Redis CPU spikes and cache stampedes on PostgreSQL. I engineered a deterministic epoch versioning pattern: each user owns an atomic user:{id}:cache_version counter in Redis. When any fragment is created, edited, moved, or deleted, an atomic INCR logically invalidates all paginated list and tree caches in <1ms without blocking the Redis event loop, leaving old keys to be reclaimed by TTL. Expensive folder trees are further guarded by distributed mutex locking.
+
+The client ingestion layer is a published Chromium Manifest V3 browser extension built with a stateless service worker pattern. Because MV3 terminates service workers after 30 seconds of inactivity, auth state and quota counters are read directly from chrome.storage.sync with zero network overhead. A zero-click dashboard bridge securely syncs JWT tokens from letsunthink.tech via externally_connectable, while the native vanilla JS popup loads in under 10ms with live quota visualization. The production infrastructure runs on AWS EC2, containerized with non-root user execution, cap_drop: ALL, unprivileged Alpine Nginx, and zero exposed internal ports.
+
+What's next for UnThink. We are integrating pgvector dense vector embeddings alongside PostgreSQL BM25 full-text search with Reciprocal Rank Fusion (RRF) for sub-200ms hybrid semantic search across 10,000+ personal fragments. We are also shipping a weekly Sunday AI knowledge synthesis digest via Celery Beat and building an offline-first IndexedDB capture buffer in the Chrome extension for distraction-free coding on flights.`,
+    game_building: "UnThink Labs",
+    game_district: "saas_quarter",
+  },
   {
     slug: "taply",
     name: "Taply",
@@ -153,52 +212,6 @@ We're now iterating on v2 with a drag-and-drop profile builder and a leads inbox
 
 What's next if we keep building. A tier-1 enterprise tier with SAML SSO. UTM-aware links and A/B-tested profile versions for a deeper analytics surface. A public Taply API so other SaaS products can plug into Taply profiles as a primary identity, which is also a route toward a 'Taply as identity provider' positioning.`,
     game_building: "Taply HQ",
-    game_district: "saas_quarter",
-  },
-  {
-    slug: "unthink",
-    name: "UnThink",
-    tagline: "Fragment-first personal knowledge base for engineers.",
-    status: "building",
-    tier: "founder",
-    year: 2026,
-    url: null,
-    github: null,
-    demo: null,
-    youtube: null,
-    domain: ["ai", "backend", "platform"],
-    stack: [
-      "Django 5",
-      "FastAPI",
-      "Celery",
-      "Redis",
-      "PostgreSQL",
-      "Gemini 2.0 Flash",
-      "SSE",
-      "React 18",
-      "Manifest V3",
-    ],
-    metrics: [
-      "<300ms Django save API",
-      "model-agnostic AI layer",
-      "<$100/mo per 1k users",
-      "3 Celery task queues",
-    ],
-    problem:
-      "Every save tool requires a context switch, and the friction is high enough that engineers don't bother capturing what they learn.",
-    built:
-      "Dual-backend (Django and FastAPI) with Celery coordinating three queues. AI classifies and organizes every fragment automatically. Browser extension as primary capture interface.",
-    notes:
-      `UnThink started from frustration with my own note-taking. I'd save a snippet, then never open it again. The friction of 'pick a folder, write a tag' was high enough that I'd skip capturing things entirely. The whole product idea is: don't make me name anything. The unit of saving is a fragment, two to four lines, not a page, and the AI figures out the folder and tags.
-
-The architectural decision that shaped everything else was the dual backend. Django handles auth, quota, and the save API, with under 300ms return so the browser extension feels snappy. FastAPI handles the AI classification pipeline and the SSE stream that updates the dashboard when classification completes. They talk via Redis pub/sub and Celery (three queues, classification, scraping, and reports) and never call each other directly. This split exists because Django is great for relational CRUD and FastAPI is great for streaming LLM responses. Using one for both was tempting but wrong.
-
-SSE over WebSocket was an early call. We don't need bidirectional, and SSE just works through any HTTP proxy. The browser extension (Manifest V3, Chromium only) is the primary capture interface. Right-click on selected text, hit Send to UnThink, done. The folder taxonomy is the part I'm proudest of. Every fragment lands in exactly two folders, a topic folder like Tech/DevOps/Redis and a source folder from the page title. Tags equal folder membership, so editing a tag later is just moving the fragment between folders.
-
-Quota limits are honest. 25 right-click saves a day, 250 a month. I'd rather have a clear ceiling than a vague fair-use line. We're still in development, but the capture, classify, and file loop is solid.
-
-What's next. Replacing the Jina and Firecrawl fallback scrapers with a single in-house crawler, plus an offline mode for the extension.`,
-    game_building: "UnThink Labs",
     game_district: "saas_quarter",
   },
   {

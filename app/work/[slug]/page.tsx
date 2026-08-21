@@ -351,7 +351,12 @@ function LinksRow({ project }: { project: ProjectItem }) {
     }
   }
   if (project.url) links.push({ href: project.url, label: "↗ live" });
-  if (project.demo) links.push({ href: project.demo, label: "↗ demo" });
+  if (project.extension) {
+    links.push({ href: project.extension, label: "↗ chrome extension" });
+  }
+  if (project.demo && project.demo !== project.extension && project.demo !== project.url) {
+    links.push({ href: project.demo, label: "↗ demo" });
+  }
   if (project.youtube) {
     links.push({ href: project.youtube, label: "↗ video" });
   }

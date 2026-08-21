@@ -93,7 +93,7 @@ export const STACK: StackItem[] = [
     id: "drf",
     name: "DRF",
     domain: "backend",
-    projects: ["taply", "algocode", "movio", "cutetube", "airpass"],
+    projects: ["unthink", "taply", "algocode", "movio", "cutetube", "airpass"],
   },
   {
     id: "fastapi",
@@ -105,7 +105,7 @@ export const STACK: StackItem[] = [
     id: "celery",
     name: "Celery",
     domain: "backend",
-    projects: ["taply", "movio", "cutetube", "imgtwist", "unthink"],
+    projects: ["unthink", "taply", "movio", "cutetube", "imgtwist"],
   },
   {
     id: "websocket",
@@ -148,9 +148,9 @@ export const STACK: StackItem[] = [
     name: "Docker",
     domain: "infra",
     projects: [
+      "unthink",
       "algocode",
       "movio",
-      "unthink",
       "load-balancer",
       "pulumi-infra",
     ],
@@ -159,13 +159,13 @@ export const STACK: StackItem[] = [
     id: "aws",
     name: "AWS",
     domain: "infra",
-    projects: ["taply", "algocode", "movio", "pulumi-infra"],
+    projects: ["unthink", "taply", "algocode", "movio", "pulumi-infra"],
   },
   {
     id: "nginx",
     name: "Nginx",
     domain: "infra",
-    projects: ["load-balancer", "pulumi-infra"],
+    projects: ["unthink", "load-balancer", "pulumi-infra"],
   },
   /* Phase 12 (T12.5): added so resolveStackSlug() picks up
      "Linux networking" → linux from the Poridhi covered chips.
