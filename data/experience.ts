@@ -95,11 +95,48 @@ export interface EducationItem {
 
 export const EXPERIENCE: ExperienceItem[] = [
   {
+    id: "unthink",
+    company: "UnThink",
+    url: "https://letsunthink.tech",
+    role: "Founder & Full-Stack Systems Engineer",
+    period: "Apr 2026 – Present",
+    status: "active",
+    bullets: [
+      "Founded and shipped UnThink end-to-end: an AI-native, fragment-first personal knowledge base SaaS with a published Manifest V3 Chrome Web Store extension and <300ms capture SLA.",
+      "Architected a dual-backend engine (Django 5.1 for ACID CRUD, quota enforcement, and auth; FastAPI for real-time Server-Sent Events streaming and async LLM routing).",
+      "Engineered deterministic epoch versioning for multi-key Redis caching, invalidating complex multidimensional query caches logically in <1ms without Redis blocking or cache stampedes.",
+      "Orchestrated 3 isolated Celery task queues for high-priority zero-shot AI classification, DOM parsing with Firecrawl fallback, and background knowledge digests with a multi-model failover cascade (Fireworks AI & Gemini 2.0 Flash).",
+      "Hardened AWS EC2 infrastructure using non-root Docker containers, cap_drop: ALL, unprivileged Alpine Nginx gateway, and zero exposed internal ports with automated pre-deploy AST verification.",
+    ],
+    tags: [
+      "Django 5.1",
+      "FastAPI",
+      "PostgreSQL",
+      "Redis",
+      "Celery",
+      "Chrome Manifest V3",
+      "React 18",
+      "AWS/Docker",
+    ],
+    relatedProjects: ["unthink"],
+    notes: `UnThink represents my work as a solo founder and full-stack systems engineer, building an AI-native second-brain platform from first principles. Traditional knowledge tools force developers to context-switch during deep work: saving a code snippet or insight requires selecting folders, writing titles, and assigning tags. The result is that over 85% of bookmarks are never opened again. UnThink inverts this: the atomic unit of capture is a fragment (2–8 lines of code or prose), and autonomous AI handles classification, tagging, and dual-directory filing at sub-300ms ingestion SLA.
+
+The architecture was intentionally designed as a dual-backend micro-orchestration. Django 5.1 and DRF manage transactional consistency, ACID CRUD, user authentication, tiered quota enforcement, and Stripe/Dodo payments. In parallel, FastAPI provides asynchronous, high-concurrency LLM streaming via Server-Sent Events (SSE). The services communicate through Redis pub/sub and three dedicated Celery queues (classification, scraping, and digest generation), ensuring transactional API responsiveness is never degraded by long-running AI inference.
+
+Solving cache invalidation in UnThink was one of the most intellectually rewarding engineering challenges. With users querying paginated feeds, recursive folder trees with live fragment counts, and dynamic tag summaries, naive cache flushing caused severe Redis event loop contention and PostgreSQL stampedes. I implemented deterministic epoch versioning: bumping an atomic user-level version key logically invalidates all dependent query caches in sub-millisecond time without blocking Redis, while distributed mutex locks protect expensive tree aggregations during cache misses.
+
+On the client side, I engineered and published a Chromium Manifest V3 browser extension to the Chrome Web Store. To handle MV3's 30-second ephemeral service worker lifecycle, authentication tokens and quota states are maintained statelessly via Chrome storage sync. A secure dashboard bridge synchronizes active sessions from letsunthink.tech with zero user friction, and the native zero-dependency popup loads in under 10ms.
+
+Production deployment is containerized on AWS EC2 with an unprivileged Alpine Nginx reverse proxy. Every container runs under a non-root user profile with Linux kernel cap_drop: ALL enforced, with internal backend, AI, database, and Redis ports completely isolated from host exposure. Automated pre-deployment AST verification gates guarantee security invariants before any release reaches production.
+
+What's next for UnThink: We are expanding the data layer with pgvector dense vector embeddings combined with PostgreSQL BM25 full-text search via Reciprocal Rank Fusion (RRF) for sub-200ms hybrid semantic search, alongside automated Sunday morning AI knowledge digests.`,
+  },
+  {
     id: "taply",
     company: "Taply",
     url: "https://gettaply.me",
     role: "Co-Founder & Backend Engineer",
-    period: "May 2026 – Present",
+    period: "Mar 2026 – Present",
     status: "active",
     bullets: [
       "Co-founded Taply and built the entire backend on Django 5.1 and DRF. Eleven section types, four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback.",
@@ -486,19 +523,19 @@ export interface NowStatusItem {
 
 export const NOW_STATUSES: NowStatusItem[] = [
   {
+    name: "UnThink",
+    slug: "unthink",
+    status:
+      "Founder and full-stack systems engineer. Shipping an AI-native, fragment-first personal knowledge base and published Manifest V3 Chrome Extension with zero-shot dual-directory taxonomic routing.",
+    liveUrl: "https://letsunthink.tech",
+    statusKind: "active",
+  },
+  {
     name: "Taply",
     slug: "taply",
     status:
       "Co-founder and backend engineer. Shipping the profile system, NFC/QR sharing layer, real-time analytics, and team management console on Django 5.1 and DRF, daily.",
     liveUrl: "https://gettaply.me/p/mehboob",
     statusKind: "active",
-  },
-  {
-    name: "UnThink",
-    slug: "unthink",
-    status:
-      "Building a fragment-first knowledge base for engineers. AI classifies every save, browser extension as the primary capture interface. Targeting an August 2026 release.",
-    liveUrl: null,
-    statusKind: "building",
   },
 ];

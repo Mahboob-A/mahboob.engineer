@@ -9,7 +9,7 @@
 ## T60.1: Reorder & Update UnThink in Projects Registry & Case Study Shell
 
 **Task status:** done
-**Commit:** —
+**Commit:** 29433a1
 **Date:** 2026-08-21
 
 ### What shipped
@@ -27,7 +27,33 @@
 - Mapped both `url` (live app) and `extension` (Chrome Web Store) so users can test both the web app and browser extension.
 
 ### Caveats / pending
-- Next task (T60.2) will update `data/experience.ts` to add UnThink to the top of `EXPERIENCE` and update Taply's start date to Mar 2026.
+- T60.2 updates `data/experience.ts` to add UnThink to the top of `EXPERIENCE` and update Taply's start date to Mar 2026.
+
+### Verified
+- `pnpm typecheck` passed with 0 errors.
+
+---
+
+## T60.2: Add UnThink to Experience Registry & Update Taply Timeline
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `data/experience.ts`:
+  - Added `unthink` as index 0 of `EXPERIENCE` (`period: "Apr 2026 – Present"`, `status: "active"`, `role: "Founder & Full-Stack Systems Engineer"`).
+  - Added 5 high-impact bullets detailing dual-backend architecture, deterministic epoch caching, 3 Celery queues, multi-model failover, and AWS non-root hardening.
+  - Added 6-paragraph founder discussion in `notes` for `/log/unthink` deep-dive.
+  - Updated `taply` entry `period` from "May 2026 – Present" to "Mar 2026 – Present".
+  - Reordered `NOW_STATUSES` with UnThink first (`statusKind: "active"`, live URL `https://letsunthink.tech`) and Taply second.
+
+### Decisions
+- Placing UnThink as index 0 in `EXPERIENCE` automatically propagates UnThink above Taply on the Homepage Deployment Log (`Where I've shipped, what I built, and how it went.`), `/log` timeline, and `/log` "What I'm doing now".
+- The addition of `unthink` into `EXPERIENCE` automatically enables `/log/unthink` route with `generateStaticParams` and sitemap entries.
+
+### Caveats / pending
+- None.
 
 ### Verified
 - `pnpm typecheck` passed with 0 errors.
