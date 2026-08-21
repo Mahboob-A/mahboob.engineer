@@ -190,7 +190,7 @@
 ## T62.10: Author Taply 5-Module Simulation Engineering Guide
 
 **Task status:** done
-**Commit:** —
+**Commit:** f37612d
 **Date:** 2026-08-21
 
 ### What shipped
