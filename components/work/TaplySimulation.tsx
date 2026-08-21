@@ -396,7 +396,7 @@ function DynamicProfileCard({
   return (
     <div className={cn("bg-[#111111] text-white border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative", isMini ? "p-4" : "p-6")}>
       <div className={cn("relative -mx-4 -mt-4 mb-3 overflow-hidden", isMini ? "h-20" : "h-32 -mx-6 -mt-6 mb-4")}>
-        <Image unoptimized src={profile.cover_image} alt="" width={isMini ? 290 : 448} height={isMini ? 80 : 128} className="w-full h-full object-cover opacity-80" />
+        <Image unoptimized src={profile.cover_image} alt="" fill className="object-cover opacity-80" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent" />
         <div className="absolute bottom-2 left-3 flex items-center gap-2">
           <div className={cn("rounded-full overflow-hidden border-2 border-white relative shadow-xl bg-surface", isMini ? "w-10 h-10" : "w-14 h-14")}>
