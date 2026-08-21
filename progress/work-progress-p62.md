@@ -173,7 +173,7 @@
 ## T62.9: Harmonize Writer and Knowledge-Seeker Persona Palettes
 
 **Task status:** done
-**Commit:** —
+**Commit:** 212e6f3
 **Date:** 2026-08-21
 
 ### What shipped
