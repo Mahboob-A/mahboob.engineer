@@ -52,3 +52,24 @@
 
 ### Verified
 - `pnpm typecheck` passed cleanly.
+
+---
+
+## T63.3: Create Taply Master Product Sandbox & 2D NFC Networking Hall
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/TaplySimulation.tsx`:
+  - Built the master interactive product sandbox with 5 functional views:
+    1. `[PORTAL]`: Authenticated dashboard with 4 metric cards, profile completeness gauge, and quick actions.
+    2. `[BUILDER]`: Live profile & card customizer with instant reactive card preview, layout variant switcher (`classic`, `hero`, `compact`, `banner`), and accent color picker.
+    3. `[VIEWPORT]`: Simulated public profile link with address bar, copy URL, SVG QR modal, vCard download trigger, and interactive lead exchange form with live dispatch.
+    4. `[ONE TAP]`: 2D Conference Networking Hall with 8 interactive attendees (VP of Engineering, Managing Director, CTO, Head of Sales, Solutions Architect, Robotics Founder, Infrastructure Engineer, UI/UX Lead). Clicking "Tap NFC" fires a real-time event dispatch toast notification and updates global telemetry.
+    5. `[TELEMETRY]`: Live analytics inbox with a dependency-free, responsive SVG Area Chart (gradient fill for taps + dashed line for views) and real-time updated captured leads table.
+  - Zero emojis, zero em dashes, and 100% dependency-free pure inline SVGs.
+
+### Verified
+- `pnpm typecheck` passed cleanly.
