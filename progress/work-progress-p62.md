@@ -57,7 +57,7 @@
 ## T62.3: Build Master Product Sandbox Simulation Engine
 
 **Task status:** done
-**Commit:** —
+**Commit:** 30f770d
 **Date:** 2026-08-21
 
 ### What shipped
@@ -87,7 +87,7 @@
 ## T62.4: Integrate Master Sandbox into `/work/unthink` & Clean Data Notes
 
 **Task status:** done
-**Commit:** —
+**Commit:** 30f770d
 **Date:** 2026-08-21
 
 ### What shipped
