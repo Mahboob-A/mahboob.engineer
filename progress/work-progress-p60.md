@@ -27,7 +27,7 @@
 - Mapped both `url` (live app) and `extension` (Chrome Web Store) so users can test both the web app and browser extension.
 
 ### Caveats / pending
-- T60.2 updates `data/experience.ts` to add UnThink to the top of `EXPERIENCE` and update Taply's start date to Mar 2026.
+- None.
 
 ### Verified
 - `pnpm typecheck` passed with 0 errors.
@@ -37,7 +37,7 @@
 ## T60.2: Add UnThink to Experience Registry & Update Taply Timeline
 
 **Task status:** done
-**Commit:** —
+**Commit:** 42ab6fe
 **Date:** 2026-08-21
 
 ### What shipped
@@ -54,6 +54,33 @@
 
 ### Caveats / pending
 - None.
+
+### Verified
+- `pnpm typecheck` passed with 0 errors.
+
+---
+
+## T60.3: Enhance UnThink Architecture Diagram
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/diagrams/UnthinkDiagram.tsx`:
+  - Redesigned SVG layout (320x220 viewBox) with complete dual-backend architecture:
+    - Extension (MV3) ingestion layer and Web App (React) dashboard layer.
+    - Django 5.1 (:8000) transactional CRUD and FastAPI (SSE) streaming layers.
+    - Redis 7.2 Broker and Celery × 3 Queues task cluster.
+    - Fireworks / Gemini AI failover engine.
+    - PostgreSQL 16 persistence and Redis Cache (Deterministic Epochs) store.
+  - Configured SMIL animated packet channels for both ingestion flow (amber) and SSE/persistence flow (mint accent).
+
+### Decisions
+- Maintained exact pure SVG + SMIL spec conforming to the design system tokens without JS runtime dependency.
+
+### Caveats / pending
+- Next task (T60.4) will update Hero Terminal, site metadata, and RAG knowledge base answers.
 
 ### Verified
 - `pnpm typecheck` passed with 0 errors.
