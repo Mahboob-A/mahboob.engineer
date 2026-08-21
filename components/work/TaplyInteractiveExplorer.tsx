@@ -352,14 +352,14 @@ function VcardCompressorViewer() {
           <pre className="text-acc">
 {`BEGIN:VCARD
 VERSION:4.0
-N:Alam;Mehboob;;;
-FN:Mehboob Alam
-ORG:Taply Technologies
-TITLE:Co-Founder & Lead Architect
-TEL;TYPE=CELL,VOICE:+14155552671
-EMAIL;TYPE=WORK,INTERNET:mehboob@gettaply.me
+N:Alam;Mahboob;;;
+FN:Mahboob Alam
+ORG:Nexbell Inc
+TITLE:Software and DevOps Engineer
+TEL;TYPE=CELL,VOICE:+917908184346
+EMAIL;TYPE=WORK,INTERNET:connect.mahboobalam@gmail.com
 URL;TYPE=WORK:https://gettaply.me/p/mehboob
-ADR;TYPE=WORK:;;500 Howard St;San Francisco;CA;94105;USA
+ADR;TYPE=WORK:;;Koramangala;Bengaluru;560095;India
 NOTE:Building high-throughput physical-to-digital infrastructure.
 PHOTO;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQEASABIAAD...
 END:VCARD`}

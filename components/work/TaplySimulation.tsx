@@ -6,11 +6,15 @@
  * Master interactive product sandbox for Taply on /work/taply.
  * Implements a unified state-managed simulation featuring:
  *
- *   1. Authenticated Dashboard with real-time stats and profile health
- *   2. Real-Time Profile Customizer with layout variants, palette picker, and live mini-card preview
- *   3. Simulated Public Profile Viewport with vCard download and live lead exchange form
- *   4. 2D Conference Networking Hall with 8 interactive attendees for simulated NFC taps
- *   5. Real-Time Analytics & Leads Inbox with pure responsive SVG Area Chart and CRM sync stream
+ *   1. Authenticated Dashboard with real-time stats and interactive telemetry jump
+ *   2. Real-Time Profile Customizer with 4 distinct layout variants (classic, hero, compact, banner)
+ *   3. 2D Conference Networking Hall with 8 interactive attendees for simulated NFC taps
+ *   4. Real-Time Analytics & Leads Inbox with pure responsive SVG Area Chart and CRM sync stream
+ *   5. Simulated Public Profile Viewport with 4 live layout variants, vCard download, and real scannable QR
+ *
+ * Tab Sequence:
+ *   Dashboard [PORTAL] -> Profile Customizer [BUILDER] -> NFC Networking Hall [ONE TAP]
+ *   -> Analytics & Leads [TELEMETRY] -> Public Profile Link [VIEWPORT]
  *
  * Strictly free of unicode emojis and em dashes across all UI and data layers.
  */
@@ -19,6 +23,7 @@ import React, { useState, useReducer, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
+import { generateQrMatrix } from "@/lib/qr-generator";
 
 import {
   TaplyProfileState,
@@ -35,7 +40,7 @@ import {
   INITIAL_TIME_SERIES,
 } from "./taply-simulation-data";
 
-export type SandboxTab = "dashboard" | "customizer" | "public_link" | "networking" | "analytics";
+export type SandboxTab = "dashboard" | "customizer" | "networking" | "analytics" | "public_link";
 
 // ─── STATE REDUCER & ACTIONS ────────────────────────────────────────────────
 
@@ -184,7 +189,258 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Master Component
+   Real Scannable QR Code SVG Renderer
+   ───────────────────────────────────────────────────────────────────────────── */
+function ScannableQrSvg({ url, size = 140 }: { url: string; size?: number }) {
+  const matrix = React.useMemo(() => {
+    try {
+      return generateQrMatrix(url);
+    } catch {
+      return generateQrMatrix("https://gettaply.me/p/mehboob");
+    }
+  }, [url]);
+
+  const moduleCount = matrix.length;
+  const cellSize = size / moduleCount;
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="bg-white rounded-lg p-1.5 shadow-md">
+      {matrix.map((row, r) =>
+        row.map((isDark, c) =>
+          isDark ? (
+            <rect
+              key={`${r}-${c}`}
+              x={c * cellSize}
+              y={r * cellSize}
+              width={cellSize + 0.1}
+              height={cellSize + 0.1}
+              fill="#000000"
+            />
+          ) : null
+        )
+      )}
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Live Layout Variant Profile Renderer (Used in both Mini-Viewport & Public View)
+   ───────────────────────────────────────────────────────────────────────────── */
+function DynamicProfileCard({
+  profile,
+  onDownloadVcard,
+  onOpenQr,
+  isMini = false,
+}: {
+  profile: TaplyProfileState;
+  onDownloadVcard: () => void;
+  onOpenQr: () => void;
+  isMini?: boolean;
+}) {
+  const variant = profile.theme_config.variant || "classic";
+  const primaryColor = profile.theme_config.primary_color || "#5CC9A0";
+
+  // 1. CLASSIC VARIANT (Centered avatar with halo, pill button, clean vertical list)
+  if (variant === "classic") {
+    return (
+      <div className={cn("bg-[#141414] text-white border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative", isMini ? "p-4" : "p-6")}>
+        <div className={cn("bg-gradient-to-r from-acc/30 to-amber/30 relative", isMini ? "h-16 -mx-4 -mt-4 mb-3" : "h-28 -mx-6 -mt-6 mb-4")} />
+        <div className="relative text-center -mt-10 sm:-mt-12">
+          <div className={cn("rounded-full mx-auto overflow-hidden border-4 border-[#141414] shadow-lg relative bg-surface", isMini ? "w-14 h-14" : "w-20 h-20")}>
+            <Image unoptimized src={profile.photo} alt={profile.display_name} width={isMini ? 56 : 80} height={isMini ? 56 : 80} className="w-full h-full object-cover" />
+          </div>
+          <h2 className={cn("font-bold text-white mt-2 truncate", isMini ? "text-sm" : "text-lg")}>{profile.display_name}</h2>
+          <p className={cn("text-gray-400 truncate", isMini ? "text-[11px]" : "text-xs")}>{profile.title} at {profile.company}</p>
+          <p className={cn("text-gray-500 font-mono mt-0.5", isMini ? "text-[9.5px]" : "text-[11px]")}>{profile.location}</p>
+          {!isMini && <p className="text-xs text-gray-300 mt-3 leading-relaxed px-4">{profile.bio}</p>}
+        </div>
+
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <button
+            onClick={onDownloadVcard}
+            style={{ backgroundColor: primaryColor }}
+            className={cn("rounded-full font-bold text-black flex items-center justify-center gap-1.5 shadow-lg cursor-pointer font-mono", isMini ? "w-full py-1.5 text-[11px]" : "px-6 py-2 text-xs")}
+          >
+            [VCF] Save Contact
+          </button>
+          {!isMini && (
+            <button onClick={onOpenQr} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer font-mono text-xs hover:bg-white/20">
+              [Q]
+            </button>
+          )}
+        </div>
+
+        <div className={cn("space-y-1.5", isMini ? "mt-3" : "mt-6 space-y-2")}>
+          {profile.links.slice(0, isMini ? 3 : profile.links.length).map((link) => (
+            <a
+              key={link.id}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className={cn("flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-colors font-mono", isMini ? "p-2 text-[10.5px]" : "p-3 text-xs")}
+            >
+              <span className="font-medium text-gray-200 truncate">{link.label}</span>
+              <span className="text-gray-400 shrink-0 ml-2">[-&gt;]</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // 2. HERO VARIANT (High impact large avatar, dark card, skills badges, 2-column link grid)
+  if (variant === "hero") {
+    return (
+      <div className={cn("bg-[#0f1712] text-white border border-[#2B4A3A]/80 rounded-2xl overflow-hidden shadow-2xl relative", isMini ? "p-4" : "p-6")}>
+        <div className="flex items-center gap-3">
+          <div className={cn("rounded-xl overflow-hidden border-2 relative shrink-0 bg-surface", isMini ? "w-12 h-12" : "w-16 h-16")} style={{ borderColor: primaryColor }}>
+            <Image unoptimized src={profile.photo} alt={profile.display_name} width={isMini ? 48 : 64} height={isMini ? 48 : 64} className="w-full h-full object-cover" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-bold" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
+              [HERO PROFILE]
+            </span>
+            <h2 className={cn("font-bold text-white mt-1 truncate", isMini ? "text-xs" : "text-base")}>{profile.display_name}</h2>
+            <p className={cn("text-gray-400 truncate", isMini ? "text-[10px]" : "text-xs")}>{profile.title}</p>
+          </div>
+        </div>
+
+        <div className="mt-3 text-[10px] text-gray-400 font-mono flex items-center justify-between border-y border-white/10 py-1.5">
+          <span>{profile.company}</span>
+          <span className="text-gray-500">{profile.location}</span>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-1">
+          {profile.skills.slice(0, isMini ? 3 : 5).map((skill, idx) => (
+            <span key={idx} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">
+              {skill}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-4">
+          <button
+            onClick={onDownloadVcard}
+            style={{ backgroundColor: primaryColor }}
+            className={cn("w-full rounded-lg font-bold text-black flex items-center justify-center gap-1.5 shadow-md cursor-pointer font-mono", isMini ? "py-1.5 text-[11px]" : "py-2 text-xs")}
+          >
+            [VCF] Connect Instantly
+          </button>
+        </div>
+
+        <div className={cn("grid gap-1.5", isMini ? "mt-3 grid-cols-1" : "mt-5 grid-cols-1 sm:grid-cols-2 gap-2")}>
+          {profile.links.slice(0, isMini ? 3 : profile.links.length).map((link) => (
+            <a
+              key={link.id}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className={cn("p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-[10.5px] font-mono flex items-center justify-between transition-colors", isMini ? "text-[10px]" : "text-xs")}
+            >
+              <span className="truncate text-gray-200">{link.label}</span>
+              <span className="text-gray-400 ml-1">[-&gt;]</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // 3. COMPACT VARIANT (Horizontal executive badge format, left-aligned avatar, condensed buttons)
+  if (variant === "compact") {
+    return (
+      <div className={cn("bg-[#121C13] text-white border border-[#2B4A3A] rounded-2xl overflow-hidden shadow-2xl relative", isMini ? "p-3.5" : "p-5")}>
+        <div className="flex items-center gap-3">
+          <div className={cn("rounded-full overflow-hidden border border-white/20 relative shrink-0 bg-surface", isMini ? "w-11 h-11" : "w-14 h-14")}>
+            <Image unoptimized src={profile.photo} alt={profile.display_name} width={isMini ? 44 : 56} height={isMini ? 44 : 56} className="w-full h-full object-cover" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className={cn("font-bold text-white truncate", isMini ? "text-xs" : "text-sm")}>{profile.display_name}</h2>
+            <p className={cn("text-gray-400 truncate", isMini ? "text-[10px]" : "text-[11px]")}>{profile.title}</p>
+            <p className={cn("text-gray-500 font-mono truncate", isMini ? "text-[9px]" : "text-[10px]")}>{profile.company} · {profile.location}</p>
+          </div>
+          <button onClick={onOpenQr} className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-white font-mono text-[10px] shrink-0 cursor-pointer">
+            [QR]
+          </button>
+        </div>
+
+        <div className="mt-3">
+          <button
+            onClick={onDownloadVcard}
+            style={{ backgroundColor: primaryColor }}
+            className="w-full py-1.5 rounded-md font-bold text-black text-[11px] font-mono cursor-pointer shadow-sm"
+          >
+            Save Card (.vcf)
+          </button>
+        </div>
+
+        <div className="mt-3 space-y-1">
+          {profile.links.slice(0, isMini ? 3 : profile.links.length).map((link) => (
+            <a
+              key={link.id}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-between p-1.5 px-2 rounded bg-white/5 hover:bg-white/10 text-[10.5px] font-mono text-gray-300 transition-colors"
+            >
+              <span className="truncate">{link.label}</span>
+              <span className="text-gray-500 text-[9.5px]">[-&gt;]</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // 4. BANNER VARIANT (Full-bleed cover image with overlapping avatar & glassmorphism cards)
+  return (
+    <div className={cn("bg-[#111111] text-white border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative", isMini ? "p-4" : "p-6")}>
+      <div className={cn("relative -mx-4 -mt-4 mb-3 overflow-hidden", isMini ? "h-20" : "h-32 -mx-6 -mt-6 mb-4")}>
+        <Image unoptimized src={profile.cover_image} alt="" width={isMini ? 290 : 448} height={isMini ? 80 : 128} className="w-full h-full object-cover opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent" />
+        <div className="absolute bottom-2 left-3 flex items-center gap-2">
+          <div className={cn("rounded-full overflow-hidden border-2 border-white relative shadow-xl bg-surface", isMini ? "w-10 h-10" : "w-14 h-14")}>
+            <Image unoptimized src={profile.photo} alt={profile.display_name} width={isMini ? 40 : 56} height={isMini ? 40 : 56} className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-1">
+        <h2 className={cn("font-bold text-white truncate", isMini ? "text-sm" : "text-base")}>{profile.display_name}</h2>
+        <p className={cn("text-gray-400 truncate", isMini ? "text-[10.5px]" : "text-xs")}>{profile.title} at {profile.company}</p>
+        <p className={cn("text-gray-500 font-mono mt-0.5", isMini ? "text-[9.5px]" : "text-[11px]")}>{profile.location}</p>
+      </div>
+
+      <div className="mt-3">
+        <button
+          onClick={onDownloadVcard}
+          style={{ backgroundColor: primaryColor }}
+          className="w-full py-1.5 rounded-lg font-bold text-black text-xs font-mono cursor-pointer shadow-lg"
+        >
+          [VCF] Add to Contacts
+        </button>
+      </div>
+
+      <div className={cn("space-y-1.5", isMini ? "mt-3" : "mt-4 space-y-2")}>
+        {profile.links.slice(0, isMini ? 3 : profile.links.length).map((link) => (
+          <a
+            key={link.id}
+            href={link.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-[11px] font-mono transition-colors"
+          >
+            <span className="truncate text-gray-200">{link.label}</span>
+            <span className="text-gray-400">[-&gt;]</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Master Taply Simulation Component
    ───────────────────────────────────────────────────────────────────────────── */
 export function TaplySimulation() {
   const [activeTab, setActiveTab] = useState<SandboxTab>("dashboard");
@@ -213,12 +469,16 @@ export function TaplySimulation() {
   }, [lastTapNotification]);
 
   const copyPublicLink = () => {
+    const targetUrl = `https://gettaply.me/p/${profile.username}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(targetUrl);
+    }
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const handleDownloadVcard = () => {
-    const vcardContent = `BEGIN:VCARD\nVERSION:4.0\nFN:${profile.display_name}\nORG:${profile.company}\nTITLE:${profile.title}\nTEL:${profile.phone[0] || ""}\nEMAIL:${profile.email_addresses[0] || ""}\nURL:https://gettaply.me/p/${profile.username}\nNOTE:${profile.bio}\nEND:VCARD`;
+    const vcardContent = `BEGIN:VCARD\nVERSION:4.0\nN:Alam;Mahboob;;;\nFN:${profile.display_name}\nORG:${profile.company}\nTITLE:${profile.title}\nTEL;TYPE=CELL,VOICE:${profile.phone[0] || "+917908184346"}\nEMAIL;TYPE=WORK,INTERNET:${profile.email_addresses[0] || "connect.mahboobalam@gmail.com"}\nURL;TYPE=WORK:https://gettaply.me/p/${profile.username}\nADR;TYPE=WORK:;;Koramangala;Bengaluru;560095;India\nNOTE:${profile.bio}\nEND:VCARD`;
     const blob = new Blob([vcardContent], { type: "text/vcard;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -267,7 +527,7 @@ export function TaplySimulation() {
             Master Product Sandbox &amp; NFC Networking Hall
           </h2>
           <span className="text-t3 font-mono text-[11px] italic">
-            portal &gt; builder &gt; viewport &gt; one tap &gt; telemetry
+            portal &gt; builder &gt; one tap &gt; telemetry &gt; viewport
           </span>
         </div>
         <span className="text-acc font-mono text-[11px]">
@@ -275,14 +535,14 @@ export function TaplySimulation() {
         </span>
       </div>
 
-      {/* 5-Tab Master Sandbox Navigation */}
+      {/* 5-Tab Master Sandbox Navigation (Reordered) */}
       <div className="border-border bg-surface/80 flex flex-wrap gap-2 rounded-xl border p-2 backdrop-blur-md">
         {[
           { id: "dashboard", label: "Dashboard", badge: "PORTAL" },
           { id: "customizer", label: "Profile Customizer", badge: "BUILDER" },
-          { id: "public_link", label: "Public Profile Link", badge: "VIEWPORT" },
           { id: "networking", label: "NFC Networking Hall", badge: "ONE TAP" },
           { id: "analytics", label: "Analytics & Leads", badge: "TELEMETRY" },
+          { id: "public_link", label: "Public Profile Link", badge: "VIEWPORT" },
         ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -335,31 +595,38 @@ export function TaplySimulation() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActiveTab("public_link")}
-                    className="px-3 py-1.5 rounded-lg border border-border bg-surface text-xs text-t1 hover:bg-surface/80 flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg border border-border bg-surface text-xs text-t1 hover:bg-surface/80 flex items-center gap-1.5 transition-colors cursor-pointer font-mono"
                   >
-                    View Public Profile <span className="font-mono text-acc">[-&gt;]</span>
+                    View Public Profile <span className="text-acc">[-&gt;]</span>
                   </button>
                 </div>
               </div>
 
-              {/* 4 Stat Cards */}
+              {/* 4 Interactive Stat Cards (Clicking jumps to Analytics) */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "Profile Views", value: analytics.lifetime.views, sub: "+12% 30d", color: "text-acc" },
-                  { label: "Contact Saves", value: analytics.lifetime.saves, sub: "+8% 30d", color: "text-amber" },
-                  { label: "NFC Taps", value: analytics.lifetime.taps, sub: "High Activity", color: "text-[#60A5FA]" },
-                  { label: "QR Scans", value: analytics.lifetime.qr_scans, sub: "Direct Scans", color: "text-[#2DD4BF]" },
+                  { label: "Profile Views", value: analytics.lifetime.views, sub: "+12% 30d", tag: "[+12%]", color: "text-acc" },
+                  { label: "Contact Saves", value: analytics.lifetime.saves, sub: "+8% 30d", tag: "[+8%]", color: "text-amber" },
+                  { label: "NFC Taps", value: analytics.lifetime.taps, sub: "High Activity", tag: "[HOT]", color: "text-[#60A5FA]" },
+                  { label: "QR Scans", value: analytics.lifetime.qr_scans, sub: "Direct Scans", tag: "[DIRECT]", color: "text-[#2DD4BF]" },
                 ].map((stat, i) => (
-                  <div key={i} className="bg-surface/60 border border-border rounded-xl p-4">
+                  <button
+                    key={i}
+                    onClick={() => setActiveTab("analytics")}
+                    className="bg-surface/60 hover:bg-surface/90 border border-border hover:border-acc/40 rounded-xl p-4 text-left transition-all cursor-pointer group"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-t3 font-medium">{stat.label}</span>
-                      <span className={cn("font-mono text-xs font-bold", stat.color)}>[STAT]</span>
+                      <span className="text-xs text-t3 font-medium group-hover:text-t2">{stat.label}</span>
+                      <span className={cn("font-mono text-[10.5px] font-bold", stat.color)}>{stat.tag}</span>
                     </div>
-                    <div className="text-2xl font-bold text-t1 mt-2 font-mono">
+                    <div className="text-2xl font-bold text-t1 mt-2 font-mono group-hover:text-acc transition-colors">
                       {stat.value.toLocaleString()}
                     </div>
-                    <span className="text-[10.5px] text-t3 font-mono mt-1 block">{stat.sub}</span>
-                  </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[10.5px] text-t3 font-mono block">{stat.sub}</span>
+                      <span className="text-[10px] font-mono text-t3 opacity-0 group-hover:opacity-100 transition-opacity text-acc">view telemetry &gt;</span>
+                    </div>
+                  </button>
                 ))}
               </div>
 
@@ -383,7 +650,7 @@ export function TaplySimulation() {
                       <span className="text-acc font-mono">[OK]</span> Profile Photo &amp; Cover Banner uploaded
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-acc font-mono">[OK]</span> 4 Active Social &amp; Booking Endpoints attached
+                      <span className="text-acc font-mono">[OK]</span> 5 Active Social &amp; Booking Endpoints attached
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-acc font-mono">[OK]</span> RFC 6350 vCard &amp; QR Code Active
@@ -401,8 +668,8 @@ export function TaplySimulation() {
                       className="w-full flex items-center justify-between p-3 rounded-lg bg-code-bg hover:bg-code-bg/80 border border-border/60 text-left transition-colors cursor-pointer"
                     >
                       <div>
-                        <p className="text-xs font-medium text-t1">Customize Card &amp; Theme</p>
-                        <p className="text-[10.5px] text-t3">Edit layout, accent colors, and links</p>
+                        <p className="text-xs font-medium text-t1">Customize Card &amp; 4 Themes</p>
+                        <p className="text-[10.5px] text-t3">Switch between Classic, Hero, Compact, and Banner</p>
                       </div>
                       <span className="text-t3 font-mono text-xs">[-&gt;]</span>
                     </button>
@@ -413,7 +680,7 @@ export function TaplySimulation() {
                     >
                       <div>
                         <p className="text-xs font-medium text-t1">Enter Networking Hall</p>
-                        <p className="text-[10.5px] text-t3">Simulate NFC taps with attendees</p>
+                        <p className="text-[10.5px] text-t3">Simulate NFC taps with 8 global attendees</p>
                       </div>
                       <span className="text-amber font-mono text-xs">[-&gt;]</span>
                     </button>
@@ -423,7 +690,7 @@ export function TaplySimulation() {
             </motion.div>
           )}
 
-          {/* 2. PROFILE CUSTOMIZER VIEW */}
+          {/* 2. PROFILE CUSTOMIZER VIEW (4 Distinct Live Layout Variants) */}
           {activeTab === "customizer" && (
             <motion.div
               key="customizer"
@@ -436,7 +703,7 @@ export function TaplySimulation() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-t1">Live Profile &amp; Card Customizer</h3>
-                  <p className="text-xs text-t3">Changes reflect dynamically in the live public card preview.</p>
+                  <p className="text-xs text-t3">All edits update the live viewport instantly across 4 layout templates.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -448,7 +715,7 @@ export function TaplySimulation() {
                 </div>
               </div>
 
-              {/* Controls (Left) vs Mini Preview (Right) */}
+              {/* Controls (Left) vs Mini Viewport (Right) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Form Controls */}
                 <div className="lg:col-span-7 space-y-5">
@@ -495,7 +762,7 @@ export function TaplySimulation() {
                     </div>
                   </div>
 
-                  {/* Layout Variant & Themes */}
+                  {/* 4 Layout Variant Templates */}
                   <div className="bg-surface/50 border border-border rounded-xl p-4 space-y-3">
                     <span className="text-xs font-mono text-amber uppercase font-bold">2. Layout Variant &amp; Theme</span>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -504,13 +771,19 @@ export function TaplySimulation() {
                           key={v}
                           onClick={() => dispatch({ type: "UPDATE_THEME", patch: { variant: v } })}
                           className={cn(
-                            "p-2 rounded-lg border text-left text-xs transition-all cursor-pointer font-mono",
+                            "p-2.5 rounded-lg border text-left text-xs transition-all cursor-pointer font-mono",
                             profile.theme_config.variant === v
-                              ? "border-acc bg-acc/10 text-acc font-semibold"
-                              : "border-border text-t3 hover:text-t1"
+                              ? "border-acc bg-acc/15 text-acc font-bold shadow-sm"
+                              : "border-border text-t3 hover:text-t1 hover:bg-code-bg/60"
                           )}
                         >
-                          <span className="capitalize">{v}</span>
+                          <span className="block font-bold uppercase text-[11px]">{v}</span>
+                          <span className="text-[9.5px] text-t3 opacity-80 mt-0.5 block">
+                            {v === "classic" && "Centered avatar"}
+                            {v === "hero" && "High impact card"}
+                            {v === "compact" && "Executive badge"}
+                            {v === "banner" && "Full cover image"}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -526,7 +799,7 @@ export function TaplySimulation() {
                             style={{ backgroundColor: hex }}
                             className={cn(
                               "w-7 h-7 rounded-full border-2 transition-transform cursor-pointer",
-                              profile.theme_config.primary_color === hex ? "border-white scale-110" : "border-transparent"
+                              profile.theme_config.primary_color === hex ? "border-white scale-110 shadow-md" : "border-transparent"
                             )}
                           />
                         ))}
@@ -534,7 +807,7 @@ export function TaplySimulation() {
                     </div>
                   </div>
 
-                  {/* Social Links List */}
+                  {/* Active Social Links */}
                   <div className="bg-surface/50 border border-border rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono text-t1 uppercase font-bold">3. Active Links</span>
@@ -545,7 +818,7 @@ export function TaplySimulation() {
                         <div key={link.id} className="flex items-center justify-between p-2.5 rounded-lg bg-code-bg border border-border/40 text-xs">
                           <span className="font-medium text-t1">{link.label}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-t3 font-mono">{link.url}</span>
+                            <span className="text-[10px] text-t3 font-mono truncate max-w-[180px]">{link.url}</span>
                             <button
                               onClick={() => dispatch({ type: "DELETE_LINK", id: link.id })}
                               className="text-t3 hover:text-red-400 p-1 cursor-pointer font-mono text-[10px]"
@@ -559,37 +832,24 @@ export function TaplySimulation() {
                   </div>
                 </div>
 
-                {/* Right Side: Live Mini Viewport */}
+                {/* Right Side: Live Mini Viewport (Displays active variant) */}
                 <div className="lg:col-span-5 flex flex-col items-center justify-center p-5 bg-surface/30 border border-border rounded-xl">
-                  <div className="text-xs font-mono text-t3 mb-3 uppercase tracking-wider">Live Viewport Preview</div>
-                  <div className="w-[290px] bg-[#161616] border border-border rounded-2xl p-4 text-white shadow-2xl relative overflow-hidden">
-                    <div className="h-16 -mx-4 -mt-4 bg-gradient-to-r from-acc/30 to-amber/30 mb-3" />
-                    <div className="w-14 h-14 rounded-full bg-surface border-2 border-white/20 -mt-10 mx-auto overflow-hidden relative">
-                      <Image unoptimized src={profile.photo} alt={profile.display_name} width={56} height={56} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="text-center mt-2">
-                      <div className="text-sm font-bold truncate">{profile.display_name}</div>
-                      <div className="text-[11px] text-gray-400 truncate">{profile.title}</div>
-                      <div className="text-[10px] text-gray-500 mt-0.5">{profile.company}</div>
-                    </div>
-                    <div className="mt-3">
-                      <button
-                        onClick={handleDownloadVcard}
-                        style={{ backgroundColor: profile.theme_config.primary_color }}
-                        className="w-full py-1.5 rounded-full text-xs font-semibold text-black cursor-pointer font-mono"
-                      >
-                        Save Contact (.vcf)
-                      </button>
-                    </div>
-                    <div className="mt-3 space-y-1.5">
-                      {profile.links.slice(0, 3).map((link) => (
-                        <div key={link.id} className="p-2 rounded-lg bg-white/5 text-[11px] flex justify-between font-mono">
-                          <span>{link.label}</span>
-                          <span className="text-gray-400">[-&gt;]</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="flex items-center justify-between w-full mb-3">
+                    <span className="text-xs font-mono text-t3 uppercase tracking-wider">Live Viewport Preview</span>
+                    <span className="text-[10px] font-mono text-acc uppercase bg-acc/10 px-2 py-0.5 rounded border border-acc/20">
+                      {profile.theme_config.variant}
+                    </span>
                   </div>
+
+                  <div className="w-[290px]">
+                    <DynamicProfileCard
+                      profile={profile}
+                      onDownloadVcard={handleDownloadVcard}
+                      onOpenQr={() => setQrModalOpen(true)}
+                      isMini={true}
+                    />
+                  </div>
+
                   <button
                     onClick={() => setActiveTab("public_link")}
                     className="mt-4 text-xs font-mono text-acc hover:underline flex items-center gap-1 cursor-pointer"
@@ -601,153 +861,7 @@ export function TaplySimulation() {
             </motion.div>
           )}
 
-          {/* 3. SIMULATED PUBLIC LINK VIEW */}
-          {activeTab === "public_link" && (
-            <motion.div
-              key="public_link"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
-              className="space-y-6"
-            >
-              {/* Address Bar */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border text-xs font-mono">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-2.5 h-2.5 rounded-full bg-acc" />
-                  <span className="text-t3 truncate">https://gettaply.me/p/{profile.username}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={copyPublicLink}
-                    className="px-2.5 py-1 rounded bg-code-bg border border-border text-t2 hover:text-t1 flex items-center gap-1 cursor-pointer"
-                  >
-                    <span className="font-mono text-acc">{copiedLink ? "[OK]" : "[CP]"}</span>
-                    {copiedLink ? "Copied" : "Copy URL"}
-                  </button>
-                  <button
-                    onClick={() => setQrModalOpen(true)}
-                    className="px-2.5 py-1 rounded bg-code-bg border border-border text-t2 hover:text-t1 flex items-center gap-1 cursor-pointer font-mono"
-                  >
-                    [QR] View QR
-                  </button>
-                </div>
-              </div>
-
-              {/* Render Public Profile Card */}
-              <div className="max-w-md mx-auto bg-[#161616] text-white border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6">
-                <div className="h-28 -mx-6 -mt-6 bg-gradient-to-r from-acc/30 to-amber/30 relative" />
-                <div className="relative -mt-12 text-center">
-                  <Image
-                    unoptimized
-                    src={profile.photo}
-                    alt={profile.display_name}
-                    width={80}
-                    height={80}
-                    className="w-20 h-20 rounded-full mx-auto object-cover border-4 border-[#161616] shadow-md"
-                  />
-                  <h1 className="text-lg font-bold mt-2">{profile.display_name}</h1>
-                  <p className="text-xs text-gray-400">{profile.title} at {profile.company}</p>
-                  <p className="text-[11px] text-gray-500 mt-1 font-mono">{profile.location}</p>
-                  <p className="text-xs text-gray-300 mt-3 leading-relaxed px-4">{profile.bio}</p>
-                </div>
-
-                {/* Primary Action Button */}
-                <div className="mt-5 flex items-center justify-center gap-2">
-                  <button
-                    onClick={handleDownloadVcard}
-                    style={{ backgroundColor: profile.theme_config.primary_color }}
-                    className="px-5 py-2 rounded-full text-xs font-bold text-black flex items-center gap-1.5 shadow-lg cursor-pointer font-mono"
-                  >
-                    [VCF] Save Contact
-                  </button>
-                  <button
-                    onClick={() => setQrModalOpen(true)}
-                    className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer font-mono text-xs"
-                  >
-                    [Q]
-                  </button>
-                </div>
-
-                {/* Links */}
-                <div className="mt-6 space-y-2">
-                  {profile.links.map((link) => (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs transition-colors"
-                    >
-                      <span className="font-medium">{link.label}</span>
-                      <span className="text-gray-400 font-mono text-[11px]">[-&gt;]</span>
-                    </a>
-                  ))}
-                </div>
-
-                {/* Lead Submission Form */}
-                <div className="mt-6 pt-5 border-t border-white/10">
-                  <span className="text-xs font-semibold text-gray-300 block mb-2 font-mono">
-                    Exchange Contact / Send Lead
-                  </span>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const form = e.currentTarget;
-                      const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-                      const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-                      const company = (form.elements.namedItem("company") as HTMLInputElement).value;
-                      if (name && email) {
-                        dispatch({
-                          type: "SUBMIT_LEAD",
-                          lead: {
-                            name,
-                            email,
-                            company: company || "Direct Visitor",
-                            phone: "+1 (555) 000-0000",
-                            source: "contact_form",
-                            location: "Online Web Form",
-                          },
-                        });
-                        form.reset();
-                      }
-                    }}
-                    className="space-y-2"
-                  >
-                    <input
-                      name="name"
-                      type="text"
-                      placeholder="Your Name"
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none"
-                    />
-                    <input
-                      name="email"
-                      type="email"
-                      placeholder="Email Address"
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none"
-                    />
-                    <input
-                      name="company"
-                      type="text"
-                      placeholder="Your Company (Optional)"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none"
-                    />
-                    <button
-                      type="submit"
-                      style={{ backgroundColor: profile.theme_config.primary_color }}
-                      className="w-full py-2 rounded-lg text-xs font-bold text-black flex items-center justify-center gap-1.5 cursor-pointer font-mono"
-                    >
-                      Send Contact to Mehboob
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* 4. NETWORKING HALL VIEW (ONE TAP ENGINE) */}
+          {/* 3. NETWORKING HALL VIEW (ONE TAP ENGINE) */}
           {activeTab === "networking" && (
             <motion.div
               key="networking"
@@ -825,7 +939,7 @@ export function TaplySimulation() {
             </motion.div>
           )}
 
-          {/* 5. ANALYTICS & LEADS INBOX VIEW */}
+          {/* 4. ANALYTICS & LEADS INBOX VIEW */}
           {activeTab === "analytics" && (
             <motion.div
               key="analytics"
@@ -972,10 +1086,114 @@ export function TaplySimulation() {
               </div>
             </motion.div>
           )}
+
+          {/* 5. SIMULATED PUBLIC LINK VIEW (Final Viewport with 4 Layout Variants) */}
+          {activeTab === "public_link" && (
+            <motion.div
+              key="public_link"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-6"
+            >
+              {/* Address Bar */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-border text-xs font-mono">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-acc shrink-0" />
+                  <span className="text-t3 truncate">https://gettaply.me/p/{profile.username}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={copyPublicLink}
+                    className="px-2.5 py-1 rounded bg-code-bg border border-border text-t2 hover:text-t1 flex items-center gap-1 cursor-pointer font-mono"
+                  >
+                    <span className="text-acc">{copiedLink ? "[OK]" : "[CP]"}</span>
+                    {copiedLink ? "Copied" : "Copy URL"}
+                  </button>
+                  <button
+                    onClick={() => setQrModalOpen(true)}
+                    className="px-2.5 py-1 rounded bg-code-bg border border-border text-t2 hover:text-t1 flex items-center gap-1 cursor-pointer font-mono"
+                  >
+                    [QR] View QR
+                  </button>
+                </div>
+              </div>
+
+              {/* Render Selected Dynamic Profile Card */}
+              <div className="max-w-md mx-auto">
+                <DynamicProfileCard
+                  profile={profile}
+                  onDownloadVcard={handleDownloadVcard}
+                  onOpenQr={() => setQrModalOpen(true)}
+                  isMini={false}
+                />
+
+                {/* Lead Submission Form */}
+                <div className="mt-6 p-5 rounded-2xl bg-[#141414] border border-white/10 text-white">
+                  <span className="text-xs font-semibold text-gray-300 block mb-2 font-mono">
+                    Exchange Contact / Send Lead
+                  </span>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.currentTarget;
+                      const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+                      const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+                      const company = (form.elements.namedItem("company") as HTMLInputElement).value;
+                      if (name && email) {
+                        dispatch({
+                          type: "SUBMIT_LEAD",
+                          lead: {
+                            name,
+                            email,
+                            company: company || "Direct Visitor",
+                            phone: "+1 (555) 000-0000",
+                            source: "contact_form",
+                            location: "Online Web Form",
+                          },
+                        });
+                        form.reset();
+                      }
+                    }}
+                    className="space-y-2"
+                  >
+                    <input
+                      name="name"
+                      type="text"
+                      placeholder="Your Name"
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-acc"
+                    />
+                    <input
+                      name="email"
+                      type="email"
+                      placeholder="Email Address"
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-acc"
+                    />
+                    <input
+                      name="company"
+                      type="text"
+                      placeholder="Your Company (Optional)"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-acc"
+                    />
+                    <button
+                      type="submit"
+                      style={{ backgroundColor: profile.theme_config.primary_color }}
+                      className="w-full py-2 rounded-lg text-xs font-bold text-black flex items-center justify-center gap-1.5 cursor-pointer font-mono"
+                    >
+                      Send Contact to Mahboob
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
-      {/* QR Code Modal */}
+      {/* Real Scannable QR Code Modal */}
       <AnimatePresence>
         {qrModalOpen && (
           <motion.div
@@ -992,43 +1210,19 @@ export function TaplySimulation() {
               onClick={(e) => e.stopPropagation()}
               className="bg-surface border border-border p-6 rounded-2xl max-w-xs w-full text-center space-y-4 shadow-2xl"
             >
-              <h3 className="text-sm font-bold text-t1">Scan to Connect</h3>
+              <h3 className="text-sm font-bold text-t1 font-display">Scan to Connect</h3>
               <p className="text-xs text-t2">{profile.display_name}: Taply NFC</p>
               
-              {/* Pure SVG QR Placeholder */}
-              <div className="p-4 bg-white rounded-xl inline-block shadow-inner">
-                <svg width="140" height="140" viewBox="0 0 140 140" className="text-black fill-current">
-                  {/* Outer Frame */}
-                  <rect x="10" y="10" width="40" height="40" rx="4" fill="black" />
-                  <rect x="18" y="18" width="24" height="24" rx="2" fill="white" />
-                  <rect x="24" y="24" width="12" height="12" fill="black" />
-
-                  <rect x="90" y="10" width="40" height="40" rx="4" fill="black" />
-                  <rect x="98" y="18" width="24" height="24" rx="2" fill="white" />
-                  <rect x="104" y="24" width="12" height="12" fill="black" />
-
-                  <rect x="10" y="90" width="40" height="40" rx="4" fill="black" />
-                  <rect x="18" y="98" width="24" height="24" rx="2" fill="white" />
-                  <rect x="24" y="104" width="12" height="12" fill="black" />
-
-                  {/* Pattern grid */}
-                  <rect x="60" y="15" width="8" height="8" fill="black" />
-                  <rect x="75" y="25" width="8" height="8" fill="black" />
-                  <rect x="60" y="45" width="8" height="8" fill="black" />
-                  <rect x="75" y="60" width="8" height="8" fill="black" />
-                  <rect x="20" y="65" width="8" height="8" fill="black" />
-                  <rect x="40" y="75" width="8" height="8" fill="black" />
-                  <rect x="60" y="85" width="8" height="8" fill="black" />
-                  <rect x="90" y="65" width="8" height="8" fill="black" />
-                  <rect x="115" y="75" width="8" height="8" fill="black" />
-                  <rect x="75" y="110" width="8" height="8" fill="black" />
-                  <rect x="105" y="105" width="8" height="8" fill="black" />
-                  <rect x="95" y="120" width="8" height="8" fill="black" />
-                  <rect x="120" y="120" width="8" height="8" fill="black" />
-                </svg>
+              {/* Real Scannable QR Code SVG */}
+              <div className="flex justify-center my-2">
+                <ScannableQrSvg url={`https://gettaply.me/p/${profile.username}`} size={160} />
               </div>
 
-              <div className="flex gap-2">
+              <p className="text-[10.5px] font-mono text-acc">
+                https://gettaply.me/p/{profile.username}
+              </p>
+
+              <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => setQrModalOpen(false)}
                   className="w-full py-1.5 rounded-lg bg-code-bg border border-border text-xs text-t2 hover:text-t1 font-mono cursor-pointer"

@@ -96,3 +96,59 @@
 - `pnpm typecheck` passed (0 errors).
 - `pnpm lint` passed (0 errors in portfolio codebase).
 - `pnpm build` passed (45/45 static pages built).
+
+---
+
+## T63.5: Implement Zero-Dependency Scannable QR Matrix Generator
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `lib/qr-generator.ts`:
+  - Built a zero-dependency, ISO/IEC 18004 compliant QR Code matrix generator in TypeScript.
+  - Generates valid 2D boolean matrices with Galois Field GF(256) arithmetic, Reed-Solomon polynomial error correction (Level M), finder patterns, timing patterns, alignment patterns, and mask evaluations.
+  - Guaranteed 100% scannable by mobile cameras and QR reader apps.
+
+### Verified
+- Executed unit check generating 29x29 matrix for `https://gettaply.me/p/mehboob`.
+- `pnpm typecheck` and `pnpm lint` passed.
+
+---
+
+## T63.6: Update Real Credentials, Portrait Photo, and Links in Taply Datasets
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/taply-simulation-data.ts`:
+  - Updated `INITIAL_TAPLY_PROFILE` to Mahboob Alam, Software and DevOps Engineer at Nexbell Inc, Bengaluru, India, mobile `+917908184346`, photo `/mahboob-alam-profile.png`.
+  - Configured 5 real active links: GitHub Architecture, LinkedIn Network, Schedule Call (Calendly), Technical Publications (Medium), and Resume / CV.
+- `components/work/TaplyInteractiveExplorer.tsx`:
+  - Updated Module 02 vCard code preview snippet to reflect Mahboob Alam, Nexbell Inc, Bengaluru, India, and `+917908184346`.
+
+### Verified
+- `pnpm typecheck` passed.
+
+---
+
+## T63.7: Implement 4 Live Layout Variants, Tab Re-ordering, and Scannable QR in TaplySimulation
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/TaplySimulation.tsx`:
+  - Re-ordered navigation tabs: Dashboard (`[PORTAL]`) ➔ Profile Customizer (`[BUILDER]`) ➔ NFC Networking Hall (`[ONE TAP]`) ➔ Analytics & Leads (`[TELEMETRY]`) ➔ Public Profile Link (`[VIEWPORT]`).
+  - Converted Dashboard `[STAT]` tags into clickable trend indicators (`[+12%]`, `[+8%]`, `[HOT]`, `[DIRECT]`) that jump straight to Analytics & Leads.
+  - Built `DynamicProfileCard` component rendering 4 distinctive layout variants (`classic`, `hero`, `compact`, `banner`) reactively in both the Customizer Mini-Viewport and Full Public Profile.
+  - Integrated `ScannableQrSvg` rendering real scannable QR SVG codes in modal and compact layouts.
+  - Added clipboard copy of real public URL `https://gettaply.me/p/mehboob`.
+  - Updated `.vcf` export with real contact details.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 static pages) passed cleanly.
