@@ -79,7 +79,7 @@
 ## T63.4: Integrate Taply Dual Interactive Simulation Suite into /work/taply
 
 **Task status:** done
-**Commit:** —
+**Commit:** b8e8857
 **Date:** 2026-08-21
 
 ### What shipped
