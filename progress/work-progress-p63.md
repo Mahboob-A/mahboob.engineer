@@ -58,7 +58,7 @@
 ## T63.3: Create Taply Master Product Sandbox & 2D NFC Networking Hall
 
 **Task status:** done
-**Commit:** —
+**Commit:** c2f9fa6
 **Date:** 2026-08-21
 
 ### What shipped
