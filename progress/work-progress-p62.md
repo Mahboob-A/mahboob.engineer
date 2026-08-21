@@ -154,7 +154,7 @@
 ## T62.8: Update Persona Palette Tints and Remove The Build Notes from /work/unthink
 
 **Task status:** done
-**Commit:** —
+**Commit:** 4ce1a2d
 **Date:** 2026-08-21
 
 ### What shipped
