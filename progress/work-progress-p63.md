@@ -217,3 +217,55 @@
 
 ### Verified
 - `pnpm typecheck` and `pnpm build` (45/45 pages) passed.
+
+---
+
+## T63.12: Implement Interactive Zoomable Diagram Wrapper and Lightbox Modal
+
+**Task status:** done
+**Commit:** b8925b1
+**Date:** 2026-08-21
+
+### What shipped
+- `components/diagrams/ZoomableDiagramWrapper.tsx`:
+  - Created an interactive pan-zoom wrapper for architecture diagrams.
+  - Added inline controls: `[-]`, `[100%]`, `[+]`, `[Reset]`, and `[⤢ Expand]`.
+  - Added drag-to-pan when scaled > 1.
+  - Added Fullscreen Lightbox Modal supporting mouse wheel zoom, click-drag panning, keyboard shortcuts (`Escape`, `+`, `-`, `0`), and reset-to-fit.
+- `app/work/[slug]/page.tsx`:
+  - Wrapped Hero architecture diagrams in `ZoomableDiagramWrapper`.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` passed.
+
+---
+
+## T63.13: Refine UnThink Capture Button Label, Styling, and Fragment Border
+
+**Task status:** done
+**Commit:** 093db51
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/UnthinkInteractiveExplorer.tsx`:
+  - Updated button label to `[+] Right-Click Send to UnThink` (removed shortcut suffix).
+  - Replaced golden amber colors with theme accent (`bg-acc text-black` button and `border-acc/40 bg-acc/10` fragment border).
+  - Updated Step 1 header and active selection pill to `text-acc`.
+
+### Verified
+- `pnpm typecheck` passed.
+
+---
+
+## T63.14: Fix Taply Banner Cover Image Aspect-Ratio Warning
+
+**Task status:** done
+**Commit:** 06d68c6
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/TaplySimulation.tsx`:
+  - Replaced explicit width/height with Next.js `fill` mode on the cover `<Image>` inside the relative container, completely removing the browser aspect-ratio warning.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 static pages) passed.
