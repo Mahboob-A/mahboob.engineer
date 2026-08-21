@@ -44,8 +44,8 @@ const KIND_DOT: Record<AvailabilityKind, string> = {
 export function ContactSidebar() {
   return (
     <aside className="flex flex-col gap-5">
-      <AvailabilityCard />
       <DirectLinksCard />
+      <AvailabilityCard />
       <QuickContextCard />
       <HowTheFormGetsUsedCard />
     </aside>
