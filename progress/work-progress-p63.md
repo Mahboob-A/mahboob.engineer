@@ -73,3 +73,26 @@
 
 ### Verified
 - `pnpm typecheck` passed cleanly.
+
+---
+
+## T63.4: Integrate Taply Dual Interactive Simulation Suite into /work/taply
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `app/work/[slug]/page.tsx`:
+  - Imported `TaplyInteractiveExplorer` and `TaplySimulation`.
+  - Added dedicated branch in `BuildNotes` for `project.slug === "taply"`:
+    - Section 1: Interactive System Exploration (`<TaplyInteractiveExplorer />`)
+    - Section 2: Master Product Sandbox & NFC Networking Hall (`<TaplySimulation />`)
+  - Omitted redundant textual story sections so the case study purely features the rich interactive engines.
+- `components/work/TaplySimulation.tsx`:
+  - Replaced native `<img>` tags with Next.js `<Image unoptimized />` component to ensure 100% lint compliance.
+
+### Verified
+- `pnpm typecheck` passed (0 errors).
+- `pnpm lint` passed (0 errors in portfolio codebase).
+- `pnpm build` passed (45/45 static pages built).

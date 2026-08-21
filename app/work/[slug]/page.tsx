@@ -36,6 +36,8 @@ import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { StorySection } from "@/components/work/StorySection";
 import { UnthinkInteractiveExplorer } from "@/components/work/UnthinkInteractiveExplorer";
 import UnThinkSimulation from "@/components/work/UnThinkSimulation";
+import { TaplyInteractiveExplorer } from "@/components/work/TaplyInteractiveExplorer";
+import { TaplySimulation } from "@/components/work/TaplySimulation";
 import { projectMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import { cn } from "@/lib/cn";
@@ -252,6 +254,36 @@ function BuildNotes({ project }: { project: ProjectItem }) {
         {/* Section 2: Master Multi-Persona Product Sandbox */}
         <section>
           <UnThinkSimulation />
+        </section>
+      </div>
+    );
+  }
+
+  if (project.slug === "taply") {
+    return (
+      <div className="space-y-14">
+        {/* Section 1: Architectural Ingestion & Cache Explorer */}
+        <section>
+          <div className="border-border mb-6 flex flex-wrap items-baseline justify-between gap-2 border-t pt-6">
+            <div className="flex items-baseline gap-3">
+              <span className="bg-amber inline-block h-[6px] w-[6px] rounded-full shadow-[0_0_8px_var(--amber)]" />
+              <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
+                Interactive System Exploration
+              </h2>
+              <span className="text-t3 font-mono text-[11px] italic">
+                nfc scan &gt; vcard compression &gt; enterprise rbac &gt; analytics buffer &gt; webhooks
+              </span>
+            </div>
+            <span className="text-amber font-mono text-[11px]">
+              interactive pipeline simulator
+            </span>
+          </div>
+          <TaplyInteractiveExplorer />
+        </section>
+
+        {/* Section 2: Master Product Sandbox & NFC Networking Hall */}
+        <section>
+          <TaplySimulation />
         </section>
       </div>
     );

@@ -16,6 +16,7 @@
  */
 
 import React, { useState, useReducer, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
 
@@ -563,8 +564,8 @@ export function TaplySimulation() {
                   <div className="text-xs font-mono text-t3 mb-3 uppercase tracking-wider">Live Viewport Preview</div>
                   <div className="w-[290px] bg-[#161616] border border-border rounded-2xl p-4 text-white shadow-2xl relative overflow-hidden">
                     <div className="h-16 -mx-4 -mt-4 bg-gradient-to-r from-acc/30 to-amber/30 mb-3" />
-                    <div className="w-14 h-14 rounded-full bg-surface border-2 border-white/20 -mt-10 mx-auto overflow-hidden">
-                      <img src={profile.photo} alt="" className="w-full h-full object-cover" />
+                    <div className="w-14 h-14 rounded-full bg-surface border-2 border-white/20 -mt-10 mx-auto overflow-hidden relative">
+                      <Image unoptimized src={profile.photo} alt={profile.display_name} width={56} height={56} className="w-full h-full object-cover" />
                     </div>
                     <div className="text-center mt-2">
                       <div className="text-sm font-bold truncate">{profile.display_name}</div>
@@ -637,9 +638,12 @@ export function TaplySimulation() {
               <div className="max-w-md mx-auto bg-[#161616] text-white border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6">
                 <div className="h-28 -mx-6 -mt-6 bg-gradient-to-r from-acc/30 to-amber/30 relative" />
                 <div className="relative -mt-12 text-center">
-                  <img
+                  <Image
+                    unoptimized
                     src={profile.photo}
-                    alt=""
+                    alt={profile.display_name}
+                    width={80}
+                    height={80}
                     className="w-20 h-20 rounded-full mx-auto object-cover border-4 border-[#161616] shadow-md"
                   />
                   <h1 className="text-lg font-bold mt-2">{profile.display_name}</h1>
