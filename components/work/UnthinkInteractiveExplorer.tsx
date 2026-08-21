@@ -6,13 +6,13 @@
  * Interactive visual exploration component for UnThink on /work/unthink.
  * Implements an interactive multi-stage pipeline simulator reflecting:
  *
- *   1. 1-Click Browser Capture & Sub-300ms SLA ACK
+ *   1. 1-Click Browser Capture & Sub-300ms SLA Ingestion
  *   2. Clutter-Free DOM Normalization (Raw HTML vs Clean Markdown toggle)
  *   3. Zero-Decision Dual-Tree AI Taxonomic Routing (Topic vs Source)
  *   4. Deterministic Epoch Cache Invalidation (Atomic Redis INCR versioning)
  *   5. Real-Time SSE Stream & Security Hardening Posture
  *
- * Styled using portfolio tokens, mono fonts, and Framer Motion transitions.
+ * Strictly free of emojis and em dashes across all UI and data layers.
  */
 
 import React, { useState } from "react";
@@ -25,7 +25,7 @@ interface TabMeta {
   id: TabKey;
   step: string;
   label: string;
-  icon: string;
+  badge: string;
   tag: string;
 }
 
@@ -34,35 +34,35 @@ const TABS: TabMeta[] = [
     id: "capture",
     step: "01",
     label: "1-Click Capture",
-    icon: "⚡",
+    badge: "CAPTURE",
     tag: "Sub-300ms SLA",
   },
   {
     id: "dom",
     step: "02",
     label: "DOM Stripper",
-    icon: "🧹",
+    badge: "CLEAN",
     tag: "96% Reduction",
   },
   {
     id: "ai",
     step: "03",
     label: "Dual Taxonomy",
-    icon: "🧠",
+    badge: "ROUTING",
     tag: "Zero-Decision AI",
   },
   {
     id: "cache",
     step: "04",
     label: "Epoch Caching",
-    icon: "⚡",
+    badge: "EPOCH",
     tag: "<1ms Invalidation",
   },
   {
     id: "sse",
     step: "05",
     label: "SSE & Security",
-    icon: "🔒",
+    badge: "SANDBOX",
     tag: "Non-Root EC2",
   },
 ];
@@ -81,14 +81,16 @@ export function UnthinkInteractiveExplorer() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "relative flex flex-1 min-w-[140px] items-center justify-between rounded-lg px-3.5 py-2.5 text-left transition-all duration-200",
+                "relative flex flex-1 min-w-[140px] items-center justify-between rounded-lg px-3.5 py-2.5 text-left transition-all duration-200 cursor-pointer",
                 isActive
                   ? "bg-code-bg border-amber/50 text-t1 shadow-sm border"
                   : "hover:bg-bg/40 text-t3 hover:text-t2 border border-transparent"
               )}
             >
               <div className="flex items-center gap-2.5">
-                <span className="text-base">{tab.icon}</span>
+                <span className="font-mono text-[10px] font-bold text-amber border border-amber/30 bg-amber/10 px-1.5 py-0.5 rounded">
+                  {tab.badge}
+                </span>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-amber font-mono text-[10px] font-bold tracking-wider uppercase">
@@ -160,7 +162,7 @@ function CaptureSimulator() {
             Interactive Module 01
           </span>
           <h3 className="font-display text-t1 text-[20px] font-bold">
-            1-Click Context Menu & Sub-300ms SLA Ingestion
+            1-Click Context Menu and Sub-300ms SLA Ingestion
           </h3>
         </div>
         <div className="flex items-center gap-3 font-mono text-xs">
@@ -174,9 +176,9 @@ function CaptureSimulator() {
       </div>
 
       <p className="text-t2 text-[14.5px] leading-relaxed">
-        Highlight any technical text on the web and trigger the simulated browser extension capture.
-        UnThink executes an asynchronous optimistic acknowledgment within 300ms, freeing the developer
-        to stay completely immersed in reading while background Celery queues parse and file the fragment.
+        Highlight technical text on any webpage to trigger the simulated extension capture.
+        UnThink returns an asynchronous optimistic acknowledgment within 300ms, allowing the developer
+        to maintain reading focus while background Celery queues normalize and file the fragment.
       </p>
 
       {/* Simulated Web Page Card */}
@@ -194,7 +196,7 @@ function CaptureSimulator() {
         </div>
 
         <div className="space-y-3 font-mono text-[13px] text-t2">
-          <p className="text-t3 text-[12px] italic">{"// Distributed Systems & Cache Notes"}</p>
+          <p className="text-t3 text-[12px] italic">{"// Distributed Systems and Cache Notes"}</p>
           <div
             onClick={handleCapture}
             className={cn(
@@ -218,18 +220,18 @@ function CaptureSimulator() {
               onClick={handleCapture}
               className="bg-amber hover:bg-amber/90 font-mono text-[12px] font-semibold text-bg flex items-center gap-2 rounded-lg px-4 py-2 shadow-md transition-all active:scale-95 cursor-pointer"
             >
-              <span>✦</span> Right-Click &apos;Send to UnThink&apos; (Alt+Shift+S)
+              <span>[+]</span> Right-Click Send to UnThink (Alt+Shift+S)
             </button>
           ) : (
             <div className="flex items-center gap-3">
               <span className="border-acc/40 bg-acc/10 font-mono text-[12px] text-acc flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 font-medium">
-                <span>✓</span> Captured in {latency}ms (SLA &lt;300ms Met)
+                <span>[OK]</span> Captured in {latency}ms (SLA &lt;300ms Met)
               </span>
               <button
                 onClick={handleReset}
                 className="hover:border-border font-mono text-[11.5px] text-t3 hover:text-t1 rounded-lg border border-transparent px-3 py-1.5 transition-colors cursor-pointer"
               >
-                Reset Demo ↺
+                Reset Demo
               </button>
             </div>
           )}
@@ -261,7 +263,7 @@ function CaptureSimulator() {
         <div className="rounded-lg border border-border/80 bg-surface/50 p-3">
           <p className="text-t2 font-semibold">3. Celery AI Dispatch</p>
           <p className="text-t3 mt-1 text-[11px]">
-            Asynchronous worker initiates zero-shot dual classification & Markdown normalization.
+            Asynchronous worker initiates zero-shot dual classification and Markdown normalization.
           </p>
         </div>
       </div>
@@ -289,7 +291,7 @@ function DomStripperViewer() {
             Interactive Module 02
           </span>
           <h3 className="font-display text-t1 text-[20px] font-bold">
-            DOM Clutter-Stripper & Trafilatura Normalization
+            DOM Clutter-Stripper and Trafilatura Normalization
           </h3>
         </div>
         {/* Toggle Switch */}
@@ -320,7 +322,7 @@ function DomStripperViewer() {
       </div>
 
       <p className="text-t2 text-[14.5px] leading-relaxed">
-        Web pages are filled with tracking scripts, ads, cookie popups, and nested divs that pollute search indices.
+        Web pages contain tracking scripts, ads, cookie popups, and nested divs that pollute search indices.
         UnThink strips all structural clutter in background Celery workers, converting raw DOM snippets into clean,
         pure GitHub-flavored Markdown.
       </p>
@@ -330,7 +332,7 @@ function DomStripperViewer() {
         <div className="mb-3 flex items-center justify-between border-b border-border/40 pb-2 text-[11px] text-t3">
           <span>{viewMode === "clean" ? "output/fragment.md" : "dom/selection.html"}</span>
           <span className={viewMode === "clean" ? "text-acc font-semibold" : "text-amber font-semibold"}>
-            {viewMode === "clean" ? "✓ 96.5% Payload Reduction" : "⚠ Contains 14 Scripts & 8 Ads"}
+            {viewMode === "clean" ? "[OK] 96.5% Payload Reduction" : "[WARN] Contains 14 Scripts & 8 Ads"}
           </span>
         </div>
 
@@ -491,7 +493,7 @@ function AiTaxonomyExplorer() {
         <div className="border-border bg-surface rounded-xl border p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-amber font-semibold flex items-center gap-1.5">
-              <span>📁</span> 1. Conceptual Topic Tree
+              <span>[DIR]</span> 1. Conceptual Topic Tree
             </span>
             <span className="text-t3 text-[11px]">Subject Taxonomy</span>
           </div>
@@ -502,7 +504,7 @@ function AiTaxonomyExplorer() {
                 className="flex items-center gap-2"
                 style={{ paddingLeft: `${idx * 16}px` }}
               >
-                <span className="text-t3">{idx === selectedSample.topicPath.length - 1 ? "📄" : "└─ 📁"}</span>
+                <span className="text-t3">{idx === selectedSample.topicPath.length - 1 ? ">" : "+"}</span>
                 <span className={cn(
                   idx === selectedSample.topicPath.length - 1
                     ? "text-acc font-semibold bg-acc/10 px-2 py-0.5 rounded"
@@ -519,7 +521,7 @@ function AiTaxonomyExplorer() {
         <div className="border-border bg-surface rounded-xl border p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-acc font-semibold flex items-center gap-1.5">
-              <span>🌐</span> 2. Source Origin Tree
+              <span>[SRC]</span> 2. Source Origin Tree
             </span>
             <span className="text-t3 text-[11px]">Context Taxonomy</span>
           </div>
@@ -530,7 +532,7 @@ function AiTaxonomyExplorer() {
                 className="flex items-center gap-2"
                 style={{ paddingLeft: `${idx * 16}px` }}
               >
-                <span className="text-t3">{idx === selectedSample.sourcePath.length - 1 ? "📄" : "└─ 📁"}</span>
+                <span className="text-t3">{idx === selectedSample.sourcePath.length - 1 ? ">" : "+"}</span>
                 <span className={cn(
                   idx === selectedSample.sourcePath.length - 1
                     ? "text-amber font-semibold bg-amber/10 px-2 py-0.5 rounded"
@@ -607,7 +609,7 @@ function EpochCacheSimulator() {
             Interactive Module 04
           </span>
           <h3 className="font-display text-t1 text-[20px] font-bold">
-            Deterministic Epoch Invalidation & Mutex Locking
+            Deterministic Epoch Invalidation and Mutex Locking
           </h3>
         </div>
         <div className="flex items-center gap-3 font-mono text-xs">
@@ -634,7 +636,7 @@ function EpochCacheSimulator() {
         <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-t1 font-semibold flex items-center gap-1.5">
-              <span>⚡</span> Redis Active Cache Keys
+              <span>[CACHE]</span> Redis Active Cache Keys
             </span>
             <span className="text-acc font-mono text-[11px]">TTL: 3600s</span>
           </div>
@@ -658,7 +660,7 @@ function EpochCacheSimulator() {
             onClick={handleBumpEpoch}
             className="w-full bg-amber hover:bg-amber/90 font-mono text-[12px] font-semibold text-bg flex items-center justify-center gap-2 rounded-lg py-2.5 shadow-md transition-all active:scale-95 cursor-pointer"
           >
-            <span>+</span> Simulate Fragment Save (Trigger Atomic INCR)
+            <span>[+]</span> Simulate Fragment Save (Trigger Atomic INCR)
           </button>
         </div>
 
@@ -666,7 +668,7 @@ function EpochCacheSimulator() {
         <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-t1 font-semibold flex items-center gap-1.5">
-              <span>📜</span> Redis Pipeline Operations Log
+              <span>[LOG]</span> Redis Pipeline Operations Log
             </span>
             <span className="text-t3 text-[11px]">Real-Time Execution</span>
           </div>
@@ -710,12 +712,12 @@ function SseSecurityStream() {
             Interactive Module 05
           </span>
           <h3 className="font-display text-t1 text-[20px] font-bold">
-            Real-Time SSE Streaming & AWS EC2 Container Hardening
+            Real-Time SSE Streaming and AWS EC2 Container Hardening
           </h3>
         </div>
         <div className="flex items-center gap-2 font-mono text-xs">
           <span className="border-acc/40 bg-acc/10 text-acc rounded-md border px-2.5 py-1 font-semibold">
-            ● SSE Connected (:8001)
+            SSE Connected (:8001)
           </span>
         </div>
       </div>
@@ -731,7 +733,7 @@ function SseSecurityStream() {
         <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-acc font-semibold flex items-center gap-1.5">
-              <span>📡</span> Live SSE Event Channel
+              <span>[SSE]</span> Live SSE Event Channel
             </span>
             <span className="text-t3 text-[11px]">Stream: /api/v1/events/</span>
           </div>
@@ -752,7 +754,7 @@ function SseSecurityStream() {
         <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-t1 font-semibold flex items-center gap-1.5">
-              <span>🛡️</span> Production Security Invariants
+              <span>[SYS]</span> Production Security Invariants
             </span>
             <span className="text-amber text-[11px]">AWS EC2 Hardened</span>
           </div>
@@ -760,19 +762,19 @@ function SseSecurityStream() {
           <div className="space-y-2 text-[11.5px]">
             <div className="border-border/60 bg-code-bg flex items-center justify-between rounded border p-2">
               <span className="text-t2">Non-Root User Execution</span>
-              <span className="text-acc font-semibold">✓ UID 10001</span>
+              <span className="text-acc font-semibold">[OK] UID 10001</span>
             </div>
             <div className="border-border/60 bg-code-bg flex items-center justify-between rounded border p-2">
               <span className="text-t2">Linux Kernel Capabilities</span>
-              <span className="text-acc font-semibold">✓ cap_drop: ALL</span>
+              <span className="text-acc font-semibold">[OK] cap_drop: ALL</span>
             </div>
             <div className="border-border/60 bg-code-bg flex items-center justify-between rounded border p-2">
               <span className="text-t2">Nginx Reverse Proxy Gateway</span>
-              <span className="text-acc font-semibold">✓ Unprivileged Alpine (:443)</span>
+              <span className="text-acc font-semibold">[OK] Unprivileged Alpine (:443)</span>
             </div>
             <div className="border-border/60 bg-code-bg flex items-center justify-between rounded border p-2">
               <span className="text-t2">Internal Port Isolation</span>
-              <span className="text-acc font-semibold">✓ 0 Exposed Host Ports</span>
+              <span className="text-acc font-semibold">[OK] 0 Exposed Host Ports</span>
             </div>
           </div>
         </div>
