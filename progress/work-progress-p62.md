@@ -113,7 +113,7 @@
 ## T62.6: Refactor Fragment Click to Authentic Chrome Context Menu & Remove Jump Shortcut
 
 **Task status:** done
-**Commit:** —
+**Commit:** aa019e0
 **Date:** 2026-08-21
 
 ### What shipped
