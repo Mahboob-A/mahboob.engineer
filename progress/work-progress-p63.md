@@ -36,7 +36,7 @@
 ## T63.2: Create Taply 5-Module Interactive System Explorer
 
 **Task status:** done
-**Commit:** —
+**Commit:** 5a50e00
 **Date:** 2026-08-21
 
 ### What shipped
