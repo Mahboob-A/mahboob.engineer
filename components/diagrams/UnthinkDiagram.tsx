@@ -2,7 +2,7 @@
  * components/diagrams/UnthinkDiagram.tsx
  *
  * Architecture diagram for the UnThink founder-tier card on /work and case study hero.
- * Micro-orchestration dual-backend pattern:
+ * Monorepo service micro-orchestration pattern:
  *
  *   [Extension (MV3)] ──POST──→ [Django 5.1 :8000] ──enqueue──→ [Redis 7.2 Broker]
  *                                                                      │

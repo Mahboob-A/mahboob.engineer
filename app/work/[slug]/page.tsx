@@ -354,6 +354,9 @@ function LinksRow({ project }: { project: ProjectItem }) {
   if (project.extension) {
     links.push({ href: project.extension, label: "↗ chrome extension" });
   }
+  if (project.cofounder_linkedin) {
+    links.push({ href: project.cofounder_linkedin, label: "↗ co-founder (LinkedIn)" });
+  }
   if (project.demo && project.demo !== project.extension && project.demo !== project.url) {
     links.push({ href: project.demo, label: "↗ demo" });
   }

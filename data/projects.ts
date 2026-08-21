@@ -63,6 +63,8 @@ export interface ProjectItem {
   url: string | null;
   /** Browser extension URL, if applicable. */
   extension?: string | null;
+  /** Co-founder LinkedIn profile URL, if applicable. */
+  cofounder_linkedin?: string | null;
   /** Canonical GitHub URL, if open-sourced. */
   github: string | null;
   /** Some projects (pulumi-infra) have a second client repo. */
@@ -147,13 +149,13 @@ export const PROJECTS: ProjectItem[] = [
     problem:
       "Every major knowledge tool (Notion, Obsidian, Readwise) suffers from high capture friction and manual tagging overhead, turning 85%+ of saved bookmarks into an unorganized digital graveyard.",
     built:
-      "Sole founder build: dual backend (Django 5.1 relational CRUD + FastAPI SSE streaming), 3 isolated Celery queues for zero-shot AI taxonomy, Manifest V3 Chrome Extension, multi-key Redis cache with epoch invalidation, and hardened non-root AWS EC2 deployment.",
+      "Sole founder build: unified monorepo with decoupled API and AI streaming services (Django 5.1 relational CRUD + FastAPI SSE streaming), 3 isolated Celery queues for zero-shot AI taxonomy, Manifest V3 Chrome Extension, multi-key Redis cache with epoch invalidation, and hardened non-root AWS EC2 deployment.",
     notes:
       `UnThink came out of a fundamental paradox with personal knowledge management. Every major capture tool—Notion, Obsidian, Readwise, Evernote—imposes high cognitive friction at the moment of capture. Asking a developer to stop reading, switch windows, create a note, pick a folder, and assign tags destroys flow state. The result is what I call the 85%+ digital graveyard: bookmarks and full-page HTML clippings saved with good intentions that are never opened again. The core product thesis was simple: don't make the user name or organize anything. The atomic unit of storage is a fragment—two to eight lines of focused code, terminal commands, or insights—and autonomous AI handles the rest.
 
 The product's key innovation is zero-decision dual taxonomy. Every captured fragment is classified by AI into two parallel folder structures simultaneously: a conceptual topic hierarchy (e.g., Technology / Backend / Distributed Systems / Redis) and a source context hierarchy (e.g., Medium / The Backend Diaries or GitHub / Docs). Ingestion is built for speed: highlighting text and right-clicking 'Send to UnThink' returns a sub-300ms acknowledgement so the user never leaves their reading flow, while background workers strip HTML clutter, advertising, and tracking scripts into clean GitHub-flavored Markdown.
 
-Architecturally, the dual-backend micro-orchestration was the pivotal design choice. Django 5.1 and DRF provide the transactional backbone for ACID CRUD, user authentication (JWT/OAuth2), daily/monthly quota tiering, and Stripe billing. FastAPI powers the asynchronous streaming pipeline, orchestrating real-time Server-Sent Events (SSE) and token streaming. The services communicate asynchronously via Redis pub/sub and three isolated Celery queues—one for high-priority AI classification, one for DOM scraping with Firecrawl fallback, and one for background digests. A multi-model failover cascade (Fireworks AI for fast open LLM inference, Google Gemini 2.0 Flash for complex reasoning, and local heuristic regexes) guarantees 99.9% classification availability.
+Architecturally, a unified monorepo with decoupled service micro-orchestration was the pivotal design choice. Django 5.1 and DRF provide the transactional backbone for ACID CRUD, user authentication (JWT/OAuth2), daily/monthly quota tiering, and Stripe billing. FastAPI powers the asynchronous streaming pipeline, orchestrating real-time Server-Sent Events (SSE) and token streaming. The services communicate asynchronously via Redis pub/sub and three isolated Celery queues—one for high-priority AI classification, one for DOM scraping with Firecrawl fallback, and one for background digests. A multi-model failover cascade (Fireworks AI for fast open LLM inference, Google Gemini 2.0 Flash for complex reasoning, and local heuristic regexes) guarantees 99.9% classification availability.
 
 Multi-key caching and cache invalidation was the most difficult engineering challenge. In a multidimensional system where users query paginated fragment feeds, recursive folder trees with live counts, global tag clouds, and quota counters, naive KEYS * queries or global flushes caused Redis CPU spikes and cache stampedes on PostgreSQL. I engineered a deterministic epoch versioning pattern: each user owns an atomic user:{id}:cache_version counter in Redis. When any fragment is created, edited, moved, or deleted, an atomic INCR logically invalidates all paginated list and tree caches in <1ms without blocking the Redis event loop, leaving old keys to be reclaimed by TTL. Expensive folder trees are further guarded by distributed mutex locking.
 
@@ -171,6 +173,7 @@ What's next for UnThink. We are integrating pgvector dense vector embeddings alo
     tier: "founder",
     year: 2026,
     url: "https://gettaply.me",
+    cofounder_linkedin: "https://www.linkedin.com/in/mojno/",
     github: null,
     demo: "https://gettaply.me/p/mehboob",
     youtube: null,

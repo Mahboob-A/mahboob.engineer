@@ -75,7 +75,7 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
                     : "shipped"}
               </Badge>
               <span className="text-amber font-mono text-[12px] tracking-[1px] uppercase">
-                founder
+                {project.slug === "taply" ? "co-founder" : "founder"}
               </span>
             </div>
 

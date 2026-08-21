@@ -228,7 +228,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What does UnThink do?",
     ],
     answer:
-      "Yes, UnThink is a live, production AI-native knowledge base and web capture engine for software engineers, accessible at letsunthink.tech with an approved Chromium Manifest V3 extension on the Chrome Web Store. It eliminates manual tagging friction through zero-decision dual-directory AI categorization, sub-300ms capture SLA, a dual-backend micro-orchestration (Django 5.1 CRUD and FastAPI SSE streaming), 3 Celery queues, multi-key Redis cache with deterministic epoch versioning, and hardened non-root AWS EC2 infrastructure.",
+      "Yes, UnThink is a live, production AI-native knowledge base and web capture engine for software engineers, accessible at letsunthink.tech with an approved Chromium Manifest V3 extension on the Chrome Web Store. It eliminates manual tagging friction through zero-decision dual-directory AI categorization, sub-300ms capture SLA, a unified monorepo with specialized API and AI streaming services (Django 5.1 CRUD and FastAPI SSE streaming), 3 Celery queues, multi-key Redis cache with deterministic epoch versioning, and hardened non-root AWS EC2 infrastructure.",
     tags: ["unthink", "ai", "live", "founder"],
   },
 
