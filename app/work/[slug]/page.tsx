@@ -35,6 +35,7 @@ import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { pickDiagram } from "@/components/diagrams/pickDiagram";
 import { StorySection } from "@/components/work/StorySection";
 import { UnthinkInteractiveExplorer } from "@/components/work/UnthinkInteractiveExplorer";
+import UnThinkSimulation from "@/components/work/UnThinkSimulation";
 import { projectMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import { cn } from "@/lib/cn";
@@ -228,23 +229,45 @@ function BuildNotes({ project }: { project: ProjectItem }) {
 
   if (project.slug === "unthink") {
     return (
-      <section>
-        <div className="border-border mb-6 flex flex-wrap items-baseline justify-between gap-2 border-t pt-6">
-          <div className="flex items-baseline gap-3">
-            <span className="bg-amber inline-block h-[6px] w-[6px] rounded-full shadow-[0_0_8px_var(--amber)]" />
-            <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
-              Interactive System Exploration
-            </h2>
-            <span className="text-t3 font-mono text-[11px] italic">
-              capture → normalize → dual taxonomy → epoch invalidation → sse
+      <div className="space-y-14">
+        {/* Section 1: Architectural Ingestion & Cache Explorer */}
+        <section>
+          <div className="border-border mb-6 flex flex-wrap items-baseline justify-between gap-2 border-t pt-6">
+            <div className="flex items-baseline gap-3">
+              <span className="bg-amber inline-block h-[6px] w-[6px] rounded-full shadow-[0_0_8px_var(--amber)]" />
+              <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
+                Interactive System Exploration
+              </h2>
+              <span className="text-t3 font-mono text-[11px] italic">
+                capture &gt; normalize &gt; dual taxonomy &gt; epoch invalidation &gt; sse
+              </span>
+            </div>
+            <span className="text-amber font-mono text-[11px]">
+              interactive pipeline simulator
             </span>
           </div>
-          <span className="text-amber font-mono text-[11px]">
-            ● interactive simulator
-          </span>
-        </div>
-        <UnthinkInteractiveExplorer />
-      </section>
+          <UnthinkInteractiveExplorer />
+        </section>
+
+        {/* Section 2: Master Multi-Persona Product Sandbox */}
+        <section>
+          <UnThinkSimulation />
+        </section>
+
+        {/* Section 3: Deep Architectural Build Notes & Case Study */}
+        <section>
+          <div className="border-border mb-5 flex items-baseline gap-3 border-t pt-6">
+            <span className="bg-acc inline-block h-[6px] w-[6px] rounded-full" />
+            <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
+              The build notes
+            </h2>
+          </div>
+          <StorySection
+            notes={project.notes}
+            fallbackParagraph={fallback}
+          />
+        </section>
+      </div>
     );
   }
 
