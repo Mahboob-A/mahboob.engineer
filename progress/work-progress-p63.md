@@ -152,3 +152,68 @@
 
 ### Verified
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 static pages) passed cleanly.
+
+---
+
+## T63.8: Reorder /lets-connect Sidebar Sections
+
+**Task status:** done
+**Commit:** cd237c0
+**Date:** 2026-08-21
+
+### What shipped
+- `components/contact/ContactSidebar.tsx`:
+  - Re-ordered sidebar cards so `<DirectLinksCard />` ("Find me elsewhere") renders first at the top, followed directly by `<AvailabilityCard />` ("Availability").
+
+### Verified
+- `pnpm typecheck` passed.
+
+---
+
+## T63.9: Enrich Stack Registry with Deep Techs and Depth Notes
+
+**Task status:** done
+**Commit:** 172e7b6
+**Date:** 2026-08-21
+
+### What shipped
+- `data/stack.ts`:
+  - Added `openrouter` (Dual-AI model router) and `chrome-mv3` (Chromium Manifest V3 extension).
+  - Enriched production `depthNotes` for `fastapi` (SSE token chunk dispatch), `sse` (real-time stream), `celery` (3 priority queues), `redis` (atomic `HINCRBY` & epoch invalidation), and `gemini` (multimodal router with Fireworks failover).
+
+### Verified
+- `pnpm typecheck` passed.
+
+---
+
+## T63.10: Upgrade Taply Architecture Diagram to 980x340 Responsive SVG
+
+**Task status:** done
+**Commit:** 06065b6
+**Date:** 2026-08-21
+
+### What shipped
+- `components/diagrams/TaplyDiagram.tsx`:
+  - Upgraded from 320x220 to spacious `980x340` responsive SVG architecture blueprint.
+  - Features Client NFC/QR Ingress, Cloudflare Edge (<80ms SLA), Django 5 Core API, Redis 7.2 `HINCRBY` atomic counters, PostgreSQL 16, Celery sync, Stripe Billing, and RFC 6350 vCard generation.
+  - SMIL animated request packets (amber) and response/sync packets (mint).
+
+### Verified
+- `pnpm typecheck` and `pnpm build` passed.
+
+---
+
+## T63.11: Upgrade UnThink Architecture Diagram to 980x340 Responsive SVG
+
+**Task status:** done
+**Commit:** 545902f
+**Date:** 2026-08-21
+
+### What shipped
+- `components/diagrams/UnthinkDiagram.tsx`:
+  - Upgraded from 320x220 to spacious `980x340` responsive SVG architecture blueprint.
+  - Features Chromium MV3 Extension, Trafilatura DOM Parser, Django 5.1 API Core (:8000), Redis 7.2 Broker, 3 Celery Queues, Dual-AI Model Router (Gemini 1.5 + Fireworks), FastAPI SSE Streamer (:8001), React Web Dashboard, PostgreSQL 16, and Redis Epoch Cache.
+  - SMIL animated ingress packets (amber) and real-time streaming packets (mint).
+
+### Verified
+- `pnpm typecheck` and `pnpm build` (45/45 pages) passed.
