@@ -102,7 +102,7 @@
 ## T63.5: Implement Zero-Dependency Scannable QR Matrix Generator
 
 **Task status:** done
-**Commit:** —
+**Commit:** 97f1326
 **Date:** 2026-08-21
 
 ### What shipped
@@ -120,7 +120,7 @@
 ## T63.6: Update Real Credentials, Portrait Photo, and Links in Taply Datasets
 
 **Task status:** done
-**Commit:** —
+**Commit:** 97f1326
 **Date:** 2026-08-21
 
 ### What shipped
@@ -138,7 +138,7 @@
 ## T63.7: Implement 4 Live Layout Variants, Tab Re-ordering, and Scannable QR in TaplySimulation
 
 **Task status:** done
-**Commit:** —
+**Commit:** 97f1326
 **Date:** 2026-08-21
 
 ### What shipped
