@@ -9,7 +9,7 @@
 ## T63.1: Create Taply Simulation Data Dictionary and Types
 
 **Task status:** done
-**Commit:** —
+**Commit:** 7c7c741
 **Date:** 2026-08-21
 
 ### What shipped
