@@ -192,7 +192,7 @@ function CaptureSimulator() {
               browser://docs.redis.io/commands/incr
             </span>
           </div>
-          <span className="font-mono text-[11px] text-amber">Active Selection</span>
+          <span className="font-mono text-[11px] text-acc">Active Selection</span>
         </div>
 
         <div className="space-y-3 font-mono text-[13px] text-t2">
@@ -203,7 +203,7 @@ function CaptureSimulator() {
               "cursor-pointer rounded-lg border p-3.5 transition-all duration-200 select-none",
               captured
                 ? "border-acc/60 bg-acc/10 text-t1"
-                : "border-amber/60 bg-amber/10 hover:border-amber hover:bg-amber/15 text-t1"
+                : "border-acc/40 bg-acc/10 hover:border-acc/70 hover:bg-acc/15 text-t1"
             )}
           >
             <p className="font-medium">
@@ -218,9 +218,9 @@ function CaptureSimulator() {
           {!captured ? (
             <button
               onClick={handleCapture}
-              className="bg-amber hover:bg-amber/90 font-mono text-[12px] font-semibold text-bg flex items-center gap-2 rounded-lg px-4 py-2 shadow-md transition-all active:scale-95 cursor-pointer"
+              className="bg-acc hover:bg-acc/90 font-mono text-[12px] font-semibold text-black flex items-center gap-2 rounded-lg px-4 py-2 shadow-md transition-all active:scale-95 cursor-pointer"
             >
-              <span>[+]</span> Right-Click Send to UnThink (Alt+Shift+S)
+              <span>[+]</span> Right-Click Send to UnThink
             </button>
           ) : (
             <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ function CaptureSimulator() {
       {/* Behind-the-Scenes Architecture Step */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3 font-mono text-[12px]">
         <div className="rounded-lg border border-border/80 bg-surface/50 p-3">
-          <p className="text-amber font-semibold">1. Context Menu Trigger</p>
+          <p className="text-acc font-semibold">1. Context Menu Trigger</p>
           <p className="text-t3 mt-1 text-[11px]">
             MV3 content script captures highlighted DOM, canonical URL, and title in &lt;15ms.
           </p>
