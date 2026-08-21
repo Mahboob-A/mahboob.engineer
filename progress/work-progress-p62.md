@@ -184,3 +184,25 @@
 
 ### Verified
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed.
+
+---
+
+## T62.10: Author Taply 5-Module Simulation Engineering Guide
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `TAPLY_SIMULATION_SPECIFICATION_GUIDE.md`:
+  - Authored the comprehensive master document at the root of the repository.
+  - Documented the exact 5-stage lifecycle architecture:
+    1. Client Trigger & Sub-Latency SLA Ingestion (NFC/QR scan SLA <80ms).
+    2. Data Normalization & Payload Optimization (vCard 4.0 RFC 6350 vs raw HTML).
+    3. Core Algorithmic Logic & Multi-Tenant Hierarchy (RBAC, Teams, Permissions).
+    4. High-Performance Caching & Analytics Buffer (Redis atomic HINCRBY & PostgreSQL batch sync).
+    5. Real-Time Streaming & Enterprise Security Invariants (Lead-gen webhooks & PII encryption).
+  - Outlined the research questionnaire and TypeScript contract skeletons for the Taply agent.
+
+### Verified
+- File created and verified at root: `/Users/mehboob/my-codes/my-portfolio/TAPLY_SIMULATION_SPECIFICATION_GUIDE.md`.
