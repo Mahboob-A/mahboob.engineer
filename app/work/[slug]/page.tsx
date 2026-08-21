@@ -33,6 +33,7 @@ import { InnerLayout } from "@/components/layout/InnerLayout";
 import { Chip } from "@/components/ui/Chip";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { pickDiagram } from "@/components/diagrams/pickDiagram";
+import { ZoomableDiagramWrapper } from "@/components/diagrams/ZoomableDiagramWrapper";
 import { StorySection } from "@/components/work/StorySection";
 import { UnthinkInteractiveExplorer } from "@/components/work/UnthinkInteractiveExplorer";
 import UnThinkSimulation from "@/components/work/UnThinkSimulation";
@@ -177,8 +178,10 @@ function Hero({ project }: { project: ProjectItem }) {
         </div>
 
         {/* RIGHT — diagram */}
-        <div className="bg-surface border-border flex items-center justify-center rounded-[10px] border p-4 md:p-6">
-          {Diagram}
+        <div className="bg-surface border-border flex items-center justify-center rounded-[10px] border p-4 md:p-6 overflow-hidden">
+          <ZoomableDiagramWrapper title={project.name}>
+            {Diagram}
+          </ZoomableDiagramWrapper>
         </div>
       </div>
     </section>
