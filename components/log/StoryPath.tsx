@@ -250,19 +250,27 @@ export function buildStoryStages(
   // (gives the section a tight, scannable shape); otherwise the
   // paragraph's first sentence is used.
   const headingFromParagraph = (p: string): string => {
-    const first = p.split(/(?<=[.!?])\s+/)[0] ?? p;
-    return first.length > 90 ? first.slice(0, 87) + "…" : first;
+    const first = (p.split(/(?<=[.!?])\s+/)[0] ?? p).trim();
+    if (first.length <= 90) return first;
+    const sub = first.slice(0, 88);
+    const lastSpace = sub.lastIndexOf(" ");
+    return lastSpace > 40 ? sub.slice(0, lastSpace) + "…" : sub + "…";
   };
   const fallbackHeading = bullets[0]
-    ? `${bullets[0].split(/[—.]/)[0].trim().slice(0, 70)}`
+    ? `${bullets[0].split(/[—.:]/)[0].trim().slice(0, 70)}`
     : "The shape of the work";
+  const outcomeText = bullets[0]
+    ? bullets[0].includes(":")
+      ? bullets[0].split(":")[1]?.trim() ?? bullets[0]
+      : bullets[0].split(/[—.]/)[0].trim()
+    : null;
   const headings: [string, string, string, string, string] = [
     headingFromParagraph(a),
     headingFromParagraph(b),
     headingFromParagraph(c),
     headingFromParagraph(d),
-    bullets[0]
-      ? `Outcome — ${bullets[0].split(/[—.]/)[0].trim().slice(0, 60)}`
+    outcomeText
+      ? `Outcome: ${outcomeText.length > 70 ? outcomeText.slice(0, 68) + "…" : outcomeText}`
       : headingFromParagraph(e),
   ];
 
