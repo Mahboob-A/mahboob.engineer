@@ -352,12 +352,9 @@ export default function UnThinkSimulation() {
                   <div className="border-b border-[#2B4A3A]/60 my-1" />
                   <button
                     onClick={() => handleSendToUnThink(contextMenu.fragment)}
-                    className="w-full px-3 py-2 text-left text-xs font-bold text-[#5CC9A0] bg-[#5CC9A0]/15 hover:bg-[#5CC9A0] hover:text-[#121C13] flex items-center justify-between transition-colors cursor-pointer border-none font-mono"
+                    className="w-full px-3 py-2 text-left text-xs font-bold text-[#5CC9A0] bg-[#5CC9A0]/15 hover:bg-[#5CC9A0] hover:text-[#121C13] flex items-center transition-colors cursor-pointer border-none font-mono"
                   >
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold">[-&gt;]</span> Send selection to UnThink
-                    </span>
-                    <span className="text-[10px] opacity-75">Alt+Shift+S</span>
+                    <span>Send to UnThink</span>
                   </button>
                   <div className="border-b border-[#2B4A3A]/60 my-1" />
                   <div className="px-3 py-1.5 text-[11px] text-[#6E8B75] flex justify-between cursor-not-allowed opacity-60">

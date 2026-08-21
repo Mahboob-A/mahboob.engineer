@@ -133,3 +133,18 @@
 
 ### Verified
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed cleanly.
+
+---
+
+## T62.7: Simplify Context Menu Action Button Label
+
+**Task status:** done
+**Commit:** —
+**Date:** 2026-08-21
+
+### What shipped
+- `components/work/UnThinkSimulation.tsx`:
+  - Updated Chrome context menu button label from `[->] Send selection to UnThink Alt+Shift+S` to simply `Send to UnThink`.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` (45/45 pages) passed.
