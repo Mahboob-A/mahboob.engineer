@@ -100,12 +100,16 @@ export const STACK: StackItem[] = [
     name: "FastAPI",
     domain: "backend",
     projects: ["unthink", "drishti-ai", "datalineage-doctor"],
+    depthNotes:
+      "High-concurrency async streaming layer. UnThink uses FastAPI for Server-Sent Events (SSE) token chunk dispatch from dual-AI models directly to the React web app. Datalineage Doctor uses it for webhook ingestion.",
   },
   {
     id: "celery",
     name: "Celery",
     domain: "backend",
     projects: ["unthink", "taply", "movio", "cutetube", "imgtwist"],
+    depthNotes:
+      "Distributed task execution backbone. UnThink routes jobs across 3 priority queues (ai_urgent for streaming summaries, default for entities, bulk for deep indexing). Movio runs a 10-step transcoding pipeline.",
   },
   {
     id: "websocket",
@@ -118,6 +122,8 @@ export const STACK: StackItem[] = [
     name: "SSE",
     domain: "backend",
     projects: ["unthink"],
+    depthNotes:
+      "Server-Sent Events for real-time token streaming and progressive taxonomic classification in UnThink, connecting FastAPI async generators to the React dashboard.",
   },
   {
     id: "webrtc",
@@ -238,7 +244,7 @@ export const STACK: StackItem[] = [
     domain: "data",
     projects: ["taply", "algocode", "movio", "cutetube", "unthink", "imgtwist"],
     depthNotes:
-      "Primary cache + Celery broker. Taply's <100ms profile reads hit Redis first; Movio's segment counter is Redis; UnThink's classify pipeline uses Redis pub/sub. The Redis HA series on Medium is the public version of how I think about replication and sentinel.",
+      "Primary in-memory cache, Celery broker, and atomic counter engine. Taply's sub-80ms edge reads and Redis HINCRBY tap counters hit Redis first; UnThink uses Redis for priority task brokering and epoch-based cache invalidation.",
   },
 
   // AI / Special
@@ -247,6 +253,24 @@ export const STACK: StackItem[] = [
     name: "Gemini",
     domain: "ai",
     projects: ["unthink"],
+    depthNotes:
+      "Multimodal AI reasoning engine in UnThink's dual-AI taxonomy router, with automatic sub-500ms fallback routing to Fireworks AI on rate limits or upstream timeouts.",
+  },
+  {
+    id: "openrouter",
+    name: "OpenRouter",
+    domain: "ai",
+    projects: ["unthink"],
+    depthNotes:
+      "Multi-model LLM gateway in UnThink with latency-aware failover between Gemini 1.5 Flash and Fireworks Llama-3.",
+  },
+  {
+    id: "chrome-mv3",
+    name: "Chromium MV3",
+    domain: "ai",
+    projects: ["unthink"],
+    depthNotes:
+      "Manifest V3 browser extension architecture with background service workers, context menu actions, and in-page DOM extraction via Trafilatura.",
   },
   {
     id: "opencv",
