@@ -139,7 +139,7 @@
 ## T62.7: Simplify Context Menu Action Button Label
 
 **Task status:** done
-**Commit:** —
+**Commit:** e66c6b2
 **Date:** 2026-08-21
 
 ### What shipped
