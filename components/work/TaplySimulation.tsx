@@ -57,7 +57,9 @@ type SandboxAction =
   | { type: "UPDATE_PROFILE"; patch: Partial<TaplyProfileState> }
   | { type: "UPDATE_THEME"; patch: Partial<TaplyProfileState["theme_config"]> }
   | { type: "ADD_LINK"; link: ProfileLink }
+  | { type: "UPDATE_LINK"; id: number; patch: Partial<ProfileLink> }
   | { type: "DELETE_LINK"; id: number }
+  | { type: "RESET_LINKS" }
   | { type: "PUBLISH_PROFILE" }
   | { type: "TAP_ATTENDEE"; attendee: NetworkingAttendee }
   | { type: "SUBMIT_LEAD"; lead: Omit<CapturedLead, "id" | "timestamp" | "crm_synced"> }
@@ -88,6 +90,17 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
           links: [...state.profile.links, action.link],
         },
       };
+    case "UPDATE_LINK":
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          is_published: false,
+          links: state.profile.links.map((l) =>
+            l.id === action.id ? { ...l, ...action.patch } : l
+          ),
+        },
+      };
     case "DELETE_LINK":
       return {
         ...state,
@@ -95,6 +108,15 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
           ...state.profile,
           is_published: false,
           links: state.profile.links.filter((l) => l.id !== action.id),
+        },
+      };
+    case "RESET_LINKS":
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          is_published: false,
+          links: INITIAL_TAPLY_PROFILE.links,
         },
       };
     case "PUBLISH_PROFILE":
@@ -804,24 +826,87 @@ export function TaplySimulation() {
                   {/* Active Social Links */}
                   <div className="bg-surface/50 border border-border rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-t1 uppercase font-bold">3. Active Links</span>
-                      <span className="text-[10px] text-t3 font-mono">{profile.links.length} attached</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-t1 uppercase font-bold">3. Active Links</span>
+                        <span className="text-[10px] text-t3 font-mono">({profile.links.length} attached)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            const newId = Date.now();
+                            dispatch({
+                              type: "ADD_LINK",
+                              link: {
+                                id: newId,
+                                label: "New Link",
+                                url: "https://",
+                                link_type: "custom",
+                              },
+                            });
+                          }}
+                          className="px-2 py-1 bg-acc/10 text-acc hover:bg-acc/20 border border-acc/30 rounded text-[10.5px] font-mono font-semibold transition-colors cursor-pointer"
+                        >
+                          [+ Add Link]
+                        </button>
+                        <button
+                          onClick={() => dispatch({ type: "RESET_LINKS" })}
+                          className="px-2 py-1 text-t3 hover:text-t2 border border-border/50 rounded text-[10.5px] font-mono transition-colors cursor-pointer"
+                          title="Reset to default links"
+                        >
+                          [reset]
+                        </button>
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
+
+                    <div className="space-y-2">
                       {profile.links.map((link) => (
-                        <div key={link.id} className="flex items-center justify-between p-2.5 rounded-lg bg-code-bg border border-border/40 text-xs">
-                          <span className="font-medium text-t1">{link.label}</span>
+                        <div
+                          key={link.id}
+                          className="p-2 rounded-lg bg-code-bg border border-border/60 text-xs space-y-1.5"
+                        >
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-t3 font-mono truncate max-w-[180px]">{link.url}</span>
+                            <input
+                              type="text"
+                              value={link.label}
+                              placeholder="Title"
+                              onChange={(e) =>
+                                dispatch({
+                                  type: "UPDATE_LINK",
+                                  id: link.id,
+                                  patch: { label: e.target.value },
+                                })
+                              }
+                              className="w-1/3 min-w-[90px] bg-surface/70 border border-border/60 rounded px-2 py-1 text-xs text-t1 font-medium focus:border-acc outline-none placeholder:text-t3/50"
+                            />
+                            <input
+                              type="text"
+                              value={link.url}
+                              placeholder="https://..."
+                              onChange={(e) =>
+                                dispatch({
+                                  type: "UPDATE_LINK",
+                                  id: link.id,
+                                  patch: { url: e.target.value },
+                                })
+                              }
+                              className="flex-1 min-w-0 bg-surface/70 border border-border/60 rounded px-2 py-1 text-[11px] text-t2 font-mono focus:border-acc outline-none placeholder:text-t3/50"
+                            />
                             <button
                               onClick={() => dispatch({ type: "DELETE_LINK", id: link.id })}
-                              className="text-t3 hover:text-red-400 p-1 cursor-pointer font-mono text-[10px]"
+                              className="text-t3 hover:text-red-400 px-1.5 py-1 rounded bg-surface/40 hover:bg-red-500/10 border border-border/40 hover:border-red-400/40 cursor-pointer font-mono text-[10.5px] transition-colors shrink-0"
+                              title="Delete link"
                             >
                               [del]
                             </button>
                           </div>
                         </div>
                       ))}
+
+                      {profile.links.length === 0 && (
+                        <div className="p-4 text-center border border-dashed border-border/60 rounded-lg text-t3 text-xs font-mono">
+                          No active links. Click [+ Add Link] or [reset] to restore defaults.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
