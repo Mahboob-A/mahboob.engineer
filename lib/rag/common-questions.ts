@@ -198,7 +198,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Why did Mahboob build Taply?",
     ],
     answer:
-      "I co-founded and built Taply to solve the problem of paper business cards, which get discarded quickly and cannot be updated. Taply is a live digital business card platform at https://gettaply.me, with my personal card at https://gettaply.me/p/mehboob. Users can share their contact information, social links, and portfolios instantly by tapping an NFC card or scanning a QR code. The recipient's phone loads the profile in under 80ms from our Redis cache, allowing a one-tap vCard save to their contacts. I am extremely proud of our interactive simulation suite on /work/taply, where you can test our 5-module System Explorer and interact with 8 attendees in a 2D NFC Networking Hall. I warmly encourage you to try it out!",
+      "I co-founded and built Taply to solve the problem of paper business cards, which get discarded quickly and cannot be updated. Taply is a live digital business card platform at https://gettaply.me, with my personal card at https://gettaply.me/p/mehboob. Users can share their contact information, social links, and portfolios instantly by tapping an NFC card or scanning a QR code. The recipient's phone loads the profile in under 80ms from our Redis cache, allowing a one-tap vCard save to their contacts. I am extremely proud of our interactive simulation suite on /work/taply, where you can test our 5-module System Explorer and interact with 8 attendees in a Conference Networking Hall. I warmly encourage you to try it out!",
     tags: ["taply", "saas", "nfc", "simulation"],
   },
   {
@@ -222,8 +222,21 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What demos can I test on your portfolio?",
     ],
     answer:
-      "I have engineered comprehensive dual-simulation suites for my flagship projects on this portfolio. On /work/unthink, you can test a 5-module System Architecture Explorer (DOM capture, Trafilatura cleaner, Dual-Taxonomy pipeline, Redis epoch cache invalidator, and EC2 security) and a Master Dual-AI Sandbox with simulated browser highlighting and live Server-Sent Events streaming. On /work/taply, you can explore a 5-module NFC Architectural Explorer and a Master Product Sandbox featuring a live profile customizer with 4 layout variants and an interactive 2D Conference Networking Hall where you can tap 8 attendees to exchange NFC cards in real time. I am immensely proud of these interactive engines and invite you to explore both case studies!",
+      "I have engineered comprehensive dual-simulation suites for my flagship projects on this portfolio. On /work/unthink, you can test a 5-module System Architecture Explorer (DOM capture, Trafilatura cleaner, Dual-Taxonomy pipeline, Redis epoch cache invalidator, and EC2 security) and a Master Dual-AI Sandbox with simulated browser highlighting and live Server-Sent Events streaming. On /work/taply, you can explore a 5-module NFC Architectural Explorer and a Master Product Sandbox featuring a live profile customizer with 4 layout variants and an interactive Conference Networking Hall where you can tap 8 attendees to exchange NFC cards in real time. I am immensely proud of these interactive engines and invite you to explore both case studies!",
     tags: ["simulation", "demos", "taply", "unthink", "interactive"],
+  },
+  {
+    title: "Which project is Mahboob most proud of",
+    questions: [
+      "Which project are you most proud of?",
+      "What are you most proud of building?",
+      "What is your favorite project?",
+      "What's your best work?",
+      "Which project represents your skills best?",
+    ],
+    answer:
+      "The work I am most proud of divides into two core achievements: UnThink as my flagship SaaS product, and Algocode as my core systems engineering project. UnThink (https://letsunthink.tech/) is my sole zero-to-one production SaaS product, architected from scratch to solve developer capture friction with zero-decision dual-taxonomy AI categorization, a sub-300ms capture SLA, and decoupled Django 5.1 and FastAPI SSE streaming services. You can test its dual simulation suite at /work/unthink. Algocode is the systems engineering project I am most proud of from an infrastructure perspective. It is a distributed online judge that safely compiles and runs untrusted user C++ code using microservices, RabbitMQ task dispatch, and kernel isolation with Linux namespaces, cgroups, and seccomp filters. I am also proud of co-founding Taply (https://gettaply.me, /work/taply).",
+    tags: ["proud", "favorite", "unthink", "algocode", "projects", "product"],
   },
   {
     title: "What is Algocode",
@@ -244,8 +257,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Strongest backend project on the portfolio?",
     ],
     answer:
-      "I recommend starting with Taply (https://gettaply.me, case study at /work/taply) and UnThink (https://letsunthink.tech/, case study at /work/unthink). Taply is a live, production SaaS built on Django 5.1 that handles real-time caching, NFC data, and Stripe subscription billing. UnThink demonstrates asynchronous micro-orchestration, dual-AI model fallback routing, and real-time Server-Sent Events (SSE) streaming. Both case studies feature full interactive simulation engines directly on this portfolio. If you want to see Linux kernel isolation and microservices, Algocode is also a great showcase of distributed systems.",
-    tags: ["projects", "hiring", "depth", "taply", "unthink"],
+      "I recommend starting with UnThink (https://letsunthink.tech/, case study at /work/unthink) and Algocode. UnThink is my flagship SaaS product built from scratch as a sole founder, showcasing decoupled Django 5.1 and FastAPI SSE streaming services, AI dual taxonomy, and sub-millisecond Redis epoch cache invalidation. Algocode demonstrates deep low-level systems engineering, running untrusted C++ code safely across microservices with RabbitMQ and Linux kernel isolation (namespaces, cgroups, and seccomp filters). If you want to see live multi-tenant SaaS with real-time analytics, Taply (https://gettaply.me, /work/taply) is also a strong showcase with an interactive simulation suite.",
+    tags: ["projects", "hiring", "depth", "unthink", "algocode", "taply"],
   },
 
   /* ─── Group 5 — Writing & learning ────────────────────────────── */
