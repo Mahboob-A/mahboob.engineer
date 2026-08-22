@@ -42,8 +42,24 @@ customer.
 
 Two flagship products are live, in production, and feature full interactive simulation engines on this portfolio.
 
-1. **Taply** is live in production at https://gettaply.me with my personal digital business card at https://gettaply.me/p/mehboob. On my portfolio at /work/taply, you can interact with the dual simulation suite: a 5-module NFC Architectural Explorer (NFC 13.56MHz scan latency generator, RFC 6350 vCard payload analysis, multi-tenant RBAC tree, Redis HINCRBY atomic counters, and real-time webhooks) plus the Master Product Sandbox featuring a live profile customizer with 4 layout variants (classic, hero, compact, banner) and a 2D Conference Networking Hall with 8 interactive attendees for simulated NFC taps.
+1. **Taply** is live in production at https://gettaply.me with my personal digital business card at https://gettaply.me/p/mehboob. On my portfolio at /work/taply, you can interact with the dual simulation suite: a 5-module NFC Architectural Explorer (NFC 13.56MHz scan latency generator, RFC 6350 vCard payload analysis, multi-tenant RBAC tree, Redis HINCRBY atomic counters, and real-time webhooks) plus the Master Product Sandbox featuring a live profile customizer with 4 layout variants (classic, hero, compact, banner) and a Conference Networking Hall with 8 interactive attendees for simulated NFC taps.
 
 2. **UnThink** is live in production at https://letsunthink.tech/ with a published Chrome Web Store extension. On my portfolio at /work/unthink, you can interact with the dual simulation suite: a 5-module System Architecture Explorer (DOM capture engine, Trafilatura cleaner, Dual-Taxonomy pipeline, Redis epoch cache invalidator, and hardened EC2 infrastructure) plus the Master Product Sandbox featuring a live simulated browser viewport and a 3-stage intelligence engine streaming real-time Server-Sent Events (SSE).
 
-The rest are **portfolio projects on GitHub**, with a README, architectural writeup, and demo video where available: Algocode (22 stars), Movio (13 stars), DrishtiAI (14 stars), DataLineage Doctor (25 stars, 11 forks), ProStream, CuteTube, AirPass, ImgTwist, Load Balancer Lab, and Pulumi AWS Infra. If a recruiter or visitor asks which project to look at first, the answer is **Taply** for live SaaS, **UnThink** for AI and async streaming, **Algocode** for distributed systems, and **Movio** for video infrastructure.
+## Proudest Work: Flagship Product vs Systems Engineering Project
+
+When a recruiter or visitor asks which project I am most proud of, what is my strongest work, or where to start, the answer divides cleanly into product versus systems engineering:
+
+1. **Flagship SaaS Product I am most proud of: UnThink**
+   - UnThink is my sole zero-to-one production system and commercial SaaS product (https://letsunthink.tech/). I built it as a solo founder from scratch to solve personal knowledge capture friction for developers.
+   - Highlights: zero-decision dual-taxonomy AI categorization, sub-300ms capture SLA, unified monorepo with decoupled Django 5.1 CRUD and FastAPI SSE streaming services, multi-model failover, and multi-key Redis caching with deterministic epoch versioning.
+   - Interactive dual simulation suite: explore the live architecture at /work/unthink.
+
+2. **Core Systems Engineering Project I am most proud of: Algocode**
+   - Algocode is the systems engineering project I am most proud of from an infrastructure and low-level systems perspective.
+   - Highlights: distributed online judge for C++, microservices architecture, RabbitMQ asynchronous task distribution, ephemeral Docker sibling containers, and kernel-level sandboxing using Linux namespaces, cgroups, and seccomp filters.
+
+3. **Co-founded Live SaaS Product: Taply**
+   - Taply is my co-founded live digital business card platform (https://gettaply.me, personal card at https://gettaply.me/p/mehboob, simulation at /work/taply).
+
+The rest are **portfolio projects on GitHub**: Movio (video transcoding infrastructure with HLS/DASH), DrishtiAI, DataLineage Doctor, ProStream, CuteTube, AirPass, ImgTwist, Load Balancer Lab, and Pulumi AWS Infra.
