@@ -658,7 +658,7 @@ function EpochCacheSimulator() {
 
           <button
             onClick={handleBumpEpoch}
-            className="w-full bg-amber hover:bg-amber/90 font-mono text-[12px] font-semibold text-bg flex items-center justify-center gap-2 rounded-lg py-2.5 shadow-md transition-all active:scale-95 cursor-pointer"
+            className="w-full bg-acc hover:bg-acc/90 font-mono text-[12px] font-semibold text-black flex items-center justify-center gap-2 rounded-lg py-2.5 shadow-md transition-all active:scale-95 cursor-pointer"
           >
             <span>[+]</span> Simulate Fragment Save (Trigger Atomic INCR)
           </button>
@@ -697,6 +697,16 @@ function EpochCacheSimulator() {
 /* ─────────────────────────────────────────────────────────────────────────────
    5. SSE Real-Time Stream & Production Security Hardening
    ───────────────────────────────────────────────────────────────────────────── */
+const UNTHINK_SSE_EVENTS = [
+  { event: "fragment.created", time: "10:55:01", color: "text-amber", data: '{"id": "frag_882a", "source": "docs.redis.io", "status": "queued_ai_urgent"}' },
+  { event: "source.trafilatura.cleaned", time: "10:55:02", color: "text-t2", data: '{"id": "frag_882a", "raw_html_bytes": 14200, "clean_markdown_bytes": 384, "noise_reduction": "97.3%"}' },
+  { event: "ai.classification.done", time: "10:55:03", color: "text-acc", data: '{"id": "frag_882a", "topic": "Redis Caching", "source_tree": "Redis / Docs", "model": "Fireworks AI (gpt-oss)", "latency_ms": 218}' },
+  { event: "epoch.invalidated", time: "10:55:04", color: "text-acc", data: '{"user_id": 42, "old_epoch": "v42", "new_epoch": "v43", "invalidation_ms": 0.32}' },
+  { event: "dashboard.tree.sync", time: "10:55:04", color: "text-t1", data: '{"action": "refresh_counts", "epoch": "v43", "node_counts_updated": 148}' },
+  { event: "token.stream.chunk", time: "10:55:05", color: "text-t3", data: '{"delta": "Atomic INCR on user:{id}:cache_version...", "finish_reason": "stop"}' },
+  { event: "digest.weekly.batched", time: "10:55:08", color: "text-t2", data: '{"task": "celery_beat_sunday_digest", "user_id": 42, "status": "scheduled"}' },
+];
+
 function SseSecurityStream() {
   return (
     <motion.div
@@ -728,30 +738,33 @@ function SseSecurityStream() {
       </p>
 
       {/* Stream & Security Grid */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 font-mono text-[12px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 font-mono text-[12px] min-w-0">
         {/* Live SSE Stream Terminal */}
-        <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3">
+        <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3 min-w-0 flex flex-col">
           <div className="flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-acc font-semibold flex items-center gap-1.5">
               <span>[SSE]</span> Live SSE Event Channel
             </span>
-            <span className="text-t3 text-[11px]">Stream: /api/v1/events/</span>
+            <span className="text-t3 text-[11px]">Stream: /api/v1/events/ (7 events)</span>
           </div>
 
-          <div className="space-y-2 bg-code-bg rounded-lg p-3 border border-border/60 text-t2 text-[11.5px]">
-            <p className="text-t3">event: fragment.created</p>
-            <p className="text-amber">data: &#123;&quot;id&quot;: &quot;frag_882a&quot;, &quot;status&quot;: &quot;queued&quot;&#125;</p>
-            <div className="border-t border-border/40 my-1.5" />
-            <p className="text-t3">event: ai.classification.done</p>
-            <p className="text-acc">data: &#123;&quot;id&quot;: &quot;frag_882a&quot;, &quot;topic&quot;: &quot;Redis Caching&quot;, &quot;latency_ms&quot;: 240&#125;</p>
-            <div className="border-t border-border/40 my-1.5" />
-            <p className="text-t3">event: dashboard.tree.sync</p>
-            <p className="text-t1 font-semibold">data: &#123;&quot;action&quot;: &quot;refresh_counts&quot;, &quot;epoch&quot;: &quot;v43&quot;&#125;</p>
+          <div className="space-y-2 bg-code-bg rounded-lg p-3 border border-border/60 text-[11px] max-h-[260px] overflow-y-auto pr-1.5">
+            {UNTHINK_SSE_EVENTS.map((evt, idx) => (
+              <div key={idx} className={cn("p-2 rounded border border-border/30 bg-surface/40", evt.color)}>
+                <div className="flex items-center justify-between text-[10px] text-t3 mb-0.5">
+                  <span className="font-semibold">event: {evt.event}</span>
+                  <span>{evt.time}</span>
+                </div>
+                <div className="text-t2 text-[10.5px] leading-relaxed break-all font-mono">
+                  data: {evt.data}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Security Invariants Checklist */}
-        <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3">
+        <div className="border-border bg-surface rounded-xl border p-4 shadow-sm space-y-3 min-w-0">
           <div className="flex items-center justify-between border-b border-border/50 pb-2">
             <span className="text-t1 font-semibold flex items-center gap-1.5">
               <span>[SYS]</span> Production Security Invariants
