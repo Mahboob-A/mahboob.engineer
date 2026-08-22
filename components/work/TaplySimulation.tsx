@@ -8,7 +8,7 @@
  *
  *   1. Authenticated Dashboard with real-time stats and interactive telemetry jump
  *   2. Real-Time Profile Customizer with 4 distinct layout variants (classic, hero, compact, banner)
- *   3. 2D Conference Networking Hall with 8 interactive attendees for simulated NFC taps
+ *   3. Conference Networking Hall with 8 interactive attendees for simulated NFC taps
  *   4. Real-Time Analytics & Leads Inbox with pure responsive SVG Area Chart and CRM sync stream
  *   5. Simulated Public Profile Viewport with 4 live layout variants, vCard download, and real scannable QR
  *
@@ -519,13 +519,13 @@ export function TaplySimulation() {
       {/* Section Header */}
       <div className="text-center mb-8 pt-6 border-t border-border">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-semibold uppercase tracking-wider bg-acc/10 text-acc border border-acc/30 mb-3">
-          Master Product Sandbox Engine
+          Taply Sandbox Engine
         </div>
         <h3 className="text-2xl md:text-4xl font-display font-bold text-t1 tracking-tight m-0">
           Experience the NFC Networking &amp; Profile Ecosystem
         </h3>
         <p className="text-sm text-t2 mt-2 max-w-xl mx-auto font-sans leading-relaxed">
-          Explore Taply&apos;s complete multi-tenant product engine: customize profile layouts with real-time syncing, enter the 2D Conference Hall to tap 8 attendees, inspect atomic Redis telemetry, and copy the live vCard profile.
+          Explore Taply&apos;s complete multi-tenant product engine: customize profile layouts with real-time syncing, enter the Conference Hall to tap 8 attendees, inspect atomic Redis telemetry, and copy the live vCard profile.
         </p>
       </div>
 
@@ -867,7 +867,7 @@ export function TaplySimulation() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-t1">2D Conference Networking Hall</h3>
+                  <h3 className="text-lg font-semibold text-t1">Conference Networking Hall</h3>
                   <p className="text-xs text-t3">Tap attendees to exchange NFC digital cards and trigger real-time telemetry.</p>
                 </div>
                 <div className="flex items-center gap-2">
