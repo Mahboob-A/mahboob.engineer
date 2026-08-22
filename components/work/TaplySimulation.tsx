@@ -297,10 +297,7 @@ function DynamicProfileCard({
             <Image unoptimized src={profile.photo} alt={profile.display_name} width={isMini ? 48 : 64} height={isMini ? 48 : 64} className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-bold" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
-              [HERO PROFILE]
-            </span>
-            <h2 className={cn("font-bold text-white mt-1 truncate", isMini ? "text-xs" : "text-base")}>{profile.display_name}</h2>
+            <h2 className={cn("font-bold text-white truncate", isMini ? "text-xs" : "text-base")}>{profile.display_name}</h2>
             <p className={cn("text-gray-400 truncate", isMini ? "text-[10px]" : "text-xs")}>{profile.title}</p>
           </div>
         </div>
@@ -520,19 +517,16 @@ export function TaplySimulation() {
       </AnimatePresence>
 
       {/* Section Header */}
-      <div className="border-border mb-6 flex flex-wrap items-baseline justify-between gap-2 border-t pt-6">
-        <div className="flex items-baseline gap-3">
-          <span className="bg-acc inline-block h-[6px] w-[6px] rounded-full shadow-[0_0_8px_var(--acc)]" />
-          <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
-            Master Product Sandbox &amp; NFC Networking Hall
-          </h2>
-          <span className="text-t3 font-mono text-[11px] italic">
-            portal &gt; builder &gt; one tap &gt; telemetry &gt; viewport
-          </span>
+      <div className="text-center mb-8 pt-6 border-t border-border">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-semibold uppercase tracking-wider bg-acc/10 text-acc border border-acc/30 mb-3">
+          Master Product Sandbox Engine
         </div>
-        <span className="text-acc font-mono text-[11px]">
-          live interactive sandbox
-        </span>
+        <h3 className="text-2xl md:text-4xl font-display font-bold text-t1 tracking-tight m-0">
+          Experience the NFC Networking &amp; Profile Ecosystem
+        </h3>
+        <p className="text-sm text-t2 mt-2 max-w-xl mx-auto font-sans leading-relaxed">
+          Explore Taply&apos;s complete multi-tenant product engine: customize profile layouts with real-time syncing, enter the 2D Conference Hall to tap 8 attendees, inspect atomic Redis telemetry, and copy the live vCard profile.
+        </p>
       </div>
 
       {/* 5-Tab Master Sandbox Navigation (Reordered) */}
