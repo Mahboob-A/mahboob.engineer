@@ -24,10 +24,9 @@ import { FadeUp } from "@/components/motion";
 
 export function Contact() {
   /* The landing version shows 5 quick-links (GitHub / LinkedIn / Medium /
-     Taply / Email). /contact shows 6 (adds Resume via Google Drive).
-     Slice the same registry here to keep this section compact. */
+     Taply / Resume). Email was removed in favor of Resume. */
   const landingLinks = DIRECT_LINKS.filter(
-    (l) => l.label !== "Resume",
+    (l) => l.label !== "Email",
   );
 
   return (

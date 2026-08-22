@@ -241,6 +241,7 @@ export interface ContactLabel {
 
 export const CONTACT_LABELS: ContactLabel[] = [
   { key: "hiring", text: "hiring" },
+  { key: "unthink", text: "unthink" },
   { key: "taply-collab", text: "taply-collab" },
   { key: "consulting", text: "consulting" },
   { key: "open-source", text: "open-source" },
@@ -252,6 +253,8 @@ export const CONTACT_LABELS: ContactLabel[] = [
 export function bucketFor(key: string): ChipColor {
   switch (key) {
     case "hiring":
+      return "sage";
+    case "unthink":
       return "sage";
     case "taply-collab":
       return "mauve";
