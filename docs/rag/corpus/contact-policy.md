@@ -9,14 +9,7 @@
 
 ## Good Reasons To Contact
 
-You're hiring for a backend or platform role — remote-first or India in-
-office. You want a Taply partnership or white-label conversation. You want
-a system design review on a Django / FastAPI stack. You're interested in
-focused consulting around backend architecture, query optimization, or
-deployment automation. You're working on open-source or writing about
-backend topics and want to swap notes. Send the first message with the
-role summary, company stage and team size, remote or on-site expectation,
-stack and system ownership scope, and timeline.
+You're hiring for a Founding Engineer, Backend, or DevOps role (remote-first or India in-office). You want a Taply partnership or white-label conversation. You want a system design review on a Django / FastAPI stack. You're interested in focused consulting around backend architecture, query optimization, or deployment automation. You're working on open-source or writing about backend topics and want to swap notes. Send the first message with the role summary, company stage and team size, remote or on-site expectation, stack and system ownership scope, and timeline.
 
 ## Not A Fit
 

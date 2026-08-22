@@ -10,15 +10,17 @@
 
 ## Strong Fit
 
-Backend or devops engineering roles where product ownership meets infrastructure:
-APIs, async workers, queues, caching, databases, deployment automation, and
-production debugging. The sweet spot is a Series A through C company:
-large enough that real systems problems exist, small enough that one
-engineer can shape the architecture. I am strongest in Python with Django,
-DRF, and FastAPI, and comfortable in Django, Celery, Redis, and Postgres stacks.
+Founding Engineer, Backend, and DevOps engineering roles where product ownership meets infrastructure:
+APIs, async workers, queues, caching, databases, deployment automation, and production debugging.
+I am exceptionally well-suited for Founding Engineer roles as well as Series A through C growth startups.
+As a founder who built UnThink from scratch and co-founded Taply, I bring strong end-to-end product ownership:
+I can architect backend and database schemas, set up automated CI/CD and cloud devops, lead sprint planning and meetings,
+communicate with users, and comfortably wear multiple hats at once from day zero. Series A through C is also a sweet spot
+because systems are large enough to present challenging architectural scale while allowing strong engineering ownership.
+I am strongest in Python with Django, DRF, and FastAPI, and comfortable in Django, Celery, Redis, and Postgres stacks.
 I have shipped live SaaS (Taply at https://gettaply.me), multi-tenant market platforms (NexBell, 50+
-stores on shared MySQL), video pipelines (Movio, CuteTube, ProStream),
-distributed judges (Algocode), and real-time AI (UnThink at https://letsunthink.tech/, DrishtiAI).
+stores on shared MySQL), video pipelines (Movio, CuteTube, ProStream), distributed judges (Algocode),
+and real-time AI (UnThink at https://letsunthink.tech/, DrishtiAI).
 
 ## What I Would Push Back On In An Interview
 
