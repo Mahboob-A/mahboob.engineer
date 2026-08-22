@@ -48,8 +48,8 @@ export const TAPLY_TABS: TaplyTabMeta[] = [
     id: "rbac",
     step: "03",
     label: "Multi-Tenant RBAC",
-    badge: "ENTERPRISE",
-    tag: "Hierarchical Teams",
+    badge: "RBAC",
+    tag: "Team Hierarchy",
   },
   {
     id: "cache",
@@ -61,8 +61,8 @@ export const TAPLY_TABS: TaplyTabMeta[] = [
   {
     id: "webhooks",
     step: "05",
-    label: "CRM Webhook Stream",
-    badge: "PIPELINE",
+    label: "CRM Webhooks",
+    badge: "WEBHOOK",
     tag: "AES-256 Hardened",
   },
 ];
@@ -705,8 +705,28 @@ function AnalyticsBufferSimulator() {
 /* ─────────────────────────────────────────────────────────────────────────────
    5. Real-Time Webhook Stream & Security Invariants Sandbox
    ───────────────────────────────────────────────────────────────────────────── */
+const TAPLY_ALL_EVENTS = [
+  { event: "card.scanned", time: "10:42:01", color: "text-acc", data: '{"card_id": "c_901", "geo": "San Francisco, CA", "device": "iOS 18", "latency": "52ms"}' },
+  { event: "lead.captured", time: "10:42:04", color: "text-amber", data: '{"lead_id": "ld_441", "name": "Elena Rostova", "crm_sync": "hubspot", "status": "200_OK"}' },
+  { event: "vcard.downloaded", time: "10:42:08", color: "text-acc", data: '{"card_id": "c_901", "bytes_transferred": 1428, "format": "RFC_6350_v4"}' },
+  { event: "lead.captured", time: "10:42:15", color: "text-amber", data: '{"lead_id": "ld_442", "name": "Marcus Vance", "crm_sync": "salesforce", "status": "200_OK"}' },
+  { event: "directory.sync", time: "10:42:22", color: "text-t2", data: '{"tenant_id": "acme_corp", "active_cards": 128, "status": "healthy"}' },
+  { event: "card.scanned", time: "10:42:29", color: "text-acc", data: '{"card_id": "c_204", "geo": "Bengaluru, IN", "device": "Android 15", "latency": "38ms"}' },
+  { event: "lead.captured", time: "10:42:35", color: "text-amber", data: '{"lead_id": "ld_443", "name": "Sarah Jenkins", "crm_sync": "pipedrive", "status": "200_OK"}' },
+  { event: "analytics.flushed", time: "10:42:40", color: "text-t2", data: '{"keys_batched": 450, "hincrby_pipeline": "redis_sync_60s", "db_locks": 0}' },
+];
+
+const TAPLY_LEADS_EVENTS = [
+  { event: "lead.captured", time: "10:42:04", color: "text-amber", data: '{"lead_id": "ld_441", "name": "Elena Rostova", "email": "e.rostova@acme.ai", "crm_sync": "hubspot", "status": "200_OK"}' },
+  { event: "lead.captured", time: "10:42:15", color: "text-amber", data: '{"lead_id": "ld_442", "name": "Marcus Vance", "email": "m.vance@matrix.dev", "crm_sync": "salesforce", "status": "200_OK"}' },
+  { event: "lead.verified", time: "10:42:19", color: "text-acc", data: '{"lead_id": "ld_442", "auth_check": "SMS_TOTP_VERIFIED", "field_encryption": "Fernet_AES256"}' },
+  { event: "lead.captured", time: "10:42:35", color: "text-amber", data: '{"lead_id": "ld_443", "name": "Sarah Jenkins", "email": "s.jenkins@cloudnet.io", "crm_sync": "pipedrive", "status": "200_OK"}' },
+  { event: "lead.crm_dispatch", time: "10:42:38", color: "text-acc", data: '{"lead_id": "ld_443", "target_pipeline": "Enterprise B2B Inbound", "webhook_ack": "200_ACCEPTED"}' },
+];
+
 function WebhookSecurityStream() {
   const [streamFilter, setStreamFilter] = useState<"all" | "lead">("all");
+  const events = streamFilter === "all" ? TAPLY_ALL_EVENTS : TAPLY_LEADS_EVENTS;
 
   return (
     <motion.div
@@ -732,7 +752,7 @@ function WebhookSecurityStream() {
           </p>
         </div>
 
-        <div className="bg-surface rounded-lg p-1 border border-border flex gap-1">
+        <div className="bg-surface rounded-lg p-1 border border-border flex gap-1 shrink-0">
           <button
             onClick={() => setStreamFilter("all")}
             className={cn(
@@ -742,7 +762,7 @@ function WebhookSecurityStream() {
                 : "text-t3 hover:text-t2"
             )}
           >
-            [All Events]
+            [All Events ({TAPLY_ALL_EVENTS.length})]
           </button>
           <button
             onClick={() => setStreamFilter("lead")}
@@ -753,15 +773,15 @@ function WebhookSecurityStream() {
                 : "text-t3 hover:text-t2"
             )}
           >
-            [Leads Only]
+            [Leads Only ({TAPLY_LEADS_EVENTS.length})]
           </button>
         </div>
       </div>
 
       {/* Security Invariants & Webhook Stream Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
         {/* Security Invariants Checklist */}
-        <div className="bg-surface/60 border border-border rounded-xl p-5 space-y-3">
+        <div className="bg-surface/60 border border-border rounded-xl p-5 space-y-3 min-w-0">
           <div className="text-xs font-mono text-acc uppercase font-bold">
             [SEC] Production Security Invariants
           </div>
@@ -796,29 +816,25 @@ function WebhookSecurityStream() {
         </div>
 
         {/* Live Webhook Feed */}
-        <div className="bg-surface/60 border border-border rounded-xl p-5 space-y-3">
-          <div className="text-xs font-mono text-amber uppercase font-bold">
-            [FEED] Live Webhook Stream
+        <div className="bg-surface/60 border border-border rounded-xl p-5 space-y-3 min-w-0 flex flex-col">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-amber uppercase font-bold">
+              [FEED] Live Webhook Stream
+            </span>
+            <span className="text-[10px] font-mono text-t3">Scrollable live pipe</span>
           </div>
-          <div className="font-mono text-[11px] bg-code-bg/90 p-4 rounded-xl border border-border/60 space-y-3 overflow-x-auto">
-            {streamFilter === "all" && (
-              <div className="text-acc">
-                <span className="text-t3">[STREAM]</span> event: card.scanned<br />
-                <span className="text-t2">data: &#123;&quot;card_id&quot;: &quot;c_901&quot;, &quot;geo&quot;: &quot;San Francisco, CA&quot;, &quot;device&quot;: &quot;iOS 18&quot;, &quot;latency&quot;: &quot;52ms&quot;&#125;</span>
+          <div className="font-mono text-[11px] bg-code-bg/90 p-3.5 rounded-xl border border-border/60 space-y-2.5 max-h-[300px] overflow-y-auto pr-2">
+            {events.map((evt, idx) => (
+              <div key={idx} className={cn("p-2 rounded border border-border/30 bg-surface/40", evt.color)}>
+                <div className="flex items-center justify-between text-[10px] text-t3 mb-0.5">
+                  <span className="font-semibold">{evt.event}</span>
+                  <span>{evt.time}</span>
+                </div>
+                <div className="text-t2 text-[10.5px] leading-relaxed break-all font-mono">
+                  {evt.data}
+                </div>
               </div>
-            )}
-
-            <div className="text-amber">
-              <span className="text-t3">[STREAM]</span> event: lead.captured<br />
-              <span className="text-t2">data: &#123;&quot;lead_id&quot;: &quot;ld_441&quot;, &quot;name&quot;: &quot;Elena Rostova&quot;, &quot;crm_sync&quot;: &quot;hubspot&quot;, &quot;status&quot;: &quot;200_OK&quot;&#125;</span>
-            </div>
-
-            {streamFilter === "all" && (
-              <div className="text-t3">
-                <span className="text-t3">[STREAM]</span> event: directory.sync<br />
-                <span className="text-t2">data: &#123;&quot;tenant_id&quot;: &quot;acme_corp&quot;, &quot;active_cards&quot;: 128, &quot;status&quot;: &quot;healthy&quot;&#125;</span>
-              </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
