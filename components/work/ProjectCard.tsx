@@ -53,88 +53,90 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
   // ─── founder variant ──────────────────────────────────────────────────
   if (variant === "founder") {
     return (
-      <Link
-        href={href}
-        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-acc"
-        aria-label={`${project.name} — case study`}
+      <article
+        className={cn(
+          "bg-tier-founder border-amber/40 hover:border-amber/70 relative group",
+          "grid grid-cols-1 gap-6 rounded-[12px] border p-6 transition-colors md:p-8 lg:grid-cols-[1.4fr_1fr]",
+        )}
       >
-        <article
-          className={cn(
-            "bg-tier-founder border-amber/40 hover:border-amber/70",
-            "grid grid-cols-1 gap-6 rounded-[12px] border p-6 transition-colors md:p-8 lg:grid-cols-[1.4fr_1fr]",
-          )}
-        >
-          {/* LEFT — text content */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <Badge variant={project.status as BadgeVariant}>
-                {project.status === "live"
-                  ? "● live"
-                  : project.status === "building"
-                    ? "building"
-                    : "shipped"}
-              </Badge>
-              <span className="text-amber font-mono text-[12px] tracking-[1px] uppercase">
-                {project.slug === "taply" ? "co-founder" : "founder"}
-              </span>
-            </div>
+        <Link
+          href={href}
+          className="absolute inset-0 z-0 rounded-[12px] focus:outline-none focus-visible:ring-2 focus-visible:ring-acc"
+          aria-label={`${project.name} — case study`}
+        />
 
-            <div>
-              <h3 className="font-display text-t1 text-[28px] leading-[1.1] font-bold tracking-[-0.5px]">
-                {project.name}
-              </h3>
-              <p className="text-t2 mt-2 font-mono text-[14px]">
-                {headlineStatus}
-              </p>
-            </div>
-
-            <p className="text-t2 text-[14.5px] leading-[1.55]">
-              {project.problem}
-            </p>
-
-            {/* Metric row */}
-            <ul className="border-border my-1 grid grid-cols-2 gap-3 rounded-[8px] border bg-bg/40 p-3.5 md:grid-cols-4">
-              {project.metrics.slice(0, 4).map((m) => (
-                <li
-                  key={m}
-                  className="border-border flex flex-col gap-0.5 border-l pl-3 first:border-l-0 first:pl-0"
-                >
-                  <span className="text-amber font-mono text-[11.5px] font-semibold tracking-[0.5px]">
-                    {m.split(" ")[0]}
-                  </span>
-                  <span className="text-t3 text-[11px] leading-[1.3]">
-                    {m.split(" ").slice(1).join(" ")}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            {/* Stack chips */}
-            <div>
-              <p className="text-t3 mb-2 font-mono text-[10.5px] tracking-[1px] uppercase">
-                stack
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {project.stack.slice(0, 7).map((tech) => (
-                  <Chip key={tech} color={chipColor(tech)}>
-                    {tech}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-
-            {/* Links row */}
-            <ProjectLinks project={project} variant="founder" />
+        {/* LEFT — text content */}
+        <div className="relative z-10 flex flex-col gap-4 pointer-events-none">
+          <div className="flex items-center gap-3">
+            <Badge variant={project.status as BadgeVariant}>
+              {project.status === "live"
+                ? "● live"
+                : project.status === "building"
+                  ? "building"
+                  : "shipped"}
+            </Badge>
+            <span className="text-amber font-mono text-[12px] tracking-[1px] uppercase">
+              {project.slug === "taply" ? "co-founder" : "founder"}
+            </span>
           </div>
 
-          {/* RIGHT — diagram thumbnail */}
-          {diagram ? (
-            <div className="bg-code-bg border-border flex items-center justify-center rounded-[10px] border p-5">
-              {diagram}
+          <div>
+            <h3 className="font-display text-t1 text-[28px] leading-[1.1] font-bold tracking-[-0.5px]">
+              {project.name}
+            </h3>
+            <p className="text-t2 mt-2 font-mono text-[14px]">
+              {headlineStatus}
+            </p>
+          </div>
+
+          <p className="text-t2 text-[14.5px] leading-[1.55]">
+            {project.problem}
+          </p>
+
+          {/* Metric row */}
+          <ul className="border-border my-1 grid grid-cols-2 gap-3 rounded-[8px] border bg-bg/40 p-3.5 md:grid-cols-4">
+            {project.metrics.slice(0, 4).map((m) => (
+              <li
+                key={m}
+                className="border-border flex flex-col gap-0.5 border-l pl-3 first:border-l-0 first:pl-0"
+              >
+                <span className="text-amber font-mono text-[11.5px] font-semibold tracking-[0.5px]">
+                  {m.split(" ")[0]}
+                </span>
+                <span className="text-t3 text-[11px] leading-[1.3]">
+                  {m.split(" ").slice(1).join(" ")}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {/* Stack chips */}
+          <div>
+            <p className="text-t3 mb-2 font-mono text-[10.5px] tracking-[1px] uppercase">
+              stack
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {project.stack.slice(0, 7).map((tech) => (
+                <Chip key={tech} color={chipColor(tech)}>
+                  {tech}
+                </Chip>
+              ))}
             </div>
-          ) : null}
-        </article>
-      </Link>
+          </div>
+
+          {/* Links row */}
+          <div className="pointer-events-auto">
+            <ProjectLinks project={project} variant="founder" />
+          </div>
+        </div>
+
+        {/* RIGHT — diagram thumbnail */}
+        {diagram ? (
+          <div className="bg-code-bg border-border relative z-10 flex items-center justify-center rounded-[10px] border p-5 pointer-events-none">
+            {diagram}
+          </div>
+        ) : null}
+      </article>
     );
   }
 
@@ -275,17 +277,21 @@ function ProjectLinks({
   if (links.length === 0) return null;
 
   return (
-    <div className="border-border flex flex-wrap gap-2 border-t pt-3">
+    <div className="border-border flex flex-wrap gap-3 border-t pt-3 relative z-20">
       {links.map((l) => (
-        <span
+        <a
           key={l.label}
+          href={l.href}
+          target="_blank"
+          rel="noreferrer"
           className={cn(
-            "text-t2 hover:text-acc font-mono text-[12px] transition-colors",
-            variant === "founder" ? "inline-flex items-center gap-1" : "",
+            "text-t2 hover:text-acc font-mono text-[12px] transition-colors cursor-pointer inline-flex items-center gap-1",
+            variant === "founder" ? "hover:underline" : "",
           )}
+          onClick={(e) => e.stopPropagation()}
         >
           ↗ {l.label}
-        </span>
+        </a>
       ))}
     </div>
   );

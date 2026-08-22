@@ -120,7 +120,7 @@ export const PROJECTS: ProjectItem[] = [
     extension:
       "https://chromewebstore.google.com/detail/unthink/lnbjgaieajhiidbicphgckpojaphhono",
     github: null,
-    demo: "https://chromewebstore.google.com/detail/unthink/lnbjgaieajhiidbicphgckpojaphhono",
+    demo: "https://letsunthink.tech/how-it-works",
     youtube: null,
     domain: ["ai", "backend", "platform", "saas"],
     stack: [
@@ -143,7 +143,7 @@ export const PROJECTS: ProjectItem[] = [
       "<300ms Save SLA",
       "Zero-Decision Dual Taxonomy",
       "Deterministic Epochs",
-      "3 Celery Queues",
+      "Multi-Model AI Failover",
       "<$100/mo per 1k users",
     ],
     problem:
