@@ -43,8 +43,8 @@ export interface AvailabilityItem {
 }
 
 export const AVAILABILITY: AvailabilityItem[] = [
-  { kind: "live", text: "Available for backend roles (remote / on-site)" },
-  { kind: "live", text: "Open to backend / devops positions" },
+  { kind: "live", text: "Available for Founding Engineer roles (remote / on-site)" },
+  { kind: "live", text: "Open to Backend & DevOps positions" },
   { kind: "mauve", text: "Taply partnership enquiries welcome" },
 ];
 
@@ -120,7 +120,9 @@ export const DIRECT_LINKS: DirectLinkItem[] = [
    ───────────────────────────────────────────────────────────────────── */
 
 export interface FAQItem {
+  /** Question text. */
   question: string;
+  /** Answer text. */
   answer: string;
 }
 
@@ -137,7 +139,7 @@ export const FAQ: FAQItem[] = [
   {
     question: "What stage of companies do you prefer?",
     answer:
-      "Startups to mid-size. Series A through C is the sweet spot, although founding role works too. Large enough to have real systems problems, small enough to own architecture decisions.",
+      "Startups to mid-size. Founding engineer roles and Series A through C are where I thrive. I bring strong product ownership, manage stakeholder meetings, handle backend and devops end-to-end, and can wear multiple hats from day zero.",
   },
   {
     question: "Do you take freelance / consulting work?",
@@ -185,7 +187,8 @@ export interface QuickContextItem {
 }
 
 export const QUICK_CONTEXT_FITS: QuickContextItem[] = [
-  { text: "You're hiring for a backend or devops role (remote or anywhere in India)." },
+  { text: "You're hiring for a Founding Engineer, Backend, or DevOps role (remote or anywhere in India)." },
+  { text: "You want a high-ownership engineer who can handle backend, devops, product execution, and wear multiple hats." },
   { text: "You want a Taply partnership or white-label conversation." },
   { text: "You want a system design review on a Django / FastAPI stack." },
 ];
