@@ -94,8 +94,20 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a startup person or a big-company person?",
     ],
     answer:
-      "I am looking for backend or devops engineering roles at growth-stage startups, particularly companies in their Series A, B, or C funding stages. This size is the sweet spot for me because the systems are large enough to present challenging architectural and scale problems, yet small enough that a single engineer can own design decisions and make a direct impact. I prefer remote-first organizations that practice async-first communication, document technical designs in writing, and value clean code with automated test coverage. I specialize in backend engineering and cloud devops where product code intersects with infrastructure and reliability. I am not looking for Java-only, frontend-only, or mobile-only roles today.",
-    tags: ["hiring", "company fit", "stage"],
+      "I am looking for Founding Engineer, Backend, or DevOps engineering roles at early to growth-stage startups, particularly founding roles and Series A through C stages. Early-stage startups and Series A-C are where I thrive most: I bring strong product ownership, can handle backend architecture and automated CI/CD devops, manage stakeholder meetings, and comfortably wear multiple hats from day zero. I prefer remote-first organizations that practice async-first communication, document technical designs in writing, and value clean code with automated test coverage. I am not looking for Java-only, frontend-only, or mobile-only roles today.",
+    tags: ["hiring", "company fit", "stage", "founding-engineer"],
+  },
+  {
+    title: "Is Mahboob open to Founding Engineer roles",
+    questions: [
+      "Are you open to founding engineer roles?",
+      "Would you join as a founding engineer?",
+      "Can you wear multiple hats as a founding engineer?",
+      "Are you suitable for early-stage startups?",
+    ],
+    answer:
+      "Yes, I am actively open to and exceptionally well-suited for Founding Engineer roles. As a founder who built UnThink from scratch and co-founded Taply, I bring strong end-to-end product ownership. I can architect the backend and database schemas, set up automated CI/CD and cloud infrastructure, lead stakeholder and customer meetings, and comfortably wear multiple hats simultaneously from day zero. I thrive in early-stage environments where engineering speed and system reliability drive real business growth.",
+    tags: ["hiring", "founding-engineer", "roles", "startups", "product-ownership"],
   },
   {
     title: "Can Mahboob consult on Django or FastAPI",
