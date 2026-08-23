@@ -181,39 +181,39 @@ What's next for UnThink. We are integrating pgvector dense vector embeddings alo
     stack: [
       "Django 5.1",
       "DRF",
-      "Next.js 15",
+      "Next.js 16",
       "React 19",
       "Redis",
       "PostgreSQL",
-      "Stripe",
-      "JWT",
-      "OAuth2",
-      "TOTP 2FA",
       "Django-Q2",
+      "ReportLab PDF",
+      "Fernet / Argon2",
+      "JWT",
+      "TOTP 2FA",
       "NFC",
       "QR",
       "vCard",
     ],
     metrics: [
       "<100ms profile load",
-      "4 subscription tiers",
+      "Sub-500ms analytics rollups",
       "11 profile section types",
-      "1 enterprise customer live",
+      "SHA-256 IP anonymization",
     ],
     problem:
       "88% of paper business cards are thrown away in a week. No tracking, no updates, dead channel.",
     built:
-      "Full-stack SaaS built around NFC+QR sharing, real-time analytics, a team RBAC console, and Stripe billing. Architected and built the entire backend from scratch as co-founder.",
+      "Full-stack SaaS built around NFC+QR hardware resolution, privacy-first analytics with SHA-256 hashing, headless multi-tenant profiles, and dynamic cache TTL scheduling. Architected and built the entire backend from scratch as co-founder.",
     notes:
       `Taply came out of a real pain. Paper business cards get thrown out within a week. You can't update them. You can't tell if anyone looked at yours. The first version was a weekend hack, an NFC sticker with a URL slug that opened a public profile. It worked in my own network but had no sharing layer. You couldn't tap and have the contact saved to your phone in one motion. That's what 'tap or scan' really meant. Not a fancy QR code, but a single vCard save that just works.
 
 The backend got rebuilt three times before it became Taply v1. Django 5.1 and DRF stayed across all three versions because nothing else handled the relational shape of an editable profile, with eleven section types, version history, and rollback. Redis came in for the read path because re-rendering a profile from Postgres on every tap wasn't going to hit the under-100ms target we'd promised.
 
-Stripe was the other big learning. The first integration was rough. Subscriptions, one-time upgrades, webhooks, customer portal, and dunning. We hit every edge case. The first enterprise customer came through the team management console, with bulk CSV onboarding, per-rep analytics, and role-based branding. That feature set was the one that finally got someone to pay.
+The analytics engine was built with a strict privacy-first architecture. Raw visitor events hash client IP addresses with SHA-256 with zero plaintext storage, deduplicating scans in Redis over 24-hour sliding windows. A nightly Django-Q2 cluster rollup task aggregates daily snapshots for sub-500ms dashboard queries. The team console enables enterprise multi-tenancy: headless managed profiles provisioned onto physical cards before user registration, CSV bulk onboarding, and granular field locking to enforce corporate branding.
 
-We're now iterating on v2 with a drag-and-drop profile builder and a leads inbox that captures who tapped, when, and how often. The analytics layer is the one that closes the loop on the original promise. Knowing if anyone actually looked at your card.
+We're now iterating on v2 with a drag-and-drop profile builder, a ReportLab-powered CMYK vector PDF print engine for physical card manufacturing, and a leads inbox that captures who tapped, when, and how often. The analytics layer is the one that closes the loop on the original promise: knowing if anyone actually looked at your card.
 
-What's next if we keep building. A tier-1 enterprise tier with SAML SSO. UTM-aware links and A/B-tested profile versions for a deeper analytics surface. A public Taply API so other SaaS products can plug into Taply profiles as a primary identity, which is also a route toward a 'Taply as identity provider' positioning.`,
+What's next if we keep building: A tier-1 enterprise tier with SAML SSO. UTM-aware links and A/B-tested profile versions for a deeper analytics surface. A public Taply API so other SaaS products can plug into Taply profiles as a primary identity, which is also a route toward a 'Taply as identity provider' positioning.`,
     game_building: "Taply HQ",
     game_district: "saas_quarter",
   },
