@@ -300,7 +300,7 @@ export const STACK: StackItem[] = [
     id: "stripe",
     name: "Stripe",
     domain: "payment",
-    projects: ["taply"],
+    projects: ["unthink"],
   },
   /* Phase 21: bKash was the dominant Bangladesh mobile-wallet
      gateway at NexBell (the multi-vendor marketplace serving
