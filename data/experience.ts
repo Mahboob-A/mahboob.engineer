@@ -99,7 +99,7 @@ export const EXPERIENCE: ExperienceItem[] = [
     company: "UnThink",
     url: "https://letsunthink.tech",
     role: "Founder & Full-Stack Systems Engineer",
-    period: "Apr 2026 – Present",
+    period: "Jun 2026 – Present",
     status: "active",
     bullets: [
       "Founded and shipped UnThink end-to-end: an AI-native, fragment-first personal knowledge base SaaS with a published Manifest V3 Chrome Web Store extension and <300ms capture SLA.",
@@ -140,19 +140,19 @@ What's next for UnThink: We are expanding the data layer with pgvector dense vec
     status: "active",
     bullets: [
       "Co-founded Taply and built the entire backend on Django 5.1 and DRF. Eleven section types, four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback.",
-      "Shipped the NFC and QR sharing layer. Tap or scan opens a user's live profile in under 100ms via Redis-cached loads, with one-tap vCard save that works on both iOS and Android without downloads.",
-      "Built the real-time analytics engine that tracks profile views, NFC taps, QR scans, and vCard saves, plus a leads inbox that captures visitor contact requests.",
-      "Delivered the team management console with role-based branding, bulk CSV onboarding, and per-rep analytics. The console closed Taply's first paying enterprise customer, a 250-rep sales org.",
-      "Integrated Stripe Checkout, Portal, and Webhooks for billing across Free, Pro, Business, and Enterprise tiers. Webhook idempotency is critical because Stripe retries on any 5xx.",
+      "Shipped the NFC and QR sharing layer. Tap or scan opens a user's live profile in under 100ms via Redis-cached loads, with one-tap vCard 3.0 save that works on both iOS and Android without downloads.",
+      "Engineered a privacy-first analytics pipeline with SHA-256 IP anonymization (zero plaintext IP storage), 24-hour Redis deduplication, and nightly Django-Q2 rollup workers creating daily snapshots for sub-500ms queries.",
+      "Delivered the team management console with headless managed profiles (pre-provisioning physical cards before employee registration), bulk CSV onboarding, and granular field locking.",
+      "Engineered a dynamic cache TTL algorithm calculating exact deltas to upcoming link schedule transitions to clamp Redis TTLs (30s–3600s), combined with Argon2 hashing, TOTP 2FA, and read-only JWT staff impersonation.",
     ],
     tags: [
       "Django 5.1",
       "DRF",
-      "Next.js 15",
+      "Next.js 16",
       "Redis",
       "PostgreSQL",
-      "Stripe",
-      "JWT/OAuth2/2FA",
+      "Django-Q2",
+      "Argon2/Fernet",
       "NFC/QR",
     ],
     relatedProjects: ["taply", "unthink"],
@@ -160,9 +160,9 @@ What's next for UnThink: We are expanding the data layer with pgvector dense vec
 
 I co-founded the company and built the backend in Django 5.1 and DRF. The profile system is the heart of the product. Eleven section types (about, links, social, gallery, testimonials, products, services, contact, schedule, files, video), four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback. Every profile is cached in Redis so a tap resolves in under 100ms regardless of traffic. Every save is appended to a versioned history that the user can rewind to.
 
-The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips that still supported NDEF rewrites, so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap. We ship the vCard payload from a dedicated endpoint with the right MIME type, so iOS and Android both handle it without downloads.
+The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips (NTAG213/215/216) that still supported NDEF rewrites, so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap. We ship the RFC 2426 vCard payload from a dedicated endpoint with direct base64 profile photo injection, so iOS and Android both handle it natively without downloads.
 
-The real-time analytics engine tracks views, NFC taps, QR scans, and vCard saves, plus a leads inbox that captures visitor contact requests. The console was built for sales teams: per-rep branding, bulk CSV onboarding, per-rep analytics. The team console is what closed Taply's first paying enterprise customer, a 250-rep sales org whose procurement team needed role-based controls and reporting. Stripe handles billing across Free, Pro, Business, and Enterprise tiers. Subscription state lives in our Postgres, and webhook idempotency is critical because Stripe retries on any 5xx.
+The analytics engine was built with a strict privacy-first architecture. Raw visitor events hash client IP addresses with SHA-256 with zero plaintext storage, deduplicating scans in Redis over 24-hour sliding windows. A nightly Django-Q2 cluster rollup task aggregates daily snapshots for sub-500ms dashboard queries. The team console enables enterprise multi-tenancy: headless managed profiles provisioned onto physical cards before user registration, CSV bulk onboarding, and granular field locking to enforce corporate branding.
 
 Deployment went from a single EC2 to a small fleet behind an ALB, with Redis as the shared session cache, Postgres with read-replicas, and S3 for media. The product surface is small, but every layer underneath does real work, and the same patterns (Redis caching at the edge, DRF for the orchestration layer, Postgres as the source of truth) recur across UnThink, DrishtiAI, and the Algocode backend.
 
