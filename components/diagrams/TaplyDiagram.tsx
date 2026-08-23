@@ -9,14 +9,14 @@
  *                                                                             │         │
  *                                                      ┌──────────────────────┴┐        └──────→ [Org Directory / SSO]
  *                                                      ▼                       ▼
- *                                            [Redis 7.2 HINCRBY]       [PostgreSQL 16]
+ *                                            [Redis 8 HINCRBY]       [PostgreSQL 18]
  *                                                      │                       │
  *                                                      ▼                       ▼
- *                                            [RFC 6350 vCard]          [Celery Worker Sync] ──→ [HubSpot / Stripe]
+ *                                            [RFC 2426 vCard]          [Django-Q2 Cluster] ──→ [HubSpot / ReportLab PDF]
  *
  * Animated packets (SMIL):
  *   - Amber for edge ingestion: NFC / QR -> Cloudflare -> Django -> Redis.
- *   - Accent (mint) for persistence, vCard generation, and webhook dispatch.
+ *   - Accent (mint) for persistence, vCard generation, and worker rollups.
  *
  * Pure SVG + SMIL, 100% dependency-free, zero emojis, zero em dashes.
  */
@@ -30,7 +30,7 @@ export function TaplyDiagram() {
       xmlns="http://www.w3.org/2000/svg"
       style={{ width: "100%", height: "auto", display: "block" }}
       role="img"
-      aria-label="Taply: Hardware NFC and dynamic QR ingestion via Cloudflare Edge to Django 5 Core, Redis HINCRBY atomic counters, PostgreSQL multi-tenancy, and Celery CRM dispatch."
+      aria-label="Taply: Hardware NFC and dynamic QR ingestion via Cloudflare Edge to Django 5 Core, Redis atomic counters, PostgreSQL multi-tenancy, and Django-Q2 cluster with ReportLab vector PDF generation."
     >
       {/* ─── Edges (rendered under nodes) ────────────────────────── */}
       <g aria-hidden>
@@ -44,15 +44,15 @@ export function TaplyDiagram() {
         <path id="taply-p4" className="alg-edge" d="M 600 115 H 625 V 60 H 650" />
         {/* Django -> PostgreSQL (Middle-Right) */}
         <path id="taply-p5" className="alg-edge" d="M 600 145 H 650" />
-        {/* Django -> Celery Workers (Bottom-Right) */}
+        {/* Django -> Django-Q2 Cluster (Bottom-Right) */}
         <path id="taply-p6" className="alg-edge" d="M 515 170 V 240 H 650" />
-        {/* Redis -> RFC 6350 vCard Generator */}
+        {/* Redis -> RFC 2426 vCard Generator */}
         <path id="taply-p7" className="alg-edge" d="M 800 60 H 840" />
-        {/* PostgreSQL -> Celery */}
+        {/* PostgreSQL -> Django-Q2 */}
         <path className="alg-edge" d="M 725 180 V 210" />
-        {/* Celery -> HubSpot Webhook Dispatch */}
+        {/* Django-Q2 -> HubSpot Webhook Dispatch */}
         <path id="taply-p8" className="alg-edge" d="M 800 240 H 820 V 150 H 840" />
-        {/* Celery -> Stripe Webhooks */}
+        {/* Django-Q2 -> ReportLab Print Engine */}
         <path id="taply-p9" className="alg-edge" d="M 800 240 H 840" />
         {/* Django -> Org Directory / SSO */}
         <path id="taply-p10" className="alg-edge" d="M 470 170 V 240" />
@@ -173,7 +173,7 @@ export function TaplyDiagram() {
         </text>
       </g>
 
-      {/* 7. Async Worker Pool: Celery */}
+      {/* 7. Async Worker Pool: Django-Q2 Cluster */}
       <g>
         <rect
           className="alg-node alg-node-queue"
@@ -184,14 +184,14 @@ export function TaplyDiagram() {
           rx={6}
         />
         <text className="alg-label" x={725} y={235} textAnchor="middle">
-          Celery Workers
+          Django-Q2 Cluster
         </text>
         <text className="alg-sub" x={725} y={252} textAnchor="middle">
-          Batch DB Sync · Queues
+          Nightly Rollups · Pruning
         </text>
       </g>
 
-      {/* 8. RFC 6350 vCard Generator */}
+      {/* 8. RFC 2426 vCard Generator */}
       <g>
         <rect
           className="alg-node alg-node-base"
@@ -202,10 +202,10 @@ export function TaplyDiagram() {
           rx={6}
         />
         <text className="alg-label" x={900} y={55} textAnchor="middle">
-          vCard 4.0
+          vCard 3.0
         </text>
         <text className="alg-sub" x={900} y={72} textAnchor="middle">
-          RFC 6350 Payload
+          RFC 2426 Payload
         </text>
       </g>
 
@@ -227,7 +227,7 @@ export function TaplyDiagram() {
         </text>
       </g>
 
-      {/* 10. Stripe Billing Sidecar */}
+      {/* 10. ReportLab Print Engine */}
       <g>
         <rect
           className="alg-node alg-node-base"
@@ -238,10 +238,10 @@ export function TaplyDiagram() {
           rx={6}
         />
         <text className="alg-label" x={900} y={235} textAnchor="middle">
-          Stripe Billing
+          ReportLab PDF
         </text>
         <text className="alg-sub" x={900} y={252} textAnchor="middle">
-          Webhook Ingestion
+          CMYK Vector Print
         </text>
       </g>
 
