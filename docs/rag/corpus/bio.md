@@ -12,7 +12,7 @@
 
 I am Mahboob Alam, a backend and devops engineer based in Bangalore,
 originally from Kolkata. I co-founded Taply, a live digital business card SaaS
-that runs on Django, DRF, Redis, Postgres, and Stripe. Before Taply I was at
+that runs on Django 5.1, DRF, Redis, Postgres, and Django-Q2. Before Taply I was at
 NexBell as a backend engineer, rebuilding auth on OAuth2 and JWT, and at
 Innovative IT shipping Django APIs for three clients. I write about backend
 and systems topics on Medium under "The Backend Diaries" and ship portfolio projects

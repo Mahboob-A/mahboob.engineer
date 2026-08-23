@@ -36,7 +36,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's background?",
     ],
     answer:
-      "I am a backend and devops engineer based in Bangalore, originally from Kolkata. I co-founded Taply (https://gettaply.me), which is a live digital business card SaaS built using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe, with my personal card at https://gettaply.me/p/mehboob and an interactive dual simulation suite on /work/taply. I also built UnThink (https://letsunthink.tech/), an AI-powered personal knowledge base with an interactive dual simulation suite on /work/unthink. My portfolio projects demonstrate the same production systems patterns I use in my work, including distributed online judges with sandboxed containers, video transcoding pipelines, and real-time vision systems. I hold a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a cloud specialization from Poridhi.",
+      "I am a backend and devops engineer based in Bangalore, originally from Kolkata. I co-founded Taply (https://gettaply.me), which is a live digital business card SaaS built using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Django-Q2, with my personal card at https://gettaply.me/p/mehboob and an interactive dual simulation suite on /work/taply. I also built UnThink (https://letsunthink.tech/), an AI-powered personal knowledge base with an interactive dual simulation suite on /work/unthink. My portfolio projects demonstrate the same production systems patterns I use in my work, including distributed online judges with sandboxed containers, video transcoding pipelines, and real-time vision systems. I hold a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a cloud specialization from Poridhi.",
     tags: ["identity", "bio", "background"],
   },
   {
@@ -69,7 +69,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a founder?",
     ],
     answer:
-      "I am currently a Co-Founder and Backend and DevOps Engineer at Taply, which is a live digital business card platform accessible at https://gettaply.me. In this role, I architected and own the entire backend service built on Django 5.1 and Django Rest Framework. This includes the profile customizer with multiple layouts, NFC and QR code sharing systems, real-time analytics tracking, and Stripe subscription billing. Prior to co-founding Taply, I worked as a software engineer at NexBell. At NexBell, I led sprint planning and code reviews for a nine-person engineering team, redesigned composite database indexes to cut query times, and rebuilt the authentication flow using OAuth2 and JSON Web Tokens.",
+      "I am currently a Co-Founder and Backend and DevOps Engineer at Taply, which is a live digital business card platform accessible at https://gettaply.me. In this role, I architected and own the entire backend service built on Django 5.1 and Django Rest Framework. This includes the profile customizer with multiple layouts, NFC and QR code sharing systems, privacy-first analytics tracking with SHA-256 IP anonymization, dynamic cache TTL scheduling, and headless multi-tenant team management. Prior to co-founding Taply, I worked as a software engineer at NexBell. At NexBell, I led sprint planning and code reviews for a nine-person engineering team, redesigned composite database indexes to cut query times, and rebuilt the authentication flow using OAuth2 and JSON Web Tokens.",
     tags: ["title", "taply", "founder", "devops"],
   },
   {
@@ -78,10 +78,11 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a capable engineer?",
       "Are you a good engineer?",
       "Is Mahboob employable?",
-      "Are you a good team player?",
+      "Is Mahboob a good team player?",
+      "Is Mahboob fit for a backend role?",
     ],
     answer:
-      "Yes! That is me, and I am a capable backend and devops engineer. I co-founded a live SaaS platform, Taply (https://gettaply.me), and built complex systems like UnThink (https://letsunthink.tech/) and Algocode, which is a distributed online judge with isolated execution environments. I design my systems with performance and reliability in mind, focusing on composite indexing, in-memory caching, and clean API boundaries. While I am confident in my core stack of Python, Django, FastAPI, Redis, Docker, and PostgreSQL, I also recognize my growth areas. I am currently exploring technologies like Go, Terraform, Kubernetes, and eBPF. I am a quick learner and plan to build several projects using these technologies to solidify my skills.",
+      "Yes! I am a backend and devops engineer and I take pride in architecting resilient production systems, reliable APIs, and scalable infrastructure. I have shipped real systems like UnThink and Taply, as well as complex distributed platforms like Algocode with Linux kernel isolation. To keep growing, I am also actively deepening my skills in Go, Terraform, Kubernetes, and eBPF. I am a quick learner and plan to build and ship dedicated projects with these technologies in the coming months to solidify my mastery. I value clear async communication, strong test suites, and high-ownership engineering teams.",
     tags: ["identity", "capability", "employability", "teamwork"],
   },
 
@@ -128,7 +129,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Can I partner with Taply?",
     ],
     answer:
-      "Yes, I am open to partnership and white-label conversations for Taply. Since Taply is a fully functional digital business card SaaS built on Django 5.1 with NFC and QR capabilities, a team management console, and Stripe billing at https://gettaply.me, it can be customized or white-labeled for enterprise clients. I built the team management console specifically to allow organizations to manage bulk rep profiles and enforce brand controls, which helped us secure our first paying enterprise customer. If you are looking to integrate digital business cards for a large team or explore collaborations, you can use the 'taply-collab' label on the /lets-connect contact form, or email me at connect.mahboobalam@gmail.com.",
+      "Yes, I am open to partnership and white-label conversations for Taply. Since Taply is a fully functional digital business card SaaS built on Django 5.1 with NFC and QR capabilities, a team management console, and dynamic profile layout engines at https://gettaply.me, it can be customized or white-labeled for enterprise clients. I built the team management console specifically to allow organizations to manage bulk rep profiles and enforce brand controls, which helped us secure our first paying enterprise customer. If you are looking to integrate digital business cards for a large team or explore collaborations, you can use the 'taply-collab' label on the /lets-connect contact form, or email me at connect.mahboobalam@gmail.com.",
     tags: ["taply", "partnership", "white-label"],
   },
 
@@ -152,7 +153,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Taply a real product?",
     ],
     answer:
-      "Yes, I have shipped live, production SaaS products. As co-founder of Taply (https://gettaply.me), I architected and built the entire backend platform using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Stripe. The platform supports live profile builders with 4 layout variants, NFC and QR card sharing, real-time analytics, and bulk user onboarding. Taply is currently active and serves paying customers. I also built UnThink (https://letsunthink.tech/), a live AI-powered knowledge base with a published Chrome Web Store extension. On my portfolio at /work/taply and /work/unthink, you can experience full interactive simulation suites that demonstrate these architectures live.",
+      "Yes, I have shipped live, production SaaS products. As co-founder of Taply (https://gettaply.me), I architected and built the entire backend platform using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Django-Q2. The platform supports live profile builders with 4 layout variants, NFC and QR card sharing, privacy-first analytics with SHA-256 anonymization, and bulk user onboarding. Taply is currently active and serves paying customers. I also built UnThink (https://letsunthink.tech/), a live AI-powered knowledge base with a published Chrome Web Store extension. On my portfolio at /work/taply and /work/unthink, you can experience full interactive simulation suites that demonstrate these architectures live.",
     tags: ["taply", "unthink", "saas", "production"],
   },
   {

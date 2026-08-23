@@ -55,10 +55,10 @@ corpus hit in this section.
 
 ## Work Log
 
-- **Taply.** Co-Founder and Backend Engineer. May 2026 to Present.
-  Live SaaS on Django 5.1, DRF, Redis, PostgreSQL, Stripe. Profile
-  builder, NFC and QR sharing, real-time analytics, team console,
-  Stripe billing.
+- **Taply.** Co-Founder and Backend Engineer. Mar 2026 to Present.
+  Live SaaS on Django 5.1, DRF, Redis, PostgreSQL, and Django-Q2. Profile
+  builder, NFC and QR sharing, privacy-first SHA-256 analytics, dynamic
+  cache TTL scheduling, headless team profiles, and ReportLab PDF export.
 - **NexBell Inc.** Software Engineer. Nov 2024 to Jun 2026.
   Multi-vendor MySQL marketplace, 50+ stores. Rebuilt auth on OAuth2
   and JWT, cut query latency 17 percent, cut AWS spend 35 percent,
