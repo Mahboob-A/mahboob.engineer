@@ -143,7 +143,7 @@ What's next for UnThink: We are expanding the data layer with pgvector dense vec
       "Shipped the NFC and QR sharing layer. Tap or scan opens a user's live profile in under 100ms via Redis-cached loads, with one-tap vCard 3.0 save that works on both iOS and Android without downloads.",
       "Engineered a privacy-first analytics pipeline with SHA-256 IP anonymization (zero plaintext IP storage), 24-hour Redis deduplication, and nightly Django-Q2 rollup workers creating daily snapshots for sub-500ms queries.",
       "Delivered the team management console with headless managed profiles (pre-provisioning physical cards before employee registration), bulk CSV onboarding, and granular field locking.",
-      "Engineered a dynamic cache TTL algorithm calculating exact deltas to upcoming link schedule transitions to clamp Redis TTLs (30s–3600s), combined with Argon2 hashing, TOTP 2FA, and read-only JWT staff impersonation.",
+      "Engineered ReportLab-powered CMYK vector PDF print engine with polymorphic template selection hierarchy (Member Override > Team Default > Fallback) for automated physical NFC card manufacturing.",
     ],
     tags: [
       "Django 5.1",
@@ -152,7 +152,7 @@ What's next for UnThink: We are expanding the data layer with pgvector dense vec
       "Redis",
       "PostgreSQL",
       "Django-Q2",
-      "Argon2/Fernet",
+      "ReportLab/PDF",
       "NFC/QR",
     ],
     relatedProjects: ["taply", "unthink"],
