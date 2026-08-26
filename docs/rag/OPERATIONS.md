@@ -297,9 +297,14 @@ Static mode is the fallback path and must remain independent.
   `temperature` from each model's `generation_config.json` when unset.
   If dynamic-mode answers feel too flat, swap the pinned value to
   `undefined` and let the model default surface.
-- `max_tokens` is pinned at `500`. The `<= 80 words` system prompt
-  doesn't need much headroom; raising this only helps if a question
-  drags the model past 500 tokens.
+- `max_tokens` defaults to `1500` (configurable via `RAG_MAX_TOKENS`) to
+  prevent mid-sentence truncation during detailed responses or Markdown
+  rich rendering.
+- `reasoning_effort` is set to `"none"` for Fireworks `gpt-oss-120b` to
+  suppress reasoning tokens, lower latency, and preserve token headroom.
+- System prompt and voice rules are compiled statically in
+  `lib/rag/system-prompt.ts`, eliminating vector lookup latency, 250-word
+  document splitter clamping, and prompt leakage.
 - The route's per-IP rate limit (default 20/30 mins, configurable via
   `RAG_RATE_LIMIT_PER_THIRTY_MINUTES`) uses Upstash Redis with a sliding window
   (and falls back to in-memory locally if Redis is not configured).
