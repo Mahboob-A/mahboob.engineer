@@ -182,7 +182,7 @@ function buildPayload(key: RagCommandKey): string[] {
         last
           ? `Last role: ${last.company} (${last.period}), ${last.role}.`
           : "—",
-        "Based in Kolkata (hometown). Open to remote or relocating to Bangalore / Chennai / NCR.",
+        "Based in Bangalore, originally from Kolkata. Open to remote or relocating to Chennai / NCR.",
       ];
     }
     case "projects": {

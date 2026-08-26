@@ -108,9 +108,6 @@ function createOpenAICompatibleClient(
           stream: true,
           temperature: 0.2,
           max_tokens: maxTokens,
-          ...(provider === "fireworks"
-            ? { reasoning_effort: "none" as unknown as undefined }
-            : {}),
         },
         { signal },
       );

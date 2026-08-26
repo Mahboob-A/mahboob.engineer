@@ -47,7 +47,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's location?",
     ],
     answer:
-      "I am currently based in Kolkata, West Bengal, which is my hometown. However, I am actively open to relocating to other major technology hubs in India, such as Bangalore, Chennai, or the National Capital Region (NCR) for the right opportunities. I am also highly open to remote-first software engineering roles globally. To collaborate effectively with international teams, I maintain flexible working hours and establish overlap windows for teams based in the United States and Europe. Typically, a window of 1:00 PM to 6:00 PM Indian Standard Time works well to sync with teams in the Americas, while my evenings are convenient for syncing with colleagues in Europe.",
+      "I am based in Bangalore, originally from Kolkata. I am actively open to remote backend and devops engineering roles globally, as well as relocating to other major technology hubs like Chennai or the National Capital Region (NCR) for the right opportunities. To collaborate effectively with international teams, I maintain flexible working hours and establish overlap windows for teams based in the United States and Europe. Typically, a window of 1:00 PM to 6:00 PM Indian Standard Time works well to sync with teams in the Americas, while my evenings are convenient for syncing with colleagues in Europe.",
     tags: ["location", "timezone", "remote"],
   },
   {
