@@ -426,6 +426,13 @@ async function buildDocumentChunks(rootDir: string): Promise<RagChunk[]> {
   for (const absolutePath of docPaths) {
     const relativePath = path.relative(rootDir, absolutePath);
     if (relativePath.startsWith("progress/")) continue;
+    if (
+      relativePath.includes("system-prompt.md") ||
+      relativePath.includes("voice.md") ||
+      relativePath.includes("private-boundaries.md")
+    ) {
+      continue;
+    }
     const content = await readOptionalFile(absolutePath);
     if (!content) continue;
     chunks.push(...chunkDocument(relativePath, content));

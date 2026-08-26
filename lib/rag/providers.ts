@@ -98,13 +98,19 @@ function createOpenAICompatibleClient(
       messages: RagChatMessage[],
       signal?: AbortSignal,
     ): Promise<Response> {
+      const maxTokens =
+        Number.parseInt(env.optional("RAG_MAX_TOKENS", "1500"), 10) || 1500;
+
       const stream = await client.chat.completions.create(
         {
           model: chatModel,
           messages,
           stream: true,
           temperature: 0.2,
-          max_tokens: 500,
+          max_tokens: maxTokens,
+          ...(provider === "fireworks"
+            ? { reasoning_effort: "none" as unknown as undefined }
+            : {}),
         },
         { signal },
       );
