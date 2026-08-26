@@ -22,11 +22,7 @@ in small, reviewable PRs.
 
 ## What You Should Remember In 30 Seconds
 
-Three things. I am a backend engineer first, a devops engineer second, and a
-co-founder third. I default to Django or FastAPI on Python with Postgres and
-Redis underneath. I have shipped live SaaS, distributed systems, video
-infrastructure, and real-time AI pipelines. I work async, document decisions
-in writing, and prefer blue/green deploys with real CI gates.
+Three things. I am a backend and devops engineer who builds and ships end-to-end production systems, an active founder of two live SaaS products (Taply and UnThink), and an exceptional fit for Founding Engineer roles or versatile backend/infra roles at startups of any size. I default to Django or FastAPI on Python with Postgres and Redis underneath. I have shipped live SaaS, distributed systems, video infrastructure, and real-time AI pipelines. I work async, document decisions in writing, and prefer blue/green deploys with real CI gates.
 
 ## Why Backend And DevOps
 
@@ -43,16 +39,18 @@ is the cleverest possible thing."
 As a builder and systems engineer, my proudest work divides into two core domains:
 
 1. **Flagship SaaS Product: UnThink (https://letsunthink.tech/)**
-   UnThink is my sole zero-to-one production system and commercial SaaS product that I architected and built from scratch as a solo founder. It tackles developer knowledge capture friction with zero-decision dual-taxonomy AI categorization, a sub-300ms capture SLA, a unified monorepo with decoupled Django 5.1 CRUD and FastAPI SSE streaming services, and multi-key Redis cache with deterministic epoch versioning. You can test its interactive dual simulation suite at /work/unthink.
+   UnThink is my sole zero-to-one production system and commercial AI second-brain SaaS product that I architected and built from scratch as a solo founder around a "dump and forget" zero-decision capture philosophy. It features zero-decision dual-taxonomy AI categorization, a sub-300ms capture SLA, a unified monorepo with decoupled Django 5.1 CRUD and FastAPI SSE streaming services, and multi-key Redis cache with deterministic epoch versioning. It serves over 50 active users (as of August 2026) and I actively maintain it. You can test its interactive dual simulation suite at /work/unthink.
 
 2. **Core Systems Engineering Project: Algocode**
    Algocode is the systems engineering project I am most proud of from an infrastructure and low-level perspective. It is a distributed online judge for C++ that safely executes untrusted code at scale using microservices, RabbitMQ task dispatch, ephemeral Docker sibling containers, and kernel-level isolation (Linux namespaces, cgroups, and seccomp filters).
 
-I am also proud of co-founding Taply (https://gettaply.me), which is a live digital business card SaaS with real-time analytics, dynamic QR codes, and NFC card support (interactive simulation at /work/taply).
+3. **Follow-up Mentions: Taply & DrishtiAI**
+   - Taply (https://gettaply.me, /work/taply) is my co-founded live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first real-time analytics serving over 100 active users and 1 enterprise customer (as of August 2026), which I actively maintain.
+   - DrishtiAI is an AI-powered eye-screening pipeline for rural healthcare over WebRTC streaming.
 
 ## What I Am Building Now
 
-Taply is my live co-founded SaaS at https://gettaply.me with my digital business card at https://gettaply.me/p/mehboob and an interactive simulation suite on /work/taply. UnThink is my live AI capture engine at https://letsunthink.tech/ with a published Chrome Web Store extension and an interactive simulation suite on /work/unthink. Both products feature comprehensive simulation engines on my portfolio that I am extremely proud of. I am also writing more Medium articles in the Linux Networking and Async Architecture series.
+Taply is my live co-founded SaaS at https://gettaply.me (>100 active users, 1 enterprise customer) with my digital business card at https://gettaply.me/p/mehboob and an interactive simulation suite on /work/taply. UnThink is my live AI second-brain capture engine at https://letsunthink.tech/ (>50 active users, published Chrome Web Store extension) and an interactive simulation suite on /work/unthink. Both products feature comprehensive simulation engines on my portfolio that I am extremely proud of, and I actively maintain both. I am also writing more Medium articles in the Linux Networking and Async Architecture series.
 
 ## What Keeps Me Up At Night
 

@@ -36,7 +36,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's background?",
     ],
     answer:
-      "I am a backend and devops engineer based in Bangalore, originally from Kolkata. I co-founded Taply (https://gettaply.me), which is a live digital business card SaaS built using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Django-Q2, with my personal card at https://gettaply.me/p/mehboob and an interactive dual simulation suite on /work/taply. I also built UnThink (https://letsunthink.tech/), an AI-powered personal knowledge base with an interactive dual simulation suite on /work/unthink. My portfolio projects demonstrate the same production systems patterns I use in my work, including distributed online judges with sandboxed containers, video transcoding pipelines, and real-time vision systems. I hold a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a cloud specialization from Poridhi.",
+      "I am a backend and devops engineer based in Bangalore, originally from Kolkata. I co-founded Taply (https://gettaply.me), which is a live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer as of August 2026, with my personal card at https://gettaply.me/p/mehboob and an interactive dual simulation suite on /work/taply. I also built UnThink (https://letsunthink.tech/), an AI second-brain knowledge platform built around a 'dump and forget' capture philosophy with over 50 active users as of August 2026 and an interactive dual simulation suite on /work/unthink. I actively maintain both SaaS products. My portfolio projects demonstrate the same production systems patterns I use in my work, including distributed online judges with sandboxed containers, video transcoding pipelines, and real-time vision systems. I hold a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a cloud specialization from Poridhi.",
     tags: ["identity", "bio", "background"],
   },
   {
@@ -93,10 +93,11 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What kind of company is Mahboob looking for?",
       "What stage of company fits Mahboob best?",
       "Is Mahboob a startup person or a big-company person?",
+      "What size of startup fits Mahboob?",
     ],
     answer:
-      "I am looking for Founding Engineer, Backend, or DevOps engineering roles at early to growth-stage startups, particularly founding roles and Series A through C stages. Early-stage startups and Series A-C are where I thrive most: I bring strong product ownership, can handle backend architecture and automated CI/CD devops, manage stakeholder meetings, and comfortably wear multiple hats from day zero. I prefer remote-first organizations that practice async-first communication, document technical designs in writing, and value clean code with automated test coverage. I am not looking for Java-only, frontend-only, or mobile-only roles today.",
-    tags: ["hiring", "company fit", "stage", "founding-engineer"],
+      "I am an exceptional fit for Founding Engineer roles, versatile backend and infrastructure engineering roles with varied responsibilities, and startups of any size, from early-stage zero-to-one through Series A, B, and C. Early-stage startups and high-growth teams are where I deliver the highest impact: I bring full product ownership, architect resilient backend services, set up automated CI/CD and cloud devops, communicate directly with stakeholders and users, and comfortably wear multiple hats simultaneously from day zero. I prefer remote-first organizations that practice async communication, write clear technical documentation, and maintain high code quality with automated test suites.",
+    tags: ["hiring", "company fit", "stage", "founding-engineer", "startups"],
   },
   {
     title: "Is Mahboob open to Founding Engineer roles",
@@ -105,10 +106,12 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Would you join as a founding engineer?",
       "Can you wear multiple hats as a founding engineer?",
       "Are you suitable for early-stage startups?",
+      "Is Mahboob fit for a founding engineer role?",
+      "Can Mahboob handle backend and infra responsibilities?",
     ],
     answer:
-      "Yes, I am actively open to and exceptionally well-suited for Founding Engineer roles. As a founder who built UnThink from scratch and co-founded Taply, I bring strong end-to-end product ownership. I can architect the backend and database schemas, set up automated CI/CD and cloud infrastructure, lead stakeholder and customer meetings, and comfortably wear multiple hats simultaneously from day zero. I thrive in early-stage environments where engineering speed and system reliability drive real business growth.",
-    tags: ["hiring", "founding-engineer", "roles", "startups", "product-ownership"],
+      "Yes, I am actively open to and exceptionally well-suited for Founding Engineer roles as well as versatile backend and infrastructure roles across any size of startup. As a founder who built UnThink from scratch and co-founded Taply, I bring strong end-to-end product ownership. I can architect the backend and database schemas, set up automated CI/CD and cloud infrastructure, lead stakeholder and customer syncs, and comfortably wear multiple hats simultaneously from day zero. I thrive in environments where engineering speed, architectural discipline, and system reliability drive real business growth.",
+    tags: ["hiring", "founding-engineer", "roles", "startups", "product-ownership", "infra"],
   },
   {
     title: "Can Mahboob consult on Django or FastAPI",
@@ -151,10 +154,26 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Has Mahboob shipped production SaaS?",
       "Does Mahboob have live SaaS experience?",
       "Is Taply a real product?",
+      "Is UnThink a real product?",
     ],
     answer:
-      "Yes, I have shipped live, production SaaS products. As co-founder of Taply (https://gettaply.me), I architected and built the entire backend platform using Django 5.1, Django Rest Framework, Redis, PostgreSQL, and Django-Q2. The platform supports live profile builders with 4 layout variants, NFC and QR card sharing, privacy-first analytics with SHA-256 anonymization, and bulk user onboarding. Taply is currently active and serves paying customers. I also built UnThink (https://letsunthink.tech/), a live AI-powered knowledge base with a published Chrome Web Store extension. On my portfolio at /work/taply and /work/unthink, you can experience full interactive simulation suites that demonstrate these architectures live.",
-    tags: ["taply", "unthink", "saas", "production"],
+      "Yes, I have shipped and actively maintain two live, production SaaS products. As co-founder of Taply (https://gettaply.me), I architected the entire backend platform using Django 5.1, DRF, Redis, PostgreSQL, and Django-Q2. Taply serves over 100 active users and 1 paying enterprise customer (as of August 2026) with physical NFC cards, dynamic QR codes, and privacy-first real-time analytics. As sole founder, I built UnThink (https://letsunthink.tech/), an AI second-brain knowledge platform built around a 'dump and forget' capture philosophy, featuring a published Chrome Web Store extension and decoupled Django 5.1 + FastAPI SSE services serving over 50 active users (as of August 2026). Both products feature interactive simulation suites on /work/taply and /work/unthink.",
+    tags: ["taply", "unthink", "saas", "production", "metrics"],
+  },
+  {
+    title: "What SaaS products has Mahboob founded",
+    questions: [
+      "What SaaS products has Mahboob built?",
+      "What SaaS products did Mahboob build?",
+      "Tell me about Mahboob's SaaS products",
+      "Are you a founder of SaaS products?",
+      "How many users do your SaaS products have?",
+      "Do you actively maintain your SaaS products?",
+      "What companies did Mahboob found?",
+    ],
+    answer:
+      "I am the founder of two active, production SaaS products that I actively maintain: First, Taply (https://gettaply.me, case study at /work/taply), a digital business card platform I co-founded. It features physical NFC cards, dynamic QR codes, and privacy-first real-time analytics with SHA-256 IP anonymization and dynamic cache TTL scheduling. It has over 100 active users and 1 paying enterprise customer as of August 2026. Second, UnThink (https://letsunthink.tech/, case study at /work/unthink), an AI-powered second brain and web capture engine built around a 'dump and forget' zero-decision capture philosophy. It features a published Chrome Web Store extension, dual-taxonomy AI categorization, and decoupled Django 5.1 and FastAPI SSE streaming services, with over 50 active users as of August 2026. I actively maintain both platforms.",
+    tags: ["saas", "founder", "taply", "unthink", "users", "metrics"],
   },
   {
     title: "Has Mahboob built a distributed system",
@@ -209,10 +228,11 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What is Taply?",
       "How does Taply work?",
       "Why did Mahboob build Taply?",
+      "How many users does Taply have?",
     ],
     answer:
-      "I co-founded and built Taply to solve the problem of paper business cards, which get discarded quickly and cannot be updated. Taply is a live digital business card platform at https://gettaply.me, with my personal card at https://gettaply.me/p/mehboob. Users can share their contact information, social links, and portfolios instantly by tapping an NFC card or scanning a QR code. The recipient's phone loads the profile in under 80ms from our Redis cache, allowing a one-tap vCard save to their contacts. I am extremely proud of our interactive simulation suite on /work/taply, where you can test our 5-module System Explorer and interact with 8 attendees in a Conference Networking Hall. I warmly encourage you to try it out!",
-    tags: ["taply", "saas", "nfc", "simulation"],
+      "I co-founded and built Taply to solve the problem of paper business cards, which get discarded quickly and cannot be updated. Taply is a live digital business card platform at https://gettaply.me, with my personal card at https://gettaply.me/p/mehboob. Users can share their contact info, social links, and portfolios instantly via physical NFC cards or dynamic QR codes. The platform has over 100 active users and 1 enterprise customer as of August 2026, and I actively maintain it. Profiles load in under 80ms from our Redis cache with privacy-first analytics and dynamic cache TTL scheduling. I am extremely proud of our interactive simulation suite on /work/taply with a 5-module System Explorer and Conference Networking Hall. I warmly encourage you to try it out!",
+    tags: ["taply", "saas", "nfc", "simulation", "metrics"],
   },
   {
     title: "Tell me about UnThink",
@@ -220,11 +240,12 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Tell me about UnThink",
       "What is UnThink?",
       "How does UnThink work?",
-      "Is UnThink a real product?",
+      "Why did Mahboob build UnThink?",
+      "How many users does UnThink have?",
     ],
     answer:
-      "UnThink is my live AI-powered, fragment-first personal knowledge base and web capture engine for developers, available at https://letsunthink.tech/ with a published Chrome Web Store extension. It eliminates manual tagging friction through zero-decision dual-taxonomy AI categorization, a sub-300ms capture SLA, and a unified monorepo with specialized API and AI streaming services (Django 5.1 CRUD and FastAPI SSE streaming). It features 3 Celery queues, multi-key Redis caching with deterministic epoch versioning, and hardened AWS EC2 deployment. On my portfolio at /work/unthink, you can interact with a live simulated browser viewport and 3-stage AI pipeline. I am very proud of this engineering and highly encourage you to test the simulation!",
-    tags: ["unthink", "ai", "live", "simulation", "founder"],
+      "UnThink is my live AI-powered second brain and web capture engine for developers, available at https://letsunthink.tech/ with a published Chrome Web Store extension. Built around a 'dump and forget' zero-decision capture philosophy, it eliminates manual tagging friction through automatic dual-taxonomy AI categorization, a sub-300ms capture SLA, and decoupled Django 5.1 CRUD + FastAPI SSE streaming services. It serves over 50 active users as of August 2026, and I actively maintain it. On my portfolio at /work/unthink, you can interact with a live simulated browser viewport and 3-stage AI pipeline. I am very proud of this engineering and highly encourage you to test the simulation!",
+    tags: ["unthink", "ai", "live", "simulation", "founder", "metrics"],
   },
   {
     title: "What are the interactive simulations on your portfolio",
@@ -246,10 +267,19 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What is your favorite project?",
       "What's your best work?",
       "Which project represents your skills best?",
+      "best project of mahboob",
+      "what is the best work of mahboob",
+      "what is the best project of mahboob?",
+      "what is your best project?",
+      "best project",
+      "best work",
+      "top projects of mahboob",
+      "what are your top projects?",
+      "what is mahboob's best project?",
     ],
     answer:
-      "The work I am most proud of divides into two core achievements: UnThink as my flagship SaaS product, and Algocode as my core systems engineering project. UnThink (https://letsunthink.tech/) is my sole zero-to-one production SaaS product, architected from scratch to solve developer capture friction with zero-decision dual-taxonomy AI categorization, a sub-300ms capture SLA, and decoupled Django 5.1 and FastAPI SSE streaming services. You can test its dual simulation suite at /work/unthink. Algocode is the systems engineering project I am most proud of from an infrastructure perspective. It is a distributed online judge that safely compiles and runs untrusted user C++ code using microservices, RabbitMQ task dispatch, and kernel isolation with Linux namespaces, cgroups, and seccomp filters. I am also proud of co-founding Taply (https://gettaply.me, /work/taply).",
-    tags: ["proud", "favorite", "unthink", "algocode", "projects", "product"],
+      "The work I am most proud of divides into two core achievements: UnThink as my flagship SaaS product, and Algocode as my core systems engineering project. UnThink (https://letsunthink.tech/, simulation at /work/unthink) is my sole zero-to-one production AI second-brain SaaS built with a 'dump and forget' capture philosophy, dual-taxonomy AI categorization, a sub-300ms capture SLA, and decoupled Django 5.1 and FastAPI SSE streaming services with over 50 active users (as of August 2026) that I actively maintain. Algocode is the systems engineering project I am most proud of from an infrastructure perspective: a distributed online judge that compiles and runs untrusted C++ code using microservices, RabbitMQ task dispatch, and Linux kernel isolation (namespaces, cgroups, and seccomp filters). As follow-up mentions, I also co-founded Taply (https://gettaply.me, /work/taply), a live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 users and 1 enterprise customer, and built DrishtiAI, an AI eye-screening pipeline for rural healthcare.",
+    tags: ["proud", "favorite", "unthink", "algocode", "projects", "product", "best"],
   },
   {
     title: "What is Algocode",

@@ -12,15 +12,14 @@
 
 Founding Engineer, Backend, and DevOps engineering roles where product ownership meets infrastructure:
 APIs, async workers, queues, caching, databases, deployment automation, and production debugging.
-I am exceptionally well-suited for Founding Engineer roles as well as Series A through C growth startups.
-As a founder who built UnThink from scratch and co-founded Taply, I bring strong end-to-end product ownership:
+I am an exceptional fit for Founding Engineer roles, versatile backend and infrastructure engineering roles with varied responsibilities, and startups of any size (from early-stage zero-to-one through Series A, B, and C).
+As a founder who built UnThink from scratch and co-founded Taply, I bring complete end-to-end product ownership:
 I can architect backend and database schemas, set up automated CI/CD and cloud devops, lead sprint planning and meetings,
-communicate with users, and comfortably wear multiple hats at once from day zero. Series A through C is also a sweet spot
-because systems are large enough to present challenging architectural scale while allowing strong engineering ownership.
+communicate with users, and comfortably wear multiple hats at once from day zero.
 I am strongest in Python with Django, DRF, and FastAPI, and comfortable in Django, Celery, Redis, and Postgres stacks.
-I have shipped live SaaS (Taply at https://gettaply.me), multi-tenant market platforms (NexBell, 50+
+I have shipped and actively maintain live SaaS platforms (Taply at https://gettaply.me with >100 active users and 1 enterprise customer; UnThink at https://letsunthink.tech/ with >50 active users), multi-tenant market platforms (NexBell, 50+
 stores on shared MySQL), video pipelines (Movio, CuteTube, ProStream), distributed judges (Algocode),
-and real-time AI (UnThink at https://letsunthink.tech/, DrishtiAI).
+and real-time AI (DrishtiAI).
 
 ## What I Would Push Back On In An Interview
 

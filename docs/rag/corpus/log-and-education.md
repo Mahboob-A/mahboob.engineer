@@ -14,12 +14,7 @@
 
 ## The Short Version
 
-I'm a backend engineer who co-founded Taply and shipped Taply, NexBell,
-Innovative IT, and Eve Healthcare. Education: SRM MCA (2025 – 2026) plus
-a Poridhi Backend Engineering & Cloud Computing specialization (2024 –
-2025). Current focus: Taply live, UnThink building. Practice: yes, on
-five public profiles listed below. Achievements sit on `/log` as the
-single cross-role record.
+I'm a backend and devops engineer who co-founded Taply (>100 active users, 1 enterprise customer) and built UnThink (>50 active users, AI second brain), actively maintaining both live platforms. Work history includes Taply, NexBell, Innovative IT, and Eve Healthcare. Education: SRM MCA (2025 – 2026) plus a Poridhi Backend Engineering & Cloud Computing specialization (2024 – 2025). Practice: yes, on five public profiles listed below. Achievements sit on `/log` as the single cross-role record.
 
 ## Education
 
@@ -56,9 +51,9 @@ corpus hit in this section.
 ## Work Log
 
 - **Taply.** Co-Founder and Backend Engineer. Mar 2026 to Present.
-  Live SaaS on Django 5.1, DRF, Redis, PostgreSQL, and Django-Q2. Profile
-  builder, NFC and QR sharing, privacy-first SHA-256 analytics, dynamic
-  cache TTL scheduling, headless team profiles, and ReportLab PDF export.
+  Live SaaS on Django 5.1, DRF, Redis, PostgreSQL, and Django-Q2. Physical
+  NFC cards, dynamic QR codes, privacy-first SHA-256 analytics (>100 active users, 1 paying enterprise customer),
+  dynamic cache TTL scheduling, headless team profiles, and ReportLab PDF export. Actively maintained.
 - **NexBell Inc.** Software Engineer. Nov 2024 to Jun 2026.
   Multi-vendor MySQL marketplace, 50+ stores. Rebuilt auth on OAuth2
   and JWT, cut query latency 17 percent, cut AWS spend 35 percent,
