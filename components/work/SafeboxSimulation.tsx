@@ -138,6 +138,10 @@ function generateRandomSession() {
   return { sessionId, sessionFullId, sessionMergedPath };
 }
 
+function cleanLogText(text: string): string {
+  return text.replace(/^[●•]\s*/, "");
+}
+
 function AgyTerminalView() {
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
   const [simPhase, setSimPhase] = useState<SimulationPhase>("unselected");
@@ -256,7 +260,7 @@ function AgyTerminalView() {
             clearInterval(logInterval);
             setSimPhase("completed");
           }
-        }, 220);
+        }, 180);
       }
     }, 220);
   };
@@ -635,7 +639,7 @@ function AgyTerminalView() {
                 simPhase === "executing_task" ||
                 simPhase === "completed") && (
                 <div className="py-2 border-y border-border/40 my-3">
-                  <pre className="text-acc leading-tight text-[11px] md:text-[12px] overflow-x-auto selection:bg-acc/20 font-bold opacity-95">
+                  <pre className="font-mono text-acc leading-tight text-[11px] md:text-[12px] overflow-x-auto selection:bg-acc/20 font-medium opacity-95">
                     <code suppressHydrationWarning>{getAntigravityBanner(currentSession.sessionMergedPath)}</code>
                   </pre>
                 </div>
@@ -693,29 +697,29 @@ function AgyTerminalView() {
                         {log.type === "read" && (
                           <span className="text-t1 block">
                             <span className="text-acc font-bold mr-1.5">●</span>
-                            {log.text}
+                            {cleanLogText(log.text)}
                           </span>
                         )}
                         {log.type === "edit" && (
                           <span className="text-t1 block">
                             <span className="text-acc font-bold mr-1.5">●</span>
-                            {log.text}
+                            {cleanLogText(log.text)}
                           </span>
                         )}
                         {log.type === "bash" && (
                           <span className="text-t1 block">
                             <span className="text-amber font-bold mr-1.5">●</span>
-                            {log.text}
+                            {cleanLogText(log.text)}
                           </span>
                         )}
                         {log.type === "error" && (
-                          <span className="text-amber block font-semibold pl-4">
-                            {log.text}
+                          <span className="text-amber block font-semibold pl-4 whitespace-pre-wrap">
+                            {cleanLogText(log.text)}
                           </span>
                         )}
                         {log.type === "output" && (
-                          <span className="text-t2 block font-medium pl-4 pt-0.5">
-                            {log.text}
+                          <span className="text-t2 block font-medium pl-4 pt-0.5 whitespace-pre-wrap">
+                            {cleanLogText(log.text)}
                           </span>
                         )}
                       </div>

@@ -353,23 +353,67 @@ export const AGY_SCENARIOS: AgyScenario[] = [
 		agyLogStream: [
 			{
 				type: "read",
-				text: '● Read(path: "main.go", offset: 1, limit: 80)'
+				text: 'Read(path: "main.go", offset: 1, limit: 80)'
 			},
 			{
-				type: "edit",
-				text: '● Edit(path: "internal/server/health.go", content: "+func HealthHandler(w http.ResponseWriter, r *http.Request)")'
-			},
-			{
-				type: "edit",
-				text: '● Edit(path: "main.go", replace: "+mux.HandleFunc(\\"/health\\", server.HealthHandler)")'
+				type: "read",
+				text: 'Read(path: "internal/server/server.go", offset: 1, limit: 50)'
 			},
 			{
 				type: "bash",
-				text: '● Bash(cmd: "go test -run TestHealth ./...")'
+				text: 'Bash(cmd: "ls -la internal/server/")'
 			},
 			{
 				type: "output",
-				text: "PASS: TestHealth (0.04s)\nok   command-line-arguments 0.045s"
+				text: "total 16\ndrwxr-xr-x 2 runner runner 4096 Sep  6 14:00 .\n-rw-r--r-- 1 runner runner 1240 Sep  6 13:58 server.go\n-rw-r--r-- 1 runner runner  890 Sep  6 13:58 routes.go"
+			},
+			{
+				type: "edit",
+				text: 'Edit(path: "internal/server/health.go", content: "+func HealthHandler(w http.ResponseWriter, r *http.Request)")'
+			},
+			{
+				type: "read",
+				text: 'Read(path: "internal/server/health.go", offset: 1, limit: 30)'
+			},
+			{
+				type: "edit",
+				text: 'Edit(path: "main.go", replace: "+mux.HandleFunc(\\"/health\\", server.HealthHandler)")'
+			},
+			{
+				type: "read",
+				text: 'Read(path: "main.go", offset: 40, limit: 20)'
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "go vet ./...")'
+			},
+			{
+				type: "output",
+				text: "go vet: ok (0 warnings)"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "go test -v -run TestHealth ./...")'
+			},
+			{
+				type: "output",
+				text: "=== RUN   TestHealth\n--- PASS: TestHealth (0.02s)\nPASS\nok   github.com/mehboob/go-safebox/internal/server 0.038s"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "curl -s -i http://localhost:8080/health")'
+			},
+			{
+				type: "output",
+				text: "HTTP/1.1 200 OK\nContent-Type: application/json\n{\"status\":\"healthy\",\"uptime_sec\":12,\"version\":\"1.4.2\"}"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "git status --short")'
+			},
+			{
+				type: "output",
+				text: "?? internal/server/health.go\n M main.go"
 			}
 		],
 		diffSummary: [
@@ -472,19 +516,67 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 		agyLogStream: [
 			{
 				type: "read",
-				text: '● Read(path: "internal/db/pool.go", offset: 1, limit: 60)'
+				text: 'Read(path: "internal/db/pool.go", offset: 1, limit: 60)'
+			},
+			{
+				type: "read",
+				text: 'Read(path: "internal/config/config.go", offset: 1, limit: 45)'
+			},
+			{
+				type: "read",
+				text: 'Read(path: "cmd/api/main.go", offset: 25, limit: 35)'
 			},
 			{
 				type: "edit",
-				text: '● Edit(path: "internal/db/pool.go", replace: "db.SetMaxOpenConns(25), SetMaxIdleConns(5), SetConnMaxLifetime(15*time.Minute)")'
+				text: 'Edit(path: "internal/db/pool.go", replace: "db.SetMaxOpenConns(25), SetMaxIdleConns(5), SetConnMaxLifetime(15*time.Minute)")'
+			},
+			{
+				type: "read",
+				text: 'Read(path: "internal/db/pool.go", offset: 15, limit: 25)'
 			},
 			{
 				type: "bash",
-				text: '● Bash(cmd: "go test -v ./internal/db/...")'
+				text: 'Bash(cmd: "go vet ./internal/db/...")'
 			},
 			{
 				type: "output",
-				text: "PASS: TestPoolQuotas (0.08s)\nok   internal/db 0.082s"
+				text: "go vet: ok (clean)"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "go test -v -run TestPoolQuotas ./internal/db/...")'
+			},
+			{
+				type: "output",
+				text: "=== RUN   TestPoolQuotas\n    pool_test.go:42: pool limits verified (open: 25, idle: 5, lifetime: 15m)\n--- PASS: TestPoolQuotas (0.05s)\nPASS\nok   github.com/mehboob/go-safebox/internal/db 0.062s"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "go test -race -run TestPoolConcurrentAcquire ./internal/db/...")'
+			},
+			{
+				type: "output",
+				text: "=== RUN   TestPoolConcurrentAcquire\n--- PASS: TestPoolConcurrentAcquire (0.11s)\nPASS\nok   github.com/mehboob/go-safebox/internal/db 0.128s"
+			},
+			{
+				type: "read",
+				text: 'Read(path: "internal/db/pool_test.go", offset: 35, limit: 30)'
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "safebox diff --stat")'
+			},
+			{
+				type: "output",
+				text: "internal/db/pool.go | 10 ++++++++--\n1 file changed, 8 insertions(+), 2 deletions(-)"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "git diff --stat")'
+			},
+			{
+				type: "output",
+				text: "0 host files changed (uncommitted upperdir overlay isolation)"
 			}
 		],
 		diffSummary: [
@@ -548,7 +640,7 @@ func NewPool(connStr string) (*sql.DB, error) {
 		agyLogStream: [
 			{
 				type: "read",
-				text: '● Read(path: "/etc/shadow")'
+				text: 'Read(path: "/etc/shadow")'
 			},
 			{
 				type: "error",
@@ -556,15 +648,55 @@ func NewPool(connStr string) (*sql.DB, error) {
 			},
 			{
 				type: "bash",
-				text: '● Bash(cmd: "cat /root/.ssh/id_ed25519")'
+				text: 'Bash(cmd: "cat /root/.ssh/id_ed25519")'
 			},
 			{
 				type: "error",
 				text: "[safebox:error] cat: /root/.ssh/id_ed25519: Permission denied (Landlock LSM EACCES)"
 			},
 			{
+				type: "read",
+				text: 'Read(path: "/proc/sys/kernel/core_pattern")'
+			},
+			{
+				type: "error",
+				text: "[safebox:error] open /proc/sys/kernel/core_pattern: permission denied (PID & Mount Namespace)"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "curl -s -m 2 https://169.254.169.254/latest/meta-data/")'
+			},
+			{
+				type: "error",
+				text: "[safebox:error] curl: (7) Failed to connect to 169.254.169.254 port 80: Network unreachable (unshare CLONE_NEWNET)"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "iptables -L")'
+			},
+			{
+				type: "error",
+				text: "[safebox:error] iptables: Permission denied (CAP_NET_ADMIN restricted in user namespace)"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "mknod /tmp/evil_disk b 8 0")'
+			},
+			{
+				type: "error",
+				text: "[safebox:error] mknod: /tmp/evil_disk: Operation not permitted (seccomp blocked SYS_MKNOD & nodev mount)"
+			},
+			{
+				type: "bash",
+				text: 'Bash(cmd: "safebox audit --integrity")'
+			},
+			{
 				type: "output",
-				text: "● Assistant: Access denied by kernel Landlock LSM ruleset. Zero host mutations."
+				text: "[safebox:audit] Invariants verified: 6 attack vectors intercepted. Host root filesystem pristine."
+			},
+			{
+				type: "output",
+				text: "Assistant: Access denied across all vectors by kernel namespaces, Landlock LSM, and seccomp filters. Zero host mutations."
 			}
 		],
 		diffSummary: [],
