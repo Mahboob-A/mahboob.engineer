@@ -36,14 +36,16 @@ import { resolveStackSlug } from "@/data/stack-slug-map";
 import { AlgocodeMiniDiagram } from "@/components/diagrams/AlgocodeMiniDiagram";
 import { MovioMiniDiagram } from "@/components/diagrams/MovioMiniDiagram";
 import { DrishtiMiniDiagram } from "@/components/diagrams/DrishtiMiniDiagram";
+import { SafeboxMiniDiagram } from "@/components/diagrams/SafeboxMiniDiagram";
 import { FadeUp } from "@/components/motion";
 
-/* The 3 projects shown on the landing page. Indexed by PROJECTS slug
+/* The 4 projects shown on the landing page. Indexed by PROJECTS slug
  * so changes to the registry ordering don't break the section. */
-const LANDING_SLUGS = ["algocode", "movio", "drishti-ai"] as const;
+const LANDING_SLUGS = ["safebox", "algocode", "movio", "drishti-ai"] as const;
 
 /* Map slug → mini diagram component. */
 const DIAGRAMS: Record<(typeof LANDING_SLUGS)[number], React.ReactNode> = {
+  safebox: <SafeboxMiniDiagram />,
   algocode: <AlgocodeMiniDiagram />,
   movio: <MovioMiniDiagram />,
   "drishti-ai": <DrishtiMiniDiagram />,
@@ -126,7 +128,9 @@ function ProjectCard({ project, diagram, visualOnLeft }: ProjectCardProps) {
              anchor" issues (the bottom links row stays unchanged). */}
           <h3 className="font-display text-t1 hover:text-acc mb-2.5 text-[24px] font-bold transition-colors">
             <Link href={`/work/${project.slug}`} className="block">
-              {project.name} — {project.tagline.split(" — ")[0]}
+              {project.slug === "safebox"
+                ? `${project.name}: ${project.tagline}`
+                : `${project.name} — ${project.tagline.split(" — ")[0]}`}
             </Link>
           </h3>
 
@@ -225,6 +229,7 @@ function ProjectCard({ project, diagram, visualOnLeft }: ProjectCardProps) {
  * Falls back to the project domain list if no specific tags.
  */
 function stackStatusLine(project: ProjectItem): string {
+  if (project.slug === "safebox") return "systems programming · linux kernel isolation · go";
   if (project.slug === "algocode") return "microservices · system design · 22★ github";
   if (project.slug === "movio") return "video infrastructure · adaptive streaming";
   if (project.slug === "drishti-ai") return "real-time pipelines · ai infrastructure";
