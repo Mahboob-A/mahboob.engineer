@@ -321,8 +321,8 @@ export const SAFEBOX_STARTUP_TRACE: string[] = [
 	"Welcome to the Antigravity CLI. You are currently not signed in."
 ];
 
-export const ANTIGRAVITY_SESSION_BANNER = `     ▄▀▀▄        Antigravity CLI 1.1.27
-     ▀▀▀▀▀▀       connect.mahboobalam@gmail.com (Google AI Pro)
+export const ANTIGRAVITY_SESSION_BANNER = `      ▄▀▀▄          Antigravity CLI 1.1.27
+     ▀▀▀▀▀▀       metube.qo@gmail.com (Antigravity Starter Quota)
     ▀▀▀▀▀▀▀▀      Gemini 3.8 Flash (High)
    ▄▀▀    ▀▀▄     /tmp/safebox/sessions/sess-1788798423580814662-396505/merged
   ▄▀▀      ▀▀▄`;
@@ -357,7 +357,7 @@ export const AGY_SCENARIOS: AgyScenario[] = [
 			},
 			{
 				type: "output",
-				text: "[safebox] child exited with code 0 (1 test passed)"
+				text: "PASS: TestHealth (0.04s)\nok   command-line-arguments 0.045s"
 			}
 		],
 		diffSummary: [
@@ -470,7 +470,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				type: "output",
-				text: "[safebox] child exited with code 0 (connection pool tuned)"
+				text: "PASS: TestPoolQuotas (0.08s)\nok   internal/db 0.082s"
 			}
 		],
 		diffSummary: [
@@ -548,7 +548,7 @@ func NewPool(connStr string) (*sql.DB, error) {
 			},
 			{
 				type: "output",
-				text: "[safebox] zero host mutation detected (OverlayFS pristine)"
+				text: "● Assistant: Access denied by kernel Landlock LSM ruleset. Zero host mutations."
 			}
 		],
 		diffSummary: [],
