@@ -136,14 +136,15 @@ function AgyTerminalView() {
 
   const [commandFeedback, setCommandFeedback] = useState<string | null>(null);
   const [inputCommand, setInputCommand] = useState("");
-  const terminalBottomRef = useRef<HTMLDivElement>(null);
+  const terminalScrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scenario = AGY_SCENARIOS.find((s) => s.id === selectedScenarioId) || null;
 
-  // Auto-scroll inside terminal as logs stream
+  // Auto-scroll inside terminal as logs stream without moving browser window
   useEffect(() => {
-    if (terminalBottomRef.current) {
-      terminalBottomRef.current.scrollIntoView({ behavior: "smooth" });
+    if (terminalScrollContainerRef.current) {
+      terminalScrollContainerRef.current.scrollTop =
+        terminalScrollContainerRef.current.scrollHeight;
     }
   }, [simPhase, streamedTraceLines, isThinkingComplete, streamedLogCount, activeOutputPanel, commandFeedback]);
 
@@ -350,7 +351,7 @@ function AgyTerminalView() {
               lsm: landlock-v3
             </span>
             <span className="rounded bg-surface border border-border px-2 py-0.5 text-t2">
-              google-ai-pro
+              starter-quota
             </span>
           </div>
         </div>
@@ -420,10 +421,13 @@ function AgyTerminalView() {
         )}
 
         {/* Terminal Body Screen */}
-        <div className="p-5 space-y-4 min-h-[380px] max-h-[540px] overflow-y-auto">
+        <div
+          ref={terminalScrollContainerRef}
+          className="p-5 space-y-4 min-h-[540px] max-h-[720px] overflow-y-auto"
+        >
           {/* Phase 0: Blank Terminal */}
           {simPhase === "unselected" && (
-            <div className="h-[320px] flex flex-col items-center justify-center text-center space-y-2">
+            <div className="h-[480px] flex flex-col items-center justify-center text-center space-y-2">
               <div className="text-t3 font-mono text-[13px]">
                 $ # Select an agent scenario above to launch the microsecond sandbox...
               </div>
@@ -650,8 +654,6 @@ function AgyTerminalView() {
               )}
             </div>
           )}
-
-          <div ref={terminalBottomRef} />
         </div>
 
         {/* Interactive Terminal Prompt Input Bar */}
