@@ -218,6 +218,52 @@ What's next if we keep building: A tier-1 enterprise tier with SAML SSO. UTM-awa
     game_district: "saas_quarter",
   },
   {
+    slug: "safebox",
+    name: "Safebox",
+    tagline:
+      "Unprivileged microsecond Linux sandbox and change management engine for autonomous AI coding agents.",
+    status: "live",
+    tier: "featured",
+    year: 2026,
+    url: null,
+    github: "https://github.com/Mahboob-A/safebox",
+    demo: null,
+    youtube: null,
+    domain: ["backend", "infra", "distributed"],
+    stack: [
+      "Go 1.24",
+      "Linux Namespaces",
+      "Landlock LSM",
+      "OverlayFS",
+      "slirp4netns",
+      "pasta",
+      "cgroups v2",
+      "POSIX Signals",
+    ],
+    metrics: [
+      "<30ms Cold Start",
+      "0 Root Privileges",
+      "100% LSM Enforced",
+      "0 Byte Disk Sprawl",
+    ],
+    problem:
+      "Autonomous AI coding agents run unconfined on developer machines with full terminal access. A single hallucinated command can execute destructive deletions like rm -rf, leak credentials from ~/.ssh, or exfiltrate private source code across unrestricted outbound network sockets.",
+    built:
+      "I built Safebox to isolate untrusted agents at the Linux system call boundary without requiring root privileges, background daemons, or heavy virtual machines. By composing unprivileged user namespaces, ephemeral OverlayFS scratchpads, and in-kernel Landlock Mandatory Access Control, Safebox starts in under 30 milliseconds, traps file mutations in memory, and provides instant zero-cost rollback.",
+    notes:
+      `I began building Safebox after observing how autonomous coding agents operate in production. An agent given broad shell access operates as a probabilistic execution engine. It generates bash commands based on statistical token prediction. When an agent attempts to clean a build directory, it might execute rm -rf bin/ or accidentally expand an unset variable to rm -rf /. When evaluating external libraries, it can make unrestricted HTTP requests to arbitrary command-and-control endpoints. My initial instinct was to containerize agent runs with Docker. I quickly ran into three fundamental architectural barriers. First, startup latency hovered between 300ms and 1500ms per invocation, which crippled the tight loop of autonomous agents running dozens of iterative shell commands. Second, Docker requires a root-level background daemon or rootless daemon setup with complex subuid mappings. Third, host volume mounts break isolation: writes mutate host files directly, and permission mismatches between container UID 0 and host UIDs pollute directory ownership. I realized local agent sandboxing needs ephemeral execution boundaries applied directly around an existing directory in userspace. The threat model demanded four hard constraints: zero root privileges, sub-50ms cold starts, zero host filesystem mutation without explicit developer confirmation, and deterministic network confinement.
+
+To achieve isolation without root, I turned directly to the Linux kernel namespace subsystem. Safebox orchestrates clone3 and unshare syscalls to construct six distinct isolation boundaries: CLONE_NEWUSER, CLONE_NEWNS, CLONE_NEWPID, CLONE_NEWNET, CLONE_NEWIPC, and CLONE_NEWUTS. The foundation is the user namespace (CLONE_NEWUSER). Safebox writes a single-identity credential mapping into /proc/self/uid_map and /proc/self/gid_map, mapping the caller's active host UID and GID to container UID 0. This grants container-root authority inside the namespace while retaining standard unprivileged permissions on the host. An agent executing whoami sees root, but the kernel denies any host-level administrative capability. In the mount namespace (CLONE_NEWNS), systemd marks the root mount as MS_SHARED by default on modern distributions. In early testing, child mounts leaked back into the host namespace. I resolved this by invoking mount("none", "/", "", MS_REC | MS_PRIVATE, "") as the very first operation inside the child process. To isolate process listings, Safebox remounts a private procfs over /proc. To prevent zombie process accumulation from double-forking daemons, Safebox embeds an in-process PID 1 init shim that forwards POSIX signals and continuously reaps child orphans via a wait4 loop.
+
+The central innovation of Safebox is its ephemeral workspace scratchpad. Rather than copying a 10GB monorepo before running an agent, Safebox mounts an unprivileged OverlayFS union at the working directory using the userxattr mount option. The developer's physical workspace acts as a read-only lowerdir. All writes, file creations, and compilations are trapped in an ephemeral upperdir and workdir allocated under a temporary session directory. Reads pass through to the host workspace at native NVMe speeds with zero latency. The moment an agent modifies a file, the kernel performs an ovl_copy_up operation, copying the file to upperdir and modifying only the copy. When an agent deletes a file, OverlayFS generates a whiteout character device node in upperdir, masking the lower file without touching host disk. During development, I uncovered a subtle kernel permission trap: when OverlayFS unmounts in rootless user namespaces, the kernel creates an internal work/work directory initialized with mode 0000. Standard os.RemoveAll invocations fail with EACCES. I engineered SafeRemoveAll, which recursively resets restrictive directory modes to 0700 before unlinking. For change inspection, safebox diff inspects only upperdir, parsing added files, modified files, and whiteouts without touching git. If the developer approves the changes, safebox apply executes a two-phase atomic swap. If rejected, safebox revert wipes upperdir in under one millisecond.
+
+Autonomous agents frequently require internet access to fetch API documentation or query language models, but unconfined networking allows credential exfiltration and internal subnet attacks. Safebox enforces network containment by unsharing the network namespace (CLONE_NEWNET) and connecting an unprivileged userspace NAT backend. Safebox implements a pluggable architecture that auto-detects pasta, falls back to slirp4netns, or initializes a pure-Go TAP forwarder. To eliminate race conditions where the child executes before the network interface is online, Safebox implements an inter-process synchronization pipe using --ready-fd. Inside the child namespace, Safebox bind-mounts a synthetic /etc/resolv.conf pointing to the virtual DNS gateway at 10.0.2.3. To eliminate DNS rebinding attacks where an allowed domain dynamically resolves to internal IP addresses, Safebox implements Layer 3 Domain IP Pinning (PinnedIPSet). At startup, the supervisor resolves allowed domains on the host, pins the resulting IP addresses in memory, and drops packets targeting any unapproved destination. Host loopback probing and link-local metadata addresses are physically unreachable.
+
+To prove production viability, I subjected Safebox to comprehensive benchmark suites and adversarial testing. Cold start measurements across 1000 consecutive runs averaged 24.8 milliseconds from CLI invocation to user payload execution. This represents a 15x to 40x speedup over Docker and a 100x speedup over microVMs like Firecracker, enabling interactive CLI agents to run imperceptibly inside sandboxed wrappers. For security validation, I implemented automated boundary test suites that verify kernel policy enforcement. Safebox uses Landlock LSM ABI v3 to restrict path access. It enforces default-deny rules on host root directories, explicitly whitelisting only system shared libraries and system CA certificates in read-only mode, while restricting write operations to the active workspace. Every invocation locks PR_SET_NO_NEW_PRIVS, preventing privilege escalation through SUID binaries. Looking forward, the Safebox roadmap includes two key enhancements: integrating cgroups v2 resource controllers to enforce hard memory quotas (memory.max) and embedding eBPF LSM probes to provide real-time, low-overhead system call audit telemetry.`,
+    game_building: "Safebox Foundry",
+    game_district: "systems_district",
+  },
+  {
     slug: "algocode",
     name: "Algocode",
     tagline: "Distributed online judge for C++. Microservices and kernel isolation.",

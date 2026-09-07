@@ -180,10 +180,10 @@ export const STACK: StackItem[] = [
     id: "linux",
     name: "Linux",
     domain: "infra",
-    projects: [],
+    projects: ["algocode", "safebox"],
     depth: 85,
     depthNotes:
-      "Comfortable on the command line. Namespaces, cgroups, seccomp show up in Algocode; the Linux Networking series on Medium is the public version of that muscle.",
+      "Comfortable on the command line. Namespaces, cgroups, seccomp show up in Algocode and Safebox; the Linux Networking series on Medium is the public version of that muscle.",
   },
   {
     id: "pulumi",
@@ -343,8 +343,14 @@ export const STACK: StackItem[] = [
     depthNotes:
       "Familiar with the language and the state model. I prefer Pulumi because it lets me write real Python and unit-test the infra code. Terraform is on the learning list, not the production list.",
   },
-  { id: "go", name: "Go", domain: "learning", projects: [], depth: 30, depthNotes:
-      "Honest growth area. Algocode uses Linux namespaces, cgroups, and seccomp in production-shaped C++ code — that's the closest my work gets to Go-style infra. I'd learn fast on a real Go service but I'm not a Go engineer today.",
+  {
+    id: "go",
+    name: "Go",
+    domain: "backend",
+    projects: ["safebox"],
+    depth: 85,
+    depthNotes:
+      "Core language for systems programming and Linux isolation tooling. Safebox is written in Go 1.24 with direct syscall orchestration, user namespaces, OverlayFS management, and Landlock LSM integration.",
   },
   { id: "ebpf", name: "eBPF", domain: "learning", projects: [], depth: 40, depthNotes:
       "Covered in Poridhi's backend curriculum. I understand the model (kernel hooks, maps, programs) but haven't shipped anything that uses eBPF in production. The Linux Networking series on Medium touches the adjacent kernel primitives.",
