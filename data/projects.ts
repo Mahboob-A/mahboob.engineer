@@ -57,6 +57,8 @@ export interface ProjectItem {
   status: ProjectStatus;
   /** Prominence tier. */
   tier: ProjectTier;
+  /** Extra badge/subtitle label shown next to status badge. */
+  badgeExtra?: string;
   /** Year shipped / launched. */
   year: number;
   /** Live product URL, if public. */
@@ -224,6 +226,7 @@ What's next if we keep building: A tier-1 enterprise tier with SAML SSO. UTM-awa
       "Unprivileged microsecond Linux sandbox and change management engine for autonomous AI coding agents.",
     status: "live",
     tier: "featured",
+    badgeExtra: "Open Source Sandbox CLI tool",
     year: 2026,
     url: null,
     github: "https://github.com/Mahboob-A/safebox",
@@ -239,6 +242,7 @@ What's next if we keep building: A tier-1 enterprise tier with SAML SSO. UTM-awa
       "pasta",
       "cgroups v2",
       "POSIX Signals",
+      "Open Source",
     ],
     metrics: [
       "<30ms Cold Start",

@@ -143,6 +143,11 @@ function Hero({ project }: { project: ProjectItem }) {
               ? "building"
               : "shipped"}
         </Badge>
+        {project.badgeExtra ? (
+          <span className="text-t3 font-mono text-[13px]">
+            {project.badgeExtra}
+          </span>
+        ) : null}
         <span className="text-t3 font-mono text-[13px]">[{project.year}]</span>
         {project.stars ? (
           <span

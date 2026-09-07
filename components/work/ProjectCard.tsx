@@ -75,6 +75,11 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
                   ? "building"
                   : "shipped"}
             </Badge>
+            {project.badgeExtra ? (
+              <span className="text-t3 font-mono text-[11.5px]">
+                {project.badgeExtra}
+              </span>
+            ) : null}
             <span className="text-amber font-mono text-[12px] tracking-[1px] uppercase">
               {project.slug === "taply" ? "co-founder" : "founder"}
             </span>
@@ -167,6 +172,11 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
                     ? "building"
                     : "shipped"}
               </Badge>
+              {project.badgeExtra ? (
+                <span className="text-t3 font-mono text-[11px]">
+                  {project.badgeExtra}
+                </span>
+              ) : null}
               {project.stars ? (
                 <span className="text-amber font-mono text-[10.5px]">
                   ★ {project.stars}
