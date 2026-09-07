@@ -223,7 +223,7 @@ What's next if we keep building: A tier-1 enterprise tier with SAML SSO. UTM-awa
     slug: "safebox",
     name: "Safebox",
     tagline:
-      "Unprivileged microsecond Linux sandbox and change management engine for autonomous AI coding agents.",
+      "Unprivileged Linux sandbox and change management engine for autonomous AI coding agents.",
     status: "live",
     tier: "featured",
     badgeExtra: "Open Source Sandbox CLI tool",
