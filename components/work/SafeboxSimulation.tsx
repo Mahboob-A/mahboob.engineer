@@ -29,7 +29,8 @@ import {
   WaterfallStep,
   ATTACK_VECTORS,
   AttackVector,
-  AGY_ASCII_BANNER,
+  SAFEBOX_STARTUP_TRACE,
+  ANTIGRAVITY_SESSION_BANNER,
   CLI_COMMAND_OUTPUTS,
 } from "./safebox-simulation-data";
 
@@ -45,7 +46,7 @@ export function SafeboxSimulation() {
         <div className="flex items-center gap-3">
           <span className="bg-acc inline-block h-[7px] w-[7px] rounded-full shadow-[0_0_10px_var(--acc)]" />
           <h2 className="text-t1 font-display text-[18px] font-bold tracking-tight">
-            Safebox Simulation Arena
+            Safebox Simulation Engine
           </h2>
           <span className="text-t3 font-mono text-[11px] hidden sm:inline">
             [v0.5.2 engine]
@@ -105,23 +106,156 @@ export function SafeboxSimulation() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   1. Antigravity CLI (agy) Terminal View
+   1. Antigravity CLI (agy) Terminal View (Interactive Engine)
    ───────────────────────────────────────────────────────────────────────────── */
+
+type SimulationPhase =
+  | "unselected"     // Initially blank: scenario choices wait outside
+  | "ready_to_launch" // Scenario clicked: launcher command ready
+  | "booting_trace"   // Streaming Safebox startup trace in slow-mo
+  | "signing_in"      // Animated braille spinner: ⣾ Signing in...
+  | "session_ready"   // Session banner rendered + task prompt in input field
+  | "executing_task"  // Thinking block with ticking tokens + streaming tools
+  | "completed";      // All execution logs complete + change control toolbar active
+
+const SPINNER_FRAMES = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
+
 function AgyTerminalView() {
-  const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
-    AGY_SCENARIOS[0].id
-  );
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
+  const [simPhase, setSimPhase] = useState<SimulationPhase>("unselected");
   const [activeOutputPanel, setActiveOutputPanel] = useState<
-    "logs" | "diff" | "patch" | "cat" | "status"
+    "logs" | "diff" | "patch" | "status"
   >("logs");
-  const [inputCommand, setInputCommand] = useState("");
+
+  const [streamedTraceLines, setStreamedTraceLines] = useState<string[]>([]);
+  const [spinnerFrame, setSpinnerFrame] = useState(0);
+  const [thoughtSec, setThoughtSec] = useState(1);
+  const [thoughtTokens, setThoughtTokens] = useState(150);
+  const [isThinkingComplete, setIsThinkingComplete] = useState(false);
+  const [streamedLogCount, setStreamedLogCount] = useState(0);
+
   const [commandFeedback, setCommandFeedback] = useState<string | null>(null);
+  const [inputCommand, setInputCommand] = useState("");
   const terminalBottomRef = useRef<HTMLDivElement>(null);
 
-  const scenario =
-    AGY_SCENARIOS.find((s) => s.id === selectedScenarioId) || AGY_SCENARIOS[0];
+  const scenario = AGY_SCENARIOS.find((s) => s.id === selectedScenarioId) || null;
 
-  const handleRunCommand = (e: React.FormEvent) => {
+  // Auto-scroll inside terminal as logs stream
+  useEffect(() => {
+    if (terminalBottomRef.current) {
+      terminalBottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [simPhase, streamedTraceLines, isThinkingComplete, streamedLogCount, activeOutputPanel, commandFeedback]);
+
+  // Handle Scenario Choice (from outside the terminal)
+  const handleSelectScenario = (scenarioId: string) => {
+    setSelectedScenarioId(scenarioId);
+    setSimPhase("ready_to_launch");
+    setStreamedTraceLines([]);
+    setSpinnerFrame(0);
+    setThoughtSec(1);
+    setThoughtTokens(150);
+    setIsThinkingComplete(false);
+    setStreamedLogCount(0);
+    setActiveOutputPanel("logs");
+    setCommandFeedback(null);
+    setInputCommand("");
+  };
+
+  // Launch Safebox trace sequence
+  const handleLaunchSafebox = () => {
+    if (!scenario || simPhase !== "ready_to_launch") return;
+    setSimPhase("booting_trace");
+    setStreamedTraceLines([]);
+
+    let lineIndex = 0;
+    const interval = setInterval(() => {
+      if (lineIndex < SAFEBOX_STARTUP_TRACE.length) {
+        const nextLine = SAFEBOX_STARTUP_TRACE[lineIndex];
+        setStreamedTraceLines((prev) => [...prev, nextLine]);
+        lineIndex++;
+      } else {
+        clearInterval(interval);
+        setSimPhase("signing_in");
+      }
+    }, 110);
+  };
+
+  // Animated braille sign-in spinner
+  useEffect(() => {
+    if (simPhase !== "signing_in") return;
+    let ticks = 0;
+    const spinnerInterval = setInterval(() => {
+      setSpinnerFrame((prev) => (prev + 1) % SPINNER_FRAMES.length);
+      ticks++;
+      if (ticks > 18) {
+        clearInterval(spinnerInterval);
+        setSimPhase("session_ready");
+      }
+    }, 75);
+
+    return () => clearInterval(spinnerInterval);
+  }, [simPhase]);
+
+  // Execute scenario task prompt
+  const handleExecuteTask = () => {
+    if (!scenario || simPhase !== "session_ready") return;
+    setSimPhase("executing_task");
+    setThoughtSec(1);
+    setIsThinkingComplete(false);
+    setStreamedLogCount(0);
+
+    const targetSec = scenario.thoughtSeconds;
+    const targetTok = scenario.thoughtTokens;
+    let currentSec = 1;
+
+    // Fast-paced thinking progression (ticks every 220ms up to target seconds)
+    const thoughtInterval = setInterval(() => {
+      currentSec++;
+      setThoughtSec(currentSec);
+      setThoughtTokens(
+        Math.min(targetTok, Math.round((currentSec / targetSec) * targetTok))
+      );
+
+      if (currentSec >= targetSec) {
+        clearInterval(thoughtInterval);
+        setIsThinkingComplete(true);
+
+        // Stream tool logs sequentially
+        let logIndex = 0;
+        const totalLogs = scenario.agyLogStream.length;
+        const logInterval = setInterval(() => {
+          logIndex++;
+          setStreamedLogCount(logIndex);
+          if (logIndex >= totalLogs) {
+            clearInterval(logInterval);
+            setSimPhase("completed");
+          }
+        }, 220);
+      }
+    }, 220);
+  };
+
+  // Change management actions
+  const handleApply = () => {
+    setActiveOutputPanel("status");
+    if (scenario?.id === "scenario-jailbreak") {
+      setCommandFeedback("[safebox] zero modifications staged in upperdir scratchpad. nothing to apply.");
+    } else {
+      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox apply --yes"]);
+    }
+  };
+
+  const handleRevert = () => {
+    setActiveOutputPanel("status");
+    if (scenario?.id === "scenario-jailbreak") {
+      setCommandFeedback("[safebox] workspace already pristine. zero mutations on host.");
+    } else {
+      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox revert --yes"]);
+    }
+  };
+
+  const handleTerminalInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cmd = inputCommand.trim().toLowerCase();
     if (!cmd) return;
@@ -132,15 +266,10 @@ function AgyTerminalView() {
     } else if (cmd === "safebox diff -p" || cmd === "diff -p" || cmd === "patch") {
       setActiveOutputPanel("patch");
       setCommandFeedback("Generated unified line-by-line patch against lowerdir.");
-    } else if (cmd.startsWith("safebox cat") || cmd.startsWith("cat")) {
-      setActiveOutputPanel("cat");
-      setCommandFeedback("Streaming file contents from upperdir scratchpad.");
     } else if (cmd.includes("apply")) {
-      setActiveOutputPanel("status");
-      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox apply --yes"]);
+      handleApply();
     } else if (cmd.includes("revert")) {
-      setActiveOutputPanel("status");
-      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox revert --yes"]);
+      handleRevert();
     } else if (cmd === "clear") {
       setCommandFeedback(null);
       setActiveOutputPanel("logs");
@@ -152,276 +281,412 @@ function AgyTerminalView() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-code-bg overflow-hidden shadow-2xl flex flex-col">
-      {/* Terminal Window Header */}
-      <div className="flex flex-wrap items-center justify-between border-b border-border bg-surface/90 px-4 py-3 gap-2">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-[#EF4444]/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-[#F59E0B]/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-[#10B981]/80 inline-block" />
-          </div>
-          <span className="text-t3 font-mono text-[12px] ml-2">
-            safebox-session: session-00a5d21a (PID 1 shim)
+    <div className="w-full space-y-4">
+      {/* ───── Outside Scenario Selector Buttons ───── */}
+      <div className="rounded-xl border border-border bg-surface/70 p-4 backdrop-blur-md space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-amber font-mono text-[11px] font-bold uppercase tracking-wider">
+            Select Agent Scenario:
+          </span>
+          <span className="text-t3 font-mono text-[11px] hidden sm:inline">
+            Click scenario to stage container command
           </span>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-[11px]">
-          <span className="rounded bg-acc/10 border border-acc/20 px-2 py-0.5 text-acc">
-            net: isolated
-          </span>
-          <span className="rounded bg-amber/10 border border-amber/20 px-2 py-0.5 text-amber">
-            lsm: landlock-v3
-          </span>
-          <span className="rounded bg-surface border border-border px-2 py-0.5 text-t2">
-            gemini-2.5-pro
-          </span>
-        </div>
-      </div>
-
-      {/* Scenario Selector Chips */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border/60 bg-surface/40 p-3">
-        <span className="text-t3 font-mono text-[11px] uppercase tracking-wider mr-1">
-          Select Agent Scenario:
-        </span>
-        {AGY_SCENARIOS.map((sc) => (
-          <button
-            key={sc.id}
-            onClick={() => {
-              setSelectedScenarioId(sc.id);
-              setActiveOutputPanel("logs");
-              setCommandFeedback(null);
-            }}
-            className={cn(
-              "rounded-lg px-3 py-1 text-[11.5px] font-mono border transition-all cursor-pointer",
-              selectedScenarioId === sc.id
-                ? "bg-acc/15 border-acc text-acc font-semibold shadow-sm"
-                : "bg-bg/40 border-border text-t3 hover:text-t1 hover:border-border-strong"
-            )}
-          >
-            {sc.title}
-          </button>
-        ))}
-      </div>
-
-      {/* Terminal Display Content Area */}
-      <div className="p-5 font-mono text-[12.5px] space-y-4 min-h-[380px] max-h-[520px] overflow-y-auto">
-        {/* ASCII Logo Banner */}
-        <pre className="text-acc leading-tight text-[10.5px] md:text-[11.5px] overflow-x-auto selection:bg-acc/20 opacity-90">
-          <code>{AGY_ASCII_BANNER}</code>
-        </pre>
-
-        {/* Scenario Prompt Line */}
-        <div className="border-t border-border/40 pt-3">
-          <p className="text-t3 text-[11px] uppercase tracking-wider mb-1">
-            Active Task Input:
-          </p>
-          <div className="flex items-center gap-2 text-t1 font-bold bg-surface/50 border border-border/60 p-2.5 rounded-lg">
-            <span className="text-acc">$</span>
-            <span>{scenario.prompt}</span>
-          </div>
-        </div>
-
-        {/* Change Control Toolbar Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-y border-border/50 py-2">
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setActiveOutputPanel("logs")}
-              className={cn(
-                "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
-                activeOutputPanel === "logs"
-                  ? "bg-surface border border-border text-t1 font-semibold"
-                  : "text-t3 hover:text-t2"
-              )}
-            >
-              Execution Logs
-            </button>
-            <button
-              onClick={() => setActiveOutputPanel("diff")}
-              className={cn(
-                "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
-                activeOutputPanel === "diff"
-                  ? "bg-surface border border-border text-t1 font-semibold"
-                  : "text-t3 hover:text-t2"
-              )}
-            >
-              safebox diff ({scenario.diffSummary.length})
-            </button>
-            <button
-              onClick={() => setActiveOutputPanel("patch")}
-              className={cn(
-                "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
-                activeOutputPanel === "patch"
-                  ? "bg-surface border border-border text-t1 font-semibold"
-                  : "text-t3 hover:text-t2"
-              )}
-            >
-              safebox diff -p
-            </button>
-            {Object.keys(scenario.fileContents).length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          {AGY_SCENARIOS.map((sc, idx) => {
+            const isSelected = selectedScenarioId === sc.id;
+            const letter = String.fromCharCode(65 + idx);
+            return (
               <button
-                onClick={() => setActiveOutputPanel("cat")}
+                key={sc.id}
+                onClick={() => handleSelectScenario(sc.id)}
+                className={cn(
+                  "flex flex-col text-left p-3 rounded-lg border font-mono transition-all cursor-pointer relative",
+                  isSelected
+                    ? "bg-surface border-acc shadow-[0_0_15px_rgba(92,201,160,0.12)] text-t1 ring-1 ring-acc/50"
+                    : "bg-code-bg/60 border-border text-t3 hover:text-t1 hover:border-border-strong hover:bg-surface/50"
+                )}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-acc font-bold text-[11px]">
+                    [{letter}] {sc.category.toUpperCase()}
+                  </span>
+                  {isSelected && (
+                    <span className="text-[10px] bg-acc/15 text-acc border border-acc/30 px-1.5 py-0.2 rounded font-semibold">
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <span className="font-display font-semibold text-[13px] text-t1 leading-snug">
+                  {sc.title}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ───── Terminal Window ───── */}
+      <div className="rounded-2xl border border-border bg-code-bg overflow-hidden shadow-2xl flex flex-col font-mono text-[12.5px]">
+        {/* Window Chrome Header */}
+        <div className="flex flex-wrap items-center justify-between border-b border-border bg-surface/90 px-4 py-3 gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <span className="h-3 w-3 rounded-full bg-[#EF4444]/80 inline-block" />
+              <span className="h-3 w-3 rounded-full bg-[#F59E0B]/80 inline-block" />
+              <span className="h-3 w-3 rounded-full bg-[#10B981]/80 inline-block" />
+            </div>
+            <span className="text-t3 font-mono text-[12px] ml-2">
+              safebox: sess-1788798423580814662 (PID 1 shim)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 font-mono text-[11px]">
+            <span className="rounded bg-acc/10 border border-acc/20 px-2 py-0.5 text-acc">
+              net: isolated
+            </span>
+            <span className="rounded bg-amber/10 border border-amber/20 px-2 py-0.5 text-amber">
+              lsm: landlock-v3
+            </span>
+            <span className="rounded bg-surface border border-border px-2 py-0.5 text-t2">
+              google-ai-pro
+            </span>
+          </div>
+        </div>
+
+        {/* Change Control Toolbar (Only visible when ready or completed) */}
+        {(simPhase === "completed" || simPhase === "session_ready") && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 bg-surface/40 px-4 py-2">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setActiveOutputPanel("logs")}
                 className={cn(
                   "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
-                  activeOutputPanel === "cat"
+                  activeOutputPanel === "logs"
                     ? "bg-surface border border-border text-t1 font-semibold"
                     : "text-t3 hover:text-t2"
                 )}
               >
-                safebox cat
+                Execution Logs
               </button>
-            )}
-          </div>
+              <button
+                onClick={() => setActiveOutputPanel("diff")}
+                className={cn(
+                  "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
+                  activeOutputPanel === "diff"
+                    ? "bg-surface border border-border text-t1 font-semibold"
+                    : "text-t3 hover:text-t2"
+                )}
+              >
+                safebox diff ({scenario ? scenario.diffSummary.length : 0})
+              </button>
+              <button
+                onClick={() => setActiveOutputPanel("patch")}
+                className={cn(
+                  "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
+                  activeOutputPanel === "patch"
+                    ? "bg-surface border border-border text-t1 font-semibold"
+                    : "text-t3 hover:text-t2"
+                )}
+              >
+                diff -p
+              </button>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setActiveOutputPanel("status");
-                setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox apply --yes"]);
-              }}
-              className="px-2.5 py-1 rounded bg-acc/10 border border-acc/30 text-acc text-[11px] font-semibold hover:bg-acc/20 transition-colors cursor-pointer"
-            >
-              safebox apply
-            </button>
-            <button
-              onClick={() => {
-                setActiveOutputPanel("status");
-                setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox revert --yes"]);
-              }}
-              className="px-2.5 py-1 rounded bg-amber/10 border border-amber/30 text-amber text-[11px] font-semibold hover:bg-amber/20 transition-colors cursor-pointer"
-            >
-              safebox revert
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic Panel Content */}
-        {activeOutputPanel === "logs" && (
-          <div className="space-y-2">
-            {scenario.agyLogStream.map((log, idx) => (
-              <div key={idx} className="leading-relaxed">
-                {log.type === "thought" && (
-                  <span className="text-t3 italic block">
-                    [thought] {log.text}
-                  </span>
-                )}
-                {log.type === "tool_call" && (
-                  <span className="text-acc block">
-                    [tool_call] {log.text}
-                  </span>
-                )}
-                {log.type === "banner" && (
-                  <span className="text-t2 block">{log.text}</span>
-                )}
-                {log.type === "output" && (
-                  <span className="text-t1 font-semibold block mt-1">
-                    [output] {log.text}
-                  </span>
-                )}
-                {log.type === "error" && (
-                  <span className="text-amber block font-semibold">
-                    [safebox:error] {log.text}
-                  </span>
-                )}
-              </div>
-            ))}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleApply}
+                className="px-2.5 py-1 rounded bg-acc/10 border border-acc/30 text-acc text-[11px] font-semibold hover:bg-acc/20 transition-colors cursor-pointer"
+              >
+                apply
+              </button>
+              <button
+                onClick={handleRevert}
+                className="px-2.5 py-1 rounded bg-amber/10 border border-amber/30 text-amber text-[11px] font-semibold hover:bg-amber/20 transition-colors cursor-pointer"
+              >
+                revert
+              </button>
+              {selectedScenarioId && (
+                <button
+                  onClick={() => handleSelectScenario(selectedScenarioId)}
+                  className="px-2 py-1 text-t3 hover:text-t1 text-[11px] transition-colors cursor-pointer ml-1"
+                >
+                  ↺ reset
+                </button>
+              )}
+            </div>
           </div>
         )}
 
-        {activeOutputPanel === "diff" && (
-          <div className="rounded-lg border border-border bg-bg/80 p-3 space-y-2">
-            <p className="text-t3 text-[11px] uppercase">
-              Upperdir Staged File Summary:
-            </p>
-            {scenario.diffSummary.length === 0 ? (
-              <p className="text-t3 italic">Zero files modified. Upperdir is empty.</p>
-            ) : (
-              scenario.diffSummary.map((d, i) => (
-                <div key={i} className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
-                  <span
-                    className={
-                      d.status === "ADDED"
-                        ? "text-acc font-semibold"
-                        : d.status === "MODIFIED"
-                        ? "text-t1 font-semibold"
-                        : "text-amber font-semibold"
-                    }
-                  >
-                    [{d.status}] {d.path}
-                  </span>
-                  <span className="text-t3 text-[11px]">
-                    +{d.insertions} / -{d.deletions}
+        {/* Terminal Body Screen */}
+        <div className="p-5 space-y-4 min-h-[380px] max-h-[540px] overflow-y-auto">
+          {/* Phase 0: Blank Terminal */}
+          {simPhase === "unselected" && (
+            <div className="h-[320px] flex flex-col items-center justify-center text-center space-y-2">
+              <div className="text-t3 font-mono text-[13px]">
+                $ # Select an agent scenario above to launch the microsecond sandbox...
+              </div>
+              <p className="text-t3/60 text-[11.5px] max-w-md">
+                Safebox establishes rootless Linux namespaces, ephemeral OverlayFS, and Landlock LSM default-deny rules before handing off to the untrusted agent CLI.
+              </p>
+            </div>
+          )}
+
+          {/* Phase 1: Clickable Launcher Command */}
+          {simPhase === "ready_to_launch" && scenario && (
+            <div className="space-y-4 py-3">
+              <div className="text-t3 text-[11px] uppercase tracking-wider">
+                Container Launch Command:
+              </div>
+              <button
+                onClick={handleLaunchSafebox}
+                className="w-full group flex flex-wrap items-center justify-between gap-3 rounded-xl border border-acc/40 bg-surface/80 p-4 text-left hover:border-acc hover:bg-surface transition-all cursor-pointer shadow-md"
+              >
+                <div className="flex items-center gap-2 text-t1 font-mono text-[13.5px]">
+                  <span className="text-acc font-bold">$</span>
+                  <span className="group-hover:text-acc transition-colors">
+                    {scenario.command}
                   </span>
                 </div>
-              ))
-            )}
-          </div>
-        )}
+                <div className="inline-flex items-center gap-2 rounded-md bg-acc/15 border border-acc/30 px-3 py-1 text-[11px] font-mono text-acc font-semibold">
+                  <span className="inline-block h-2 w-2 rounded-full bg-acc animate-ping" />
+                  Click to run command ↵
+                </div>
+              </button>
+              <p className="text-t3 text-[11px] italic">
+                Launches Go supervisor, attaches user namespaces, mounts unprivileged OverlayFS scratchpad, and locks privileges via PR_SET_NO_NEW_PRIVS.
+              </p>
+            </div>
+          )}
 
-        {activeOutputPanel === "patch" && (
-          <pre className="rounded-lg border border-border bg-bg/90 p-3 overflow-x-auto text-[12px] leading-relaxed">
-            <code>
-              {scenario.patchDiff.split("\n").map((line, i) => {
-                let colorClass = "text-t2";
-                if (line.startsWith("+") && !line.startsWith("+++")) colorClass = "text-acc font-semibold";
-                if (line.startsWith("-") && !line.startsWith("---")) colorClass = "text-amber font-semibold";
-                if (line.startsWith("@@")) colorClass = "text-t3 italic";
-                return (
-                  <span key={i} className={`block ${colorClass}`}>
-                    {line}
-                  </span>
-                );
-              })}
-            </code>
-          </pre>
-        )}
-
-        {activeOutputPanel === "cat" && (
-          <div className="rounded-lg border border-border bg-bg/90 p-3 space-y-2">
-            {Object.entries(scenario.fileContents).map(([filePath, content]) => (
-              <div key={filePath} className="space-y-1">
-                <p className="text-acc text-[11px] font-bold uppercase">
-                  // {filePath}
-                </p>
-                <pre className="overflow-x-auto text-[12px] text-t1 leading-relaxed">
-                  <code>{content}</code>
-                </pre>
+          {/* Phase 2+: Startup Trace Output */}
+          {simPhase !== "unselected" && simPhase !== "ready_to_launch" && scenario && (
+            <div className="space-y-2">
+              {/* Launcher Command echoed */}
+              <div className="text-t2 text-[12.5px]">
+                <span className="text-acc font-bold">$</span> {scenario.command}
               </div>
-            ))}
-          </div>
-        )}
 
-        {activeOutputPanel === "status" && commandFeedback && (
-          <pre className="rounded-lg border border-border bg-bg/90 p-3 text-t1 text-[12px] whitespace-pre-wrap leading-relaxed">
-            <code>{commandFeedback}</code>
-          </pre>
-        )}
+              {/* Startup Trace Lines */}
+              <div className="space-y-1 text-[12px] text-t3 leading-relaxed">
+                {streamedTraceLines.map((line, idx) => (
+                  <div
+                    key={idx}
+                    className={
+                      line.startsWith("->")
+                        ? "text-t2 font-medium"
+                        : line.startsWith("Welcome")
+                        ? "text-t1 font-semibold pt-1"
+                        : "text-t3"
+                    }
+                  >
+                    {line}
+                  </div>
+                ))}
+              </div>
 
-        <div ref={terminalBottomRef} />
-      </div>
+              {/* Animated Braille Spinner for signing in */}
+              {simPhase === "signing_in" && (
+                <div className="flex items-center gap-2 text-acc font-semibold text-[13px] pt-1">
+                  <span className="text-amber text-[14px]">
+                    {SPINNER_FRAMES[spinnerFrame]}
+                  </span>
+                  <span>Signing in...</span>
+                </div>
+              )}
 
-      {/* Terminal Input Bar */}
-      <form
-        onSubmit={handleRunCommand}
-        className="border-t border-border bg-surface/90 px-4 py-3 flex items-center gap-3"
-      >
-        <span className="text-acc font-mono text-[13px] font-bold shrink-0">
-          agy &gt;
-        </span>
-        <input
-          type="text"
-          value={inputCommand}
-          onChange={(e) => setInputCommand(e.target.value)}
-          placeholder="Type 'safebox diff', 'diff -p', 'apply', 'revert', or enter a prompt..."
-          className="flex-1 bg-transparent font-mono text-[13px] text-t1 placeholder:text-t3/60 focus:outline-none"
-        />
-        <button
-          type="submit"
-          className="px-3 py-1 rounded bg-acc/10 border border-acc/30 text-acc font-mono text-[11px] hover:bg-acc/20 transition-colors cursor-pointer shrink-0"
+              {/* Antigravity Session Banner */}
+              {(simPhase === "session_ready" ||
+                simPhase === "executing_task" ||
+                simPhase === "completed") && (
+                <div className="py-2 border-y border-border/40 my-3">
+                  <pre className="text-acc leading-tight text-[11px] md:text-[12px] overflow-x-auto selection:bg-acc/20 font-bold opacity-95">
+                    <code>{ANTIGRAVITY_SESSION_BANNER}</code>
+                  </pre>
+                </div>
+              )}
+
+              {/* Prompt Ready in Input State */}
+              {simPhase === "session_ready" && (
+                <div className="space-y-3 pt-2">
+                  <div className="text-t3 text-[11px] uppercase tracking-wider">
+                    Agent Input Task Ready:
+                  </div>
+                  <button
+                    onClick={handleExecuteTask}
+                    className="w-full group flex flex-wrap items-center justify-between gap-3 rounded-xl border border-acc/40 bg-surface/80 p-3.5 text-left hover:border-acc hover:bg-surface transition-all cursor-pointer shadow-md"
+                  >
+                    <div className="flex items-center gap-2.5 text-t1 font-mono text-[13px]">
+                      <span className="text-acc font-bold">&gt;</span>
+                      <span className="group-hover:text-acc transition-colors">
+                        {scenario.prompt}
+                      </span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 rounded-md bg-acc/15 border border-acc/30 px-3 py-1 text-[11px] font-mono text-acc font-semibold">
+                      <span className="inline-block h-2 w-2 rounded-full bg-acc animate-pulse" />
+                      Run Task ↵
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Task Execution (Thinking + Logs) */}
+              {(simPhase === "executing_task" || simPhase === "completed") && (
+                <div className="space-y-3 pt-1">
+                  {/* Echoed Prompt */}
+                  <div className="text-t1 font-semibold text-[13px] flex items-center gap-2">
+                    <span className="text-acc">&gt;</span>
+                    <span>{scenario.prompt}</span>
+                  </div>
+
+                  {/* Thinking Block */}
+                  <div className="text-t3 italic text-[12px] flex items-center gap-2 py-0.5">
+                    <span className="text-acc">▸</span>
+                    {!isThinkingComplete ? (
+                      <span>
+                        Thought for {thoughtSec}s, {thoughtTokens >= 1000 ? `${(thoughtTokens / 1000).toFixed(1)}k` : thoughtTokens} tokens...
+                      </span>
+                    ) : (
+                      <span>{scenario.thoughtSummary}</span>
+                    )}
+                  </div>
+
+                  {/* Active Panel Content: Logs */}
+                  {activeOutputPanel === "logs" && (
+                    <div className="space-y-2 pt-1">
+                      {scenario.agyLogStream.slice(0, streamedLogCount).map((log, i) => (
+                        <div key={i} className="leading-relaxed">
+                          {log.type === "read" && (
+                            <span className="text-t1 block">
+                              <span className="text-acc font-bold mr-1.5">●</span>
+                              {log.text}
+                            </span>
+                          )}
+                          {log.type === "edit" && (
+                            <span className="text-t1 block">
+                              <span className="text-acc font-bold mr-1.5">●</span>
+                              {log.text}
+                            </span>
+                          )}
+                          {log.type === "bash" && (
+                            <span className="text-t1 block">
+                              <span className="text-amber font-bold mr-1.5">●</span>
+                              {log.text}
+                            </span>
+                          )}
+                          {log.type === "error" && (
+                            <span className="text-amber block font-semibold pl-4">
+                              {log.text}
+                            </span>
+                          )}
+                          {log.type === "output" && (
+                            <span className="text-t2 block font-medium pl-4 pt-0.5">
+                              {log.text}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Active Panel Content: Diff */}
+                  {activeOutputPanel === "diff" && (
+                    <div className="rounded-lg border border-border bg-bg/80 p-3 space-y-2">
+                      <p className="text-t3 text-[11px] uppercase">
+                        Upperdir Staged File Summary:
+                      </p>
+                      {scenario.diffSummary.length === 0 ? (
+                        <p className="text-t3 italic">Zero files modified. Ephemeral upperdir scratchpad is pristine.</p>
+                      ) : (
+                        scenario.diffSummary.map((d, i) => (
+                          <div key={i} className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
+                            <span
+                              className={
+                                d.status === "ADDED"
+                                  ? "text-acc font-semibold"
+                                  : d.status === "MODIFIED"
+                                  ? "text-t1 font-semibold"
+                                  : "text-amber font-semibold"
+                              }
+                            >
+                              [{d.status}] {d.path}
+                            </span>
+                            <span className="text-t3 text-[11px]">
+                              +{d.insertions} / -{d.deletions}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+
+                  {/* Active Panel Content: Patch */}
+                  {activeOutputPanel === "patch" && (
+                    <pre className="rounded-lg border border-border bg-bg/90 p-3 overflow-x-auto text-[12px] leading-relaxed">
+                      <code>
+                        {scenario.patchDiff.split("\n").map((line, i) => {
+                          let colorClass = "text-t2";
+                          if (line.startsWith("+") && !line.startsWith("+++")) colorClass = "text-acc font-semibold";
+                          if (line.startsWith("-") && !line.startsWith("---")) colorClass = "text-amber font-semibold";
+                          if (line.startsWith("@@")) colorClass = "text-t3 italic";
+                          return (
+                            <span key={i} className={`block ${colorClass}`}>
+                              {line}
+                            </span>
+                          );
+                        })}
+                      </code>
+                    </pre>
+                  )}
+
+                  {/* Active Panel Content: Status/Feedback */}
+                  {activeOutputPanel === "status" && commandFeedback && (
+                    <pre className="rounded-lg border border-border bg-bg/90 p-3 text-t1 text-[12px] whitespace-pre-wrap leading-relaxed">
+                      <code>{commandFeedback}</code>
+                    </pre>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div ref={terminalBottomRef} />
+        </div>
+
+        {/* Interactive Terminal Prompt Input Bar */}
+        <form
+          onSubmit={handleTerminalInputSubmit}
+          className="border-t border-border bg-surface/90 px-4 py-3 flex items-center gap-3"
         >
-          Execute
-        </button>
-      </form>
+          <span className="text-acc font-mono text-[13px] font-bold shrink-0">
+            agy &gt;
+          </span>
+          <input
+            type="text"
+            value={inputCommand}
+            onChange={(e) => setInputCommand(e.target.value)}
+            disabled={simPhase === "booting_trace" || simPhase === "signing_in"}
+            placeholder={
+              simPhase === "unselected"
+                ? "Select a scenario above to start..."
+                : simPhase === "ready_to_launch"
+                ? "Click the launcher command above to boot sandbox..."
+                : simPhase === "session_ready"
+                ? "Click 'Run Task' above or press Execute..."
+                : "Type 'safebox diff', 'diff -p', 'apply', 'revert', or enter a command..."
+            }
+            className="flex-1 bg-transparent font-mono text-[13px] text-t1 placeholder:text-t3/60 focus:outline-none disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={simPhase === "booting_trace" || simPhase === "signing_in"}
+            className="px-3.5 py-1.5 rounded bg-acc/10 border border-acc/30 text-acc font-mono text-[11px] font-semibold hover:bg-acc/20 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {simPhase === "session_ready" ? "Run Task" : "Execute"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
