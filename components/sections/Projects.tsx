@@ -128,9 +128,7 @@ function ProjectCard({ project, diagram, visualOnLeft }: ProjectCardProps) {
              anchor" issues (the bottom links row stays unchanged). */}
           <h3 className="font-display text-t1 hover:text-acc mb-2.5 text-[24px] font-bold transition-colors">
             <Link href={`/work/${project.slug}`} className="block">
-              {project.slug === "safebox"
-                ? `${project.name}: ${project.tagline}`
-                : `${project.name} — ${project.tagline.split(" — ")[0]}`}
+              {`${project.name} — ${project.tagline.split(" — ")[0]}`}
             </Link>
           </h3>
 
