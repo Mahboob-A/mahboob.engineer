@@ -366,8 +366,8 @@ function AgyTerminalView() {
               <span className="h-3 w-3 rounded-full bg-[#F59E0B]/80 inline-block" />
               <span className="h-3 w-3 rounded-full bg-[#10B981]/80 inline-block" />
             </div>
-            <span suppressHydrationWarning className="text-t3 font-mono text-[12px] ml-2">
-              safebox: {currentSession.sessionId} (PID 1 shim)
+            <span className="text-t3 font-mono text-[12px] ml-2">
+              safebox - (PID 1 shim)
             </span>
           </div>
 
