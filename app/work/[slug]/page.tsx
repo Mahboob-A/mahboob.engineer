@@ -39,6 +39,8 @@ import { UnthinkInteractiveExplorer } from "@/components/work/UnthinkInteractive
 import UnThinkSimulation from "@/components/work/UnThinkSimulation";
 import { TaplyInteractiveExplorer } from "@/components/work/TaplyInteractiveExplorer";
 import { TaplySimulation } from "@/components/work/TaplySimulation";
+import { SafeboxInteractiveExplorer } from "@/components/work/SafeboxInteractiveExplorer";
+import { SafeboxSimulation } from "@/components/work/SafeboxSimulation";
 import { projectMetadata } from "@/lib/metadata";
 import { chipColor } from "@/data/tokens";
 import { cn } from "@/lib/cn";
@@ -287,6 +289,36 @@ function BuildNotes({ project }: { project: ProjectItem }) {
         {/* Section 2: Master Product Sandbox & NFC Networking Hall */}
         <section>
           <TaplySimulation />
+        </section>
+      </div>
+    );
+  }
+
+  if (project.slug === "safebox") {
+    return (
+      <div className="space-y-14">
+        {/* Section 1: Architectural Ingestion & Kernel Pipeline Explorer */}
+        <section>
+          <div className="border-border mb-6 flex flex-wrap items-baseline justify-between gap-2 border-t pt-6">
+            <div className="flex items-baseline gap-3">
+              <span className="bg-amber inline-block h-[6px] w-[6px] rounded-full shadow-[0_0_8px_var(--amber)]" />
+              <h2 className="text-t3 font-mono text-[12px] tracking-[1.5px] uppercase">
+                Interactive System Exploration
+              </h2>
+              <span className="text-t3 font-mono text-[11px] italic">
+                namespaces &gt; overlayfs &gt; landlock lsm &gt; userspace nat &gt; pid 1 shim
+              </span>
+            </div>
+            <span className="text-amber font-mono text-[11px]">
+              interactive pipeline simulator
+            </span>
+          </div>
+          <SafeboxInteractiveExplorer />
+        </section>
+
+        {/* Section 2: Master Product Sandbox & Attack Verification Arena */}
+        <section>
+          <SafeboxSimulation />
         </section>
       </div>
     );

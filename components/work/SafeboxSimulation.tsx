@@ -1,0 +1,711 @@
+"use client";
+
+/**
+ * components/work/SafeboxSimulation.tsx
+ *
+ * Master Interactive Simulation Arena for Safebox on /work/safebox.
+ * Features 3 specialized operational modes:
+ *
+ *   1. [AGY CLI]: Authentic Antigravity CLI simulator with real ASCII art,
+ *      interactive prompt execution, real-time log stream, and live Safebox
+ *      change management commands (diff, diff -p, cat, apply, revert).
+ *   2. [WATERFALL]: Chrome DevTools Network Waterfall showcasing the 11
+ *      microsecond-latency Linux kernel & supervisor startup steps with
+ *      expandable syscall inspector drawers.
+ *   3. [ATTACK LAB]: Boundary Attack Lab with side-by-side comparison of
+ *      malicious workloads (credential theft, rm -rf, remote droppers, fork bombs)
+ *      running on Bare Host vs Safebox.
+ *
+ * Strictly free of emojis and em dashes across all UI and data layers.
+ */
+
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/cn";
+import {
+  AGY_SCENARIOS,
+  AgyScenario,
+  WATERFALL_STEPS,
+  WaterfallStep,
+  ATTACK_VECTORS,
+  AttackVector,
+  AGY_ASCII_BANNER,
+  CLI_COMMAND_OUTPUTS,
+} from "./safebox-simulation-data";
+
+type ArenaMode = "agy_terminal" | "waterfall" | "attack_lab";
+
+export function SafeboxSimulation() {
+  const [activeMode, setActiveMode] = useState<ArenaMode>("agy_terminal");
+
+  return (
+    <div className="w-full space-y-6">
+      {/* Master Mode Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-4">
+        <div className="flex items-center gap-3">
+          <span className="bg-acc inline-block h-[7px] w-[7px] rounded-full shadow-[0_0_10px_var(--acc)]" />
+          <h2 className="text-t1 font-display text-[18px] font-bold tracking-tight">
+            Safebox Simulation Arena
+          </h2>
+          <span className="text-t3 font-mono text-[11px] hidden sm:inline">
+            [v0.5.2 engine]
+          </span>
+        </div>
+
+        <div className="flex rounded-lg border border-border bg-surface/70 p-1 backdrop-blur-md">
+          <button
+            onClick={() => setActiveMode("agy_terminal")}
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-mono rounded-md transition-colors cursor-pointer",
+              activeMode === "agy_terminal"
+                ? "bg-code-bg text-acc border border-acc/30 shadow-sm font-bold"
+                : "text-t3 hover:text-t1"
+            )}
+          >
+            <span className="text-[10px] text-amber font-bold">[1]</span>
+            AGY CLI Simulator
+          </button>
+
+          <button
+            onClick={() => setActiveMode("waterfall")}
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-mono rounded-md transition-colors cursor-pointer",
+              activeMode === "waterfall"
+                ? "bg-code-bg text-acc border border-acc/30 shadow-sm font-bold"
+                : "text-t3 hover:text-t1"
+            )}
+          >
+            <span className="text-[10px] text-amber font-bold">[2]</span>
+            Chrome DevTools Waterfall
+          </button>
+
+          <button
+            onClick={() => setActiveMode("attack_lab")}
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-mono rounded-md transition-colors cursor-pointer",
+              activeMode === "attack_lab"
+                ? "bg-code-bg text-acc border border-acc/30 shadow-sm font-bold"
+                : "text-t3 hover:text-t1"
+            )}
+          >
+            <span className="text-[10px] text-amber font-bold">[3]</span>
+            Boundary Attack Lab
+          </button>
+        </div>
+      </div>
+
+      {/* Mode Viewport */}
+      <div>
+        {activeMode === "agy_terminal" && <AgyTerminalView />}
+        {activeMode === "waterfall" && <WaterfallView />}
+        {activeMode === "attack_lab" && <AttackLabView />}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. Antigravity CLI (agy) Terminal View
+   ───────────────────────────────────────────────────────────────────────────── */
+function AgyTerminalView() {
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
+    AGY_SCENARIOS[0].id
+  );
+  const [activeOutputPanel, setActiveOutputPanel] = useState<
+    "logs" | "diff" | "patch" | "cat" | "status"
+  >("logs");
+  const [inputCommand, setInputCommand] = useState("");
+  const [commandFeedback, setCommandFeedback] = useState<string | null>(null);
+  const terminalBottomRef = useRef<HTMLDivElement>(null);
+
+  const scenario =
+    AGY_SCENARIOS.find((s) => s.id === selectedScenarioId) || AGY_SCENARIOS[0];
+
+  const handleRunCommand = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cmd = inputCommand.trim().toLowerCase();
+    if (!cmd) return;
+
+    if (cmd === "safebox diff" || cmd === "diff") {
+      setActiveOutputPanel("diff");
+      setCommandFeedback("Rendered uncommitted changes from ephemeral upperdir.");
+    } else if (cmd === "safebox diff -p" || cmd === "diff -p" || cmd === "patch") {
+      setActiveOutputPanel("patch");
+      setCommandFeedback("Generated unified line-by-line patch against lowerdir.");
+    } else if (cmd.startsWith("safebox cat") || cmd.startsWith("cat")) {
+      setActiveOutputPanel("cat");
+      setCommandFeedback("Streaming file contents from upperdir scratchpad.");
+    } else if (cmd.includes("apply")) {
+      setActiveOutputPanel("status");
+      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox apply --yes"]);
+    } else if (cmd.includes("revert")) {
+      setActiveOutputPanel("status");
+      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox revert --yes"]);
+    } else if (cmd === "clear") {
+      setCommandFeedback(null);
+      setActiveOutputPanel("logs");
+    } else {
+      setCommandFeedback(`$ ${inputCommand}\n-> Command executed inside safebox container sandbox.`);
+    }
+
+    setInputCommand("");
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-code-bg overflow-hidden shadow-2xl flex flex-col">
+      {/* Terminal Window Header */}
+      <div className="flex flex-wrap items-center justify-between border-b border-border bg-surface/90 px-4 py-3 gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-[#EF4444]/80 inline-block" />
+            <span className="h-3 w-3 rounded-full bg-[#F59E0B]/80 inline-block" />
+            <span className="h-3 w-3 rounded-full bg-[#10B981]/80 inline-block" />
+          </div>
+          <span className="text-t3 font-mono text-[12px] ml-2">
+            safebox-session: session-00a5d21a (PID 1 shim)
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 font-mono text-[11px]">
+          <span className="rounded bg-acc/10 border border-acc/20 px-2 py-0.5 text-acc">
+            net: isolated
+          </span>
+          <span className="rounded bg-amber/10 border border-amber/20 px-2 py-0.5 text-amber">
+            lsm: landlock-v3
+          </span>
+          <span className="rounded bg-surface border border-border px-2 py-0.5 text-t2">
+            gemini-2.5-pro
+          </span>
+        </div>
+      </div>
+
+      {/* Scenario Selector Chips */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/60 bg-surface/40 p-3">
+        <span className="text-t3 font-mono text-[11px] uppercase tracking-wider mr-1">
+          Select Agent Scenario:
+        </span>
+        {AGY_SCENARIOS.map((sc) => (
+          <button
+            key={sc.id}
+            onClick={() => {
+              setSelectedScenarioId(sc.id);
+              setActiveOutputPanel("logs");
+              setCommandFeedback(null);
+            }}
+            className={cn(
+              "rounded-lg px-3 py-1 text-[11.5px] font-mono border transition-all cursor-pointer",
+              selectedScenarioId === sc.id
+                ? "bg-acc/15 border-acc text-acc font-semibold shadow-sm"
+                : "bg-bg/40 border-border text-t3 hover:text-t1 hover:border-border-strong"
+            )}
+          >
+            {sc.title}
+          </button>
+        ))}
+      </div>
+
+      {/* Terminal Display Content Area */}
+      <div className="p-5 font-mono text-[12.5px] space-y-4 min-h-[380px] max-h-[520px] overflow-y-auto">
+        {/* ASCII Logo Banner */}
+        <pre className="text-acc leading-tight text-[10.5px] md:text-[11.5px] overflow-x-auto selection:bg-acc/20 opacity-90">
+          <code>{AGY_ASCII_BANNER}</code>
+        </pre>
+
+        {/* Scenario Prompt Line */}
+        <div className="border-t border-border/40 pt-3">
+          <p className="text-t3 text-[11px] uppercase tracking-wider mb-1">
+            Active Task Input:
+          </p>
+          <div className="flex items-center gap-2 text-t1 font-bold bg-surface/50 border border-border/60 p-2.5 rounded-lg">
+            <span className="text-acc">$</span>
+            <span>{scenario.prompt}</span>
+          </div>
+        </div>
+
+        {/* Change Control Toolbar Tabs */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-y border-border/50 py-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setActiveOutputPanel("logs")}
+              className={cn(
+                "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
+                activeOutputPanel === "logs"
+                  ? "bg-surface border border-border text-t1 font-semibold"
+                  : "text-t3 hover:text-t2"
+              )}
+            >
+              Execution Logs
+            </button>
+            <button
+              onClick={() => setActiveOutputPanel("diff")}
+              className={cn(
+                "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
+                activeOutputPanel === "diff"
+                  ? "bg-surface border border-border text-t1 font-semibold"
+                  : "text-t3 hover:text-t2"
+              )}
+            >
+              safebox diff ({scenario.diffSummary.length})
+            </button>
+            <button
+              onClick={() => setActiveOutputPanel("patch")}
+              className={cn(
+                "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
+                activeOutputPanel === "patch"
+                  ? "bg-surface border border-border text-t1 font-semibold"
+                  : "text-t3 hover:text-t2"
+              )}
+            >
+              safebox diff -p
+            </button>
+            {Object.keys(scenario.fileContents).length > 0 && (
+              <button
+                onClick={() => setActiveOutputPanel("cat")}
+                className={cn(
+                  "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
+                  activeOutputPanel === "cat"
+                    ? "bg-surface border border-border text-t1 font-semibold"
+                    : "text-t3 hover:text-t2"
+                )}
+              >
+                safebox cat
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setActiveOutputPanel("status");
+                setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox apply --yes"]);
+              }}
+              className="px-2.5 py-1 rounded bg-acc/10 border border-acc/30 text-acc text-[11px] font-semibold hover:bg-acc/20 transition-colors cursor-pointer"
+            >
+              safebox apply
+            </button>
+            <button
+              onClick={() => {
+                setActiveOutputPanel("status");
+                setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox revert --yes"]);
+              }}
+              className="px-2.5 py-1 rounded bg-amber/10 border border-amber/30 text-amber text-[11px] font-semibold hover:bg-amber/20 transition-colors cursor-pointer"
+            >
+              safebox revert
+            </button>
+          </div>
+        </div>
+
+        {/* Dynamic Panel Content */}
+        {activeOutputPanel === "logs" && (
+          <div className="space-y-2">
+            {scenario.agyLogStream.map((log, idx) => (
+              <div key={idx} className="leading-relaxed">
+                {log.type === "thought" && (
+                  <span className="text-t3 italic block">
+                    [thought] {log.text}
+                  </span>
+                )}
+                {log.type === "tool_call" && (
+                  <span className="text-acc block">
+                    [tool_call] {log.text}
+                  </span>
+                )}
+                {log.type === "banner" && (
+                  <span className="text-t2 block">{log.text}</span>
+                )}
+                {log.type === "output" && (
+                  <span className="text-t1 font-semibold block mt-1">
+                    [output] {log.text}
+                  </span>
+                )}
+                {log.type === "error" && (
+                  <span className="text-amber block font-semibold">
+                    [safebox:error] {log.text}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeOutputPanel === "diff" && (
+          <div className="rounded-lg border border-border bg-bg/80 p-3 space-y-2">
+            <p className="text-t3 text-[11px] uppercase">
+              Upperdir Staged File Summary:
+            </p>
+            {scenario.diffSummary.length === 0 ? (
+              <p className="text-t3 italic">Zero files modified. Upperdir is empty.</p>
+            ) : (
+              scenario.diffSummary.map((d, i) => (
+                <div key={i} className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
+                  <span
+                    className={
+                      d.status === "ADDED"
+                        ? "text-acc font-semibold"
+                        : d.status === "MODIFIED"
+                        ? "text-t1 font-semibold"
+                        : "text-amber font-semibold"
+                    }
+                  >
+                    [{d.status}] {d.path}
+                  </span>
+                  <span className="text-t3 text-[11px]">
+                    +{d.insertions} / -{d.deletions}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeOutputPanel === "patch" && (
+          <pre className="rounded-lg border border-border bg-bg/90 p-3 overflow-x-auto text-[12px] leading-relaxed">
+            <code>
+              {scenario.patchDiff.split("\n").map((line, i) => {
+                let colorClass = "text-t2";
+                if (line.startsWith("+") && !line.startsWith("+++")) colorClass = "text-acc font-semibold";
+                if (line.startsWith("-") && !line.startsWith("---")) colorClass = "text-amber font-semibold";
+                if (line.startsWith("@@")) colorClass = "text-t3 italic";
+                return (
+                  <span key={i} className={`block ${colorClass}`}>
+                    {line}
+                  </span>
+                );
+              })}
+            </code>
+          </pre>
+        )}
+
+        {activeOutputPanel === "cat" && (
+          <div className="rounded-lg border border-border bg-bg/90 p-3 space-y-2">
+            {Object.entries(scenario.fileContents).map(([filePath, content]) => (
+              <div key={filePath} className="space-y-1">
+                <p className="text-acc text-[11px] font-bold uppercase">
+                  // {filePath}
+                </p>
+                <pre className="overflow-x-auto text-[12px] text-t1 leading-relaxed">
+                  <code>{content}</code>
+                </pre>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeOutputPanel === "status" && commandFeedback && (
+          <pre className="rounded-lg border border-border bg-bg/90 p-3 text-t1 text-[12px] whitespace-pre-wrap leading-relaxed">
+            <code>{commandFeedback}</code>
+          </pre>
+        )}
+
+        <div ref={terminalBottomRef} />
+      </div>
+
+      {/* Terminal Input Bar */}
+      <form
+        onSubmit={handleRunCommand}
+        className="border-t border-border bg-surface/90 px-4 py-3 flex items-center gap-3"
+      >
+        <span className="text-acc font-mono text-[13px] font-bold shrink-0">
+          agy &gt;
+        </span>
+        <input
+          type="text"
+          value={inputCommand}
+          onChange={(e) => setInputCommand(e.target.value)}
+          placeholder="Type 'safebox diff', 'diff -p', 'apply', 'revert', or enter a prompt..."
+          className="flex-1 bg-transparent font-mono text-[13px] text-t1 placeholder:text-t3/60 focus:outline-none"
+        />
+        <button
+          type="submit"
+          className="px-3 py-1 rounded bg-acc/10 border border-acc/30 text-acc font-mono text-[11px] hover:bg-acc/20 transition-colors cursor-pointer shrink-0"
+        >
+          Execute
+        </button>
+      </form>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. Chrome DevTools Network Waterfall View
+   ───────────────────────────────────────────────────────────────────────────── */
+function WaterfallView() {
+  const [selectedStepId, setSelectedStepId] = useState<string>(
+    WATERFALL_STEPS[0].id
+  );
+
+  const selectedStep =
+    WATERFALL_STEPS.find((s) => s.id === selectedStepId) || WATERFALL_STEPS[0];
+
+  // Maximum benchmarked duration is 26.81ms (26812 microseconds)
+  const MAX_MICROS = 26812;
+
+  return (
+    <div className="rounded-2xl border border-border bg-code-bg overflow-hidden shadow-2xl space-y-4 p-5 md:p-6">
+      {/* DevTools Header Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4">
+        <div>
+          <span className="text-amber font-mono text-[11px] font-bold uppercase tracking-wider">
+            Kernel Initialization Trace
+          </span>
+          <h3 className="font-display text-[19px] font-bold text-t1 mt-0.5">
+            Safebox Pre-Exec Waterfall (11 Lifecycle Phases)
+          </h3>
+          <p className="text-t3 text-[13px] font-mono mt-1">
+            Total Supervisor Setup Latency: 24.8ms average cold start
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 font-mono text-[11px]">
+          <span className="flex items-center gap-1.5 text-t2">
+            <span className="h-2 w-2 rounded-full bg-[#60A5FA]" />
+            Supervisor (Parent)
+          </span>
+          <span className="flex items-center gap-1.5 text-t2">
+            <span className="h-2 w-2 rounded-full bg-acc" />
+            Child Shim (PID 1)
+          </span>
+          <span className="flex items-center gap-1.5 text-t2">
+            <span className="h-2 w-2 rounded-full bg-amber" />
+            Landlock LSM
+          </span>
+        </div>
+      </div>
+
+      {/* Waterfall Grid Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left font-mono text-[12px] border-collapse min-w-[700px]">
+          <thead>
+            <tr className="border-b border-border/80 text-t3 text-[10.5px] uppercase tracking-wider">
+              <th className="py-2.5 px-3">Phase Name</th>
+              <th className="py-2.5 px-3">Context</th>
+              <th className="py-2.5 px-3">Primary Syscall</th>
+              <th className="py-2.5 px-2">Status</th>
+              <th className="py-2.5 px-3 text-right">Duration</th>
+              <th className="py-2.5 px-3 w-[260px]">Waterfall Timeline</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/30">
+            {WATERFALL_STEPS.map((step) => {
+              const isSelected = selectedStepId === step.id;
+              // Compute percentage width with minimum 4% so microsecond items remain visible
+              const rawPct = (step.durationMicros / MAX_MICROS) * 100;
+              const barWidth = Math.max(4, Math.min(rawPct, 100));
+
+              let barColor = "bg-[#60A5FA]";
+              if (step.phase === "child") barColor = "bg-acc";
+              if (step.id === "step-landlock-restrict") barColor = "bg-amber";
+
+              return (
+                <tr
+                  key={step.id}
+                  onClick={() => setSelectedStepId(step.id)}
+                  className={cn(
+                    "transition-colors cursor-pointer",
+                    isSelected
+                      ? "bg-surface/90 text-t1 font-medium"
+                      : "hover:bg-surface/40 text-t2"
+                  )}
+                >
+                  <td className="py-2.5 px-3 font-semibold">
+                    <span className="text-acc mr-1.5">[ok]</span>
+                    {step.name}
+                  </td>
+                  <td className="py-2.5 px-3 text-t3">
+                    {step.phase === "supervisor" ? "Supervisor (P)" : "Child (PID 1)"}
+                  </td>
+                  <td className="py-2.5 px-3 text-t3 truncate max-w-[140px]">
+                    {step.syscall}
+                  </td>
+                  <td className="py-2.5 px-2">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-acc/10 text-acc border border-acc/20">
+                      200 OK
+                    </span>
+                  </td>
+                  <td className="py-2.5 px-3 text-right text-t1 font-bold">
+                    {step.durationLabel}
+                  </td>
+                  <td className="py-2.5 px-3">
+                    <div className="w-full bg-bg/80 rounded-full h-2.5 overflow-hidden border border-border/40 flex items-center">
+                      <div
+                        style={{ width: `${barWidth}%` }}
+                        className={cn("h-full rounded-full transition-all duration-300", barColor)}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Expandable Step Inspector Drawer */}
+      <div className="rounded-xl border border-border bg-surface/60 p-4 md:p-5 space-y-3 font-mono text-[12px]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-2">
+          <div>
+            <span className="text-t3 text-[10px] uppercase tracking-wider">
+              Selected Phase Details:
+            </span>
+            <h4 className="text-[16px] font-bold text-t1 mt-0.5">
+              {selectedStep.name} ({selectedStep.durationLabel})
+            </h4>
+          </div>
+          <span className="text-acc text-[11px] bg-acc/10 border border-acc/20 px-2 py-0.5 rounded">
+            Context: {selectedStep.phase}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p className="text-t3 text-[10.5px] uppercase">Syscall Signature &amp; Flags</p>
+            <p className="text-t1 font-bold mt-1">{selectedStep.syscall}</p>
+            <p className="text-t2 text-[11.5px] mt-0.5 bg-bg/60 p-2 rounded border border-border/40">
+              {selectedStep.flags}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-t3 text-[10.5px] uppercase">Security Invariant Enforced</p>
+            <p className="text-amber font-semibold mt-1">
+              {selectedStep.securityInvariant}
+            </p>
+            <p className="text-t2 text-[11.5px] mt-1">
+              {selectedStep.description}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. Boundary Attack Lab View
+   ───────────────────────────────────────────────────────────────────────────── */
+function AttackLabView() {
+  const [selectedVectorId, setSelectedVectorId] = useState<string>(
+    ATTACK_VECTORS[0].id
+  );
+
+  const vector =
+    ATTACK_VECTORS.find((v) => v.id === selectedVectorId) || ATTACK_VECTORS[0];
+
+  return (
+    <div className="rounded-2xl border border-border bg-code-bg overflow-hidden shadow-2xl p-5 md:p-6 space-y-5">
+      {/* Header */}
+      <div className="border-b border-border pb-4">
+        <span className="text-amber font-mono text-[11px] font-bold uppercase tracking-wider">
+          Adversarial Verification Arena
+        </span>
+        <h3 className="font-display text-[19px] font-bold text-t1 mt-0.5">
+          Side-by-Side Execution: Bare Host vs Safebox Sandbox
+        </h3>
+        <p className="text-t2 text-[13px] mt-1">
+          Demonstrates how Safebox neutralizes hazardous commands without root daemons or virtual machines.
+        </p>
+      </div>
+
+      {/* Vector Selector Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {ATTACK_VECTORS.map((v) => {
+          const isSelected = selectedVectorId === v.id;
+          return (
+            <button
+              key={v.id}
+              onClick={() => setSelectedVectorId(v.id)}
+              className={cn(
+                "rounded-xl border p-3.5 text-left transition-all cursor-pointer font-mono",
+                isSelected
+                  ? "bg-surface border-acc shadow-md"
+                  : "bg-surface/40 border-border hover:border-border-strong text-t3 hover:text-t2"
+              )}
+            >
+              <span className="text-amber text-[10px] uppercase font-bold tracking-wider block">
+                {v.category}
+              </span>
+              <span className="text-t1 font-display font-bold text-[13px] mt-1 block">
+                {v.title}
+              </span>
+              <span className="text-t3 text-[10.5px] truncate block mt-1.5">
+                {v.command}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tested Command Banner */}
+      <div className="rounded-xl border border-border bg-surface/50 p-3.5 font-mono text-[12.5px] flex items-center gap-3">
+        <span className="text-amber font-bold shrink-0">TESTED COMMAND:</span>
+        <code className="text-t1 bg-bg/80 px-2.5 py-1 rounded border border-border/60 overflow-x-auto flex-1">
+          {vector.command}
+        </code>
+      </div>
+
+      {/* Side-by-Side Comparison Columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 font-mono text-[12px]">
+        {/* Left Column: Bare Host (Vulnerable) */}
+        <div className="rounded-xl border border-red-900/50 bg-red-950/10 p-4 space-y-3 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-red-900/40 pb-2 mb-3">
+              <span className="text-red-400 font-bold uppercase text-[11px] tracking-wider">
+                Bare Host (Unconfined)
+              </span>
+              <span className="rounded bg-red-900/30 border border-red-700/50 px-2 py-0.5 text-red-300 text-[10px] font-bold">
+                {vector.bareHost.severity}
+              </span>
+            </div>
+
+            <pre className="rounded-lg bg-black/60 border border-red-900/30 p-3 text-red-200 text-[11.5px] leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              <code>{vector.bareHost.terminalOutput}</code>
+            </pre>
+          </div>
+
+          <div className="pt-2 border-t border-red-900/30">
+            <p className="text-red-400 text-[11px] font-bold">OUTCOME:</p>
+            <p className="text-t2 text-[12px] mt-0.5">{vector.bareHost.outcome}</p>
+          </div>
+        </div>
+
+        {/* Right Column: Inside Safebox (Contained) */}
+        <div className="rounded-xl border border-acc/40 bg-acc/5 p-4 space-y-3 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-acc/30 pb-2 mb-3">
+              <span className="text-acc font-bold uppercase text-[11px] tracking-wider">
+                Inside Safebox (Contained)
+              </span>
+              <span className="rounded bg-acc/15 border border-acc/30 px-2 py-0.5 text-acc text-[10px] font-bold">
+                PROTECTED
+              </span>
+            </div>
+
+            <pre className="rounded-lg bg-black/60 border border-acc/20 p-3 text-t1 text-[11.5px] leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              <code>{vector.safebox.terminalOutput}</code>
+            </pre>
+          </div>
+
+          <div className="pt-2 border-t border-acc/30">
+            <p className="text-acc text-[11px] font-bold">
+              ENFORCING PRIMITIVE:
+            </p>
+            <p className="text-t1 text-[12px] font-semibold mt-0.5">
+              {vector.safebox.enforcingPrimitive}
+            </p>
+            <p className="text-t2 text-[11.5px] mt-0.5">{vector.safebox.outcome}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Technical Remediation & Kernel Post-Mortem */}
+      <div className="rounded-xl border border-border bg-surface/40 p-4 font-mono text-[12px] space-y-1.5">
+        <p className="text-amber font-bold text-[11px] uppercase tracking-wider">
+          Kernel Subsystem Post-Mortem:
+        </p>
+        <p className="text-t2 text-[13px] leading-relaxed">
+          {vector.technicalRemediation}
+        </p>
+      </div>
+    </div>
+  );
+}
