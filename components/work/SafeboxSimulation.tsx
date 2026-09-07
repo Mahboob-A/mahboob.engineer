@@ -123,6 +123,12 @@ type SimulationPhase =
 
 const SPINNER_FRAMES = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
 
+const DEFAULT_SESSION = {
+  sessionId: "sess-1788798423580814662",
+  sessionFullId: "sess-1788798423580814662-396505",
+  sessionMergedPath: "/tmp/safebox/sessions/sess-1788798423580814662-396505/merged",
+};
+
 function generateRandomSession() {
   const part1 = Math.floor(1000000000000000000 + Math.random() * 8999999999999999999).toString();
   const part2 = Math.floor(100000 + Math.random() * 900000).toString();
@@ -139,11 +145,7 @@ function AgyTerminalView() {
     "logs" | "diff" | "patch" | "status"
   >("logs");
 
-  const [currentSession, setCurrentSession] = useState<{
-    sessionId: string;
-    sessionFullId: string;
-    sessionMergedPath: string;
-  }>(() => generateRandomSession());
+  const [currentSession, setCurrentSession] = useState(DEFAULT_SESSION);
 
   const [streamedTraceLines, setStreamedTraceLines] = useState<string[]>([]);
   const [spinnerFrame, setSpinnerFrame] = useState(0);
@@ -360,7 +362,7 @@ function AgyTerminalView() {
               <span className="h-3 w-3 rounded-full bg-[#F59E0B]/80 inline-block" />
               <span className="h-3 w-3 rounded-full bg-[#10B981]/80 inline-block" />
             </div>
-            <span className="text-t3 font-mono text-[12px] ml-2">
+            <span suppressHydrationWarning className="text-t3 font-mono text-[12px] ml-2">
               safebox: {currentSession.sessionId} (PID 1 shim)
             </span>
           </div>
@@ -634,7 +636,7 @@ function AgyTerminalView() {
                 simPhase === "completed") && (
                 <div className="py-2 border-y border-border/40 my-3">
                   <pre className="text-acc leading-tight text-[11px] md:text-[12px] overflow-x-auto selection:bg-acc/20 font-bold opacity-95">
-                    <code>{getAntigravityBanner(currentSession.sessionMergedPath)}</code>
+                    <code suppressHydrationWarning>{getAntigravityBanner(currentSession.sessionMergedPath)}</code>
                   </pre>
                 </div>
               )}
