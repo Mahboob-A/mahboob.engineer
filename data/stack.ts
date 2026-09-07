@@ -348,7 +348,7 @@ export const STACK: StackItem[] = [
     name: "Go",
     domain: "backend",
     projects: ["safebox"],
-    depth: 85,
+    depth: 55,
     depthNotes:
       "Core language for systems programming and Linux isolation tooling. Safebox is written in Go 1.24 with direct syscall orchestration, user namespaces, OverlayFS management, and Landlock LSM integration.",
   },
