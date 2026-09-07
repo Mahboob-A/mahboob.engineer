@@ -145,8 +145,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Does Mahboob know Python deeply?",
     ],
     answer:
-      "My strongest and most preferred programming language is Python. I have used Python as the primary language for every major backend system on my portfolio, including Taply, UnThink, Algocode, DrishtiAI, and Movio. I am highly comfortable with Python's asynchronous features, database ORMs, and web frameworks like Django and FastAPI. Beyond Python, I can read and understand Go for code reviews, and I am currently learning it deeply to build high-performance microservices. I also have academic exposure to Java and Kotlin from my Master's coursework at SRM, but I do not write them in production today. I focus on writing clean, type-safe, and highly performant code for backend platforms.",
-    tags: ["stack", "python", "language"],
+      "My strongest and most preferred programming language is Python. I have used Python as the primary language for production backends and systems across Taply, UnThink, Algocode, DrishtiAI, and Movio. I am highly comfortable with Python's asynchronous features, database ORMs, and web frameworks like Django and FastAPI. Alongside Python, I actively use Go for low-level systems programming. I built Safebox (https://github.com/Mahboob-A/safebox), an unprivileged Linux sandbox CLI tool for AI coding agents, in Go 1.24 to interface directly with Linux syscalls, user namespaces, and Landlock LSM. My self-rated depth in Go is 55% as an active learning area. I also have academic exposure to Java and Kotlin from my Master's coursework at SRM. I focus on writing clean, type-safe, and reliable backend code.",
+    tags: ["stack", "python", "language", "go", "safebox"],
   },
   {
     title: "Has Mahboob shipped production SaaS",
@@ -256,8 +256,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What demos can I test on your portfolio?",
     ],
     answer:
-      "I have engineered comprehensive dual-simulation suites for my flagship projects on this portfolio. On /work/unthink, you can test a 5-module System Architecture Explorer (DOM capture, Trafilatura cleaner, Dual-Taxonomy pipeline, Redis epoch cache invalidator, and EC2 security) and a Master Dual-AI Sandbox with simulated browser highlighting and live Server-Sent Events streaming. On /work/taply, you can explore a 5-module NFC Architectural Explorer and a Master Product Sandbox featuring a live profile customizer with 4 layout variants and an interactive Conference Networking Hall where you can tap 8 attendees to exchange NFC cards in real time. I am immensely proud of these interactive engines and invite you to explore both case studies!",
-    tags: ["simulation", "demos", "taply", "unthink", "interactive"],
+      "I have engineered comprehensive live interactive simulation suites for my top projects on this portfolio. On /work/unthink, you can test a 5-module System Architecture Explorer and a Master Dual-AI Sandbox with simulated browser highlighting and live Server-Sent Events streaming. On /work/taply, you can explore a 5-module NFC Architectural Explorer, a live profile customizer with 4 layout variants, and an interactive Conference Networking Hall where you can tap 8 attendees to exchange NFC cards in real time. On /work/safebox, you can test a 3-mode simulation engine featuring an AGY Terminal with Antigravity CLI execution logs and diff views, an 11-Stage Waterfall with microsecond syscall breakdowns, and a Boundary Attack Lab testing unprivileged filesystem and network restrictions. I am immensely proud of these interactive engines and warmly invite you to test all three!",
+    tags: ["simulation", "demos", "taply", "unthink", "safebox", "interactive"],
   },
   {
     title: "Which project is Mahboob most proud of",
@@ -278,8 +278,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "what is mahboob's best project?",
     ],
     answer:
-      "The work I am most proud of divides into two core achievements: UnThink as my flagship SaaS product, and Algocode as my core systems engineering project. UnThink (https://letsunthink.tech/, simulation at /work/unthink) is my sole zero-to-one production AI second-brain SaaS built with a 'dump and forget' capture philosophy, dual-taxonomy AI categorization, a sub-300ms capture SLA, and decoupled Django 5.1 and FastAPI SSE streaming services with over 50 active users (as of August 2026) that I actively maintain. Algocode is the systems engineering project I am most proud of from an infrastructure perspective: a distributed online judge that compiles and runs untrusted C++ code using microservices, RabbitMQ task dispatch, and Linux kernel isolation (namespaces, cgroups, and seccomp filters). As follow-up mentions, I also co-founded Taply (https://gettaply.me, /work/taply), a live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 users and 1 enterprise customer, and built DrishtiAI, an AI eye-screening pipeline for rural healthcare.",
-    tags: ["proud", "favorite", "unthink", "algocode", "projects", "product", "best"],
+      "The work I am most proud of spans five key projects in this order: First, UnThink (https://letsunthink.tech/, simulation at /work/unthink), my sole zero-to-one production AI second-brain SaaS built with a 'dump and forget' capture philosophy, dual-taxonomy AI categorization, sub-300ms capture SLA, and decoupled Django 5.1 and FastAPI SSE services serving over 50 active users as of August 2026 that I actively maintain. Second, Taply (https://gettaply.me, /work/taply), my co-founded live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first real-time analytics with SHA-256 IP anonymization serving over 100 active users and 1 enterprise customer. Third, Safebox (https://github.com/Mahboob-A/safebox, /work/safebox), my open-source rootless Linux sandbox CLI in Go 1.24 that isolates autonomous AI coding agents using 6 Linux namespaces, Landlock LSM ABI v3, ephemeral OverlayFS scratchpads, and userspace NAT networking with sub-30ms cold start latency. Fourth, Algocode (/work/algocode), my core systems project: a distributed C++ online judge using microservices, RabbitMQ, and kernel isolation. Fifth, Movio (/work/movio), a distributed video transcoding pipeline built on Celery and FFmpeg.",
+    tags: ["proud", "favorite", "unthink", "taply", "safebox", "algocode", "movio", "projects", "product", "best"],
   },
   {
     title: "What is Algocode",
@@ -300,8 +300,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Strongest backend project on the portfolio?",
     ],
     answer:
-      "I recommend starting with UnThink (https://letsunthink.tech/, case study at /work/unthink) and Algocode. UnThink is my flagship SaaS product built from scratch as a sole founder, showcasing decoupled Django 5.1 and FastAPI SSE streaming services, AI dual taxonomy, and sub-millisecond Redis epoch cache invalidation. Algocode demonstrates deep low-level systems engineering, running untrusted C++ code safely across microservices with RabbitMQ and Linux kernel isolation (namespaces, cgroups, and seccomp filters). If you want to see live multi-tenant SaaS with real-time analytics, Taply (https://gettaply.me, /work/taply) is also a strong showcase with an interactive simulation suite.",
-    tags: ["projects", "hiring", "depth", "unthink", "algocode", "taply"],
+      "I recommend exploring my projects in this sequence: start with UnThink (https://letsunthink.tech/, case study at /work/unthink) and Taply (https://gettaply.me, /work/taply) for production web backends, followed by Safebox (https://github.com/Mahboob-A/safebox, /work/safebox) and Algocode for deep low-level systems engineering. UnThink demonstrates decoupled Django 5.1 and FastAPI SSE streaming services with sub-millisecond Redis epoch cache invalidation. Taply showcases real-time analytics with SHA-256 IP anonymization and dynamic cache TTL scheduling. For low-level systems depth, Safebox demonstrates kernel engineering in Go 1.24, implementing user namespaces, Landlock LSM path rules, OverlayFS copy-up scratchpads, and userspace NAT networking for unprivileged AI agent sandboxing. Algocode completes this with distributed C++ execution across microservices, RabbitMQ, and Linux kernel isolation. You can also explore Movio for video transcoding pipelines.",
+    tags: ["projects", "hiring", "depth", "unthink", "taply", "safebox", "algocode", "movio"],
   },
 
   /* ─── Group 5 — Writing & learning ────────────────────────────── */
@@ -335,8 +335,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's weakest production tech?",
     ],
     answer:
-      "I am actively learning Go, Terraform, Kubernetes, and eBPF. These are listed on my tech stack page with honest depth ratings. While I am highly proficient with Python, Django, Docker, and DevOps automation, I want to expand my skills in infrastructure orchestration and systems programming. I have used Pulumi for infrastructure as code, and I am now learning Terraform. Similarly, I understand container sandboxing through my work with Linux namespaces in Algocode, and I am studying Kubernetes to learn container orchestration at scale. I am building small projects using these technologies to gain hands-on experience.",
-    tags: ["learning", "growth", "boundaries"],
+      "I am actively learning Go, Terraform, Kubernetes, and eBPF. These are listed on my tech stack page with honest depth ratings. For example, my depth in Go is self-rated at 55% ('55% learning'). To master Go systems programming, I built Safebox (https://github.com/Mahboob-A/safebox), an open-source rootless Linux sandbox CLI tool that directly exercises Linux kernel syscalls, namespaces, Landlock LSM, and OverlayFS. While I am already highly proficient with Python, Django, Docker, and CI/CD automation, I am using Terraform to complement my Pulumi experience and studying Kubernetes to scale beyond single-node containers. I believe the best way to learn infrastructure is by shipping real tools and documenting what works.",
+    tags: ["learning", "growth", "boundaries", "go", "safebox"],
   },
 
   /* ─── Group 6 — DSA & practice ─────────────────────────────────── */
@@ -429,7 +429,48 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "List Mahboob's open-source projects.",
     ],
     answer:
-      "My GitHub username is @Mahboob-A, and you can explore all my public repositories at github.com/Mahboob-A. My public projects include Algocode, Movio, DrishtiAI, CuteTube, AirPass, and my Pulumi AWS infrastructure setups. I also share smaller tools like my Load Balancer lab and ImgTwist gallery. Although the repositories for Taply and UnThink are kept private to protect commercial code, I document their architecture and engineering details fully in the projects section of this portfolio.",
-    tags: ["github", "open-source", "repos"],
+      "My GitHub username is @Mahboob-A, and you can explore all my public repositories at github.com/Mahboob-A. My premier open-source tool is Safebox (github.com/Mahboob-A/safebox), an unprivileged Linux sandbox CLI tool for AI coding agents written in Go 1.24 under the MIT license. My other open-source projects include Algocode (distributed C++ judge with Docker sibling isolation), Movio (video transcoding pipeline with Celery and FFmpeg), DrishtiAI (AI-powered eye screening for rural healthcare), and DataLineage Doctor (SQL and dbt lineage health auditor). I also share infrastructure labs like AirPass, CuteTube, and Pulumi AWS setups. While the source code for my SaaS products Taply and UnThink is private for commercial reasons, their architecture, metrics, and live simulations are fully documented on this portfolio.",
+    tags: ["github", "open-source", "repos", "safebox"],
+  },
+
+  /* ─── Group 9: Safebox & Open-Source Systems ───────────────────── */
+  {
+    title: "Tell me about Safebox",
+    questions: [
+      "Tell me about Safebox",
+      "What is Safebox?",
+      "How does Safebox work?",
+      "Why did Mahboob build Safebox?",
+      "What is the Safebox CLI?",
+    ],
+    answer:
+      "I built Safebox as an open-source rootless Linux sandbox and change management engine for autonomous AI coding agents, written in Go 1.24 under the MIT license and available at github.com/Mahboob-A/safebox. When AI agents execute bash commands, unconfined tools can accidentally overwrite files or leak secrets. Traditional Docker containers introduce 300 to 1500ms cold start latency and require daemon permissions. Safebox solves this by launching in under 30ms (averaging 24.8ms) with zero root privileges. It isolates agents using 6 Linux namespaces, Landlock LSM ABI v3 default-deny path restrictions, ephemeral OverlayFS scratchpads where writes are isolated and instantly rollbackable via 'safebox revert', userspace NAT networking with Layer 3 IP pinning, and an in-process PID 1 supervisor shim. You can explore its 3-mode live simulation engine on /work/safebox.",
+    tags: ["safebox", "open-source", "go", "sandbox", "security", "linux"],
+  },
+  {
+    title: "What are Mahboob's open-source projects",
+    questions: [
+      "What are Mahboob's open-source projects?",
+      "What open source projects has Mahboob built?",
+      "Tell me about Mahboob's open source contributions",
+      "What public tools did Mahboob release?",
+      "Does Mahboob have open source work?",
+    ],
+    answer:
+      "My premier open-source project is Safebox (github.com/Mahboob-A/safebox), a rootless Linux sandbox CLI tool for autonomous AI coding agents written in Go 1.24 under the MIT license with a live simulation suite on /work/safebox. My other public repositories on GitHub (github.com/Mahboob-A) include Algocode, a distributed online judge for C++ that compiles untrusted code safely using microservices, RabbitMQ, and Linux kernel isolation. I also open-sourced Movio, a video-on-demand platform transcoding multi-bitrate HLS and DASH streams with Celery and FFmpeg, DrishtiAI, a WebRTC eye-screening pipeline for rural healthcare, and DataLineage Doctor, a SQL and dbt lineage auditing tool. While my SaaS products Taply and UnThink have private repositories for commercial code, their technical architecture and live simulation engines are openly documented on this portfolio.",
+    tags: ["open-source", "github", "safebox", "algocode", "movio", "drishti", "datalineage"],
+  },
+  {
+    title: "How does Safebox achieve rootless container isolation",
+    questions: [
+      "How does Safebox achieve rootless container isolation?",
+      "How does Safebox isolate AI agents?",
+      "Does Safebox require root or Docker?",
+      "How does Safebox work under the hood?",
+      "What are the kernel mechanisms in Safebox?",
+    ],
+    answer:
+      "Safebox operates entirely without root privileges or background daemons using five kernel-level isolation layers. First, User Namespaces (CLONE_NEWUSER) map the host user ID to container root, granting full container authority without host escalation. Second, in-kernel Landlock LSM ABI v3 enforces path-based Mandatory Access Control under PR_SET_NO_NEW_PRIVS, restricting writes strictly to the workspace directory. Third, an ephemeral OverlayFS scratchpad uses the developer workspace as a read-only lower layer, capturing modifications in a temporary upper layer that can be inspected with 'safebox diff' or discarded with 'safebox revert'. Fourth, userspace NAT networking via pasta or slirp4netns isolates network traffic with Layer 3 domain IP pinning. Fifth, an in-process PID 1 supervisor shim forwards signals and reaps zombie processes via continuous wait4 calls. This achieves container-grade security with an average cold start of 24.8 milliseconds.",
+    tags: ["safebox", "internals", "kernel", "landlock", "namespaces", "overlayfs"],
   },
 ];

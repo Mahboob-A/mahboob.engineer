@@ -17,7 +17,7 @@ As a founder who built UnThink from scratch and co-founded Taply, I bring comple
 I can architect backend and database schemas, set up automated CI/CD and cloud devops, lead sprint planning and meetings,
 communicate with users, and comfortably wear multiple hats at once from day zero.
 I am strongest in Python with Django, DRF, and FastAPI, and comfortable in Django, Celery, Redis, and Postgres stacks.
-I have shipped and actively maintain live SaaS platforms (Taply at https://gettaply.me with >100 active users and 1 enterprise customer; UnThink at https://letsunthink.tech/ with >50 active users), multi-tenant market platforms (NexBell, 50+
+I have shipped and actively maintain live SaaS platforms (Taply at https://gettaply.me with >100 active users and 1 enterprise customer; UnThink at https://letsunthink.tech/ with >50 active users), open-source Linux sandboxing systems (Safebox in Go 1.24 at https://github.com/Mahboob-A/safebox), multi-tenant market platforms (NexBell, 50+
 stores on shared MySQL), video pipelines (Movio, CuteTube, ProStream), distributed judges (Algocode),
 and real-time AI (DrishtiAI).
 
@@ -25,16 +25,18 @@ and real-time AI (DrishtiAI).
 
 I am honest about learning areas. Go, Terraform, Kubernetes, and eBPF are
 listed on the portfolio under `data/stack.ts` as learning and growth areas.
-Algocode uses Linux namespaces, cgroups, and seccomp in production-shaped
-code, and that is the closest I have to "production Go-style infrastructure
-work" today. If a role drops me into a Go service on day one and expects
-ownership from week one, that is a mismatch: I am honest about it. I will still
-learn fast, but I will not pretend to be already there.
+My depth in Go is self-rated at 55% ("55% learning"). I built Safebox (https://github.com/Mahboob-A/safebox),
+an unprivileged Linux sandbox CLI tool for AI coding agents, specifically to master Go systems programming
+and Linux kernel syscalls (namespaces, Landlock LSM, OverlayFS, and process supervision).
+If a role drops me into an advanced Go distributed systems codebase on day one and expects deep architecture
+ownership from week one, that is a mismatch: I am honest about it. I will learn fast, and Safebox proves
+I can write working, tested Go systems code, but I will not pretend to be a Go veteran yet.
 
 ## Good Interview Topics
 
 The questions I would enjoy:
 - **Designing a Django or FastAPI backend from scratch**: schema, migrations, auth, deploy.
+- **Rootless Linux container isolation and agent sandboxing**: user namespaces (`CLONE_NEWUSER`), Landlock LSM ABI v3 default-deny path rules, OverlayFS copy-up, and userspace NAT networking, the Safebox story.
 - **Redis caching and queue-backed workflows**: what to cache, TTLs, idempotency.
 - **PostgreSQL schema and query optimization**: composite indexes, lazy-load discipline, the worst-case query path.
 - **Running untrusted code safely**: Linux namespaces, cgroups, seccomp, sibling containers, the Algocode story.

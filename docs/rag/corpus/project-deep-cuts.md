@@ -10,7 +10,13 @@
 ## Incidents And Postmortems
 
 I will not share private-client incidents, but the public-project stories are
-honest. **Algocode**: a fork bomb in a sibling container took down a
+honest. **Safebox**: in rootless user namespaces, OverlayFS creates internal
+work/work directories with mode 0000 on unmount. Standard `os.RemoveAll` calls
+failed with `EACCES`, causing ephemeral session directory leaks. The fix was
+`SafeRemoveAll`, which recursively resets restrictive directory permissions to
+0700 before unlinking. Additionally, child container execution raced ahead before
+userspace NAT interfaces came online; the fix was an inter-process synchronization
+pipe using `--ready-fd`. **Algocode**: a fork bomb in a sibling container took down a
 single node once. The fix was cgroup CPU caps plus a hard wall-clock limit
 that the watchdog actually enforced. Before that fix, "securely running
 untrusted code" was theatre. **Movio**: the Celery single-worker segment
@@ -25,7 +31,10 @@ or churn that pointed to the symptom.
 
 ## What I Would Rebuild Differently
 
-Honest list, one per project I want to revisit. **Taply v1**: Postgres is
+Honest list, one per project I want to revisit. **Safebox v1**: integrate
+cgroups v2 memory controller (`memory.max`) from day one instead of relying
+purely on user namespace limits, and embed eBPF LSM audit probes directly
+for real-time syscall tracing. **Taply v1**: Postgres is
 on the same box as Redis would have happened; I shipped ALB + read-replicas
 before that mistake, but I would start multi-AZ from day one now. **Algocode**:
 skip MongoDB for results, use Postgres JSONB; one less service to operate.
@@ -40,29 +49,36 @@ customer.
 
 ## Demo Readiness And Live Simulation Suites
 
-Two products are live in production, actively maintained, and feature full interactive simulation engines on this portfolio.
+Three projects feature full interactive simulation engines on this portfolio:
 
 1. **Taply** is live in production at https://gettaply.me with over 100 active users and 1 paying enterprise customer (as of August 2026), and my personal digital business card at https://gettaply.me/p/mehboob. On my portfolio at /work/taply, you can interact with the dual simulation suite: a 5-module NFC Architectural Explorer (NFC 13.56MHz scan latency generator, RFC 6350 vCard payload analysis, multi-tenant RBAC tree, Redis HINCRBY atomic counters, and real-time webhooks) plus the Master Product Sandbox featuring a live profile customizer with 4 layout variants (classic, hero, compact, banner) and a Conference Networking Hall with 8 interactive attendees for simulated NFC taps.
 
 2. **UnThink** is live in production at https://letsunthink.tech/ with over 50 active users (as of August 2026) and a published Chrome Web Store extension. On my portfolio at /work/unthink, you can interact with the dual simulation suite: a 5-module System Architecture Explorer (DOM capture engine, Trafilatura cleaner, Dual-Taxonomy pipeline, Redis epoch cache invalidator, and hardened EC2 infrastructure) plus the Master Product Sandbox featuring a live simulated browser viewport and a 3-stage intelligence engine streaming real-time Server-Sent Events (SSE).
 
+3. **Safebox** is an open-source sandbox CLI tool on GitHub at https://github.com/Mahboob-A/safebox. On my portfolio at /work/safebox, you can interact with the 3-mode simulation engine: an AGY Terminal Simulation Engine running Antigravity CLI with slow-mo execution traces and change management controls, an 11-stage Startup Waterfall breaking down microsecond syscalls, and a Boundary Attack Lab testing credential theft, fork bombs, network leaks, and host filesystem tampering.
+
 ## Proudest Work: Flagship Product vs Systems Engineering Project
 
-When a recruiter or visitor asks which project I am most proud of, what is my best work, or where to start, the answer divides cleanly into product versus systems engineering:
+When a recruiter or visitor asks which project I am most proud of, what is my best work, my favorite project, or where to start, the answer follows this strict order:
 
 1. **Flagship SaaS Product I am most proud of: UnThink**
    - UnThink is my sole zero-to-one production system and commercial AI second-brain SaaS product (https://letsunthink.tech/). I built it as a solo founder from scratch around a "dump and forget" zero-decision capture philosophy for developers.
    - Highlights: zero-decision dual-taxonomy AI categorization, sub-300ms capture SLA, unified monorepo with decoupled Django 5.1 CRUD and FastAPI SSE streaming services, multi-model failover, and multi-key Redis caching with deterministic epoch versioning. Serves over 50 active users (as of August 2026) and I actively maintain it.
    - Interactive dual simulation suite: explore the live architecture at /work/unthink.
 
-2. **Core Systems Engineering Project I am most proud of: Algocode**
-   - Algocode is the systems engineering project I am most proud of from an infrastructure and low-level systems perspective.
-   - Highlights: distributed online judge for C++, microservices architecture, RabbitMQ asynchronous task distribution, ephemeral Docker sibling containers, and kernel-level sandboxing using Linux namespaces, cgroups, and seccomp filters.
-
-3. **Follow-up Mention (Co-founded Live SaaS): Taply**
+2. **Co-founded Live SaaS Product: Taply**
    - Taply is my co-founded live digital business card platform (https://gettaply.me, personal card at https://gettaply.me/p/mehboob, simulation at /work/taply). It features physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer (as of August 2026), and I actively maintain it.
 
-4. **Follow-up Mention (AI Infrastructure): DrishtiAI**
-   - DrishtiAI is an AI-powered eye-screening pipeline and vision infrastructure designed for rural health screening in India over WebRTC streaming.
+3. **Open-Source Systems Sandbox: Safebox**
+   - Safebox is an unprivileged Linux sandbox CLI tool written in Go 1.24 and published open-source on GitHub at https://github.com/Mahboob-A/safebox. It confines autonomous AI coding agents at the system call boundary without requiring root privileges, Docker daemons, or virtual machines.
+   - Highlights: cold starts under 30 milliseconds (averaging 24.8ms), unprivileged user namespaces, in-kernel Landlock LSM ABI v3 default-deny path restrictions, ephemeral OverlayFS workspace scratchpads with instant rollback in under 1ms, and in-process PID 1 supervisor shim with continuous wait4 zombie reaping.
+   - Interactive 3-mode simulation suite: explore the live container and attack lab at /work/safebox.
 
-The rest are **portfolio projects on GitHub**: Movio (video transcoding infrastructure with HLS/DASH), DataLineage Doctor, ProStream, CuteTube, AirPass, ImgTwist, Load Balancer Lab, and Pulumi AWS Infra.
+4. **Core Systems Engineering Project: Algocode**
+   - Algocode is the systems engineering project I built to master distributed infrastructure and untrusted code execution.
+   - Highlights: distributed online judge for C++, microservices architecture, RabbitMQ asynchronous task distribution, ephemeral Docker sibling containers, and kernel-level sandboxing using Linux namespaces, cgroups, and seccomp filters.
+
+5. **Video Infrastructure Project: Movio**
+   - Movio is a YouTube-scale video-on-demand infrastructure project featuring a distributed transcoding pipeline with Celery workers, FFmpeg, multi-bitrate HLS and MPEG-DASH packaging, and CloudFront CDN delivery.
+
+The rest are **portfolio projects on GitHub**: DataLineage Doctor, DrishtiAI, ProStream, CuteTube, AirPass, ImgTwist, Load Balancer Lab, and Pulumi AWS Infra.
