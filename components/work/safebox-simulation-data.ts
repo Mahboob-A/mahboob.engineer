@@ -326,7 +326,7 @@ export const SAFEBOX_STARTUP_TRACE: string[] = [
 export function getAntigravityBanner(sessionPath: string): string {
 	return [
 		"      ▄▀▀▄        Antigravity CLI 1.1.27",
-		"     ▀▀▀▀▀▀       metube.qo@gmail.com (Antigravity Starter Quota)",
+		"     ▀▀▀▀▀▀       connect.mahboobalam@gmail.com (Google AI Pro)",
 		"    ▀▀▀▀▀▀▀▀      Gemini 3.8 Flash (High)",
 		`   ▄▀▀    ▀▀▄     ${sessionPath}`,
 		"  ▄▀▀      ▀▀▄",
