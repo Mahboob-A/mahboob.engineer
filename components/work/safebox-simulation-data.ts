@@ -748,28 +748,30 @@ diff -u a/main.go b/main.go
 [safebox] workspace reverted to pristine state in 0.812ms. 0 bytes modified on host.`
 };
 
-export function getSafeboxApplyOutput(scenario: AgyScenario): string {
+export function getSafeboxApplyOutput(scenario: AgyScenario, sessionId?: string): string {
 	if (scenario.id === "scenario-jailbreak" || scenario.diffSummary.length === 0) {
 		return "[safebox] zero modifications staged in upperdir scratchpad. nothing to apply.";
 	}
+	const sid = sessionId || scenario.sessionId;
 	const added = scenario.diffSummary.filter((d) => d.status === "ADDED").length;
 	const mod = scenario.diffSummary.filter((d) => d.status === "MODIFIED").length;
 	return [
-		`[safebox] staging changes from session ${scenario.sessionId}...`,
+		`[safebox] staging changes from session ${sid}...`,
 		`[safebox] validating atomic copy-up integrity (${scenario.diffSummary.length} files)...`,
 		`[safebox] atomic commit complete: ${added} added, ${mod} modified, 0 deleted`,
 		`[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace...`,
-		`[safebox] session ${scenario.sessionId} purged (0 residual bytes)`
+		`[safebox] session ${sid} purged (0 residual bytes)`
 	].join("\n");
 }
 
-export function getSafeboxRevertOutput(scenario: AgyScenario): string {
+export function getSafeboxRevertOutput(scenario: AgyScenario, sessionId?: string): string {
 	if (scenario.id === "scenario-jailbreak" || scenario.diffSummary.length === 0) {
 		return "[safebox] workspace already pristine. zero mutations on host.";
 	}
+	const sid = sessionId || scenario.sessionId;
 	return [
 		`[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace...`,
-		`[safebox] wiping ephemeral upperdir and workdir (/tmp/safebox/sessions/${scenario.sessionId})...`,
+		`[safebox] wiping ephemeral upperdir and workdir (/tmp/safebox/sessions/${sid})...`,
 		`[safebox] workspace reverted to pristine state in 0.812ms. 0 bytes modified on host.`
 	].join("\n");
 }

@@ -123,12 +123,27 @@ type SimulationPhase =
 
 const SPINNER_FRAMES = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
 
+function generateRandomSession() {
+  const part1 = Math.floor(1000000000000000000 + Math.random() * 8999999999999999999).toString();
+  const part2 = Math.floor(100000 + Math.random() * 900000).toString();
+  const sessionId = `sess-${part1}`;
+  const sessionFullId = `sess-${part1}-${part2}`;
+  const sessionMergedPath = `/tmp/safebox/sessions/${sessionFullId}/merged`;
+  return { sessionId, sessionFullId, sessionMergedPath };
+}
+
 function AgyTerminalView() {
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
   const [simPhase, setSimPhase] = useState<SimulationPhase>("unselected");
   const [activeOutputPanel, setActiveOutputPanel] = useState<
     "logs" | "diff" | "patch" | "status"
   >("logs");
+
+  const [currentSession, setCurrentSession] = useState<{
+    sessionId: string;
+    sessionFullId: string;
+    sessionMergedPath: string;
+  }>(() => generateRandomSession());
 
   const [streamedTraceLines, setStreamedTraceLines] = useState<string[]>([]);
   const [spinnerFrame, setSpinnerFrame] = useState(0);
@@ -155,6 +170,7 @@ function AgyTerminalView() {
   // Handle Scenario Choice (from outside the terminal)
   const handleSelectScenario = (scenarioId: string) => {
     setSelectedScenarioId(scenarioId);
+    setCurrentSession(generateRandomSession());
     setSimPhase("ready_to_launch");
     setStreamedTraceLines([]);
     setSpinnerFrame(0);
@@ -173,6 +189,7 @@ function AgyTerminalView() {
     if (!scenario || simPhase !== "ready_to_launch") return;
     setSimPhase("booting_trace");
     setStreamedTraceLines([]);
+    setCurrentSession(generateRandomSession());
 
     let lineIndex = 0;
     const interval = setInterval(() => {
@@ -247,7 +264,7 @@ function AgyTerminalView() {
     setActiveOutputPanel("status");
     setLastActionCommand("safebox apply --yes");
     if (scenario) {
-      setCommandFeedback(getSafeboxApplyOutput(scenario));
+      setCommandFeedback(getSafeboxApplyOutput(scenario, currentSession.sessionId));
     }
   };
 
@@ -255,7 +272,7 @@ function AgyTerminalView() {
     setActiveOutputPanel("status");
     setLastActionCommand("safebox revert --yes");
     if (scenario) {
-      setCommandFeedback(getSafeboxRevertOutput(scenario));
+      setCommandFeedback(getSafeboxRevertOutput(scenario, currentSession.sessionId));
     }
   };
 
@@ -344,7 +361,7 @@ function AgyTerminalView() {
               <span className="h-3 w-3 rounded-full bg-[#10B981]/80 inline-block" />
             </div>
             <span className="text-t3 font-mono text-[12px] ml-2">
-              safebox: {scenario ? scenario.sessionId : "sess-1788798423580814662"} (PID 1 shim)
+              safebox: {currentSession.sessionId} (PID 1 shim)
             </span>
           </div>
 
@@ -617,7 +634,7 @@ function AgyTerminalView() {
                 simPhase === "completed") && (
                 <div className="py-2 border-y border-border/40 my-3">
                   <pre className="text-acc leading-tight text-[11px] md:text-[12px] overflow-x-auto selection:bg-acc/20 font-bold opacity-95">
-                    <code>{getAntigravityBanner(scenario.sessionMergedPath)}</code>
+                    <code>{getAntigravityBanner(currentSession.sessionMergedPath)}</code>
                   </pre>
                 </div>
               )}
