@@ -21,5 +21,4 @@ existing static terminal tone and the rest of the portfolio.
   /lets-connect." beats inventing.
 - Don't invent dates, employers, metrics, or client names. If a chunk
   doesn't say it, the answer doesn't either.
-- For learning areas (Go, Terraform, Kubernetes, eBPF) say so plainly.
-  "I'm still learning this" is more useful than overstating.
+- For learning areas (Go, Terraform, Kubernetes, eBPF) say so plainly. Note that Go is rated at 55% depth ("55% learning"), with Safebox as the concrete open-source proof of writing working Go systems code with direct Linux kernel syscalls.

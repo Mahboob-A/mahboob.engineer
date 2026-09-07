@@ -36,22 +36,20 @@ is the cleverest possible thing."
 
 ## What I Am Most Proud Of
 
-As a builder and systems engineer, my proudest work spans products and deep systems in this order:
+As a builder and systems engineer, my proudest work divides into product and systems engineering:
 
-1. **Flagship SaaS Product: UnThink (https://letsunthink.tech/, /work/unthink)**
+1. **Flagship SaaS Product as a Product Founder: UnThink (https://letsunthink.tech/, /work/unthink)**
    UnThink is my sole zero-to-one production system and commercial AI second-brain SaaS product that I architected and built from scratch as a solo founder around a "dump and forget" zero-decision capture philosophy. It features zero-decision dual-taxonomy AI categorization, a sub-300ms capture SLA, a unified monorepo with decoupled Django 5.1 CRUD and FastAPI SSE streaming services, and multi-key Redis cache with deterministic epoch versioning. It serves over 50 active users (as of August 2026) and I actively maintain it. You can test its interactive dual simulation suite at /work/unthink.
 
-2. **Co-Founded Live SaaS: Taply (https://gettaply.me, /work/taply)**
-   Taply is my co-founded live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first real-time analytics with SHA-256 IP anonymization serving over 100 active users and 1 enterprise customer (as of August 2026), which I actively maintain. You can explore its live customizer and Conference Networking Hall at /work/taply.
+2. **Systems Engineering Projects: Safebox first, followed by Algocode**
+   - **Primary Systems Engineering Project: Safebox (https://github.com/Mahboob-A/safebox, /work/safebox)**
+     Safebox is my open-source rootless Linux sandbox and change management engine for autonomous AI coding agents, written in Go 1.24 under the MIT license. It runs unprivileged using 6 Linux namespaces, Landlock LSM ABI v3 default-deny path rules, ephemeral OverlayFS scratchpads with instant rollback, userspace NAT networking with Layer 3 IP pinning, and an in-process PID 1 supervisor shim. It achieves sub-30ms cold start latency. You can test its 3-mode simulation engine at /work/safebox.
+   - **Core Distributed Systems Project: Algocode (/work/algocode)**
+     Algocode is a distributed online judge for C++ that safely executes untrusted code at scale using microservices, RabbitMQ task dispatch, ephemeral Docker sibling containers, and kernel-level isolation (Linux namespaces, cgroups, and seccomp filters).
 
-3. **Open-Source Systems Sandbox: Safebox (https://github.com/Mahboob-A/safebox, /work/safebox)**
-   Safebox is an open-source rootless Linux sandbox and change management engine for autonomous AI coding agents, written in Go 1.24 under the MIT license. It runs unprivileged using 6 Linux namespaces, Landlock LSM ABI v3 default-deny path rules, ephemeral OverlayFS scratchpads with instant rollback, userspace NAT networking with Layer 3 IP pinning, and an in-process PID 1 supervisor shim. It achieves sub-30ms cold start latency. You can test its 3-mode simulation engine at /work/safebox.
-
-4. **Core Systems Engineering Project: Algocode (/work/algocode)**
-   Algocode is a distributed online judge for C++ that safely executes untrusted code at scale using microservices, RabbitMQ task dispatch, ephemeral Docker sibling containers, and kernel-level isolation (Linux namespaces, cgroups, and seccomp filters).
-
-5. **Video Infrastructure Platform: Movio (/work/movio)**
-   Movio is a distributed video-on-demand platform built on Celery workers and FFmpeg that transcodes raw video into multi-bitrate HLS and MPEG-DASH streams with AWS CloudFront CDN distribution.
+3. **Follow-up Mentions (Co-founded Live SaaS & Infra)**
+   - **Taply (https://gettaply.me, /work/taply)**: Co-founded live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first real-time analytics with SHA-256 IP anonymization serving over 100 active users and 1 enterprise customer (as of August 2026), which I actively maintain. Explore its live customizer and Conference Networking Hall at /work/taply.
+   - **Movio (/work/movio)**: Distributed video-on-demand platform built on Celery workers and FFmpeg that transcodes raw video into multi-bitrate HLS and MPEG-DASH streams with AWS CloudFront CDN distribution.
 
 ## What I Am Building Now
 

@@ -59,26 +59,22 @@ Three projects feature full interactive simulation engines on this portfolio:
 
 ## Proudest Work: Flagship Product vs Systems Engineering Project
 
-When a recruiter or visitor asks which project I am most proud of, what is my best work, my favorite project, or where to start, the answer follows this strict order:
+When a recruiter or visitor asks which project I am most proud of, what is my best work, my favorite project, or where to start, the answer divides into product versus systems engineering:
 
-1. **Flagship SaaS Product I am most proud of: UnThink**
+1. **Flagship SaaS Product as a Product Founder: UnThink**
    - UnThink is my sole zero-to-one production system and commercial AI second-brain SaaS product (https://letsunthink.tech/). I built it as a solo founder from scratch around a "dump and forget" zero-decision capture philosophy for developers.
    - Highlights: zero-decision dual-taxonomy AI categorization, sub-300ms capture SLA, unified monorepo with decoupled Django 5.1 CRUD and FastAPI SSE streaming services, multi-model failover, and multi-key Redis caching with deterministic epoch versioning. Serves over 50 active users (as of August 2026) and I actively maintain it.
    - Interactive dual simulation suite: explore the live architecture at /work/unthink.
 
-2. **Co-founded Live SaaS Product: Taply**
-   - Taply is my co-founded live digital business card platform (https://gettaply.me, personal card at https://gettaply.me/p/mehboob, simulation at /work/taply). It features physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer (as of August 2026), and I actively maintain it.
+2. **Systems Engineering Projects: Safebox first, followed by Algocode**
+   - **Primary Systems Engineering Project: Safebox (https://github.com/Mahboob-A/safebox, /work/safebox)**
+     Safebox is my premier open-source rootless Linux sandbox CLI tool written in Go 1.24 under the MIT license. It confines autonomous AI coding agents at the system call boundary without requiring root privileges, Docker daemons, or virtual machines. It achieves sub-30ms cold starts (averaging 24.8ms), unprivileged user namespaces (`CLONE_NEWUSER`), in-kernel Landlock LSM ABI v3 default-deny path restrictions, ephemeral OverlayFS scratchpads with instant rollback in under 1ms, and in-process PID 1 supervisor shim with continuous wait4 zombie reaping. Explore the 3-mode simulation suite at /work/safebox.
+   - **Core Distributed Systems Project: Algocode (/work/algocode)**
+     Algocode is the distributed systems engineering project I built to master untrusted code execution. It compiles and runs untrusted C++ code safely across microservices, RabbitMQ asynchronous task queues, ephemeral Docker sibling containers, and kernel-level sandboxing (Linux namespaces, cgroups, and seccomp filters).
 
-3. **Open-Source Systems Sandbox: Safebox**
-   - Safebox is an unprivileged Linux sandbox CLI tool written in Go 1.24 and published open-source on GitHub at https://github.com/Mahboob-A/safebox. It confines autonomous AI coding agents at the system call boundary without requiring root privileges, Docker daemons, or virtual machines.
-   - Highlights: cold starts under 30 milliseconds (averaging 24.8ms), unprivileged user namespaces, in-kernel Landlock LSM ABI v3 default-deny path restrictions, ephemeral OverlayFS workspace scratchpads with instant rollback in under 1ms, and in-process PID 1 supervisor shim with continuous wait4 zombie reaping.
-   - Interactive 3-mode simulation suite: explore the live container and attack lab at /work/safebox.
+3. **Follow-up Mentions (Co-founded SaaS & Infra)**:
+   - **Taply (https://gettaply.me, /work/taply)**: Co-founded live digital business card platform with physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer (as of August 2026), actively maintained.
+   - **Movio (/work/movio)**: YouTube-scale video-on-demand platform transcoding multi-bitrate HLS and MPEG-DASH streams with Celery and FFmpeg.
+   - **DrishtiAI (/work/drishti-ai)**: Real-time eye screening pipeline for rural healthcare over WebRTC.
 
-4. **Core Systems Engineering Project: Algocode**
-   - Algocode is the systems engineering project I built to master distributed infrastructure and untrusted code execution.
-   - Highlights: distributed online judge for C++, microservices architecture, RabbitMQ asynchronous task distribution, ephemeral Docker sibling containers, and kernel-level sandboxing using Linux namespaces, cgroups, and seccomp filters.
-
-5. **Video Infrastructure Project: Movio**
-   - Movio is a YouTube-scale video-on-demand infrastructure project featuring a distributed transcoding pipeline with Celery workers, FFmpeg, multi-bitrate HLS and MPEG-DASH packaging, and CloudFront CDN delivery.
-
-The rest are **portfolio projects on GitHub**: DataLineage Doctor, DrishtiAI, ProStream, CuteTube, AirPass, ImgTwist, Load Balancer Lab, and Pulumi AWS Infra.
+The rest are **portfolio projects on GitHub**: DataLineage Doctor, ProStream, CuteTube, AirPass, ImgTwist, Load Balancer Lab, and Pulumi AWS Infra.
