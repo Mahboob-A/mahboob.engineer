@@ -197,6 +197,20 @@ export const STACK: StackItem[] = [
     domain: "infra",
     projects: ["taply"],
   },
+  {
+    id: "open-source",
+    name: "Open Source",
+    domain: "infra",
+    projects: [
+      "safebox",
+      "algocode",
+      "movio",
+      "drishti-ai",
+      "datalineage-doctor",
+    ],
+    depthNotes:
+      "Publicly available open source tools, distributed systems, and libraries published on GitHub under permissive licensing.",
+  },
 
   // Messaging
   {

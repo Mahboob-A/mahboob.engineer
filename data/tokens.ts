@@ -156,6 +156,9 @@ export function chipColor(tag: string): ChipColor {
   }
 
   /* ── SLATE: infra / runtime / data stores ────────────────────────────── */
+  if (/\b(open[ -]?source|foss)\b/.test(t)) {
+    return "slate";
+  }
   if (
     /\b(docker|kubernetes|k8s|helm|terraform|pulumi|ansible|nginx|caddy|envoy|traefik|load[ -]?balanc|haproxy|amazon|aws|gcp|azure|vercel|cloudflare|s3\b|ec2|rds|cloudfront|route53|vpc|iam|acm|al[bs]\b|fargate|lambda|code(?:build|deploy|pipeline)|ecs|eks|gke|lambda|cloud ?run)\b/.test(
       t,
