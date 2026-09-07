@@ -25,6 +25,7 @@ import { DatalineageDoctorDiagram } from "./DatalineageDoctorDiagram";
 import { AirpassDiagram } from "./AirpassDiagram";
 import { TaplyDiagram } from "./TaplyDiagram";
 import { UnthinkDiagram } from "./UnthinkDiagram";
+import { SafeboxDiagram } from "./SafeboxDiagram";
 import { CutetubeDiagram } from "./CutetubeDiagram";
 import { PulumiAwsInfraDiagram } from "./PulumiAwsInfraDiagram";
 import { ImgTwistDiagram } from "./ImgTwistDiagram";
@@ -46,6 +47,8 @@ import { DiagramPlaceholder } from "./DiagramPlaceholder";
  */
 export function pickDiagram(project: ProjectItem): React.JSX.Element {
   switch (project.slug) {
+    case "safebox":
+      return <SafeboxDiagram />;
     case "taply":
       return <TaplyDiagram />;
     case "unthink":
