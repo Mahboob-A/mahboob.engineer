@@ -31,6 +31,9 @@ import {
   AttackVector,
   SAFEBOX_STARTUP_TRACE,
   ANTIGRAVITY_SESSION_BANNER,
+  getAntigravityBanner,
+  getSafeboxApplyOutput,
+  getSafeboxRevertOutput,
   CLI_COMMAND_OUTPUTS,
 } from "./safebox-simulation-data";
 
@@ -135,6 +138,7 @@ function AgyTerminalView() {
   const [streamedLogCount, setStreamedLogCount] = useState(0);
 
   const [commandFeedback, setCommandFeedback] = useState<string | null>(null);
+  const [lastActionCommand, setLastActionCommand] = useState<string>("safebox status");
   const [inputCommand, setInputCommand] = useState("");
   const terminalScrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -160,6 +164,7 @@ function AgyTerminalView() {
     setStreamedLogCount(0);
     setActiveOutputPanel("logs");
     setCommandFeedback(null);
+    setLastActionCommand("safebox status");
     setInputCommand("");
   };
 
@@ -240,19 +245,17 @@ function AgyTerminalView() {
   // Change management actions
   const handleApply = () => {
     setActiveOutputPanel("status");
-    if (scenario?.id === "scenario-jailbreak") {
-      setCommandFeedback("[safebox] zero modifications staged in upperdir scratchpad. nothing to apply.");
-    } else {
-      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox apply --yes"]);
+    setLastActionCommand("safebox apply --yes");
+    if (scenario) {
+      setCommandFeedback(getSafeboxApplyOutput(scenario));
     }
   };
 
   const handleRevert = () => {
     setActiveOutputPanel("status");
-    if (scenario?.id === "scenario-jailbreak") {
-      setCommandFeedback("[safebox] workspace already pristine. zero mutations on host.");
-    } else {
-      setCommandFeedback(CLI_COMMAND_OUTPUTS["safebox revert --yes"]);
+    setLastActionCommand("safebox revert --yes");
+    if (scenario) {
+      setCommandFeedback(getSafeboxRevertOutput(scenario));
     }
   };
 
@@ -263,19 +266,21 @@ function AgyTerminalView() {
 
     if (cmd === "safebox diff" || cmd === "diff") {
       setActiveOutputPanel("diff");
-      setCommandFeedback("Rendered uncommitted changes from ephemeral upperdir.");
+      setLastActionCommand("safebox diff");
     } else if (cmd === "safebox diff -p" || cmd === "diff -p" || cmd === "patch") {
       setActiveOutputPanel("patch");
-      setCommandFeedback("Generated unified line-by-line patch against lowerdir.");
+      setLastActionCommand("safebox diff -p");
     } else if (cmd.includes("apply")) {
       handleApply();
     } else if (cmd.includes("revert")) {
       handleRevert();
-    } else if (cmd === "clear") {
-      setCommandFeedback(null);
+    } else if (cmd === "clear" || cmd === "logs" || cmd === "exit") {
       setActiveOutputPanel("logs");
+      setCommandFeedback(null);
     } else {
-      setCommandFeedback(`$ ${inputCommand}\n-> Command executed inside safebox container sandbox.`);
+      setLastActionCommand(inputCommand.trim());
+      setActiveOutputPanel("status");
+      setCommandFeedback(`$ ${inputCommand.trim()}\n-> Command executed inside safebox container sandbox.`);
     }
 
     setInputCommand("");
@@ -339,7 +344,7 @@ function AgyTerminalView() {
               <span className="h-3 w-3 rounded-full bg-[#10B981]/80 inline-block" />
             </div>
             <span className="text-t3 font-mono text-[12px] ml-2">
-              safebox: sess-1788798423580814662 (PID 1 shim)
+              safebox: {scenario ? scenario.sessionId : "sess-1788798423580814662"} (PID 1 shim)
             </span>
           </div>
 
@@ -372,7 +377,10 @@ function AgyTerminalView() {
                 Execution Logs
               </button>
               <button
-                onClick={() => setActiveOutputPanel("diff")}
+                onClick={() => {
+                  setActiveOutputPanel("diff");
+                  setLastActionCommand("safebox diff");
+                }}
                 className={cn(
                   "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
                   activeOutputPanel === "diff"
@@ -383,7 +391,10 @@ function AgyTerminalView() {
                 safebox diff ({scenario ? scenario.diffSummary.length : 0})
               </button>
               <button
-                onClick={() => setActiveOutputPanel("patch")}
+                onClick={() => {
+                  setActiveOutputPanel("patch");
+                  setLastActionCommand("safebox diff -p");
+                }}
                 className={cn(
                   "px-2.5 py-1 text-[11px] rounded transition-colors cursor-pointer",
                   activeOutputPanel === "patch"
@@ -464,8 +475,108 @@ function AgyTerminalView() {
             </div>
           )}
 
-          {/* Phase 2+: Startup Trace Output */}
-          {simPhase !== "unselected" && simPhase !== "ready_to_launch" && scenario && (
+          {/* Clean Standalone Terminal View for diff, patch, apply, revert (No AGY startup logs) */}
+          {simPhase !== "unselected" && simPhase !== "ready_to_launch" && scenario && activeOutputPanel !== "logs" && (
+            <div className="space-y-4 py-1 font-mono">
+              {/* Standalone Command Prompt */}
+              <div className="text-t1 font-mono text-[13px] flex items-center gap-2">
+                <span className="text-acc font-bold">$</span>
+                <span className="font-semibold text-t1">
+                  {activeOutputPanel === "diff"
+                    ? "safebox diff"
+                    : activeOutputPanel === "patch"
+                    ? "safebox diff -p"
+                    : lastActionCommand}
+                </span>
+              </div>
+
+              {/* diff view */}
+              {activeOutputPanel === "diff" && (
+                <div className="space-y-3 font-mono">
+                  {scenario.diffSummary.length === 0 ? (
+                    <p className="text-t3 italic">
+                      Zero modifications detected in upperdir scratchpad. Ephemeral overlayfs is pristine.
+                    </p>
+                  ) : (
+                    <div className="rounded-lg border border-border bg-bg/80 p-3 space-y-3">
+                      <p className="text-t3 text-[11px] uppercase tracking-wider">
+                        Upperdir Staged File Summary:
+                      </p>
+                      <div className="space-y-1.5">
+                        {scenario.diffSummary.map((d, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between text-[12.5px] py-0.5 border-b border-border/20 last:border-0"
+                          >
+                            <span
+                              className={
+                                d.status === "ADDED"
+                                  ? "text-acc font-semibold"
+                                  : d.status === "MODIFIED"
+                                  ? "text-t1 font-semibold"
+                                  : "text-amber font-semibold"
+                              }
+                            >
+                              [{d.status.padEnd(8)}] {d.path}
+                            </span>
+                            <span className="text-t3 font-mono text-[11.5px]">
+                              +{d.insertions} / -{d.deletions}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-t3 text-[11.5px] pt-2 border-t border-border/40 flex items-center justify-between">
+                        <span>
+                          {scenario.diffSummary.length} {scenario.diffSummary.length === 1 ? "file" : "files"} changed,{" "}
+                          {scenario.diffSummary.reduce((acc, d) => acc + d.insertions, 0)} insertions(+),{" "}
+                          {scenario.diffSummary.reduce((acc, d) => acc + d.deletions, 0)} deletions(-)
+                        </span>
+                        <span className="text-acc font-semibold text-[11px]">
+                          uncommitted overlayfs scratchpad
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* patch view */}
+              {activeOutputPanel === "patch" && (
+                <div className="space-y-2">
+                  <div className="text-t3 text-[11px] uppercase tracking-wider">
+                    Unified Diff Patch:
+                  </div>
+                  <pre className="rounded-lg border border-border bg-bg/90 p-4 overflow-x-auto text-[12px] leading-relaxed">
+                    <code>
+                      {scenario.patchDiff.split("\n").map((line, i) => {
+                        let colorClass = "text-t2";
+                        if (line.startsWith("+") && !line.startsWith("+++")) colorClass = "text-acc font-semibold";
+                        if (line.startsWith("-") && !line.startsWith("---")) colorClass = "text-amber font-semibold";
+                        if (line.startsWith("@@")) colorClass = "text-t3 italic";
+                        return (
+                          <span key={i} className={`block ${colorClass}`}>
+                            {line}
+                          </span>
+                        );
+                      })}
+                    </code>
+                  </pre>
+                </div>
+              )}
+
+              {/* status view (apply / revert) */}
+              {activeOutputPanel === "status" && commandFeedback && (
+                <div className="space-y-2">
+                  <pre className="rounded-lg border border-border bg-bg/90 p-4 text-t1 text-[12.5px] whitespace-pre-wrap leading-relaxed">
+                    <code>{commandFeedback}</code>
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Phase 2+: AGY Session Trace Output (Only visible when activeOutputPanel === "logs") */}
+          {simPhase !== "unselected" && simPhase !== "ready_to_launch" && scenario && activeOutputPanel === "logs" && (
             <div className="space-y-2">
               {/* Launcher Command echoed */}
               <div className="text-t2 text-[12.5px]">
@@ -500,13 +611,13 @@ function AgyTerminalView() {
                 </div>
               )}
 
-              {/* Antigravity Session Banner */}
+              {/* Antigravity Session Banner with dynamic scenario path */}
               {(simPhase === "session_ready" ||
                 simPhase === "executing_task" ||
                 simPhase === "completed") && (
                 <div className="py-2 border-y border-border/40 my-3">
                   <pre className="text-acc leading-tight text-[11px] md:text-[12px] overflow-x-auto selection:bg-acc/20 font-bold opacity-95">
-                    <code>{ANTIGRAVITY_SESSION_BANNER}</code>
+                    <code>{getAntigravityBanner(scenario.sessionMergedPath)}</code>
                   </pre>
                 </div>
               )}
@@ -556,100 +667,41 @@ function AgyTerminalView() {
                     )}
                   </div>
 
-                  {/* Active Panel Content: Logs */}
-                  {activeOutputPanel === "logs" && (
-                    <div className="space-y-2 pt-1">
-                      {scenario.agyLogStream.slice(0, streamedLogCount).map((log, i) => (
-                        <div key={i} className="leading-relaxed">
-                          {log.type === "read" && (
-                            <span className="text-t1 block">
-                              <span className="text-acc font-bold mr-1.5">●</span>
-                              {log.text}
-                            </span>
-                          )}
-                          {log.type === "edit" && (
-                            <span className="text-t1 block">
-                              <span className="text-acc font-bold mr-1.5">●</span>
-                              {log.text}
-                            </span>
-                          )}
-                          {log.type === "bash" && (
-                            <span className="text-t1 block">
-                              <span className="text-amber font-bold mr-1.5">●</span>
-                              {log.text}
-                            </span>
-                          )}
-                          {log.type === "error" && (
-                            <span className="text-amber block font-semibold pl-4">
-                              {log.text}
-                            </span>
-                          )}
-                          {log.type === "output" && (
-                            <span className="text-t2 block font-medium pl-4 pt-0.5">
-                              {log.text}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Active Panel Content: Diff */}
-                  {activeOutputPanel === "diff" && (
-                    <div className="rounded-lg border border-border bg-bg/80 p-3 space-y-2">
-                      <p className="text-t3 text-[11px] uppercase">
-                        Upperdir Staged File Summary:
-                      </p>
-                      {scenario.diffSummary.length === 0 ? (
-                        <p className="text-t3 italic">Zero files modified. Ephemeral upperdir scratchpad is pristine.</p>
-                      ) : (
-                        scenario.diffSummary.map((d, i) => (
-                          <div key={i} className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
-                            <span
-                              className={
-                                d.status === "ADDED"
-                                  ? "text-acc font-semibold"
-                                  : d.status === "MODIFIED"
-                                  ? "text-t1 font-semibold"
-                                  : "text-amber font-semibold"
-                              }
-                            >
-                              [{d.status}] {d.path}
-                            </span>
-                            <span className="text-t3 text-[11px]">
-                              +{d.insertions} / -{d.deletions}
-                            </span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-
-                  {/* Active Panel Content: Patch */}
-                  {activeOutputPanel === "patch" && (
-                    <pre className="rounded-lg border border-border bg-bg/90 p-3 overflow-x-auto text-[12px] leading-relaxed">
-                      <code>
-                        {scenario.patchDiff.split("\n").map((line, i) => {
-                          let colorClass = "text-t2";
-                          if (line.startsWith("+") && !line.startsWith("+++")) colorClass = "text-acc font-semibold";
-                          if (line.startsWith("-") && !line.startsWith("---")) colorClass = "text-amber font-semibold";
-                          if (line.startsWith("@@")) colorClass = "text-t3 italic";
-                          return (
-                            <span key={i} className={`block ${colorClass}`}>
-                              {line}
-                            </span>
-                          );
-                        })}
-                      </code>
-                    </pre>
-                  )}
-
-                  {/* Active Panel Content: Status/Feedback */}
-                  {activeOutputPanel === "status" && commandFeedback && (
-                    <pre className="rounded-lg border border-border bg-bg/90 p-3 text-t1 text-[12px] whitespace-pre-wrap leading-relaxed">
-                      <code>{commandFeedback}</code>
-                    </pre>
-                  )}
+                  {/* Streamed Execution Logs */}
+                  <div className="space-y-2 pt-1">
+                    {scenario.agyLogStream.slice(0, streamedLogCount).map((log, i) => (
+                      <div key={i} className="leading-relaxed">
+                        {log.type === "read" && (
+                          <span className="text-t1 block">
+                            <span className="text-acc font-bold mr-1.5">●</span>
+                            {log.text}
+                          </span>
+                        )}
+                        {log.type === "edit" && (
+                          <span className="text-t1 block">
+                            <span className="text-acc font-bold mr-1.5">●</span>
+                            {log.text}
+                          </span>
+                        )}
+                        {log.type === "bash" && (
+                          <span className="text-t1 block">
+                            <span className="text-amber font-bold mr-1.5">●</span>
+                            {log.text}
+                          </span>
+                        )}
+                        {log.type === "error" && (
+                          <span className="text-amber block font-semibold pl-4">
+                            {log.text}
+                          </span>
+                        )}
+                        {log.type === "output" && (
+                          <span className="text-t2 block font-medium pl-4 pt-0.5">
+                            {log.text}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -662,7 +714,7 @@ function AgyTerminalView() {
           className="border-t border-border bg-surface/90 px-4 py-3 flex items-center gap-3"
         >
           <span className="text-acc font-mono text-[13px] font-bold shrink-0">
-            agy &gt;
+            {activeOutputPanel === "logs" ? "agy >" : "safebox $"}
           </span>
           <input
             type="text"
@@ -676,6 +728,8 @@ function AgyTerminalView() {
                 ? "Click the launcher command above to boot sandbox..."
                 : simPhase === "session_ready"
                 ? "Click 'Run Task' above or press Execute..."
+                : activeOutputPanel !== "logs"
+                ? "Type 'logs' to return, or run 'safebox diff', 'diff -p', 'apply', 'revert'..."
                 : "Type 'safebox diff', 'diff -p', 'apply', 'revert', or enter a command..."
             }
             className="flex-1 bg-transparent font-mono text-[13px] text-t1 placeholder:text-t3/60 focus:outline-none disabled:opacity-50"

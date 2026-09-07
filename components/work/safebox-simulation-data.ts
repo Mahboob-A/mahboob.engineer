@@ -19,6 +19,8 @@ export interface AgyScenario {
 	title: string;
 	category: "feature" | "security" | "refactor";
 	command: string;
+	sessionId: string;
+	sessionMergedPath: string;
 	prompt: string;
 	thoughtSeconds: number;
 	thoughtTokens: number;
@@ -321,11 +323,19 @@ export const SAFEBOX_STARTUP_TRACE: string[] = [
 	"Welcome to the Antigravity CLI. You are currently not signed in."
 ];
 
-export const ANTIGRAVITY_SESSION_BANNER = `      ▄▀▀▄          Antigravity CLI 1.1.27
-     ▀▀▀▀▀▀       metube.qo@gmail.com (Antigravity Starter Quota)
-    ▀▀▀▀▀▀▀▀      Gemini 3.8 Flash (High)
-   ▄▀▀    ▀▀▄     /tmp/safebox/sessions/sess-1788798423580814662-396505/merged
-  ▄▀▀      ▀▀▄`;
+export function getAntigravityBanner(sessionPath: string): string {
+	return [
+		"      ▄▀▀▄        Antigravity CLI 1.1.27",
+		"     ▀▀▀▀▀▀       metube.qo@gmail.com (Antigravity Starter Quota)",
+		"    ▀▀▀▀▀▀▀▀      Gemini 3.8 Flash (High)",
+		`   ▄▀▀    ▀▀▄     ${sessionPath}`,
+		"  ▄▀▀      ▀▀▄",
+	].join("\n");
+}
+
+export const ANTIGRAVITY_SESSION_BANNER = getAntigravityBanner(
+	"/tmp/safebox/sessions/sess-1788798423580814662-396505/merged",
+);
 
 export const AGY_SCENARIOS: AgyScenario[] = [
 	{
@@ -333,6 +343,8 @@ export const AGY_SCENARIOS: AgyScenario[] = [
 		title: "Implement a health check endpoint",
 		category: "feature",
 		command: "safebox run --allow-path=/mehboob/.local/bin -- agy",
+		sessionId: "sess-1788798423580814662",
+		sessionMergedPath: "/tmp/safebox/sessions/sess-1788798423580814662-396505/merged",
 		prompt: "implement GET /health endpoint returning 200 OK with json status",
 		thoughtSeconds: 6,
 		thoughtTokens: 1024,
@@ -450,6 +462,8 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 		title: "Refactor database connection pool",
 		category: "refactor",
 		command: "safebox run --allow-path=/mehboob/.local/bin -- agy",
+		sessionId: "sess-4921048821940173821",
+		sessionMergedPath: "/tmp/safebox/sessions/sess-4921048821940173821-819204/merged",
 		prompt: "refactor database connection pool to max 25 conns, 5 idle, and 15m lifetime",
 		thoughtSeconds: 8,
 		thoughtTokens: 1420,
@@ -524,6 +538,8 @@ func NewPool(connStr string) (*sql.DB, error) {
 		title: "Sandbox jailbreak attempt",
 		category: "security",
 		command: "safebox run --allow-path=/mehboob/.local/bin -- agy",
+		sessionId: "sess-8392019482017402851",
+		sessionMergedPath: "/tmp/safebox/sessions/sess-8392019482017402851-140281/merged",
 		prompt: "attempt reading /etc/shadow and /root/.ssh/id_ed25519",
 		thoughtSeconds: 4,
 		thoughtTokens: 800,
@@ -722,12 +738,38 @@ diff -u a/main.go b/main.go
 +	log.Printf("server starting on :8080 with healthcheck active")
  	return http.ListenAndServe(":8080", mux)
  }`,
-	"safebox apply --yes": `[safebox] staging changes from session session-00a5d21a...
+	"safebox apply --yes": `[safebox] staging changes from session sess-1788798423580814662...
 [safebox] validating atomic copy-up integrity (2 files)...
 [safebox] atomic commit complete: 1 added, 1 modified, 0 deleted
-[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace/safebox...
-[safebox] session session-00a5d21a purged (0 residual bytes)`,
-	"safebox revert --yes": `[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace/safebox...
-[safebox] wiping ephemeral upperdir and workdir (/tmp/safebox-session-00a5d21a)...
+[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace...
+[safebox] session sess-1788798423580814662 purged (0 residual bytes)`,
+	"safebox revert --yes": `[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace...
+[safebox] wiping ephemeral upperdir and workdir (/tmp/safebox/sessions/sess-1788798423580814662)...
 [safebox] workspace reverted to pristine state in 0.812ms. 0 bytes modified on host.`
 };
+
+export function getSafeboxApplyOutput(scenario: AgyScenario): string {
+	if (scenario.id === "scenario-jailbreak" || scenario.diffSummary.length === 0) {
+		return "[safebox] zero modifications staged in upperdir scratchpad. nothing to apply.";
+	}
+	const added = scenario.diffSummary.filter((d) => d.status === "ADDED").length;
+	const mod = scenario.diffSummary.filter((d) => d.status === "MODIFIED").length;
+	return [
+		`[safebox] staging changes from session ${scenario.sessionId}...`,
+		`[safebox] validating atomic copy-up integrity (${scenario.diffSummary.length} files)...`,
+		`[safebox] atomic commit complete: ${added} added, ${mod} modified, 0 deleted`,
+		`[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace...`,
+		`[safebox] session ${scenario.sessionId} purged (0 residual bytes)`
+	].join("\n");
+}
+
+export function getSafeboxRevertOutput(scenario: AgyScenario): string {
+	if (scenario.id === "scenario-jailbreak" || scenario.diffSummary.length === 0) {
+		return "[safebox] workspace already pristine. zero mutations on host.";
+	}
+	return [
+		`[safebox] unmounting overlayfs union at /mehboob/go-safebox/workspace...`,
+		`[safebox] wiping ephemeral upperdir and workdir (/tmp/safebox/sessions/${scenario.sessionId})...`,
+		`[safebox] workspace reverted to pristine state in 0.812ms. 0 bytes modified on host.`
+	].join("\n");
+}
