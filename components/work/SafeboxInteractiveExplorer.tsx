@@ -348,7 +348,7 @@ function LandlockPlayground() {
   const [selectedPath, setSelectedPath] = useState<string>("/root/.ssh");
 
   const PATHS = [
-    { path: "/root/go-safebox/workspace", access: "READ_WRITE", status: "ALLOWED" },
+    { path: "/mehboob/go-safebox/workspace", access: "READ_WRITE", status: "ALLOWED" },
     { path: "/usr/lib", access: "READ_ONLY", status: "ALLOWED" },
     { path: "/etc/ssl", access: "READ_ONLY", status: "ALLOWED" },
     { path: "/root/.ssh", access: "NONE", status: "BLOCKED (EACCES)" },
