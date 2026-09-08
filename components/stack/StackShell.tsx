@@ -146,17 +146,17 @@ export function StackShell({
   }, [edges]);
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
-      {/* LEFT — grouped tech list (Phase 16: replaces the D3 graph
-         on every breakpoint). The user prefers this layout: techs
-         grouped by domain, project count badge per row, click to
-         inspect. MobileTechList was previously the <lg fallback;
-         it's now the canonical view. The container keeps the same
-         fixed height + overflow-y-auto so the list scrolls inside
-         the 2-col grid without pushing the detail panel down. */}
-      <div className="space-y-4">
-        <Legend />
+    <div className="space-y-4">
+      <Legend />
 
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.6fr_1fr]">
+        {/* LEFT — grouped tech list (Phase 16: replaces the D3 graph
+           on every breakpoint). The user prefers this layout: techs
+           grouped by domain, project count badge per row, click to
+           inspect. MobileTechList was previously the <lg fallback;
+           it's now the canonical view. The container keeps the same
+           fixed height + overflow-y-auto so the list scrolls inside
+           the 2-col grid without pushing the detail panel down. */}
         <div className="bg-surface border-border relative h-[600px] overflow-hidden rounded-[10px] border lg:h-[680px]">
           <div className="h-full w-full overflow-y-auto">
             <MobileTechList
@@ -166,18 +166,20 @@ export function StackShell({
             />
           </div>
         </div>
-      </div>
 
-      {/* RIGHT — detail panel */}
-      <TechDetailPanel
-        tech={detail?.tech ?? null}
-        projects={detail?.projects ?? []}
-        unresolvedRefs={detail?.unresolvedRefs ?? []}
-        posts={detail?.posts ?? []}
-        neighbors={detail?.neighbors ?? []}
-        onSelect={setActiveId}
-        suggested={suggested}
-      />
+        {/* RIGHT — detail panel (keeps matching height with left container) */}
+        <div className="h-[600px] lg:h-[680px]">
+          <TechDetailPanel
+            tech={detail?.tech ?? null}
+            projects={detail?.projects ?? []}
+            unresolvedRefs={detail?.unresolvedRefs ?? []}
+            posts={detail?.posts ?? []}
+            neighbors={detail?.neighbors ?? []}
+            onSelect={setActiveId}
+            suggested={suggested}
+          />
+        </div>
+      </div>
     </div>
   );
 }

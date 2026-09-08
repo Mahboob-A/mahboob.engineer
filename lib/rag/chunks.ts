@@ -114,7 +114,7 @@ function buildProjectChunks(): RagChunk[] {
         sourcePath,
         text: [
           `What it is: ${project.tagline}`,
-          `Status: ${project.status} (${project.tier}). Year: ${project.year}.`,
+          `Status: ${project.status} (${project.slug === "unthink" ? "independent saas" : project.slug === "taply" ? "collaborative saas" : project.tier}). Year: ${project.year}.`,
           project.notes
             ? `In my words: ${stripLeadingHeading(project.notes)}`
             : `Why I built it: ${project.problem}`,

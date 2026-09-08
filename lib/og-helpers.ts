@@ -23,7 +23,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://mahboob.engineer";
 
 const DEFAULT_DESCRIPTION =
-  "Co-Founder & Backend Engineer building distributed systems, async pipelines, and infrastructure.";
+  "Backend & DevOps Engineer building distributed systems, async pipelines, and infrastructure.";
 
 export type OgSurface = "default" | "writing" | "project";
 

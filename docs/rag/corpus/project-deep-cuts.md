@@ -61,8 +61,8 @@ Three projects feature full interactive simulation engines on this portfolio:
 
 When a recruiter or visitor asks which project I am most proud of, what is my best work, my favorite project, or where to start, the answer divides into product versus systems engineering:
 
-1. **Flagship SaaS Product as a Product Founder: UnThink**
-   - UnThink is my sole zero-to-one production system and commercial AI second-brain SaaS product (https://letsunthink.tech/). I built it as a solo founder from scratch around a "dump and forget" zero-decision capture philosophy for developers.
+1. **Flagship SaaS Product (Independent Build): UnThink**
+   - UnThink is my sole zero-to-one production system and commercial AI second-brain SaaS product (https://letsunthink.tech/). I built it independently from scratch around a "dump and forget" zero-decision capture philosophy for developers.
    - Highlights: zero-decision dual-taxonomy AI categorization, sub-300ms capture SLA, unified monorepo with decoupled Django 5.1 CRUD and FastAPI SSE streaming services, multi-model failover, and multi-key Redis caching with deterministic epoch versioning. Serves over 50 active users (as of August 2026) and I actively maintain it.
    - Interactive dual simulation suite: explore the live architecture at /work/unthink.
 
@@ -72,8 +72,8 @@ When a recruiter or visitor asks which project I am most proud of, what is my be
    - **Core Distributed Systems Project: Algocode (/work/algocode)**
      Algocode is the distributed systems engineering project I built to master untrusted code execution. It compiles and runs untrusted C++ code safely across microservices, RabbitMQ asynchronous task queues, ephemeral Docker sibling containers, and kernel-level sandboxing (Linux namespaces, cgroups, and seccomp filters).
 
-3. **Follow-up Mentions (Co-founded SaaS & Infra)**:
-   - **Taply (https://gettaply.me, /work/taply)**: Co-founded live digital business card platform with physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer (as of August 2026), actively maintained.
+3. **Follow-up Mentions (Collaborative SaaS & Infra)**:
+   - **Taply (https://gettaply.me, /work/taply)**: Collaborative live digital business card platform built with a product partner, featuring physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer (as of August 2026), where I built the backend and infrastructure. Actively maintained.
    - **Movio (/work/movio)**: YouTube-scale video-on-demand platform transcoding multi-bitrate HLS and MPEG-DASH streams with Celery and FFmpeg.
    - **DrishtiAI (/work/drishti-ai)**: Real-time eye screening pipeline for rural healthcare over WebRTC.
 

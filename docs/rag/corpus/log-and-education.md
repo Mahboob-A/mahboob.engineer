@@ -14,7 +14,7 @@
 
 ## The Short Version
 
-I'm a backend and devops engineer who co-founded Taply (>100 active users, 1 enterprise customer) and built UnThink (>50 active users, AI second brain), actively maintaining both live platforms. Work history includes Taply, NexBell, Innovative IT, and Eve Healthcare. Education: SRM MCA (2025 – 2026) plus a Poridhi Backend Engineering & Cloud Computing specialization (2024 – 2025). Practice: yes, on five public profiles listed below. Achievements sit on `/log` as the single cross-role record.
+I'm a backend and devops engineer who built Taply in collaborative product partnership as Backend Engineer (>100 active users, 1 enterprise customer) and built UnThink (>50 active users, AI second brain), actively maintaining both live platforms. Work history includes Taply, NexBell, Innovative IT, and Eve Healthcare. Education: SRM MCA (2025 – 2026) plus a Poridhi Backend Engineering & Cloud Computing specialization (2024 – 2025). Practice: yes, on five public profiles listed below. Achievements sit on `/log` as the single cross-role record.
 
 ## Education
 
@@ -50,7 +50,7 @@ corpus hit in this section.
 
 ## Work Log
 
-- **Taply.** Co-Founder and Backend Engineer. Mar 2026 to Present.
+- **Taply.** Backend Engineer (Collaborative Product). Mar 2026 to Present.
   Live SaaS on Django 5.1, DRF, Redis, PostgreSQL, and Django-Q2. Physical
   NFC cards, dynamic QR codes, privacy-first SHA-256 analytics (>100 active users, 1 paying enterprise customer),
   dynamic cache TTL scheduling, headless team profiles, and ReportLab PDF export. Actively maintained.
@@ -95,9 +95,9 @@ streaks, ratings, or rank — those aren't tracked in the corpus.
 
 ## What I'm Doing Now
 
-Taply is the day job: co-founder, shipping profile-builder v2,
-deeper analytics, and a public Taply API. UnThink is the side
-project: fragment-first personal knowledge base for engineers,
+Taply is the collaborative build with a product partner: backend engineer, shipping profile-builder v2,
+deeper analytics, and a public Taply API. UnThink is the independent product:
+fragment-first personal knowledge base for engineers,
 dual-backed on Django and FastAPI, browser-extension capture, AI
 classification. Both render on `/log` under "What I'm doing now."
 

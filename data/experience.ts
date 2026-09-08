@@ -98,17 +98,19 @@ export const EXPERIENCE: ExperienceItem[] = [
     id: "unthink",
     company: "UnThink",
     url: "https://letsunthink.tech",
-    role: "Founder & Full-Stack Systems Engineer",
+    role: "Software Engineer (Independent Product)",
     period: "Jun 2026 – Present",
     status: "active",
     bullets: [
-      "Founded and shipped UnThink end-to-end: an AI-native, fragment-first personal knowledge base SaaS with a published Manifest V3 Chrome Web Store extension and <300ms capture SLA.",
-      "Architected a unified monorepo service architecture (Django 5.1 for ACID CRUD, quota enforcement, and auth; FastAPI for real-time Server-Sent Events streaming and async LLM routing).",
-      "Engineered deterministic epoch versioning for multi-key Redis caching, invalidating complex multidimensional query caches logically in <1ms without Redis blocking or cache stampedes.",
-      "Orchestrated 3 isolated Celery task queues for high-priority zero-shot AI classification, DOM parsing with Firecrawl fallback, and background knowledge digests with a multi-model failover cascade (Fireworks AI & Gemini 2.0 Flash).",
-      "Hardened AWS EC2 infrastructure using non-root Docker containers, cap_drop: ALL, unprivileged Alpine Nginx gateway, and zero exposed internal ports with automated pre-deploy AST verification.",
+      "Solely designed, built, and currently maintain a production AI knowledge-base SaaS, web platform (React/Vite), and Chrome Extension (Manifest V3) that automates web capture and knowledge store.",
+      "Architected a high-throughput backend with Django REST Framework, PostgreSQL, and Redis/Celery, delivering sub-300ms API response times, automated asynchronous tasks, and robust multi-tenant row isolation.",
+      "Built an automated AI classification pipeline using Fireworks AI and Google Gemini API, enabling real-time zero-shot semantic folder routing, auto-tagging, and weekly Sunday reading digest synthesis.",
+      "Integrated on-demand full-page article scraping via Firecrawl API and custom DOM parsers, converting complex web pages into clean, distraction-free markdown.",
+      "Implemented global monetization and subscription infrastructure with Dodo Payments, featuring secure webhook verification, tiered quota enforcement, and automated billing lifecycles.",
+      "Developed production-grade security and governance controls, including 2FA TOTP encryption, Argon2 hashing, Redis rate-limiting, and an internal custom CAD admin portal with real-time feedback telemetry.",
     ],
     tags: [
+      "SaaS",
       "Django 5.1",
       "FastAPI",
       "PostgreSQL",
@@ -119,7 +121,7 @@ export const EXPERIENCE: ExperienceItem[] = [
       "AWS/Docker",
     ],
     relatedProjects: ["unthink"],
-    notes: `UnThink represents my work as a solo founder and full-stack systems engineer, building an AI-native second-brain platform from first principles. Traditional knowledge tools force developers to context-switch during deep work: saving a code snippet or insight requires selecting folders, writing titles, and assigning tags. The result is that over 85% of bookmarks are never opened again. UnThink inverts this: the atomic unit of capture is a fragment (2–8 lines of code or prose), and autonomous AI handles classification, tagging, and dual-directory filing at sub-300ms ingestion SLA.
+    notes: `UnThink represents my work as an independent software engineer and systems builder, creating an AI-native second-brain platform from first principles. Traditional knowledge tools force developers to context-switch during deep work: saving a code snippet or insight requires selecting folders, writing titles, and assigning tags. The result is that over 85% of bookmarks are never opened again. UnThink inverts this: the atomic unit of capture is a fragment (2–8 lines of code or prose), and autonomous AI handles classification, tagging, and dual-directory filing at sub-300ms ingestion SLA.
 
 The architecture was intentionally designed as a unified monorepo with specialized service micro-orchestration. Django 5.1 and DRF manage transactional consistency, ACID CRUD, user authentication, tiered quota enforcement, and Stripe/Dodo payments. In parallel, FastAPI provides asynchronous, high-concurrency LLM streaming via Server-Sent Events (SSE). The services communicate through Redis pub/sub and three dedicated Celery queues (classification, scraping, and digest generation), ensuring transactional API responsiveness is never degraded by long-running AI inference.
 
@@ -135,17 +137,18 @@ What's next for UnThink: We are expanding the data layer with pgvector dense vec
     id: "taply",
     company: "Taply",
     url: "https://gettaply.me",
-    role: "Co-Founder & Backend Engineer",
+    role: "Backend Engineer (Collaborative Product)",
     period: "Mar 2026 – Present",
     status: "active",
     bullets: [
-      "Co-founded Taply and built the entire backend on Django 5.1 and DRF. Eleven section types, four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback.",
+      "Built the backend and infrastructure in collaboration with a product partner on Django 5.1 and DRF. Eleven section types, four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback.",
       "Shipped the NFC and QR sharing layer. Tap or scan opens a user's live profile in under 100ms via Redis-cached loads, with one-tap vCard 3.0 save that works on both iOS and Android without downloads.",
       "Engineered a privacy-first analytics pipeline with SHA-256 IP anonymization (zero plaintext IP storage), 24-hour Redis deduplication, and nightly Django-Q2 rollup workers creating daily snapshots for sub-500ms queries.",
       "Delivered the team management console with headless managed profiles (pre-provisioning physical cards before employee registration), bulk CSV onboarding, and granular field locking.",
       "Engineered ReportLab-powered CMYK vector PDF print engine with polymorphic template selection hierarchy (Member Override > Team Default > Fallback) for automated physical NFC card manufacturing.",
     ],
     tags: [
+      "SaaS",
       "Django 5.1",
       "DRF",
       "Next.js 16",
@@ -158,7 +161,7 @@ What's next for UnThink: We are expanding the data layer with pgvector dense vec
     relatedProjects: ["taply", "unthink"],
     notes: `Taply started with a small question. Why does everyone still hand out paper business cards? 88% of paper cards are thrown away within a week. The people you actually want to remember you never look at the card again. We wanted to make the card live. Scan a QR or tap an NFC tag and the recipient lands on your real-time profile, your current role, your latest work, a one-tap way to save you to their phone.
 
-I co-founded the company and built the backend in Django 5.1 and DRF. The profile system is the heart of the product. Eleven section types (about, links, social, gallery, testimonials, products, services, contact, schedule, files, video), four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback. Every profile is cached in Redis so a tap resolves in under 100ms regardless of traffic. Every save is appended to a versioned history that the user can rewind to.
+I built the product in collaboration with a product partner and engineered the backend in Django 5.1 and DRF. The profile system is the heart of the product. Eleven section types (about, links, social, gallery, testimonials, products, services, contact, schedule, files, video), four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback. Every profile is cached in Redis so a tap resolves in under 100ms regardless of traffic. Every save is appended to a versioned history that the user can rewind to.
 
 The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips (NTAG213/215/216) that still supported NDEF rewrites, so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap. We ship the RFC 2426 vCard payload from a dedicated endpoint with direct base64 profile photo injection, so iOS and Android both handle it natively without downloads.
 
@@ -526,7 +529,7 @@ export const NOW_STATUSES: NowStatusItem[] = [
     name: "UnThink",
     slug: "unthink",
     status:
-      "Founder and full-stack systems engineer. Shipping an AI-native, fragment-first personal knowledge base and published Manifest V3 Chrome Extension with zero-shot dual-directory taxonomic routing.",
+      "Software engineer (independent product). Shipping an AI-native, fragment-first personal knowledge base and published Manifest V3 Chrome Extension with zero-shot dual-directory taxonomic routing.",
     liveUrl: "https://letsunthink.tech",
     statusKind: "active",
   },
@@ -534,7 +537,7 @@ export const NOW_STATUSES: NowStatusItem[] = [
     name: "Taply",
     slug: "taply",
     status:
-      "Co-founder and backend engineer. Shipping the profile system, NFC/QR sharing layer, real-time analytics, and team management console on Django 5.1 and DRF, daily.",
+      "Backend engineer (collaborative product). Shipping the profile system, NFC/QR sharing layer, real-time analytics, and team management console on Django 5.1 and DRF, daily.",
     liveUrl: "https://gettaply.me/p/mehboob",
     statusKind: "active",
   },

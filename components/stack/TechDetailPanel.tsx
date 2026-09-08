@@ -94,7 +94,7 @@ export function TechDetailPanel({
   return (
     <aside
       id="tech-detail-panel"
-      className="bg-surface border-border flex h-full flex-col gap-5 rounded-[10px] border p-5 md:p-6"
+      className="bg-surface border-border flex h-full flex-col gap-5 rounded-[10px] border p-5 md:p-6 overflow-y-auto"
     >
       {tech ? (
         <DetailForTech
@@ -113,6 +113,13 @@ export function TechDetailPanel({
 }
 
 /* ─── Tech-detail body ─────────────────────────────────────────────── */
+
+/** Reference badge shown next to each project in the Used In section. */
+function projectReferenceTag(p: ProjectItem): string {
+  if (p.slug === "unthink") return "independent saas";
+  if (p.slug === "taply") return "collaborative saas";
+  return p.tier;
+}
 
 function DetailForTech({
   tech,
@@ -207,7 +214,7 @@ function DetailForTech({
                   {p.name}
                 </Link>
                 <span className="text-t3 ml-2 font-mono text-[11px]">
-                  {p.tier}
+                  {projectReferenceTag(p)}
                 </span>
               </li>
             ))}

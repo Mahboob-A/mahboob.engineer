@@ -65,7 +65,7 @@ export interface ProjectItem {
   url: string | null;
   /** Browser extension URL, if applicable. */
   extension?: string | null;
-  /** Co-founder LinkedIn profile URL, if applicable. */
+  /** Product partner LinkedIn profile URL, if applicable. */
   cofounder_linkedin?: string | null;
   /** Canonical GitHub URL, if open-sourced. */
   github: string | null;
@@ -126,20 +126,21 @@ export const PROJECTS: ProjectItem[] = [
     youtube: null,
     domain: ["ai", "backend", "platform", "saas"],
     stack: [
-      "Django 5.1",
-      "FastAPI",
-      "PostgreSQL 16",
-      "Redis 7.2",
-      "Celery",
-      "Gemini 2.0 Flash",
-      "Fireworks AI",
-      "Chrome Manifest V3",
-      "React 18",
-      "Tailwind CSS",
-      "Docker",
-      "AWS",
-      "SSE",
-      "Firecrawl",
+       "SaaS",
+       "Django 5.1",
+       "FastAPI",
+       "PostgreSQL 16",
+       "Redis 7.2",
+       "Celery",
+       "Gemini 2.0 Flash",
+       "Fireworks AI",
+       "Chrome Manifest V3",
+       "React 18",
+       "Tailwind CSS",
+       "Docker",
+       "AWS",
+       "SSE",
+       "Firecrawl",
     ],
     metrics: [
       "<300ms Save SLA",
@@ -151,7 +152,7 @@ export const PROJECTS: ProjectItem[] = [
     problem:
       "Every major knowledge tool (Notion, Obsidian, Readwise) suffers from high capture friction and manual tagging overhead, turning 85%+ of saved bookmarks into an unorganized digital graveyard.",
     built:
-      "Sole founder build: unified monorepo with decoupled API and AI streaming services (Django 5.1 relational CRUD + FastAPI SSE streaming), 3 isolated Celery queues for zero-shot AI taxonomy, Manifest V3 Chrome Extension, multi-key Redis cache with epoch invalidation, and hardened non-root AWS EC2 deployment.",
+      "Independent product build: solely designed, built, and maintained production AI knowledge-base SaaS, web platform (React/Vite), and Chrome Extension (Manifest V3), with unified monorepo, decoupled API/AI streaming services, and multi-key Redis epoch invalidation.",
     notes:
       `UnThink came out of a fundamental paradox with personal knowledge management. Every major capture tool (Notion, Obsidian, Readwise, Evernote) imposes high cognitive friction at the moment of capture. Asking a developer to stop reading, switch windows, create a note, pick a folder, and assign tags destroys flow state. The result is what I call the 85%+ digital graveyard: bookmarks and full-page HTML clippings saved with good intentions that are never opened again. The core product thesis was simple: don't make the user name or organize anything. The atomic unit of storage is a fragment (two to eight lines of focused code, terminal commands, or insights), and autonomous AI handles the rest.
 
@@ -181,6 +182,7 @@ What's next for UnThink. We are integrating pgvector dense vector embeddings alo
     youtube: null,
     domain: ["saas", "platform", "backend"],
     stack: [
+      "SaaS",
       "Django 5.1",
       "DRF",
       "Next.js 16",
@@ -205,7 +207,7 @@ What's next for UnThink. We are integrating pgvector dense vector embeddings alo
     problem:
       "88% of paper business cards are thrown away in a week. No tracking, no updates, dead channel.",
     built:
-      "Full-stack SaaS built around NFC+QR hardware resolution, privacy-first analytics with SHA-256 hashing, headless multi-tenant profiles, and dynamic cache TTL scheduling. Architected and built the entire backend from scratch as co-founder.",
+      "Full-stack SaaS built around NFC+QR hardware resolution, privacy-first analytics with SHA-256 hashing, headless multi-tenant profiles, and dynamic cache TTL scheduling. Built the backend and infrastructure in collaborative product partnership.",
     notes:
       `Taply came out of a real pain. Paper business cards get thrown out within a week. You can't update them. You can't tell if anyone looked at yours. The first version was a weekend hack, an NFC sticker with a URL slug that opened a public profile. It worked in my own network but had no sharing layer. You couldn't tap and have the contact saved to your phone in one motion. That's what 'tap or scan' really meant. Not a fancy QR code, but a single vCard save that just works.
 

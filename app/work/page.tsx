@@ -22,14 +22,14 @@ import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata(
   "Work",
-  "Founder projects, featured builds, and a long-tail of experiments. Filter by domain.",
+  "Flagship products, featured builds, and a long-tail of experiments. Filter by domain.",
 );
 
 /* Display order — only ids + labels cross the RSC boundary. The actual
    predicate lives in WorkShell.tsx. */
 const FILTERS: Array<{ id: FilterId; label: string }> = [
   { id: "all", label: "All" },
-  { id: "founder", label: "Founder" },
+  { id: "founder", label: "Flagship" },
   { id: "distributed", label: "Distributed" },
   { id: "video", label: "Video" },
   { id: "ai", label: "AI / ML" },
@@ -46,7 +46,7 @@ export default function WorkPage() {
         section: "the build catalog",
         title: "Everything I've built end-to-end",
         description:
-          "Founder projects, featured builds, and a long-tail of experiments. Filter by domain.",
+          "Flagship products, featured builds, and a long-tail of experiments. Filter by domain.",
       }}
     >
       <WorkShell projects={PROJECTS} filters={FILTERS} />

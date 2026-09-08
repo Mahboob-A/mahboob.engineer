@@ -35,8 +35,8 @@ const TIER_META: Array<{
 }> = [
   {
     tier: "founder",
-    label: "FOUNDER PROJECTS",
-    description: "what I'm shipping right now",
+    label: "FLAGSHIP BUILDS",
+    description: "live production products",
   },
   {
     tier: "featured",

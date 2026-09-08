@@ -81,7 +81,7 @@ export function ProjectCard({ project, variant, diagram }: ProjectCardProps) {
               </span>
             ) : null}
             <span className="text-amber font-mono text-[12px] tracking-[1px] uppercase">
-              {project.slug === "taply" ? "co-founder" : "founder"}
+              {project.slug === "taply" ? "collaborative product" : "independent product"}
             </span>
           </div>
 

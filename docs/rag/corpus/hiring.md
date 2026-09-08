@@ -13,7 +13,7 @@
 Founding Engineer, Backend, and DevOps engineering roles where product ownership meets infrastructure:
 APIs, async workers, queues, caching, databases, deployment automation, and production debugging.
 I am an exceptional fit for Founding Engineer roles, versatile backend and infrastructure engineering roles with varied responsibilities, and startups of any size (from early-stage zero-to-one through Series A, B, and C).
-As a founder who built UnThink from scratch and co-founded Taply, I bring complete end-to-end product ownership:
+Having built UnThink independently and engineered the backend for Taply in collaborative product partnership, I bring complete end-to-end product ownership:
 I can architect backend and database schemas, set up automated CI/CD and cloud devops, lead sprint planning and meetings,
 communicate with users, and comfortably wear multiple hats at once from day zero.
 I am strongest in Python with Django, DRF, and FastAPI, and comfortable in Django, Celery, Redis, and Postgres stacks.

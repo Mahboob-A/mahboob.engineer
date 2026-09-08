@@ -51,16 +51,17 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mahboob.engineer"),
   title: {
-    default: "Mahboob Alam | Founder & Backend Systems Engineer",
+    default: "Mahboob Alam | Backend & DevOps Engineer",
     template: "%s — Mahboob Alam",
   },
   description:
-    "Founder & Backend Systems Engineer building distributed systems, async pipelines, and AI infrastructure. Builder of UnThink and Taply. Writes The Backend Diaries.",
+    "Backend & DevOps Engineer building distributed systems, async pipelines, and live production products (UnThink & Taply). Writes The Backend Diaries.",
   keywords: [
     "Mahboob Alam",
-    "Founder",
     "Backend Engineer",
+    "DevOps",
     "Django",
+    "FastAPI",
     "Distributed Systems",
     "UnThink",
     "Taply",
@@ -73,9 +74,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://mahboob.engineer",
     siteName: "mahboob.engineer",
-    title: "Mahboob Alam — Founder & Backend Systems Engineer",
+    title: "Mahboob Alam — Backend & DevOps Engineer",
     description:
-      "Distributed systems, async pipelines, and AI infrastructure. Founder at UnThink, Co-Founder at Taply.",
+      "Distributed systems, async pipelines, and live production products (UnThink & Taply).",
     images: [
       {
         url: ogUrlFor({
@@ -91,9 +92,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mahboob Alam — Founder & Backend Systems Engineer",
+    title: "Mahboob Alam — Backend & DevOps Engineer",
     description:
-      "Distributed systems, async pipelines, and AI infrastructure. Founder at UnThink, Co-Founder at Taply.",
+      "Distributed systems, async pipelines, and live production products (UnThink & Taply).",
     images: [
       ogUrlFor({
         title: "Mahboob Alam",

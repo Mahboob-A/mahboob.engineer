@@ -90,6 +90,14 @@ export const STACK: StackItem[] = [
       "Primary backend framework. Eleven section types in Taply, three-service split in Algocode, ten-step Celery pipeline in Movio, Django Channels for AirPass. I reach for Django when the data model is relational and the read path needs a cache.",
   },
   {
+    id: "saas",
+    name: "SaaS",
+    domain: "backend",
+    projects: ["unthink", "taply"],
+    depthNotes:
+      "End-to-end production SaaS engineering: multi-tenancy, subscription billing, asynchronous queue architectures, and high-performance caching for UnThink and Taply.",
+  },
+  {
     id: "drf",
     name: "DRF",
     domain: "backend",
