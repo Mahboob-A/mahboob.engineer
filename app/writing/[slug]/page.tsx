@@ -25,7 +25,7 @@ import { PostTOC } from "@/components/writing/PostTOC";
 import { RelatedProjects } from "@/components/writing/RelatedProjects";
 import { SeriesNav } from "@/components/writing/SeriesNav";
 import { loadNativePost, listNativePostSlugs } from "@/lib/mdx";
-import { BLOG_POSTS_BY_SLUG } from "@/data/blog";
+import { BLOG_POSTS_BY_SLUG } from "@/data/blog-registry";
 import { blogMetadata, pageMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 

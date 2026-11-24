@@ -18,7 +18,7 @@ import { Projects } from "@/components/sections/Projects";
 import { SkillGraph } from "@/components/sections/SkillGraph";
 import { Blog } from "@/components/sections/Blog";
 import { Contact } from "@/components/sections/Contact";
-import { BLOG_POSTS } from "@/data/blog";
+import { BLOG_POSTS } from "@/data/blog-registry";
 
 export default function Home() {
   return (

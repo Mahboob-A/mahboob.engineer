@@ -50,10 +50,8 @@ import {
   type ProjectItem,
   type ProjectStatus,
 } from "@/data/projects";
-import {
-  postsByProject,
-  type BlogPostItem,
-} from "@/data/blog";
+import { postsByProject } from "@/data/blog-registry";
+import type { BlogPostItem } from "@/data/blog";
 import {
   techsByProject,
   STACK_BY_ID,

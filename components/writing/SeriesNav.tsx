@@ -9,7 +9,8 @@
  */
 
 import Link from "next/link";
-import { postsInSeries, type BlogPostItem } from "@/data/blog";
+import { postsInSeries } from "@/data/blog-registry";
+import type { BlogPostItem } from "@/data/blog";
 
 export interface SeriesNavProps {
   post: BlogPostItem;

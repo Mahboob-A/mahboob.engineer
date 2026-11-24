@@ -30,8 +30,6 @@ interface FadeUpProps {
   id?: string;
   /** Markup override. Defaults to `div`. Use `section`, `article`, etc. */
   as?: "div" | "section" | "article" | "li" | "header" | "aside" | "main";
-  /** Suppress hydration warning if forwarded element contains dynamic content. */
-  suppressHydrationWarning?: boolean;
 }
 
 export function FadeUp({
@@ -42,7 +40,6 @@ export function FadeUp({
   className,
   id,
   as = "div",
-  suppressHydrationWarning,
 }: FadeUpProps) {
   const reduced = useReducedMotion();
 
@@ -52,11 +49,7 @@ export function FadeUp({
   if (reduced) {
     const Tag = as as keyof React.JSX.IntrinsicElements;
     return (
-      <Tag
-        className={className}
-        id={id}
-        suppressHydrationWarning={suppressHydrationWarning}
-      >
+      <Tag className={className} id={id}>
         {children}
       </Tag>
     );
@@ -71,7 +64,6 @@ export function FadeUp({
     <MotionTag
       className={className}
       id={id}
-      suppressHydrationWarning={suppressHydrationWarning}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}

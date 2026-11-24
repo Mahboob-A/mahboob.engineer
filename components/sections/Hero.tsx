@@ -37,6 +37,7 @@ import { DiagramPanel } from "@/components/ui/DiagramPanel";
 import { SafeboxDiagram } from "@/components/diagrams/SafeboxDiagram";
 import { HeroTerminal } from "@/components/hero/HeroTerminal";
 import { FadeUp } from "@/components/motion";
+import { BLOG_POSTS } from "@/data/blog-registry";
 
 const STATS = [
   { num: "3", label: "production-grade systems shipped" },
@@ -44,6 +45,14 @@ const STATS = [
   { num: "35%", label: "AWS cost reduction driven" },
   { num: "12+", label: "deep-dive engineering posts" },
 ] as const;
+
+/* Latest native posts for the terminal's `latest` command. Derived here
+   (server side) and handed to the client component as a prop — the
+   terminal must not import the registry itself, or the browser would
+   get a second copy that can drift from the server's. */
+const LATEST_POSTS = BLOG_POSTS.filter((p) => p.source === "native")
+  .slice(0, 5)
+  .map((p) => ({ title: p.title, readMin: p.readMin }));
 
 export function Hero() {
   return (
@@ -124,7 +133,10 @@ export function Hero() {
             >
               <SafeboxDiagram />
             </DiagramPanel>
-            <HeroTerminal className="mt-6 flex min-h-0 flex-1 flex-col" />
+            <HeroTerminal
+              className="mt-6 flex min-h-0 flex-1 flex-col"
+              latestPosts={LATEST_POSTS}
+            />
           </div>
         </div>
       </div>

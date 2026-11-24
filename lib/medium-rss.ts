@@ -19,6 +19,8 @@ import "server-only";
 import Parser from "rss-parser";
 import {
   BLOG_POSTS,
+} from "@/data/blog-registry";
+import {
   type BlogPostItem,
   type BlogCategory,
 } from "@/data/blog";

@@ -29,14 +29,30 @@ import {
   type StackEdge,
 } from "@/data/stack";
 import { PROJECTS_BY_SLUG } from "@/data/projects";
-import { BLOG_POSTS_BY_SLUG, postsByStack } from "@/data/blog";
 import { EXPERIENCE_BY_ID } from "@/data/experience";
+import type { BlogSource } from "@/data/blog";
+
+/** Minimal shape of a blog post the tech detail panel renders. */
+export interface TechMentionPost {
+  slug: string;
+  title: string;
+  source: BlogSource;
+  url: string;
+  readMin: number;
+}
 
 export interface StackShellProps {
   techs: ReadonlyArray<StackItem>;
   edges: ReadonlyArray<StackEdge>;
   /** Pre-computed map of techId → project count (for mobile list badge). */
   projectCountByTech: Readonly<Record<string, number>>;
+  /**
+   * Pre-computed map of techId → blog posts that mention it. Derived
+   * server-side from the blog registry — this client component must not
+   * import the registry itself, or the browser would get a second copy
+   * that can drift from the server's and cause a hydration mismatch.
+   */
+  postsByTech?: Readonly<Record<string, ReadonlyArray<TechMentionPost>>>;
 }
 
 /* Subscribe to window.location.hash changes — used to honor T3.3's
@@ -59,6 +75,7 @@ export function StackShell({
   techs,
   edges,
   projectCountByTech,
+  postsByTech = {},
 }: StackShellProps) {
   const hash = useSyncExternalStore(subscribeHash, getHashSnapshot, getServerHashSnapshot);
   const seedId = useMemo(
@@ -106,8 +123,9 @@ export function StackShell({
 
     const projects = resolvedProjects;
 
-    const posts = postsByStack(tech.id);
-    const postsFiltered = posts.filter((p) => BLOG_POSTS_BY_SLUG[p.slug]);
+    /* Posts mentioning this tech. Pre-computed server-side — see the
+       `postsByTech` prop. */
+    const postsFiltered = postsByTech[tech.id] ?? [];
 
     /* Neighbors: techs that share at least one project with the
        current tech. Rank by sharedCount desc. */
@@ -127,7 +145,7 @@ export function StackShell({
       );
 
     return { tech, projects, posts: postsFiltered, neighbors, unresolvedRefs };
-  }, [activeId, techs]);
+  }, [activeId, techs, postsByTech]);
 
   /* Suggested nodes for the empty state — top-5 most-connected. */
   const suggested = useMemo(() => {

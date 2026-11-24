@@ -48,10 +48,8 @@ import {
   PROJECTS_BY_SLUG,
   type ProjectItem,
 } from "@/data/projects";
-import {
-  BLOG_POSTS,
-  type BlogPostItem,
-} from "@/data/blog";
+import { BLOG_POSTS } from "@/data/blog-registry";
+import type { BlogPostItem } from "@/data/blog";
 import { resolveStackSlug } from "@/data/stack-slug-map";
 
 /* ──────────────────────────────────────────────────────────────────────

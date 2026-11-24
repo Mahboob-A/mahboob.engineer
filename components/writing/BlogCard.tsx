@@ -44,7 +44,6 @@ export function BlogCard({ post, variant = "default" }: BlogCardProps) {
 
   return (
     <article
-      suppressHydrationWarning
       className={
         isFeatured
           ? "bg-surface border-acc/40 hover:border-acc flex flex-col rounded-[10px] border-2 p-7 transition-colors"
@@ -63,7 +62,6 @@ export function BlogCard({ post, variant = "default" }: BlogCardProps) {
 
       {/* Title */}
       <h3
-        suppressHydrationWarning
         className={
           isFeatured
             ? "font-display text-t1 mb-3 text-[24px] leading-[1.25] font-bold"

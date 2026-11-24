@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { BLOG_POSTS } from "@/data/blog";
+import { BLOG_POSTS } from "@/data/blog-registry";
 import {
   AVAILABILITY,
   DIRECT_LINKS,
