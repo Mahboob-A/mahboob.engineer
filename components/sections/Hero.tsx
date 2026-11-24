@@ -54,9 +54,10 @@ export function Hero() {
     >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-12 xl:gap-14">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
-            <p className="text-amber mb-[18px] font-mono text-[11.5px] xl:text-[12.5px] tracking-[0.3px] lg:whitespace-nowrap">
+            <p className="text-amber mb-[18px] flex items-center gap-[10px] font-mono text-[13px] tracking-[1px]">
+              <span aria-hidden className="bg-amber inline-block h-px w-7" />
               SYSTEMS &amp; BACKEND INFRA ENGINEER (Go · Linux · AWS) · BANGALORE
             </p>
 
