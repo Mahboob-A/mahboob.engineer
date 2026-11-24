@@ -176,7 +176,7 @@ function buildPayload(key: RagCommandKey): string[] {
     case "whoami": {
       const last = COMPLETED_EXPERIENCE[0];
       return [
-        "Mahboob Alam — Systems & Backend Infrastructure Engineer (Go · Linux · AWS).",
+        "Mahboob Alam — Systems & Backend Infra Engineer (Go · Linux · AWS).",
         `Software Engineer of UnThink (AI knowledge capture) and`,
         `Backend Engineer at Taply (NFC + QR business cards).`,
         last
