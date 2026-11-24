@@ -40,10 +40,6 @@ import { FadeUp } from "@/components/motion";
 import { resolveStackSlug } from "@/data/stack-slug-map";
 
 export function DeployLog() {
-  const landingExperience = EXPERIENCE.filter(
-    (entry) => entry.id !== "unthink" && entry.id !== "taply",
-  );
-
   return (
     <FadeUp
       as="section"
@@ -64,7 +60,7 @@ export function DeployLog() {
 
         {/* Entries */}
         <div className="space-y-4">
-          {landingExperience.map((entry) => (
+          {EXPERIENCE.map((entry) => (
             <ExperienceCard key={entry.id} entry={entry} />
           ))}
         </div>

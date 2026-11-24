@@ -108,83 +108,6 @@ export const EXPERIENCE: ExperienceItem[] = [
 Working on core backend architecture, distributed systems, and cloud infrastructure pipelines as part of the engineering team.`,
   },
   {
-    id: "unthink",
-    company: "UnThink",
-    url: "https://letsunthink.tech",
-    role: "Software Engineer (Independent Product)",
-    period: "Jun 2026 – Present",
-    status: "active",
-    bullets: [
-      "Solely designed, built, and currently maintain a production AI knowledge-base SaaS, web platform (React/Vite), and Chrome Extension (Manifest V3) that automates web capture and knowledge store.",
-      "Architected a high-throughput backend with Django REST Framework, PostgreSQL, and Redis/Celery, delivering sub-300ms API response times, automated asynchronous tasks, and robust multi-tenant row isolation.",
-      "Built an automated AI classification pipeline using Fireworks AI and Google Gemini API, enabling real-time zero-shot semantic folder routing, auto-tagging, and weekly Sunday reading digest synthesis.",
-      "Integrated on-demand full-page article scraping via Firecrawl API and custom DOM parsers, converting complex web pages into clean, distraction-free markdown.",
-      "Implemented global monetization and subscription infrastructure with Dodo Payments, featuring secure webhook verification, tiered quota enforcement, and automated billing lifecycles.",
-      "Developed production-grade security and governance controls, including 2FA TOTP encryption, Argon2 hashing, Redis rate-limiting, and an internal custom CAD admin portal with real-time feedback telemetry.",
-    ],
-    tags: [
-      "SaaS",
-      "Django 5.1",
-      "FastAPI",
-      "PostgreSQL",
-      "Redis",
-      "Celery",
-      "Chrome Manifest V3",
-      "React 18",
-      "AWS/Docker",
-    ],
-    relatedProjects: ["unthink"],
-    notes: `UnThink represents my work as an independent software engineer and systems builder, creating an AI-native second-brain platform from first principles. Traditional knowledge tools force developers to context-switch during deep work: saving a code snippet or insight requires selecting folders, writing titles, and assigning tags. The result is that over 85% of bookmarks are never opened again. UnThink inverts this: the atomic unit of capture is a fragment (2–8 lines of code or prose), and autonomous AI handles classification, tagging, and dual-directory filing at sub-300ms ingestion SLA.
-
-The architecture was intentionally designed as a unified monorepo with specialized service micro-orchestration. Django 5.1 and DRF manage transactional consistency, ACID CRUD, user authentication, tiered quota enforcement, and Stripe/Dodo payments. In parallel, FastAPI provides asynchronous, high-concurrency LLM streaming via Server-Sent Events (SSE). The services communicate through Redis pub/sub and three dedicated Celery queues (classification, scraping, and digest generation), ensuring transactional API responsiveness is never degraded by long-running AI inference.
-
-Solving cache invalidation was the primary scalability challenge in UnThink. With users querying paginated feeds, recursive folder trees with live fragment counts, and dynamic tag summaries, naive cache flushing caused severe Redis event loop contention and PostgreSQL stampedes. I implemented deterministic epoch versioning: bumping an atomic user-level version key logically invalidates all dependent query caches in sub-millisecond time without blocking Redis, while distributed mutex locks protect expensive tree aggregations during cache misses.
-
-On the client side, I engineered and published a Chromium Manifest V3 browser extension to the Chrome Web Store. To handle MV3's 30-second ephemeral service worker lifecycle, authentication tokens and quota states are maintained statelessly via Chrome storage sync. A secure dashboard bridge synchronizes active sessions from letsunthink.tech with zero user friction, and the native zero-dependency popup loads in under 10ms.
-
-Production deployment is containerized on AWS EC2 with an unprivileged Alpine Nginx reverse proxy. Every container runs under a non-root user profile with Linux kernel cap_drop: ALL enforced, with internal backend, AI, database, and Redis ports completely isolated from host exposure. Automated pre-deployment AST verification gates guarantee security invariants before any release reaches production.
-
-What's next for UnThink: We are expanding the data layer with pgvector dense vector embeddings combined with PostgreSQL BM25 full-text search via Reciprocal Rank Fusion (RRF) for sub-200ms hybrid semantic search, alongside automated Sunday morning AI knowledge digests.`,
-  },
-  {
-    id: "taply",
-    company: "Taply",
-    url: "https://gettaply.me",
-    role: "Backend Engineer (Collaborative Product)",
-    period: "Mar 2026 – Present",
-    status: "active",
-    bullets: [
-      "Built the backend and infrastructure in collaboration with a product partner on Django 5.1 and DRF. Eleven section types, four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback.",
-      "Shipped the NFC and QR sharing layer. Tap or scan opens a user's live profile in under 100ms via Redis-cached loads, with one-tap vCard 3.0 save that works on both iOS and Android without downloads.",
-      "Engineered a privacy-first analytics pipeline with SHA-256 IP anonymization (zero plaintext IP storage), 24-hour Redis deduplication, and nightly Django-Q2 rollup workers creating daily snapshots for sub-500ms queries.",
-      "Delivered the team management console with headless managed profiles (pre-provisioning physical cards before employee registration), bulk CSV onboarding, and granular field locking.",
-      "Engineered ReportLab-powered CMYK vector PDF print engine with polymorphic template selection hierarchy (Member Override > Team Default > Fallback) for automated physical NFC card manufacturing.",
-    ],
-    tags: [
-      "SaaS",
-      "Django 5.1",
-      "DRF",
-      "Next.js 16",
-      "Redis",
-      "PostgreSQL",
-      "Django-Q2",
-      "ReportLab/PDF",
-      "NFC/QR",
-    ],
-    relatedProjects: ["taply", "unthink"],
-    notes: `Taply started with a small question. Why does everyone still hand out paper business cards? 88% of paper cards are thrown away within a week. The people you actually want to remember you never look at the card again. We wanted to make the card live. Scan a QR or tap an NFC tag and the recipient lands on your real-time profile, your current role, your latest work, a one-tap way to save you to their phone.
-
-I built the product in collaboration with a product partner and engineered the backend in Django 5.1 and DRF. The profile system is the heart of the product. Eleven section types (about, links, social, gallery, testimonials, products, services, contact, schedule, files, video), four layout variants, drag-and-drop ordering, live theme customization, and version history with rollback. Every profile is cached in Redis so a tap resolves in under 100ms regardless of traffic. Every save is appended to a versioned history that the user can rewind to.
-
-The NFC and QR sharing layer was the first thing we shipped. We picked the cheapest NFC chips (NTAG213/215/216) that still supported NDEF rewrites, so a user can rewrite the same physical card after a role change without buying a new one. vCard save is a single tap. We ship the RFC 2426 vCard payload from a dedicated endpoint with direct base64 profile photo injection, so iOS and Android both handle it natively without downloads.
-
-The analytics engine was built with a strict privacy-first architecture. Raw visitor events hash client IP addresses with SHA-256 with zero plaintext storage, deduplicating scans in Redis over 24-hour sliding windows. A nightly Django-Q2 cluster rollup task aggregates daily snapshots for sub-500ms dashboard queries. The team console enables enterprise multi-tenancy: headless managed profiles provisioned onto physical cards before user registration, CSV bulk onboarding, and granular field locking to enforce corporate branding.
-
-Deployment went from a single EC2 to a small fleet behind an ALB, with Redis as the shared session cache, Postgres with read-replicas, and S3 for media. The product surface is small, but every layer underneath does real work, and the same patterns (Redis caching at the edge, DRF for the orchestration layer, Postgres as the source of truth) recur across UnThink, DrishtiAI, and the Algocode backend.
-
-What's next, if we keep going. Tier-1 enterprise features (SSO via SAML), a deeper analytics surface (UTM-aware links, A/B-tested profile versions), and a public Taply API so other SaaS products can plug into Taply profiles as a primary identity. We're shipping in a tight weekly cadence against the v2 enterprise roadmap, and a follow-on Taply for Teams tier is in private beta.`,
-  },
-  {
     id: "nexbell",
     company: "NexBell Inc.",
     url: null,
@@ -224,12 +147,6 @@ What's next, if I returned. A per-tenant database split (one MySQL per store) is
     company: "Innovative IT",
     url: null,
     role: "Software Developer",
-    /* Phase 18: the Sept 2023 – Oct 2024 window overlaps with the
-       Eve Healthcare internship. Innovative IT was a 2.5-month
-       freelance/part-time engagement that converted to full-time
-       once the internship ended. The suffix surfaces that history
-       without cluttering the role itself. */
-    roleSuffix: "including 2.5 months parttime",
     period: "Dec 2023 – Oct 2024",
     status: "completed",
     bullets: [
