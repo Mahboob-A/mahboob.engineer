@@ -37,7 +37,7 @@ import { chipColor } from "@/data/tokens";
 import { resolveStackSlug } from "@/data/stack-slug-map";
 
 export const metadata: Metadata = pageMetadata(
-  "Log",
+  "Professional Log",
   "The full record. Every role, every result, plus what I'm working on now.",
 );
 
@@ -151,44 +151,48 @@ function Timeline({ entries }: { entries: ExperienceItem[] }) {
             </p>
 
             {/* Bullets */}
-            <ul className="text-t1 mb-5 flex flex-col gap-2.5 text-[14.5px] leading-[1.6]">
-              {entry.bullets.map((bullet, i) => (
-                <li key={i} className="relative pl-5">
-                  <span
-                    aria-hidden
-                    className="text-acc absolute top-0 left-0 font-mono font-semibold"
-                  >
-                    &gt;
-                  </span>
-                  {bullet}
-                </li>
-              ))}
-            </ul>
+            {entry.bullets.length > 0 ? (
+              <ul className="text-t1 mb-5 flex flex-col gap-2.5 text-[14.5px] leading-[1.6]">
+                {entry.bullets.map((bullet, i) => (
+                  <li key={i} className="relative pl-5">
+                    <span
+                      aria-hidden
+                      className="text-acc absolute top-0 left-0 font-mono font-semibold"
+                    >
+                      &gt;
+                    </span>
+                    {bullet}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
 
             {/* Tag chips — color computed from each tag via chipColor().
                 Each chip that resolves via resolveStackSlug() becomes a
                 clickable deep-link to /stack#<id>. Chips sit above the
                 overlay (z-20) so their click wins over the card-level
                 overlay (z-0). Mirrors DeployLog (T7.2 + T9.2). */}
-            <div className="relative z-10 flex flex-wrap gap-2">
-              {entry.tags.map((tag) => {
-                const slug = resolveStackSlug(tag);
-                const chip = <Chip color={chipColor(tag)}>{tag}</Chip>;
-                if (!slug) {
-                  return <span key={tag}>{chip}</span>;
-                }
-                return (
-                  <Link
-                    key={tag}
-                    href={`/stack#${slug}`}
-                    aria-label={`More about ${tag} on /stack`}
-                    className="relative z-20 inline-block rounded-[4px]"
-                  >
-                    {chip}
-                  </Link>
-                );
-              })}
-            </div>
+            {entry.tags.length > 0 ? (
+              <div className="relative z-10 flex flex-wrap gap-2">
+                {entry.tags.map((tag) => {
+                  const slug = resolveStackSlug(tag);
+                  const chip = <Chip color={chipColor(tag)}>{tag}</Chip>;
+                  if (!slug) {
+                    return <span key={tag}>{chip}</span>;
+                  }
+                  return (
+                    <Link
+                      key={tag}
+                      href={`/stack#${slug}`}
+                      aria-label={`More about ${tag} on /stack`}
+                      className="relative z-20 inline-block rounded-[4px]"
+                    >
+                      {chip}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
 
             {/* Card-level overlay: covers the entire article (inset:0)
                 with position: absolute so all text is selectable +
@@ -196,7 +200,7 @@ function Timeline({ entries }: { entries: ExperienceItem[] }) {
                 body remains clickable as a single target. Mirrors
                 DeployLog's stretched-link pattern. */}
             <Link
-              href={`/log/${entry.id}`}
+              href={`/professional-log/${entry.id}`}
               aria-label={`${entry.company} — experience details`}
               className="absolute inset-0 z-0 rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-acc"
             >

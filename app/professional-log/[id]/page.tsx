@@ -98,7 +98,7 @@ export default async function ExperienceDeepDive({
 
   return (
     <InnerLayout
-      backHref="/log"
+      backHref="/professional-log"
       backLabel="← all experience"
       contentClassName="space-y-12"
     >
@@ -187,19 +187,21 @@ function Hero({ entry }: { entry: ExperienceItem }) {
       ) : null}
 
       {/* Bullets — full list, mirrors DeployLog */}
-      <ul className="text-t1 mt-8 flex flex-col gap-2.5 text-[15.5px] leading-[1.6]">
-        {entry.bullets.map((bullet, i) => (
-          <li key={i} className="relative pl-6">
-            <span
-              aria-hidden
-              className="text-acc absolute top-0 left-0 font-mono font-semibold"
-            >
-              &gt;
-            </span>
-            {bullet}
-          </li>
-        ))}
-      </ul>
+      {entry.bullets.length > 0 ? (
+        <ul className="text-t1 mt-8 flex flex-col gap-2.5 text-[15.5px] leading-[1.6]">
+          {entry.bullets.map((bullet, i) => (
+            <li key={i} className="relative pl-6">
+              <span
+                aria-hidden
+                className="text-acc absolute top-0 left-0 font-mono font-semibold"
+              >
+                &gt;
+              </span>
+              {bullet}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </section>
   );
 }
@@ -210,12 +212,13 @@ function BuildNotes({ entry }: { entry: ExperienceItem }) {
      animated amber packet (Phase 8 T8.5–T8.6). The split helper lives
      in `components/log/StoryPath.tsx`. */
   const fallbackParagraph =
-    entry.bullets[0] ?? "More details coming soon.";
+    entry.bullets[0] ?? entry.notes ?? "Role started recently. Detailed engineering notes and system breakdown will be added as systems ship.";
   const stages = buildStoryStages(entry.notes, entry.bullets, fallbackParagraph);
   return <StoryPath stages={stages} />;
 }
 
 function TagChips({ entry }: { entry: ExperienceItem }) {
+  if (entry.tags.length === 0) return null;
   return (
     <section>
       <div className="border-border mb-5 flex items-baseline gap-3 border-t pt-6">

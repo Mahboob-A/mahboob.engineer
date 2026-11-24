@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "monthly", priority: 1.0 },
-    { url: `${SITE_URL}/log`, lastModified: now, changeFrequency: "yearly", priority: 0.7 },
+    { url: `${SITE_URL}/professional-log`, lastModified: now, changeFrequency: "yearly", priority: 0.7 },
     { url: `${SITE_URL}/work`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${SITE_URL}/stack`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${SITE_URL}/writing`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
@@ -47,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      `changeFrequency: yearly` as the projects — these are deep-dives
      that don't churn monthly. */
   const experienceRoutes: MetadataRoute.Sitemap = EXPERIENCE.map((e) => ({
-    url: `${SITE_URL}/log/${e.id}`,
+    url: `${SITE_URL}/professional-log/${e.id}`,
     lastModified: now,
     changeFrequency: "yearly",
     priority: 0.7,

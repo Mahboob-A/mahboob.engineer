@@ -62,6 +62,20 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BUILD_DATE: getBuildDate(),
   },
+  async redirects() {
+    return [
+      {
+        source: "/log",
+        destination: "/professional-log",
+        permanent: true,
+      },
+      {
+        source: "/log/:id",
+        destination: "/professional-log/:id",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

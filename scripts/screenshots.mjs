@@ -28,7 +28,7 @@ const VIEWPORTS = [
 
 const ROUTES = [
   { path: "/", name: "home" },
-  { path: "/log", name: "log" },
+  { path: "/professional-log", name: "professional-log" },
   { path: "/work", name: "work" },
   { path: "/work/algocode", name: "work-algocode" },
   { path: "/work/taply", name: "work-taply" },

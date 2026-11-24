@@ -36,7 +36,7 @@ const LINKS: readonly NavLink[] = [
   /* Phase 11 (T11.3): label renamed `experience` → `log` to match
      the route segment (`/log`). All other labels in this array
      match their href segments; this was the only inconsistency. */
-  { label: "log", href: "/log", anchor: "log", eyebrow: "01" },
+  { label: "professional-log", href: "/professional-log", anchor: "professional-log", eyebrow: "01" },
   { label: "work", href: "/work", anchor: "work", eyebrow: "02" },
   { label: "stack", href: "/stack", anchor: "stack", eyebrow: "03" },
   { label: "writing", href: "/writing", anchor: "blog", eyebrow: "04" },
