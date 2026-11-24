@@ -19,6 +19,8 @@ import "server-only";
 import Parser from "rss-parser";
 import {
   BLOG_POSTS,
+} from "@/data/blog-registry";
+import {
   type BlogPostItem,
   type BlogCategory,
 } from "@/data/blog";
@@ -147,8 +149,15 @@ function mapMediumItem(item: MediumItem): BlogPostItem | null {
     : (typeof rawCats === "string" ? rawCats.split(",").map((c) => c.trim()).filter(Boolean) : []);
 
   // Slug should match the static registry's slug when one exists.
+  const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  const cleanUrl = (u?: string) => (u ?? "").split("?")[0].replace(/\/+$/, "");
   const staticMatch = BLOG_POSTS.find(
-    (p) => p.source === "medium" && p.title.trim() === title,
+    (p) =>
+      p.source === "medium" &&
+      (p.title.trim() === title ||
+        norm(p.title) === norm(title) ||
+        p.slug === slugFromTitle(title) ||
+        (cleanUrl(p.url) && cleanUrl(link) && cleanUrl(p.url) === cleanUrl(link))),
   );
   let slug = staticMatch?.slug ?? slugFromTitle(title);
   /* Post-Phase 6 bug fix: if a fresh RSS fetch produces a slug that

@@ -36,7 +36,6 @@ const DOMAIN_ORDER: StackDomain[] = [
   "payment",
   "video",
   "ai",
-  "learning",
 ];
 
 const DOMAIN_LABEL: Record<StackDomain, string> = {

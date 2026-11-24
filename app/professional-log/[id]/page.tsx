@@ -48,10 +48,8 @@ import {
   PROJECTS_BY_SLUG,
   type ProjectItem,
 } from "@/data/projects";
-import {
-  BLOG_POSTS,
-  type BlogPostItem,
-} from "@/data/blog";
+import { BLOG_POSTS } from "@/data/blog-registry";
+import type { BlogPostItem } from "@/data/blog";
 import { resolveStackSlug } from "@/data/stack-slug-map";
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -98,7 +96,7 @@ export default async function ExperienceDeepDive({
 
   return (
     <InnerLayout
-      backHref="/log"
+      backHref="/professional-log"
       backLabel="← all experience"
       contentClassName="space-y-12"
     >
@@ -187,35 +185,67 @@ function Hero({ entry }: { entry: ExperienceItem }) {
       ) : null}
 
       {/* Bullets — full list, mirrors DeployLog */}
-      <ul className="text-t1 mt-8 flex flex-col gap-2.5 text-[15.5px] leading-[1.6]">
-        {entry.bullets.map((bullet, i) => (
-          <li key={i} className="relative pl-6">
-            <span
-              aria-hidden
-              className="text-acc absolute top-0 left-0 font-mono font-semibold"
-            >
-              &gt;
-            </span>
-            {bullet}
-          </li>
-        ))}
-      </ul>
+      {entry.bullets.length > 0 ? (
+        <ul className="text-t1 mt-8 flex flex-col gap-2.5 text-[15.5px] leading-[1.6]">
+          {entry.bullets.map((bullet, i) => (
+            <li key={i} className="relative pl-6">
+              <span
+                aria-hidden
+                className="text-acc absolute top-0 left-0 font-mono font-semibold"
+              >
+                &gt;
+              </span>
+              {bullet}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </section>
   );
 }
 
 function BuildNotes({ entry }: { entry: ExperienceItem }) {
-  /* The snake-path narrative renders the same `entry.notes` paragraphs
-     the previous BuildNotes did, but along a curved SVG path with an
-     animated amber packet (Phase 8 T8.5–T8.6). The split helper lives
-     in `components/log/StoryPath.tsx`. */
-  const fallbackParagraph =
-    entry.bullets[0] ?? "More details coming soon.";
-  const stages = buildStoryStages(entry.notes, entry.bullets, fallbackParagraph);
+  if (!entry.notes) {
+    return (
+      <section className="bg-surface border-border rounded-[10px] border p-6 md:p-8">
+        <h2 className="text-t3 mb-3 font-mono text-[12px] tracking-[1.5px] uppercase">
+          Build Log
+        </h2>
+        <p className="text-t2 text-[15px] leading-[1.6]">
+          Role started recently. Detailed engineering notes and system breakdown will be documented as systems deploy to production.
+        </p>
+      </section>
+    );
+  }
+
+  const paragraphs = entry.notes
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  if (paragraphs.length < 4) {
+    return (
+      <section className="bg-surface border-border rounded-[10px] border p-6 md:p-8">
+        <h2 className="text-t3 mb-4 font-mono text-[12px] tracking-[1.5px] uppercase">
+          Build Log
+        </h2>
+        <div className="space-y-4">
+          {paragraphs.map((p, i) => (
+            <p key={i} className="text-t2 text-[15px] leading-[1.6]">
+              {p}
+            </p>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  const stages = buildStoryStages(entry.notes, entry.bullets, entry.bullets[0] ?? "");
   return <StoryPath stages={stages} />;
 }
 
 function TagChips({ entry }: { entry: ExperienceItem }) {
+  if (entry.tags.length === 0) return null;
   return (
     <section>
       <div className="border-border mb-5 flex items-baseline gap-3 border-t pt-6">

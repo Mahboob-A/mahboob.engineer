@@ -34,9 +34,10 @@
 import Link from "next/link";
 import { StatRow } from "@/components/ui/StatRow";
 import { DiagramPanel } from "@/components/ui/DiagramPanel";
-import { AlgocodeDiagram } from "@/components/diagrams/AlgocodeDiagram";
+import { SafeboxDiagram } from "@/components/diagrams/SafeboxDiagram";
 import { HeroTerminal } from "@/components/hero/HeroTerminal";
 import { FadeUp } from "@/components/motion";
+import { BLOG_POSTS } from "@/data/blog-registry";
 
 const STATS = [
   { num: "3", label: "production-grade systems shipped" },
@@ -44,6 +45,14 @@ const STATS = [
   { num: "35%", label: "AWS cost reduction driven" },
   { num: "12+", label: "deep-dive engineering posts" },
 ] as const;
+
+/* Latest native posts for the terminal's `latest` command. Derived here
+   (server side) and handed to the client component as a prop — the
+   terminal must not import the registry itself, or the browser would
+   get a second copy that can drift from the server's. */
+const LATEST_POSTS = BLOG_POSTS.filter((p) => p.source === "native")
+  .slice(0, 5)
+  .map((p) => ({ title: p.title, readMin: p.readMin }));
 
 export function Hero() {
   return (
@@ -58,7 +67,7 @@ export function Hero() {
           <div>
             <p className="text-amber mb-[18px] flex items-center gap-[10px] font-mono text-[13px] tracking-[1px]">
               <span aria-hidden className="bg-amber inline-block h-px w-7" />
-              BACKEND &amp; DEVOPS ENGINEER · BANGALORE 
+              SYSTEMS &amp; BACKEND INFRA ENGINEER (Go · Linux · AWS) · BANGALORE
             </p>
 
             <h1 className="font-display text-t1 text-[clamp(36px,5.5vw,64px)] leading-[1.08] font-bold tracking-[-1px]">
@@ -110,7 +119,7 @@ export function Hero() {
             <StatRow stats={[...STATS]} className="mt-12" />
           </div>
 
-          {/* Right column: animated Algocode diagram inside a DiagramPanel
+          {/* Right column: animated Safebox diagram inside a DiagramPanel
               + an interactive terminal underneath (Phase 7 T7.6).
               Phase 45: the right column has a defined min-h so the
               terminal's `flex-1` has actual height to fill, and the
@@ -118,13 +127,16 @@ export function Hero() {
               section. */}
           <div className="flex min-h-[660px] flex-col lg:min-h-[640px]">
             <DiagramPanel
-              title="algocode — distributed online judge"
-              sub="live request trace · 3 services · rabbitmq · docker rce"
-              liveLabel="request in flight"
+              title="safebox — agent-native secure sandbox"
+              sub="5-layer kernel isolation · landlock lsm · userspace nat"
+              liveLabel="kernel isolation active"
             >
-              <AlgocodeDiagram />
+              <SafeboxDiagram />
             </DiagramPanel>
-            <HeroTerminal className="mt-6 flex min-h-0 flex-1 flex-col" />
+            <HeroTerminal
+              className="mt-6 flex min-h-0 flex-1 flex-col"
+              latestPosts={LATEST_POSTS}
+            />
           </div>
         </div>
       </div>

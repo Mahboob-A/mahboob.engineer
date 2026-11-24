@@ -23,7 +23,7 @@ import { Chip } from "@/components/ui/Chip";
 import { cn } from "@/lib/cn";
 import { type StackItem, type StackDomain } from "@/data/stack";
 import { type ProjectItem } from "@/data/projects";
-import type { BlogPostItem } from "@/data/blog";
+import type { TechMentionPost } from "@/components/stack/StackShell";
 
 export interface TechDetailPanelProps {
   tech: StackItem | null;
@@ -44,7 +44,7 @@ export interface TechDetailPanelProps {
     status: "active" | "completed" | null;
   }>;
   /** Blog posts that mention this tech. */
-  posts: ReadonlyArray<BlogPostItem>;
+  posts: ReadonlyArray<TechMentionPost>;
   /** Other techs that share at least one project with `tech`. */
   neighbors: ReadonlyArray<{ tech: StackItem; sharedCount: number }>;
   /** Callback to update the parent's activeId. Always required. */
@@ -137,7 +137,7 @@ function DetailForTech({
     period: string | null;
     status: "active" | "completed" | null;
   }>;
-  posts: ReadonlyArray<BlogPostItem>;
+  posts: ReadonlyArray<TechMentionPost>;
   neighbors: ReadonlyArray<{ tech: StackItem; sharedCount: number }>;
   onSelect: (id: string) => void;
 }) {

@@ -155,6 +155,15 @@ export const STACK: StackItem[] = [
     depthNotes:
       "Production-grade. Primary language for every backend project on this portfolio.",
   },
+  {
+    id: "go",
+    name: "Go",
+    domain: "backend",
+    projects: ["safebox"],
+    depth: 55,
+    depthNotes:
+      "Core language for systems programming and Linux isolation tooling. Safebox is written in Go 1.24 with direct syscall orchestration, user namespaces, OverlayFS management, and Landlock LSM integration.",
+  },
 
   // Infra
   {
@@ -229,20 +238,6 @@ export const STACK: StackItem[] = [
     blogs: ["message-queue-101"],
     depthNotes:
       "Primary async backbone for microservice splits. Algocode's three services communicate only through RabbitMQ, Movio's transcoder workers consume from the upload queue, and DrishtiAI's CV pipeline queues frames to the inference service.",
-  },
-  /* Phase 12 (T12.5): added so resolveStackSlug() picks up
-     "Kafka internals" → kafka from the Poridhi covered chips.
-     Not actively deployed in production projects today; depth
-     marker makes it visible on the force graph as a self-rated
-     tech. */
-  {
-    id: "kafka",
-    name: "Kafka",
-    domain: "async",
-    projects: [],
-    depth: 55,
-    depthNotes:
-      "Covered in Poridhi's backend curriculum; not in production projects yet. Confident with the mental model, haven't shipped a real consumer/producer pair at scale.",
   },
 
   // Data
@@ -337,45 +332,6 @@ export const STACK: StackItem[] = [
     name: "bKash",
     domain: "payment",
     projects: ["nexbell"],
-  },
-
-  // Learning
-  /* Phase 12 (T12.5): id renamed `k8s` → `kubernetes` so that
-     resolveStackSlug() matches "Kubernetes" → `kubernetes` (the
-     bidirectional substring check failed on the old `k8s` id
-     because "kubernetes".includes("k8s") is false). The display
-     name was already "Kubernetes"; only the lookup id changed.
-     No STACK_BY_ID["k8s"] callers exist in the codebase (verified
-     via grep) so this is a clean rename. */
-  {
-    id: "kubernetes",
-    name: "Kubernetes",
-    domain: "learning",
-    projects: [],
-    depth: 70,
-    depthNotes:
-      "Comfortable with the API surface and the resource model. Haven't owned a production cluster day-to-day. The Pulumi AWS Infra project is the closest equivalent to a k8s deployment, and it stays on EC2 / ASG.",
-  },
-  {
-    id: "terraform",
-    name: "Terraform",
-    domain: "learning",
-    projects: [],
-    depth: 50,
-    depthNotes:
-      "Familiar with the language and the state model. I prefer Pulumi because it lets me write real Python and unit-test the infra code. Terraform is on the learning list, not the production list.",
-  },
-  {
-    id: "go",
-    name: "Go",
-    domain: "backend",
-    projects: ["safebox"],
-    depth: 55,
-    depthNotes:
-      "Core language for systems programming and Linux isolation tooling. Safebox is written in Go 1.24 with direct syscall orchestration, user namespaces, OverlayFS management, and Landlock LSM integration.",
-  },
-  { id: "ebpf", name: "eBPF", domain: "learning", projects: [], depth: 40, depthNotes:
-      "Covered in Poridhi's backend curriculum. I understand the model (kernel hooks, maps, programs) but haven't shipped anything that uses eBPF in production. The Linux Networking series on Medium touches the adjacent kernel primitives.",
   },
 ];
 

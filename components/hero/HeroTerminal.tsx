@@ -19,7 +19,11 @@ import { TerminalBlock } from "@/components/ui/TerminalBlock";
 import { PROJECTS } from "@/data/projects";
 import { STACK } from "@/data/stack";
 import { COMPLETED_EXPERIENCE } from "@/data/experience";
-import { BLOG_POSTS } from "@/data/blog";
+// NOTE: the blog registry is deliberately NOT imported here. This is a
+// "use client" component — importing `BLOG_POSTS` by value would bundle a
+// second copy of the registry into the client chunk, where it could drift
+// out of sync with the server's copy and cause a hydration mismatch.
+// The `latest` command's data arrives via the `latestPosts` prop instead.
 import {
   RAG_COMMAND_KEYS,
   RAG_COMMAND_LABEL,
@@ -171,12 +175,15 @@ function ThinkingText() {
   );
 }
 
-function buildPayload(key: RagCommandKey): string[] {
+function buildPayload(
+  key: RagCommandKey,
+  latestPosts: ReadonlyArray<HeroLatestPost>,
+): string[] {
   switch (key) {
     case "whoami": {
       const last = COMPLETED_EXPERIENCE[0];
       return [
-        "Mahboob Alam — Backend & DevOps Engineer.",
+        "Mahboob Alam — Systems & Backend Infra Engineer (Go · Linux · AWS).",
         `Software Engineer of UnThink (AI knowledge capture) and`,
         `Backend Engineer at Taply (NFC + QR business cards).`,
         last
@@ -226,13 +233,12 @@ function buildPayload(key: RagCommandKey): string[] {
       ];
     }
     case "latest": {
-      const native = BLOG_POSTS.filter((p) => p.source === "native").slice(0, 5);
-      if (native.length === 0) {
+      if (latestPosts.length === 0) {
         return ["No native posts yet. /writing has Medium cross-posts."];
       }
       return [
         "Latest native posts (The Backend Diaries):",
-        ...native.map((p, i) => `  ${i + 1}. ${p.title} (${p.readMin} min)`),
+        ...latestPosts.map((p, i) => `  ${i + 1}. ${p.title} (${p.readMin} min)`),
       ];
     }
     case "contact": {
@@ -277,9 +283,21 @@ function helpBlurb(k: Exclude<RagCommandKey, "help">): string {
 
 export interface HeroTerminalProps {
   className?: string;
+  /**
+   * Latest native posts, derived server-side from the blog registry.
+   * Passed in as a prop so this client component never imports the
+   * registry itself (see the note at the top of the file).
+   */
+  latestPosts?: ReadonlyArray<HeroLatestPost>;
 }
 
-export function HeroTerminal({ className }: HeroTerminalProps = {}) {
+/** Minimal shape of a blog post the terminal's `latest` command needs. */
+export interface HeroLatestPost {
+  title: string;
+  readMin: number;
+}
+
+export function HeroTerminal({ className, latestPosts = [] }: HeroTerminalProps = {}) {
   const reduced = useReducedMotion();
   const [mode, setMode] = useState<Mode>("static");
   const [activeKey, setActiveKey] = useState<RagCommandKey | "custom" | null>(
@@ -291,8 +309,10 @@ export function HeroTerminal({ className }: HeroTerminalProps = {}) {
   const [typedIndex, setTypedIndex] = useState<number>(0);
   const staticPayload = useMemo(
     () =>
-      activeKey && activeKey !== "custom" ? buildPayload(activeKey) : [],
-    [activeKey],
+      activeKey && activeKey !== "custom"
+        ? buildPayload(activeKey, latestPosts)
+        : [],
+    [activeKey, latestPosts],
   );
 
   useEffect(() => {

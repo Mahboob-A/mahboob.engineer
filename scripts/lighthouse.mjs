@@ -23,7 +23,7 @@ const BASE = process.env.SITE_URL || "http://localhost:3000";
 
 const ROUTES = [
   "/",
-  "/log",
+  "/professional-log",
   "/work",
   "/work/algocode",
   "/stack",

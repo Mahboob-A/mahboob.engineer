@@ -44,7 +44,7 @@ export function DeployLog() {
     <FadeUp
       as="section"
       className="border-border scroll-mt-20 border-t pt-[45px] pb-[90px]"
-      id="log"
+      id="professional-log"
     >
       <div className="mx-auto max-w-[1180px] px-6 md:px-8">
         {/* Section header — Phase 25: eyebrow line dropped. */}
@@ -88,22 +88,32 @@ function ExperienceCard({ entry }: ExperienceCardProps) {
       </div>
 
       {/* Role line */}
-      <p className="text-t3 mb-3.5 text-[14px]">{entry.role}</p>
+      <p className="text-t3 mb-3.5 text-[14px]">
+        {entry.role}
+        {entry.roleSuffix ? (
+          <>
+            {" · "}
+            <span className="italic text-[12px]">{entry.roleSuffix}</span>
+          </>
+        ) : null}
+      </p>
 
       {/* Bullets */}
-      <ul className="text-t1 mb-3.5 flex flex-col gap-2 text-[14.5px]">
-        {entry.bullets.map((bullet, i) => (
-          <li key={i} className="relative pl-5">
-            <span
-              aria-hidden
-              className="text-acc absolute top-0 left-0 font-mono font-semibold"
-            >
-              &gt;
-            </span>
-            {bullet}
-          </li>
-        ))}
-      </ul>
+      {entry.bullets.length > 0 ? (
+        <ul className="text-t1 mb-3.5 flex flex-col gap-2 text-[14.5px]">
+          {entry.bullets.map((bullet, i) => (
+            <li key={i} className="relative pl-5">
+              <span
+                aria-hidden
+                className="text-acc absolute top-0 left-0 font-mono font-semibold"
+              >
+                &gt;
+              </span>
+              {bullet}
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {/* Tag chips — color computed from each tag via chipColor().
           Each chip that resolves via resolveStackSlug() becomes a
@@ -111,32 +121,34 @@ function ExperienceCard({ entry }: ExperienceCardProps) {
           z-index than the card-level overlay (below) so their click
           wins. (Stretched-link pattern: the overlay <Link> covers the
           whole card, chips sit above it.) */}
-      <div className="relative z-10 flex flex-wrap gap-2">
-        {entry.tags.map((tag) => {
-          const slug = resolveStackSlug(tag);
-          const chip = <Chip color={chipColor(tag)}>{tag}</Chip>;
-          if (!slug) {
-            return <span key={tag}>{chip}</span>;
-          }
-          return (
-            <Link
-              key={tag}
-              href={`/stack#${slug}`}
-              aria-label={`More about ${tag} on /stack`}
-              className="relative z-20 inline-block rounded-[4px]"
-            >
-              {chip}
-            </Link>
-          );
-        })}
-      </div>
+      {entry.tags.length > 0 ? (
+        <div className="relative z-10 flex flex-wrap gap-2">
+          {entry.tags.map((tag) => {
+            const slug = resolveStackSlug(tag);
+            const chip = <Chip color={chipColor(tag)}>{tag}</Chip>;
+            if (!slug) {
+              return <span key={tag}>{chip}</span>;
+            }
+            return (
+              <Link
+                key={tag}
+                href={`/stack#${slug}`}
+                aria-label={`More about ${tag} on /stack`}
+                className="relative z-20 inline-block rounded-[4px]"
+              >
+                {chip}
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
 
       {/* Card-level overlay: covers the entire article (inset:0) with
           position: absolute so all text is selectable + chip clicks
           (z-20) win over this overlay. The card body remains
           clickable as a single target. */}
       <Link
-        href={`/log/${entry.id}`}
+        href={`/professional-log/${entry.id}`}
         aria-label={`${entry.company} — experience details`}
         className="absolute inset-0 z-0 rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-acc"
       >
