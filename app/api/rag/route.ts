@@ -24,6 +24,7 @@
  */
 
 import { Index } from "@upstash/vector";
+import { after } from "next/server";
 import { env } from "@/lib/env";
 import {
   isRagCommand,
@@ -33,7 +34,7 @@ import {
 } from "@/lib/rag/command-map";
 import { RagProviderConfigurationError } from "@/lib/rag/providers";
 import { checkRateLimit, extractClientIp } from "@/lib/rag/rate-limit";
-import { Langfuse } from "langfuse";
+import { propagateAttributes, startObservation } from "@langfuse/tracing";
 
 import { SYSTEM_PROMPT, VOICE_RULES } from "@/lib/rag/system-prompt";
 
@@ -202,31 +203,44 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  /* 4. Stream the chat completion and trace it via Langfuse. */
-  const langfusePublic = process.env.LANGFUSE_PUBLIC_KEY;
-  const langfuseSecret = process.env.LANGFUSE_SECRET_KEY;
-  const langfuseHost = process.env.LANGFUSE_BASE_URL || "https://cloud.langfuse.com";
+  /* 4. Stream the chat completion and trace it via Langfuse.
+   *
+   * Langfuse v4 SDK (@langfuse/tracing): traces are OTEL spans exported by
+   * the span processor registered in instrumentation.ts. The v3 SDK's
+   * `new Langfuse(...)` + `langfuse.trace(...)` API is gone — its
+   * ingestion endpoint was removed on 2026-11-16.
+   *
+   * Trace-level attributes (userId / sessionId / tags) are *not* span
+   * attributes in v4 — they live on the OTEL context and are copied onto
+   * the span by the processor's `onStart`. So `propagateAttributes` must
+   * run *before* the root span is created, otherwise the root would be
+   * missing them.
+   *
+   * Children are created from the root's handle (`root.startObservation(...)`),
+   * which carries the parent span context explicitly. That matters here
+   * because the response body streams after the handler returns, outside
+   * the OTEL context's async scope. */
+  const langfuseEnabled = Boolean(
+    process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY,
+  );
 
-  const langfuse = langfusePublic && langfuseSecret
-    ? new Langfuse({
-        publicKey: langfusePublic,
-        secretKey: langfuseSecret,
-        baseUrl: langfuseHost,
-      })
-    : null;
+  const { root } = langfuseEnabled
+    ? propagateAttributes(
+        {
+          userId: ip,
+          sessionId:
+            typeof body.sessionId === "string" ? body.sessionId : undefined,
+          tags: [process.env.NODE_ENV || "development"],
+        },
+        () => ({
+          root: startObservation("rag-chat", {
+            input: { command, question: userQuestion },
+          }),
+        }),
+      )
+    : { root: null };
 
-  const trace = langfuse
-    ? langfuse.trace({
-        name: "rag-chat",
-        userId: ip,
-        sessionId: typeof body.sessionId === "string" ? body.sessionId : undefined,
-        tags: [process.env.NODE_ENV || "development"],
-        input: { command, question: userQuestion },
-      })
-    : null;
-
-  const retrieveContextSpan = trace?.span({
-    name: "retrieve-context",
+  const retrieveContextSpan = root?.startObservation("retrieve-context", {
     input: { query: userQuestion },
   });
 
@@ -248,12 +262,13 @@ export async function POST(req: Request): Promise<Response> {
     const errorMsg = error instanceof Error ? error.message : String(error);
     retrieveContextSpan?.update({ level: "ERROR", statusMessage: errorMsg });
     retrieveContextSpan?.end();
-    trace?.update({
+    root?.update({
       output: `Error: ${errorMsg}`,
+      level: "ERROR",
+      statusMessage: errorMsg,
     });
-    if (langfuse) {
-      await langfuse.flushAsync();
-    }
+    root?.end();
+    await flushLangfuse();
     throw error;
   }
 
@@ -266,7 +281,9 @@ export async function POST(req: Request): Promise<Response> {
   );
   const context = buildGroundedContext(cleanRetrieval);
 
-  retrieveContextSpan?.end({
+  /* v4 splits "set attributes" from "close the span": `update()` carries the
+     output, `end()` only closes it. */
+  retrieveContextSpan?.update({
     output: {
       hitsCount: cleanRetrieval.length,
       hits: cleanRetrieval.map((r) => ({
@@ -277,6 +294,7 @@ export async function POST(req: Request): Promise<Response> {
       })),
     },
   });
+  retrieveContextSpan?.end();
 
   /* 5. Compose the system message. */
   const systemContent = [
@@ -288,17 +306,17 @@ export async function POST(req: Request): Promise<Response> {
     .join("\n\n---\n\n");
 
   /* 6. Stream chat completion. */
-  let generation: ReturnType<NonNullable<typeof trace>["generation"]> | null = null;
-  if (trace) {
-    generation = trace.generation({
-      name: "generate-response",
+  const generation = root?.startObservation(
+    "generate-response",
+    {
       model: modelClient.chatModel,
       input: [
         { role: "system", content: systemContent },
         { role: "user", content: userQuestion },
       ],
-    });
-  }
+    },
+    { asType: "generation" },
+  );
 
   try {
     const response = await modelClient.streamChat(
@@ -326,39 +344,37 @@ export async function POST(req: Request): Promise<Response> {
             }
             controller.close();
 
-            if (generation) {
-              generation.end({
-                output: accumulatedText,
-              });
-            }
-            if (trace) {
-              trace.update({
-                output: accumulatedText,
-              });
-            }
-            if (langfuse) {
-              await langfuse.flushAsync();
-            }
+            generation?.update({ output: accumulatedText });
+            generation?.end();
+            root?.update({ output: accumulatedText });
+            root?.end();
           } catch (error) {
             const errorMsg = error instanceof Error ? error.message : String(error);
-            if (generation) {
-              generation.update({ level: "ERROR", statusMessage: errorMsg });
-              generation.end();
-            }
-            if (trace) {
-              trace.update({
-                output: `Error: ${errorMsg}`,
-              });
-            }
-            if (langfuse) {
-              await langfuse.flushAsync();
-            }
+            generation?.update({ level: "ERROR", statusMessage: errorMsg });
+            generation?.end();
+            root?.update({
+              output: `Error: ${errorMsg}`,
+              level: "ERROR",
+              statusMessage: errorMsg,
+            });
+            root?.end();
             controller.error(error);
           }
         },
         cancel() {
           reader.cancel();
         }
+      });
+
+      /*
+       * The stream above outlives this function — the response is handed
+       * back to the client while the body keeps streaming. `after()` runs
+       * the flush once the response has been delivered, so a serverless
+       * function that freezes immediately after the response doesn't drop
+       * the spans.
+       */
+      after(async () => {
+        await flushLangfuse();
       });
 
       return new Response(newStream, {
@@ -368,34 +384,45 @@ export async function POST(req: Request): Promise<Response> {
 
     // Stream was not ok
     const statusMsg = `Response status: ${response.status}`;
-    if (generation) {
-      generation.update({ level: "ERROR", statusMessage: statusMsg });
-      generation.end();
-    }
-    if (trace) {
-      trace.update({
-        output: `Error: ${statusMsg}`,
-      });
-    }
-    if (langfuse) {
-      await langfuse.flushAsync();
-    }
+    generation?.update({ level: "ERROR", statusMessage: statusMsg });
+    generation?.end();
+    root?.update({
+      output: `Error: ${statusMsg}`,
+      level: "ERROR",
+      statusMessage: statusMsg,
+    });
+    root?.end();
+    await flushLangfuse();
     return response;
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    if (generation) {
-      generation.update({ level: "ERROR", statusMessage: errorMsg });
-      generation.end();
-    }
-    if (trace) {
-      trace.update({
-        output: `Error: ${errorMsg}`,
-      });
-    }
-    if (langfuse) {
-      await langfuse.flushAsync();
-    }
+    generation?.update({ level: "ERROR", statusMessage: errorMsg });
+    generation?.end();
+    root?.update({
+      output: `Error: ${errorMsg}`,
+      level: "ERROR",
+      statusMessage: errorMsg,
+    });
+    root?.end();
+    await flushLangfuse();
     throw error;
+  }
+}
+
+/**
+ * Flush pending spans to Langfuse.
+ *
+ * The span processor is registered once per server process in
+ * `instrumentation.ts` and exposed on `globalThis` so route handlers can
+ * reach it without importing the OTEL runtime into their module graph.
+ * It's `undefined` when Langfuse isn't configured (e.g. local dev without
+ * keys), which is why the call is optional-chained.
+ */
+async function flushLangfuse(): Promise<void> {
+  try {
+    await globalThis.__langfuseSpanProcessor?.forceFlush();
+  } catch {
+    // Observability must never break the request path.
   }
 }
 
