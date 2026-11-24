@@ -16,13 +16,17 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { BLOG_POSTS } from "@/data/blog";
+import type { BlogPostItem } from "@/data/blog";
 import { BlogCard } from "@/components/writing/BlogCard";
 import { FadeUp } from "@/components/motion";
 
 const COLLAPSE_AT = 6;
 
-export function Blog() {
+interface BlogProps {
+  posts: BlogPostItem[];
+}
+
+export function Blog({ posts }: BlogProps) {
   const router = useRouter();
 
   /* URL is the single source of truth for the collapse state via ?all=1.
@@ -43,9 +47,9 @@ export function Blog() {
   };
 
   const visible = expanded
-    ? BLOG_POSTS
-    : BLOG_POSTS.slice(0, COLLAPSE_AT);
-  const remaining = BLOG_POSTS.length - COLLAPSE_AT;
+    ? posts
+    : posts.slice(0, COLLAPSE_AT);
+  const remaining = posts.length - COLLAPSE_AT;
 
   return (
     <FadeUp

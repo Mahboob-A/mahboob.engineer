@@ -18,6 +18,7 @@ import { Projects } from "@/components/sections/Projects";
 import { SkillGraph } from "@/components/sections/SkillGraph";
 import { Blog } from "@/components/sections/Blog";
 import { Contact } from "@/components/sections/Contact";
+import { BLOG_POSTS } from "@/data/blog";
 
 export default function Home() {
   return (
@@ -27,7 +28,7 @@ export default function Home() {
       <Projects />
       <SkillGraph />
       <Suspense>
-        <Blog />
+        <Blog posts={BLOG_POSTS} />
       </Suspense>
       <Contact />
     </>
