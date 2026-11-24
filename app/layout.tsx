@@ -51,11 +51,11 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mahboob.engineer"),
   title: {
-    default: "Mahboob Alam | Backend & DevOps Engineer",
+    default: "Mahboob Alam | Systems & Backend Infrastructure Engineer (Go · Linux · AWS)",
     template: "%s — Mahboob Alam",
   },
   description:
-    "Backend & DevOps Engineer building distributed systems, async pipelines, and live production products (UnThink & Taply). Writes The Backend Diaries.",
+    "Systems & Backend Infrastructure Engineer (Go · Linux · AWS) building distributed systems, async pipelines, kernel isolation sandboxes, and cloud infrastructure. Writes The Backend Diaries.",
   keywords: [
     "Mahboob Alam",
     "Backend Engineer",
@@ -74,9 +74,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://mahboob.engineer",
     siteName: "mahboob.engineer",
-    title: "Mahboob Alam — Backend & DevOps Engineer",
+    title: "Mahboob Alam — Systems & Backend Infrastructure Engineer (Go · Linux · AWS)",
     description:
-      "Distributed systems, async pipelines, and live production products (UnThink & Taply).",
+      "Distributed systems, async pipelines, and kernel isolation sandboxes.",
     images: [
       {
         url: ogUrlFor({
@@ -92,9 +92,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mahboob Alam — Backend & DevOps Engineer",
+    title: "Mahboob Alam — Systems & Backend Infrastructure Engineer (Go · Linux · AWS)",
     description:
-      "Distributed systems, async pipelines, and live production products (UnThink & Taply).",
+      "Distributed systems, async pipelines, and kernel isolation sandboxes.",
     images: [
       ogUrlFor({
         title: "Mahboob Alam",
