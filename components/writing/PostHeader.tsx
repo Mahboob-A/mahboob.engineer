@@ -99,10 +99,10 @@ export function PostHeader({ post, mediumUrl }: PostHeaderProps) {
             </span>
             <div className="flex-1 text-[13px] leading-relaxed">
               <div className="text-amber mb-1.5 font-semibold uppercase tracking-[0.5px]">
-                Summarized Version
+                AI-Generated Summary
               </div>
               <p className="text-t2 mb-3 font-sans text-[14px]">
-                This article is an intentionally concise, high-level summary of my original deep-dive writing. For the complete, unabridged long-form breakdown with full architecture context and implementation details, read the original blog on Medium.
+                This article is an intentionally concise, AI-generated summary of my original deep-dive writing. For the complete, unabridged long-form breakdown with full architecture context and implementation details, read the original blog on Medium.
               </p>
               <a
                 href={canonicalMediumUrl}

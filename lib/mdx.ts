@@ -194,7 +194,7 @@ export async function loadNativePost(slug: string): Promise<NativePost> {
   const raw = await readFile(filePath, "utf-8");
 
   // Parse frontmatter so the rendered page has metadata.
-  const { frontmatter } = parseFrontmatter<NativePostFrontmatter>(raw);
+  const { frontmatter, content: mdxBody } = parseFrontmatter<NativePostFrontmatter>(raw);
 
   // TOC must be extracted from the BODY (after frontmatter strip).
   const toc = extractToc(raw);
@@ -204,7 +204,7 @@ export async function loadNativePost(slug: string): Promise<NativePost> {
   // highlighter on every render.
   const highlighter = await getHighlighter();
   const { content } = await compileMDX({
-    source: raw,
+    source: mdxBody,
     components: mdxComponents,
     options: {
       mdxOptions: {
