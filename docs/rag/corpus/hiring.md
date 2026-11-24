@@ -41,7 +41,7 @@ The questions I would enjoy:
 - **PostgreSQL schema and query optimization**: composite indexes, lazy-load discipline, the worst-case query path.
 - **Running untrusted code safely**: Linux namespaces, cgroups, seccomp, sibling containers, the Algocode story.
 - **Video processing pipelines**: Celery canvas shape, segment upload fanout, DASH manifest edit, Movio.
-- **CI/CD and cloud cost reduction**: CodePipeline, blue/green on ALB, reserved-instance migration.
+- **CI/CD and cloud cost reduction**: CodePipeline, CI gates on every pull request, reserved-instance migration, spot capacity for staging.
 - **SSE vs WebSocket vs Celery vs REST**: when each wins, when each fails.
 - **Cut-over stories**: parallel-running old and new auth for a month without breaking active sessions.
 
