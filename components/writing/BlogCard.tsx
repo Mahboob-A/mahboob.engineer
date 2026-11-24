@@ -62,6 +62,7 @@ export function BlogCard({ post, variant = "default" }: BlogCardProps) {
 
       {/* Title */}
       <h3
+        suppressHydrationWarning
         className={
           isFeatured
             ? "font-display text-t1 mb-3 text-[24px] leading-[1.25] font-bold"

@@ -102,7 +102,7 @@ export function PostHeader({ post, mediumUrl }: PostHeaderProps) {
                 AI-Generated Summary
               </div>
               <p className="text-t2 mb-3 font-sans text-[14px]">
-                This article is an intentionally concise, AI-generated summary of my original deep-dive writing. For the complete, unabridged long-form breakdown with full architecture context and implementation details, read the original blog on Medium.
+                This article is an intentionally concise, AI-generated summary of my original deep-dive writing. For the complete, long-form breakdown with full architecture context and implementation details, read the original blog on Medium.
               </p>
               <a
                 href={canonicalMediumUrl}
