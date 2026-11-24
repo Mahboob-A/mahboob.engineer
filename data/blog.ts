@@ -87,7 +87,19 @@ export interface BlogPostItem {
   notes?: string;
   /** Publication date in ISO 8601. Optional for native drafts. */
   publishedAt?: string;
+  /** Canonical Medium URL for summarized native posts. */
+  mediumUrl?: string;
 }
+
+/** Mapping of native post slugs to their canonical full-length Medium stories. */
+export const NATIVE_POST_MEDIUM_URLS: Record<string, string> = {
+  "linux-networking-part-1":
+    "https://imehboob.medium.com/linux-networking-your-hands-on-guide-to-understand-how-docker-works-part-1-fbf2b6cef06f",
+  "message-queue-101":
+    "https://imehboob.medium.com/message-queue-101-your-ultimate-guide-to-understand-message-queue-b2256961ab01",
+  "algocode-deep-dive":
+    "https://imehboob.medium.com/my-experience-building-a-leetcode-like-online-judge-and-how-you-can-build-one-7e05e031455d",
+};
 
 /* ===========================================================================
    BLOG_POSTS registry
@@ -196,7 +208,7 @@ export const BLOG_POSTS: BlogPostItem[] = [
   {
     slug: "postgresql-part-2",
     title:
-      "SQL Joins in PostgreSQL: Query Across Multiple Tables and Actually Understand What You Are Asking",
+      "SQL JOINs in PostgreSQL: Query Across Multiple Tables and Actually Understand What You Are Asking",
     source: "medium",
     url: "https://medium.com/@imehboob/sql-joins-in-postgresql-query-across-multiple-tables-and-actually-understand-what-you-are-asking-6b4dec98cd5c",
     tags: ["postgresql", "sql", "joins"],
@@ -343,6 +355,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
       "Linux Networking for Backend Engineers. Part 1: Namespaces and Virtual Interfaces",
     source: "native",
     url: "/writing/linux-networking-part-1",
+    mediumUrl:
+      "https://imehboob.medium.com/linux-networking-your-hands-on-guide-to-understand-how-docker-works-part-1-fbf2b6cef06f",
     tags: ["linux", "networking", "docker", "internals"],
     readMin: 10,
     category: "linux",
@@ -362,6 +376,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
       "Message Queue 101: Your Ultimate Guide to Understanding Message Queues",
     source: "native",
     url: "/writing/message-queue-101",
+    mediumUrl:
+      "https://imehboob.medium.com/message-queue-101-your-ultimate-guide-to-understand-message-queue-b2256961ab01",
     tags: ["rabbitmq", "distributed-systems", "async"],
     readMin: 7,
     category: "distributed",
@@ -379,6 +395,8 @@ export const BLOG_POSTS: BlogPostItem[] = [
       "How I Built Algocode. A Distributed Online Judge, Microservices to Kernel Isolation",
     source: "native",
     url: "/writing/algocode-deep-dive",
+    mediumUrl:
+      "https://imehboob.medium.com/my-experience-building-a-leetcode-like-online-judge-and-how-you-can-build-one-7e05e031455d",
     tags: ["microservices", "docker", "rabbitmq", "distributed-systems", "linux"],
     readMin: 12,
     category: "distributed",

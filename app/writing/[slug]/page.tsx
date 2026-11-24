@@ -23,7 +23,6 @@ import { InnerLayout } from "@/components/layout/InnerLayout";
 import { PostHeader } from "@/components/writing/PostHeader";
 import { PostTOC } from "@/components/writing/PostTOC";
 import { RelatedProjects } from "@/components/writing/RelatedProjects";
-import { RelatedStack } from "@/components/writing/RelatedStack";
 import { SeriesNav } from "@/components/writing/SeriesNav";
 import { loadNativePost, listNativePostSlugs } from "@/lib/mdx";
 import { BLOG_POSTS_BY_SLUG } from "@/data/blog";
@@ -167,22 +166,7 @@ export default async function WritingPostPage({
           {headerPost.projects && headerPost.projects.length > 0 && (
             <RelatedProjects projectSlugs={headerPost.projects} />
           )}
-          {headerPost.stack && headerPost.stack.length > 0 && (
-            <RelatedStack stackIds={headerPost.stack} />
-          )}
           <SeriesNav post={headerPost} />
-
-          {/* Edit-in-Keystatic note (native posts only) */}
-          <div className="border-border mt-12 border-t pt-6 text-center">
-            <a
-              href="/keystatic"
-              target="_blank"
-              rel="noreferrer"
-              className="text-t3 hover:text-acc inline-flex items-center gap-1.5 font-mono text-[12px] transition-colors"
-            >
-              ✎ edit this post in Keystatic
-            </a>
-          </div>
         </article>
 
         {/* Sidebar (sticky TOC on lg+) */}

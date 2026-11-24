@@ -192,7 +192,6 @@ function Legend() {
     { color: "var(--amber)", label: "infra / async / payment / video" },
     { color: "var(--t2)", label: "data layer" },
     { color: "var(--mauve)", label: "ai / auth" },
-    { color: "var(--t3)", label: "learning" },
   ];
 
   return (

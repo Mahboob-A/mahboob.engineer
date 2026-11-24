@@ -101,12 +101,28 @@ async function buildMergedPostList(): Promise<MergedPost[]> {
   // RSS-only posts (not in static) get appended.
   const bySlug = new Map<string, MergedPost>();
   for (const p of staticMedium) bySlug.set(p.slug, p);
-  // If an RSS post has the same slug as a static one, overlay
-  // publishedAt from RSS. Keep the static curated fields.
+  // If an RSS post has the same slug or matching title/URL as a static one,
+  // overlay publishedAt from RSS. Keep the static curated fields.
+  const normTitle = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  const cleanUrl = (u?: string) => (u ?? "").split("?")[0].replace(/\/+$/, "");
+
   for (const r of rssPosts) {
-    const existing = bySlug.get(r.slug);
-    if (existing) {
-      bySlug.set(r.slug, {
+    let matchedKey: string | undefined = bySlug.has(r.slug) ? r.slug : undefined;
+    if (!matchedKey) {
+      for (const [key, item] of bySlug.entries()) {
+        if (
+          normTitle(item.title) === normTitle(r.title) ||
+          (cleanUrl(item.url) && cleanUrl(r.url) && cleanUrl(item.url) === cleanUrl(r.url))
+        ) {
+          matchedKey = key;
+          break;
+        }
+      }
+    }
+
+    if (matchedKey) {
+      const existing = bySlug.get(matchedKey)!;
+      bySlug.set(matchedKey, {
         ...existing,
         publishedAt: r.publishedAt ?? existing.publishedAt,
         excerpt: (r.excerpt?.length ?? 0) > (existing.excerpt?.length ?? 0)
