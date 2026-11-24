@@ -44,6 +44,7 @@ export function BlogCard({ post, variant = "default" }: BlogCardProps) {
 
   return (
     <article
+      suppressHydrationWarning
       className={
         isFeatured
           ? "bg-surface border-acc/40 hover:border-acc flex flex-col rounded-[10px] border-2 p-7 transition-colors"

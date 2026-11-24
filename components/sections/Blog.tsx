@@ -50,6 +50,7 @@ export function Blog() {
   return (
     <FadeUp
       as="section"
+      suppressHydrationWarning
       className="border-border scroll-mt-20 border-t pt-[45px] pb-[90px]"
       id="blog"
     >
@@ -69,6 +70,7 @@ export function Blog() {
             aria-controls can point at it for assistive tech. */}
         <div
           id="blog-list"
+          suppressHydrationWarning
           className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
         >
           {visible.map((post) => (
