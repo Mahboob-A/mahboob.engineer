@@ -56,8 +56,7 @@ export function Hero() {
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
-            <p className="text-amber mb-[18px] flex items-center gap-[10px] font-mono text-[13px] tracking-[1px]">
-              <span aria-hidden className="bg-amber inline-block h-px w-7" />
+            <p className="text-amber mb-[18px] font-mono text-[13px] tracking-[1px]">
               SYSTEMS &amp; BACKEND INFRA ENGINEER (Go · Linux · AWS) · BANGALORE
             </p>
 
