@@ -95,6 +95,19 @@ export interface EducationItem {
 
 export const EXPERIENCE: ExperienceItem[] = [
   {
+    id: "poridhi-io",
+    company: "PoridhiIO",
+    url: "https://poridhi.io",
+    role: "Software Engineer",
+    period: "Jul 2026 – Present",
+    status: "active",
+    bullets: [],
+    tags: [],
+    notes: `Software Engineer at PoridhiIO focusing on systems engineering, cloud infrastructure, and backend services.
+
+Working on core backend architecture, distributed systems, and cloud infrastructure pipelines as part of the engineering team.`,
+  },
+  {
     id: "unthink",
     company: "UnThink",
     url: "https://letsunthink.tech",
@@ -176,6 +189,7 @@ What's next, if we keep going. Tier-1 enterprise features (SSO via SAML), a deep
     company: "NexBell Inc.",
     url: null,
     role: "Software Engineer",
+    roleSuffix: "including 2 months internship",
     period: "Nov 2024 – Jun 2026",
     status: "completed",
     bullets: [
@@ -216,7 +230,7 @@ What's next, if I returned. A per-tenant database split (one MySQL per store) is
        once the internship ended. The suffix surfaces that history
        without cluttering the role itself. */
     roleSuffix: "including 2.5 months parttime",
-    period: "Sept 2023 – Oct 2024",
+    period: "Dec 2023 – Oct 2024",
     status: "completed",
     bullets: [
       "Performance: Owned bottleneck diagnosis and resolution through indexing and queryset optimization, driving measurable reductions in API response times across client applications.",
