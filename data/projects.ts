@@ -324,7 +324,7 @@ What's next, if I pick this back up. Skip Mongo for results and use Postgres JSO
   {
     slug: "movio",
     name: "Movio",
-    tagline: "YouTube-scale VOD platform. HLS, DASH, DRM, and CDN microservices.",
+    tagline: "Video-on-demand platform. Adaptive-bitrate HLS and DASH, DRM packaging, and CDN delivery.",
     status: "complete",
     tier: "featured",
     year: 2024,
@@ -354,7 +354,7 @@ What's next, if I pick this back up. Skip Mongo for results and use Postgres JSO
       "microservices architecture",
     ],
     problem:
-      "Deliver adaptive-bitrate video with content protection at scale, without relying on a managed video API.",
+      "Deliver adaptive-bitrate video with content protection, and own the entire transcode, packaging, and delivery pipeline end to end.",
     built:
       "Transcoding pipeline producing HLS and MPEG-DASH renditions via FFmpeg workers, DRM packaging, and CloudFront CDN delivery for adaptive playback across all devices.",
     notes:
@@ -416,7 +416,7 @@ What's next. HMAC webhook signature verification. Real auth on the dashboard. Mu
   {
     slug: "cutetube",
     name: "CuteTube",
-    tagline: "Video-on-demand service. A monolith-first YouTube clone.",
+    tagline: "Video-on-demand service. Upload, transcode, and streaming delivery in a single monolith.",
     status: "complete",
     tier: "showcase",
     year: 2023,
@@ -441,11 +441,11 @@ What's next. HMAC webhook signature verification. Real auth on the dashboard. Mu
       "user auth + channels",
     ],
     problem:
-      "Learning video platform architecture from the ground up, before building Movio at scale.",
+      "Learning video platform architecture from the ground up, end to end, in a single service.",
     built:
-      "Monolith-first YouTube-like VOD service with video upload, FFmpeg transcoding, user channels, playlists, comments, and streaming delivery. The foundation that led to Movio's microservices architecture.",
+      "Monolith-first VOD service with video upload, FFmpeg transcoding, user channels, playlists, comments, and streaming delivery. The foundation that led to Movio's microservices architecture.",
     notes:
-      `CuteTube was the project that taught me what a video pipeline actually looks like. It's a YouTube clone: signup, watch videos, upload your own. The engineering meat is the Celery pipeline that turns a raw upload into adaptive-bitrate DASH segments. The pipeline tracks the format, transcodes the container, creates a Celery group with chord and callbacks, segments with ABR (360/480/720/1080p at 800/1200/2400/4800 Kbps), batches uploads to S3, deletes local files, updates metadata via callback, and retries with exponential backoff. The whole thing in one repo, because I wanted to learn it end to end before splitting.
+      `CuteTube was the project that taught me what a video pipeline actually looks like. The core loop was simple: sign up, watch videos, upload your own. The engineering meat is the Celery pipeline that turns a raw upload into adaptive-bitrate DASH segments. The pipeline tracks the format, transcodes the container, creates a Celery group with chord and callbacks, segments with ABR (360/480/720/1080p at 800/1200/2400/4800 Kbps), batches uploads to S3, deletes local files, updates metadata via callback, and retries with exponential backoff. The whole thing in one repo, because I wanted to learn it end to end before splitting.
 
 The hardest single thing was the Celery pipeline. I spent a lot of late nights aligning the canvas for various edge cases. Auth was hand-rolled (no third-party packages) because I wanted to understand the password hash and session lifecycle from scratch. The stream workflow is OS-aware. Windows clients get MP4 segments, macOS and Linux get MOV, and the DASH player picks based on capability. Gcore CDN sits in front of AWS S3 via custom domain cdn.algocode.site.
 
@@ -661,7 +661,7 @@ The original plan was to extend this into AWS-based load balancing (the project 
     slug: "prostream",
     name: "ProStream",
     tagline:
-      "Low-latency live streaming. Twitch-inspired, Agora-backed, tip-economy enabled.",
+      "Low-latency live streaming. Agora SD-RTN broadcasts, Redis-backed chat, and an in-app wallet for tipping.",
     status: "complete",
     tier: "showcase",
     year: 2023,
@@ -690,9 +690,9 @@ The original plan was to extend this into AWS-based load balancing (the project 
       "team of 3, 2 countries",
     ],
     problem:
-      "Live streaming platforms typically rely on managed vendor APIs and centralized storage, driving up cost, vendor lock-in, and viewer latency. Replicating core Twitch-like functionality (low-latency streaming, identity verification, tipping, creator monetization) on stock cloud infra is doable but full of moving parts.",
+      "Live streaming platforms typically rely on managed vendor APIs and centralized storage, driving up cost, vendor lock-in, and viewer latency. Shipping low-latency streaming, identity verification, tipping, and creator monetization on stock cloud infra is doable but full of moving parts.",
     built:
-      "Twitch-inspired live streaming platform built by a 3-person distributed team (India + Bangladesh). Django + DRF backend with custom auth (OTP recovery), streamer verification flow, in-app wallet + tipping via SSLCommerz, withdraw flow with 22% platform fee. Agora SD-RTN for low-latency one-to-many broadcasts, Django Channels + Redis Pub/Sub for high-concurrency chat and viewer-count syncing, Dynamic Token Server for HMAC-signed access tokens to prevent stream-sniping. Frontend on Vercel (React); backend on AWS EC2 behind Route53.",
+      "Live streaming platform built by a 3-person distributed team (India + Bangladesh). Django + DRF backend with custom auth (OTP recovery), streamer verification flow, in-app wallet + tipping via SSLCommerz, withdraw flow with 22% platform fee. Agora SD-RTN for low-latency one-to-many broadcasts, Django Channels + Redis Pub/Sub for high-concurrency chat and viewer-count syncing, Dynamic Token Server for HMAC-signed access tokens to prevent stream-sniping. Frontend on Vercel (React); backend on AWS EC2 behind Route53.",
     notes:
       `ProStream started as a university-team experiment. Two engineers in Bangladesh and me in India wanted to know if we could ship a real streaming product without paying for a vendor. We split work over Slack, did daily standups at hours that made nobody happy, and tracked tasks in Jira. The Stripe-of-streaming setup (Django and DRF on EC2, React on Vercel, Postgres, Route53) was familiar territory by this point. I'd been through it with Movio.
 
