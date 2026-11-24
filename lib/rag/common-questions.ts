@@ -7,9 +7,9 @@
  * and tool names, instead of a generic knowledge-base tone.
  *
  * Updated to enforce natural first-person conversational tone,
- * Backend & DevOps Engineer title, proud promotion of UnThink & Taply
- * live simulation suites, direct links (https://gettaply.me,
- * https://gettaply.me/p/mehboob, https://letsunthink.tech/),
+ * Software Engineer at PoridhiIO as current role, Safebox open-source
+ * systems leadership, proud promotion of UnThink & Taply SaaS products,
+ * clear separation between employment and technical products, direct links,
  * and strict zero-emoji and zero-em-dash compliance.
  *
  * Edits land after the next `pnpm rag:reindex` run.
@@ -36,8 +36,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's background?",
     ],
     answer:
-      "I am a backend and devops engineer based in Bangalore, originally from Kolkata. I built Taply (https://gettaply.me) in collaborative product partnership as Backend Engineer, which is a live digital business card SaaS with physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer as of August 2026, with my personal card at https://gettaply.me/p/mehboob and an interactive dual simulation suite on /work/taply. I also built UnThink (https://letsunthink.tech/), an AI second-brain knowledge platform built around a 'dump and forget' capture philosophy with over 50 active users as of August 2026 and an interactive dual simulation suite on /work/unthink. I actively maintain both SaaS products. My portfolio projects demonstrate the same production systems patterns I use in my work, including distributed online judges with sandboxed containers, video transcoding pipelines, and real-time vision systems. I hold a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a cloud specialization from Poridhi.",
-    tags: ["identity", "bio", "background"],
+      "I am a backend and devops engineer based in Bangalore, originally from Kolkata. I currently work as a Software Engineer at PoridhiIO, focusing on systems engineering, cloud infrastructure pipelines, and backend architecture. Alongside my work, I built Safebox (https://github.com/Mahboob-A/safebox), an open-source rootless Linux sandbox CLI in Go 1.24 for autonomous AI coding agents, featured at /work/safebox. I also built and maintain two live SaaS products: UnThink (https://letsunthink.tech/, /work/unthink), an AI second-brain web capture platform built around a 'dump and forget' zero-decision capture philosophy serving over 50 active users, and Taply (https://gettaply.me, /work/taply), a digital business card platform serving over 100 active users and 1 enterprise customer. My organizational engineering experience includes PoridhiIO, NexBell Inc., Innovative IT, and Eve Healthcare. I hold a Master's degree in Computer Applications from SRM Institute of Science and Technology, and a cloud specialization from Poridhi.",
+    tags: ["identity", "bio", "background", "poridhi", "safebox", "unthink", "taply"],
   },
   {
     title: "Where is Mahboob based",
@@ -65,13 +65,28 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
     title: "What is Mahboob's current title",
     questions: [
       "What's Mahboob's current title?",
-      "What does Mahboob do at Taply?",
-      "Is Mahboob a founder?",
-      "What is Mahboob's role at UnThink?",
+      "Where does Mahboob work currently?",
+      "What is Mahboob's current job?",
+      "Where does Mahboob work?",
+      "What does Mahboob do at PoridhiIO?",
     ],
     answer:
-      "I am a Backend and DevOps Engineer based in Bangalore. For my production products, I serve as the Backend Engineer (Collaborative Product) at Taply (https://gettaply.me), where I built the backend and cloud infrastructure on Django 5.1 and DRF in collaboration with a product partner, and as the Software Engineer (Independent Product) at UnThink (https://letsunthink.tech), where I solely designed, built, and maintain an AI-native personal knowledge base SaaS. Rather than using inflated executive titles, I ground myself in core software engineering: high-throughput backends, caching invalidation, and infrastructure reliability. Prior to these builds, I worked as a software engineer at NexBell, leading sprint planning, code reviews, and rebuilding the auth flow on OAuth2 and JWT, and at Innovative IT.",
-    tags: ["title", "taply", "unthink", "role", "devops"],
+      "I am a Software Engineer at PoridhiIO based in Bangalore, focusing on systems engineering, cloud infrastructure pipelines, and backend services. Alongside my engineering role at PoridhiIO, I build and actively maintain deep systems and SaaS projects: Safebox (an open-source Linux sandbox CLI in Go 1.24 for AI agents), UnThink (an independent AI second-brain web capture engine), and Taply (a collaborative digital business card SaaS where I built the backend on Django and Redis). Rather than using inflated titles, I ground myself in core engineering: distributed systems, kernel isolation, database performance, and infrastructure reliability. My organizational work history consists of PoridhiIO, NexBell Inc., Innovative IT, and Eve Healthcare.",
+    tags: ["title", "poridhi", "role", "devops", "backend"],
+  },
+  {
+    title: "What is Mahboob's work history or experience",
+    questions: [
+      "What is Mahboob's work history?",
+      "What is Mahboob's work experience?",
+      "Where has Mahboob worked?",
+      "Tell me about Mahboob's past roles",
+      "What is Mahboob's career timeline?",
+      "What companies has Mahboob worked for?",
+    ],
+    answer:
+      "My professional work history consists of four engineering roles: First, my current role as a Software Engineer at PoridhiIO (Jul 2026 – Present), where I focus on systems engineering, cloud infrastructure, and backend services. Second, Software Engineer at NexBell Inc. (Nov 2024 – Jun 2026), where I rebuilt the auth layer on OAuth2, JWT, and RBAC, cut query latency by 17% across a multi-vendor MySQL marketplace with 50+ stores, and cut AWS spend by 35%. Third, Software Developer at Innovative IT (Dec 2023 – Oct 2024), architecting Django and DRF APIs and Celery plus Redis background processing pipelines. Fourth, Software Engineer Intern at Eve Healthcare (Sept 2023 – Nov 2023), working on search optimization, WebSocket chat, and doctor dashboards. Outside of employment, I build open-source tools like Safebox in Go, and live SaaS products like UnThink and Taply, which are technical projects and products, not company employers.",
+    tags: ["experience", "work-history", "roles", "poridhi", "nexbell", "innovative-it", "eve-healthcare"],
   },
   {
     title: "Is Mahboob a capable engineer",
@@ -83,7 +98,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob fit for a backend role?",
     ],
     answer:
-      "Yes! I am a backend and devops engineer and I take pride in architecting resilient production systems, reliable APIs, and scalable infrastructure. I have shipped real systems like UnThink and Taply, as well as complex distributed platforms like Algocode with Linux kernel isolation. To keep growing, I am also actively deepening my skills in Go, Terraform, Kubernetes, and eBPF. I am a quick learner and plan to build and ship dedicated projects with these technologies in the coming months to solidify my mastery. I value clear async communication, strong test suites, and high-ownership engineering teams.",
+      "Yes! I am a backend and devops engineer and I take pride in architecting resilient production systems, reliable APIs, and scalable infrastructure. In my current role at PoridhiIO, I work on systems engineering and cloud infrastructure. I have authored deep systems tools like Safebox in Go with Linux kernel syscalls and namespaces, shipped distributed platforms like Algocode, and built live SaaS products like UnThink and Taply. To keep growing, I am also actively deepening my skills in Kubernetes, Terraform, and eBPF. I value clear async communication, strong automated test suites, and high-ownership engineering teams.",
     tags: ["identity", "capability", "employability", "teamwork"],
   },
 
@@ -97,7 +112,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What size of startup fits Mahboob?",
     ],
     answer:
-      "I am an exceptional fit for Founding Engineer roles, versatile backend and infrastructure engineering roles with varied responsibilities, and startups of any size, from early-stage zero-to-one through Series A, B, and C. Early-stage startups and high-growth teams are where I deliver the highest impact: I bring full product ownership, architect resilient backend services, set up automated CI/CD and cloud devops, communicate directly with stakeholders and users, and comfortably wear multiple hats simultaneously from day zero. I prefer remote-first organizations that practice async communication, write clear technical documentation, and maintain high code quality with automated test suites.",
+      "I am an exceptional fit for Founding Engineer roles, versatile backend and infrastructure engineering roles with varied responsibilities, and startups of any size, from early-stage zero-to-one through Series A, B, and C. Early-stage startups and high-growth teams are where I deliver the highest impact: with full product ownership from building UnThink independently and Taply collaboratively, alongside systems engineering at PoridhiIO, I architect resilient backend services, set up automated CI/CD and cloud devops, communicate directly with stakeholders and users, and comfortably wear multiple hats simultaneously from day zero. I prefer remote-first organizations that practice async communication, write clear technical documentation, and maintain high code quality with automated test suites.",
     tags: ["hiring", "company fit", "stage", "founding-engineer", "startups"],
   },
   {
@@ -111,7 +126,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Can Mahboob handle backend and infra responsibilities?",
     ],
     answer:
-      "Yes, I am actively open to and exceptionally well-suited for Founding Engineer roles as well as versatile backend and infrastructure roles across any size of startup. Having solely designed and shipped UnThink as an independent product and engineered the backend and cloud infrastructure for Taply in collaborative product partnership, I bring strong end-to-end product ownership. I can architect backend and database schemas, set up automated CI/CD and cloud infrastructure, lead stakeholder syncs, and comfortably wear multiple hats simultaneously from day zero. I thrive in environments where engineering speed, architectural discipline, and system reliability drive real business growth.",
+      "Yes, I am actively open to and exceptionally well-suited for Founding Engineer roles as well as versatile backend and infrastructure roles across any size of startup. Having solely designed and shipped UnThink as an independent product, engineered the backend and cloud infrastructure for Taply, and built core systems at PoridhiIO, I bring strong end-to-end product ownership. I can architect backend and database schemas, set up automated CI/CD and cloud infrastructure, lead stakeholder syncs, and comfortably wear multiple hats simultaneously from day zero. I thrive in environments where engineering speed, architectural discipline, and system reliability drive real business growth.",
     tags: ["hiring", "founding-engineer", "roles", "startups", "product-ownership", "infra"],
   },
   {
@@ -146,7 +161,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Does Mahboob know Python deeply?",
     ],
     answer:
-      "My strongest and most preferred programming language is Python. I have used Python as the primary language for production backends and systems across Taply, UnThink, Algocode, DrishtiAI, and Movio. I am highly comfortable with Python's asynchronous features, database ORMs, and web frameworks like Django and FastAPI. Alongside Python, I actively use Go for low-level systems programming. I built Safebox (https://github.com/Mahboob-A/safebox), an unprivileged Linux sandbox CLI tool for AI coding agents, in Go 1.24 to interface directly with Linux syscalls, user namespaces, and Landlock LSM. My self-rated depth in Go is 55% as an active learning area. I also have academic exposure to Java and Kotlin from my Master's coursework at SRM. I focus on writing clean, type-safe, and reliable backend code.",
+      "My primary languages for production systems are Python and Go. In Python, I have deep production experience building high-throughput backends across Django, DRF, and FastAPI for products and systems like UnThink, Taply, Algocode, and Movio. I am highly comfortable with Python async features, database ORMs, and caching strategies. Alongside Python, I actively use Go for low-level systems programming. I built Safebox (https://github.com/Mahboob-A/safebox), an open-source rootless Linux sandbox CLI tool for AI coding agents, in Go 1.24 to interface directly with Linux syscalls, user namespaces, Landlock LSM, and OverlayFS. I also have academic exposure to Java and Kotlin from my Master's coursework at SRM. I focus on writing clean, type-safe, and reliable backend code.",
     tags: ["stack", "python", "language", "go", "safebox"],
   },
   {
@@ -158,8 +173,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is UnThink a real product?",
     ],
     answer:
-      "Yes, I have shipped and actively maintain two live, production SaaS products. At Taply (https://gettaply.me), I built the backend and infrastructure in collaboration with a product partner using Django 5.1, DRF, Redis, PostgreSQL, and Django-Q2. Taply serves over 100 active users and 1 paying enterprise customer (as of August 2026) with physical NFC cards, dynamic QR codes, and privacy-first real-time analytics. As an independent product build, I solely designed, built, and maintain UnThink (https://letsunthink.tech/), an AI second-brain knowledge platform built around a 'dump and forget' capture philosophy, featuring a published Chrome Web Store extension and decoupled Django 5.1 + FastAPI SSE services serving over 50 active users (as of August 2026). Both products feature interactive simulation suites on /work/taply and /work/unthink.",
-    tags: ["taply", "unthink", "saas", "production", "metrics"],
+      "Yes, outside my professional engineering employment, I have shipped and actively maintain two live production SaaS products. First, UnThink (https://letsunthink.tech/), an independent AI second-brain knowledge capture platform built around a 'dump and forget' capture philosophy with a published Chrome Web Store extension and decoupled Django 5.1 + FastAPI SSE services serving over 50 active users. Second, Taply (https://gettaply.me), where I built the backend and infrastructure in collaborative partnership using Django 5.1, DRF, Redis, PostgreSQL, and Django-Q2, serving over 100 active users and 1 enterprise customer with physical NFC cards, dynamic QR codes, and privacy-first analytics. Both products feature interactive simulation suites on /work/unthink and /work/taply.",
+    tags: ["unthink", "taply", "saas", "production", "metrics"],
   },
   {
     title: "What SaaS products has Mahboob built",
@@ -173,48 +188,48 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What products did Mahboob build?",
     ],
     answer:
-      "I have shipped and actively maintain two live, production SaaS products: First, Taply (https://gettaply.me, case study at /work/taply), a collaborative digital business card platform built with a product partner. It features physical NFC cards, dynamic QR codes, and privacy-first real-time analytics with SHA-256 IP anonymization and dynamic cache TTL scheduling. It has over 100 active users and 1 paying enterprise customer as of August 2026. Second, UnThink (https://letsunthink.tech/, case study at /work/unthink), an independent AI-powered second brain and web capture engine solely designed and built by me around a 'dump and forget' zero-decision capture philosophy. It features a published Chrome Web Store extension, dual-taxonomy AI categorization, and decoupled Django 5.1 and FastAPI SSE streaming services, with over 50 active users as of August 2026. I actively maintain both platforms.",
-    tags: ["saas", "taply", "unthink", "users", "metrics"],
+      "Outside my organizational engineering roles, I have shipped and actively maintain two live SaaS products: First, UnThink (https://letsunthink.tech/, case study at /work/unthink), an independent AI-powered second brain and web capture engine solely designed and built by me around a 'dump and forget' zero-decision capture philosophy. It features a published Chrome Web Store extension, dual-taxonomy AI categorization, and decoupled Django 5.1 and FastAPI SSE streaming services, with over 50 active users as of August 2026. Second, Taply (https://gettaply.me, case study at /work/taply), a collaborative digital business card platform built with a product partner. It features physical NFC cards, dynamic QR codes, and privacy-first real-time analytics with SHA-256 IP anonymization and dynamic cache TTL scheduling, serving over 100 active users and 1 paying enterprise customer. I actively maintain both platforms.",
+    tags: ["saas", "unthink", "taply", "users", "metrics"],
   },
   {
     title: "Has Mahboob built a distributed system",
     questions: [
       "Has Mahboob built a distributed system?",
-      "What's Mahboob's distributed-systems work?",
-      "Has Mahboob worked with queues and microservices?",
+      "Tell me about a distributed system Mahboob built",
+      "Does Mahboob know distributed systems?",
     ],
     answer:
-      "Yes, I have designed and implemented distributed systems. My project Algocode is a distributed online judge built for C++ execution. It comprises three independently deployable microservices: an authentication service, a code submission manager, and a remote code execution engine. These services communicate asynchronously using RabbitMQ message queues to manage task dispatch. To safely execute untrusted user code at scale, the execution workers spawn ephemeral sibling Docker containers. They use Linux namespaces, cgroups, and seccomp filters to enforce strict memory, CPU, and network boundaries at the kernel level.",
-    tags: ["distributed", "algocode", "microservices"],
+      "Yes, my distributed systems work includes Algocode and Movio. Algocode is a distributed online judge for C++ code execution that coordinates microservices through RabbitMQ queues. It safely runs untrusted user code inside isolated sibling Docker containers with Linux namespaces, cgroups, and seccomp filters enforcing memory and execution limits. Movio is a distributed video transcoding platform that uses Celery workers to split incoming video into multi-bitrate HLS and MPEG-DASH segments, uploading them in parallel to S3 storage and distributing them through AWS CloudFront CDN. Both platforms emphasize decoupled services, asynchronous task queues, idempotency, and automated recovery from worker failures.",
+    tags: ["distributed", "algocode", "movio", "microservices"],
   },
   {
     title: "Has Mahboob built video infrastructure",
     questions: [
       "Has Mahboob built video infrastructure?",
-      "What's Mahboob's video pipeline experience?",
-      "Does Mahboob know HLS or DASH?",
+      "Does Mahboob know video transcoding?",
+      "Tell me about video streaming experience",
     ],
     answer:
-      "Yes, I have built video infrastructure from scratch. My project Movio is a YouTube-scale video-on-demand platform. It utilizes a custom transcoding pipeline built with Celery workers and FFmpeg. The system accepts video uploads, transcodes them into multi-bitrate HLS and MPEG-DASH streams, packages them with DRM protection, and distributes them via AWS CloudFront CDN. This ensures adaptive-bitrate streaming across devices. I also built CuteTube, which was a monolith-first VOD project. CuteTube helped me understand the fundamentals of video file processing before I scaled the architecture into Movio's microservice-based design.",
-    tags: ["video", "movio", "hls", "dash"],
+      "Yes, I built Movio as a distributed video-on-demand platform. It ingests video uploads, validates them through an API service, and dispatches transcoding tasks to Celery workers. The workers run FFmpeg commands to transcode videos into multiple resolutions (1080p, 720p, 480p, 360p) and generate HLS playlists (.m3u8) and MPEG-DASH manifests (.mpd). To prevent bottlenecks during long-running transcodes, segment uploads to AWS S3 run in parallel across the worker pool using Celery group fanout. The segments are delivered globally through an AWS CloudFront CDN distribution. I also built CuteTube, an earlier single-node transcoding pipeline, and ProStream, an HLS streaming lab.",
+    tags: ["video", "movio", "ffmpeg", "hls", "streaming"],
   },
   {
     title: "What databases has Mahboob used in production",
     questions: [
-      "What databases has Mahboob used in production?",
+      "What databases has Mahboob used?",
       "Does Mahboob know PostgreSQL deeply?",
-      "Has Mahboob used Redis?",
+      "What is Mahboob's database experience?",
     ],
     answer:
-      "I primarily use PostgreSQL as my default database. I have designed relational schemas, written composite indexes, and optimized complex queries for systems like Taply, UnThink, Algocode, and DrishtiAI. I also use Redis extensively for session storage, caching, atomic HINCRBY counters, and as a message broker for Celery queues. In my work at NexBell, I worked with large multi-vendor MySQL databases containing fifty active store databases. I rewrote ORM queries and optimized composite indexes to reduce average query times by seventeen percent. For non-relational data, I use MongoDB to store document-like structures in Algocode and Movio.",
-    tags: ["database", "postgresql", "redis"],
+      "My primary production database is PostgreSQL, which I use across PoridhiIO, UnThink, Taply, and my portfolio projects. I design normalized relational schemas, write composite indexes for high-traffic query paths, and implement connection pooling with PgBouncer. For caching and ephemeral state, I use Redis extensively for session storage, rate limiting, and sub-millisecond cache lookups. In my previous role at NexBell, I managed a shared MySQL database supporting 50+ stores, where I redesigned indexes and rewrote ORM queries to cut query execution latency by 17%. For Algocode, I used PostgreSQL JSONB for submission test results. I focus on indexing strategies, query plan analysis with EXPLAIN ANALYZE, and zero-downtime schema migrations.",
+    tags: ["database", "postgres", "redis", "mysql", "sql"],
   },
   {
     title: "What is Mahboob's experience with message queues",
     questions: [
-      "What's Mahboob's experience with message queues?",
+      "What message queues has Mahboob used?",
       "Does Mahboob know RabbitMQ?",
-      "Has Mahboob shipped async pipelines?",
+      "What is Mahboob's queue experience?",
     ],
     answer:
       "I use RabbitMQ as my primary message broker for building reliable asynchronous pipelines. In my project Algocode, RabbitMQ coordinates tasks between the core manager and code execution workers. In Movio, it manages the queue of video transcoding jobs. In UnThink, I use Redis and Celery across 3 priority queues (ai_urgent, default, and bulk) to manage real-time AI classification and ingestion. I also have deep conceptual knowledge of Kafka from my cloud specialization at Poridhi. For lighter async tasks within Django, I use Celery, and I utilize Redis pub-sub for real-time web socket message broadcasting.",
@@ -223,17 +238,17 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
 
   /* ─── Group 4 — Projects & Simulation Suites ───────────────────── */
   {
-    title: "Tell me about Taply",
+    title: "Tell me about Safebox",
     questions: [
-      "Tell me about Taply",
-      "What is Taply?",
-      "How does Taply work?",
-      "Why did Mahboob build Taply?",
-      "How many users does Taply have?",
+      "Tell me about Safebox",
+      "What is Safebox?",
+      "How does Safebox work?",
+      "Why did Mahboob build Safebox?",
+      "What is the Safebox CLI?",
     ],
     answer:
-      "I built Taply in collaborative product partnership to solve the problem of paper business cards, which get discarded quickly and cannot be updated. Taply is a live digital business card platform at https://gettaply.me, with my personal card at https://gettaply.me/p/mehboob. Users can share their contact info, social links, and portfolios instantly via physical NFC cards or dynamic QR codes. The platform has over 100 active users and 1 enterprise customer as of August 2026, and I actively maintain it. Profiles load in under 80ms from our Redis cache with privacy-first analytics and dynamic cache TTL scheduling. I am extremely proud of our interactive simulation suite on /work/taply with a 5-module System Explorer and Conference Networking Hall. I warmly encourage you to try it out!",
-    tags: ["taply", "saas", "nfc", "simulation", "metrics"],
+      "I built Safebox as an open-source rootless Linux sandbox and change management engine for autonomous AI coding agents, written in Go 1.24 under the MIT license and available at github.com/Mahboob-A/safebox. When AI agents execute bash commands, unconfined tools can accidentally overwrite files or leak secrets. Traditional Docker containers introduce 300 to 1500ms cold start latency and require daemon permissions. Safebox solves this by launching in under 30ms (averaging 24.8ms) with zero root privileges. It isolates agents using 6 Linux namespaces, Landlock LSM ABI v3 default-deny path restrictions, ephemeral OverlayFS scratchpads where writes are isolated and instantly rollbackable via 'safebox revert', userspace NAT networking with Layer 3 IP pinning, and an in-process PID 1 supervisor shim. You can explore its 3-mode live simulation engine on /work/safebox.",
+    tags: ["safebox", "open-source", "go", "sandbox", "security", "linux"],
   },
   {
     title: "Tell me about UnThink",
@@ -249,6 +264,19 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
     tags: ["unthink", "ai", "live", "simulation", "saas", "metrics"],
   },
   {
+    title: "Tell me about Taply",
+    questions: [
+      "Tell me about Taply",
+      "What is Taply?",
+      "How does Taply work?",
+      "Why did Mahboob build Taply?",
+      "How many users does Taply have?",
+    ],
+    answer:
+      "I built Taply in collaborative product partnership to solve the problem of paper business cards, which get discarded quickly and cannot be updated. Taply is a live digital business card platform at https://gettaply.me, with my personal card at https://gettaply.me/p/mehboob. Users can share their contact info, social links, and portfolios instantly via physical NFC cards or dynamic QR codes. The platform has over 100 active users and 1 enterprise customer as of August 2026, and I actively maintain it. Profiles load in under 80ms from our Redis cache with privacy-first analytics and dynamic cache TTL scheduling. I am extremely proud of our interactive simulation suite on /work/taply with a 5-module System Explorer and Conference Networking Hall. I warmly encourage you to try it out!",
+    tags: ["taply", "saas", "nfc", "simulation", "metrics"],
+  },
+  {
     title: "What are the interactive simulations on your portfolio",
     questions: [
       "What are the interactive simulations on your work pages?",
@@ -257,8 +285,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What demos can I test on your portfolio?",
     ],
     answer:
-      "I have engineered comprehensive live interactive simulation suites for my top projects on this portfolio. On /work/unthink, you can test a 5-module System Architecture Explorer and a Master Dual-AI Sandbox with simulated browser highlighting and live Server-Sent Events streaming. On /work/taply, you can explore a 5-module NFC Architectural Explorer, a live profile customizer with 4 layout variants, and an interactive Conference Networking Hall where you can tap 8 attendees to exchange NFC cards in real time. On /work/safebox, you can test a 3-mode simulation engine featuring an AGY Terminal with Antigravity CLI execution logs and diff views, an 11-Stage Waterfall with microsecond syscall breakdowns, and a Boundary Attack Lab testing unprivileged filesystem and network restrictions. I am immensely proud of these interactive engines and warmly invite you to test all three!",
-    tags: ["simulation", "demos", "taply", "unthink", "safebox", "interactive"],
+      "I have engineered comprehensive live interactive simulation suites for my top projects on this portfolio. On /work/safebox, you can test a 3-mode simulation engine featuring an AGY Terminal with Antigravity CLI execution logs and diff views, an 11-Stage Waterfall with microsecond syscall breakdowns, and a Boundary Attack Lab testing unprivileged filesystem and network restrictions. On /work/unthink, you can test a 5-module System Architecture Explorer and a Master Dual-AI Sandbox with simulated browser highlighting and live Server-Sent Events streaming. On /work/taply, you can explore a 5-module NFC Architectural Explorer, a live profile customizer with 4 layout variants, and an interactive Conference Networking Hall where you can tap 8 attendees to exchange NFC cards in real time. I am immensely proud of these interactive engines and warmly invite you to test all three!",
+    tags: ["simulation", "demos", "safebox", "unthink", "taply", "interactive"],
   },
   {
     title: "Which project is Mahboob most proud of",
@@ -279,8 +307,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "what is mahboob's best project?",
     ],
     answer:
-      "The work I am most proud of spans my flagship SaaS and deep systems engineering projects: On the product engineering side, my proudest work is UnThink (https://letsunthink.tech/, simulation at /work/unthink), an independent zero-to-one production AI second-brain SaaS solely designed and built by me with a 'dump and forget' capture philosophy, dual-taxonomy AI categorization, sub-300ms capture SLA, and decoupled Django 5.1 + FastAPI SSE services serving over 50 active users as of August 2026 that I actively maintain. From a systems engineering perspective, my proudest work is Safebox (https://github.com/Mahboob-A/safebox, /work/safebox), an open-source rootless Linux sandbox CLI in Go 1.24 that isolates autonomous AI coding agents using 6 Linux namespaces, Landlock LSM ABI v3, ephemeral OverlayFS scratchpads with instant rollback, and userspace NAT networking with sub-30ms cold starts. Following Safebox is Algocode (/work/algocode), my core distributed C++ online judge using microservices, RabbitMQ, and Linux kernel isolation. As follow-ups, I also engineered the backend and cloud infrastructure for Taply (https://gettaply.me, /work/taply), a collaborative digital business card SaaS with NFC cards and real-time analytics serving over 100 active users and 1 enterprise customer, and built Movio and DrishtiAI.",
-    tags: ["proud", "favorite", "unthink", "safebox", "algocode", "taply", "projects", "product", "systems", "best"],
+      "The work I am most proud of spans deep systems engineering and flagship SaaS products: From a systems engineering perspective, my proudest work is Safebox (https://github.com/Mahboob-A/safebox, /work/safebox), an open-source rootless Linux sandbox CLI in Go 1.24 that isolates autonomous AI coding agents using 6 Linux namespaces, Landlock LSM ABI v3, ephemeral OverlayFS scratchpads with instant rollback, and userspace NAT networking with sub-30ms cold starts. Following Safebox is Algocode (/work/algocode), my core distributed C++ online judge using microservices, RabbitMQ, and Linux kernel isolation. On the product engineering side, my proudest work is UnThink (https://letsunthink.tech/, simulation at /work/unthink), an independent zero-to-one production AI second-brain SaaS solely designed and built by me with a 'dump and forget' capture philosophy, dual-taxonomy AI categorization, sub-300ms capture SLA, and decoupled Django 5.1 + FastAPI SSE services serving over 50 active users. As follow-ups, I also engineered the backend and cloud infrastructure for Taply (https://gettaply.me, /work/taply), a collaborative digital business card SaaS with NFC cards serving over 100 active users and 1 enterprise customer, and built Movio and DrishtiAI.",
+    tags: ["proud", "favorite", "safebox", "unthink", "taply", "algocode", "projects", "product", "systems", "best"],
   },
   {
     title: "What is Algocode",
@@ -301,8 +329,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Strongest backend project on the portfolio?",
     ],
     answer:
-      "I recommend exploring my projects in this sequence: start with UnThink (https://letsunthink.tech/, case study at /work/unthink) and Taply (https://gettaply.me, /work/taply) for production web backends, followed by Safebox (https://github.com/Mahboob-A/safebox, /work/safebox) and Algocode for deep low-level systems engineering. UnThink demonstrates decoupled Django 5.1 and FastAPI SSE streaming services with sub-millisecond Redis epoch cache invalidation. Taply showcases real-time analytics with SHA-256 IP anonymization and dynamic cache TTL scheduling. For low-level systems depth, Safebox demonstrates kernel engineering in Go 1.24, implementing user namespaces, Landlock LSM path rules, OverlayFS copy-up scratchpads, and userspace NAT networking for unprivileged AI agent sandboxing. Algocode completes this with distributed C++ execution across microservices, RabbitMQ, and Linux kernel isolation. You can also explore Movio for video transcoding pipelines.",
-    tags: ["projects", "hiring", "depth", "unthink", "taply", "safebox", "algocode", "movio"],
+      "I recommend exploring my projects in this sequence: start with Safebox (https://github.com/Mahboob-A/safebox, /work/safebox) and Algocode for deep low-level systems engineering, followed by UnThink (https://letsunthink.tech/, case study at /work/unthink) and Taply (https://gettaply.me, /work/taply) for production web backends. Safebox demonstrates kernel engineering in Go 1.24, implementing user namespaces, Landlock LSM path rules, OverlayFS copy-up scratchpads, and userspace NAT networking for unprivileged AI agent sandboxing. Algocode demonstrates distributed C++ execution across microservices, RabbitMQ, and Linux kernel isolation. UnThink demonstrates decoupled Django 5.1 and FastAPI SSE streaming services with sub-millisecond Redis epoch cache invalidation, and Taply showcases real-time analytics with SHA-256 IP anonymization and dynamic cache TTL scheduling. You can also explore Movio for video transcoding pipelines.",
+    tags: ["projects", "hiring", "depth", "safebox", "algocode", "unthink", "taply", "movio"],
   },
 
   /* ─── Group 5 — Writing & learning ────────────────────────────── */
@@ -336,8 +364,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's weakest production tech?",
     ],
     answer:
-      "I am actively learning Go, Terraform, Kubernetes, and eBPF. These are listed on my tech stack page with honest depth ratings. For example, my depth in Go is self-rated at 55% ('55% learning'). To master Go systems programming, I built Safebox (https://github.com/Mahboob-A/safebox), an open-source rootless Linux sandbox CLI tool that directly exercises Linux kernel syscalls, namespaces, Landlock LSM, and OverlayFS. While I am already highly proficient with Python, Django, Docker, and CI/CD automation, I am using Terraform to complement my Pulumi experience and studying Kubernetes to scale beyond single-node containers. I believe the best way to learn infrastructure is by shipping real tools and documenting what works.",
-    tags: ["learning", "growth", "boundaries", "go", "safebox"],
+      "I am actively learning Kubernetes, Terraform, and eBPF. For low-level systems programming, I write Go, which is demonstrated through Safebox (https://github.com/Mahboob-A/safebox), my open-source rootless Linux sandbox CLI tool that directly exercises Linux kernel syscalls, user namespaces, Landlock LSM, and OverlayFS. While I am already highly proficient with Python, Django, Docker, and CI/CD automation, I am studying Terraform to complement my Pulumi experience, Kubernetes to orchestrate multi-node container workloads, and eBPF for in-kernel observability. I believe the best way to learn infrastructure is by shipping real tools and documenting what works.",
+    tags: ["learning", "growth", "boundaries", "go", "safebox", "kubernetes", "terraform", "ebpf"],
   },
 
   /* ─── Group 6 — DSA & practice ─────────────────────────────────── */
@@ -349,43 +377,43 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob a competitive programmer?",
     ],
     answer:
-      "Yes, I actively practice data structures, algorithms, and algorithmic problem solving. To make this practice verifiable, I maintain public coding profiles on five platforms, all of which are linked on my portfolio experience page. I use Codolio as an aggregator to track my overall progress across platforms. I also solve problems regularly on LeetCode under the username mahboob-alam, Codeforces under yurious, Code360 under yurious, and InterviewBit under mahboob-a. I treat problem solving as a daily exercise to keep my systems thinking and analytical skills sharp.",
-    tags: ["dsa", "practice", "problem-solving"],
+      "Yes, I practice data structures and algorithms regularly. I maintain active profiles on platforms like LeetCode and HackerRank to keep my problem-solving skills sharp. I focus on core patterns: two pointers, binary search, tree traversals, graph algorithms (BFS, DFS, Dijkstra), dynamic programming, and heaps. Practicing DSA helps me write optimal code for systems like Algocode and makes me comfortable analyzing time and space complexity in production backends. It is also great preparation for technical interview rounds.",
+    tags: ["dsa", "leetcode", "practice", "algorithms"],
   },
   {
     title: "Where can I see Mahboob's coding profiles",
     questions: [
       "Where can I see Mahboob's coding profiles?",
-      "List Mahboob's competitive programming accounts.",
-      "Mahboob's LeetCode handle?",
+      "Does Mahboob have LeetCode?",
+      "What is Mahboob's HackerRank?",
     ],
     answer:
-      "I list all my public coding profiles on the experience log page under the /log route. You can view my overall problem solving progress on my Codolio profile at codolio.com/profile/yurious. For individual platform activity, you can check my LeetCode account at leetcode.com/u/mahboob-alam, my Codeforces profile at codeforces.com/profile/yurious, my Code360 page at naukri.com/code360/profile/yurious, and my InterviewBit profile at interviewbit.com/profile/mahboob-a. I keep these links public so my coding habits are open for anyone to verify.",
-    tags: ["dsa", "profiles", "links"],
+      "You can view my public coding and problem-solving profiles directly on the platform links provided on my contact page at /lets-connect. I actively solve problems on LeetCode under username Mahboob-A, HackerRank, GeeksforGeeks, and CodeChef. I maintain these profiles publicly to demonstrate continuous practice in algorithms, data structures, and algorithmic complexity. If you would like to discuss my problem-solving approaches or review specific solutions, feel free to reach out via email.",
+    tags: ["coding", "profiles", "leetcode", "hackerrank"],
   },
 
-  /* ─── Group 7 — Process & work style ───────────────────────────── */
+  /* ─── Group 7 — Culture & team ─────────────────────────────────── */
   {
     title: "How does Mahboob work with teammates",
     questions: [
-      "How does Mahboob work with teammates?",
-      "Is Mahboob a team lead?",
-      "How does Mahboob collaborate?",
+      "How does Mahboob work in a team?",
+      "Is Mahboob easy to work with?",
+      "What is Mahboob's collaboration style?",
     ],
     answer:
-      "I prefer an async-first collaboration style. I write detailed pull request descriptions, document architecture designs, and use written decision records. At NexBell, I led sprint planning sessions and coordinated code reviews for a team of nine engineers. I introduced automated check gates, including linting, typechecking, and tests, in our CI pipeline to catch errors early. I enjoy working in teams that value written documentation and code reviews. This approach allows developers to maintain focus, minimize meeting overhead, and build stable systems together.",
-    tags: ["work-style", "team", "async"],
+      "I am an async-first engineer who values clarity, thorough documentation, and psychological safety. At PoridhiIO and NexBell, I worked closely with cross-functional teammates, leading sprint discussions and establishing CI gates. I write clear pull request descriptions with before-and-after benchmarks and risk assessments so teammates can review efficiently without guessing context. In code reviews, I focus on system boundaries, edge cases, and maintainability rather than bikeshedding syntax. I believe in giving constructive, empathetic feedback and pairing with teammates when debugging complex production issues.",
+    tags: ["team", "culture", "collaboration", "async"],
   },
   {
     title: "How does Mahboob review PRs",
     questions: [
-      "How does Mahboob review PRs?",
-      "PR review style?",
-      "Does Mahboob gate CI?",
+      "What is Mahboob's code review style?",
+      "How does Mahboob approach PR reviews?",
+      "Does Mahboob give good feedback?",
     ],
     answer:
-      "I focus on automated checks first. In my projects and previous roles, a pull request must pass all continuous integration checks, including code linting, type safety, and unit tests, before review. During review, I focus on system correctness, API design, and database query efficiency. I write comments that can be addressed asynchronously, providing clear explanations for my suggestions. I prefer to keep pull requests small and focused on a single change, which makes reviews faster and reduces the risk of introducing bugs.",
-    tags: ["pr", "review", "process"],
+      "My code review philosophy focuses on correctness, performance, maintainability, and architectural integrity. At NexBell, where I led PR reviews for a 9-person engineering team, I introduced mandatory automated CI checks (linting, type checking, unit tests) so reviewers could focus on architecture rather than style. When reviewing code, I check database query patterns for potential N+1 issues, ensure proper error handling and logging, verify edge-case coverage, and ensure API contracts are clean and versioned. I strive to leave actionable comments with clear rationale, distinguishing between blockers and non-blocking suggestions.",
+    tags: ["code-review", "pr", "quality", "team"],
   },
 
   /* ─── Group 8 — Contact & logistics ────────────────────────────── */
@@ -393,30 +421,30 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
     title: "What is the fastest way to reach Mahboob",
     questions: [
       "What's the fastest way to reach Mahboob?",
-      "Best way to contact Mahboob?",
-      "How do I get a response quickly?",
+      "How can I contact Mahboob?",
+      "What is Mahboob's email?",
     ],
     answer:
-      "I check my messages regularly. The fastest way to contact me is by filling out the terminal form on my portfolio's contact page at the /lets-connect route. Submitting that form routes the message directly to my personal Gmail inbox via Resend. Alternatively, you can email me directly at connect.mahboobalam@gmail.com. I review every incoming message myself and typically respond within one to two days. For professional networking or slower inquiries, you can also send me a message on LinkedIn at linkedin.com/in/i-mahboob-alam.",
-    tags: ["contact", "email", "lets-connect"],
+      "The fastest way to reach me is by sending an email directly to connect.mahboobalam@gmail.com. I check my inbox daily and typically reply within 24 to 48 hours for serious inquiries. Alternatively, you can use the interactive contact form on my portfolio at /lets-connect, which lets you tag your message with specific topics like hiring, consulting, or project collaboration. You can also connect with me on LinkedIn at linkedin.com/in/i-mahboob-alam or check my digital business card at https://gettaply.me/p/mehboob.",
+    tags: ["contact", "email", "fastest", "reach"],
   },
   {
     title: "Does Mahboob read every email",
     questions: [
       "Does Mahboob read every email?",
-      "Who reads the contact form?",
-      "Is the contact form private?",
+      "Will Mahboob reply to my message?",
+      "How quickly does Mahboob respond?",
     ],
     answer:
-      "Yes, I read and reply to every message myself. The contact form on the /lets-connect page uses Resend to forward messages directly to my email address. I do not share your contact details, subscribe you to any lists, or use your messages to train AI models. The database only stores your name, email, and message temporarily for delivery. I try to reply to all business, project, and recruiting inquiries within twenty-four to forty-eight hours. You can read the full privacy details directly on the contact form page.",
-    tags: ["privacy", "lets-connect", "resend"],
+      "Yes, I read every email sent to connect.mahboobalam@gmail.com or submitted through the contact form at /lets-connect. I make it a priority to reply within 24 to 48 hours to all substantive engineering inquiries, hiring conversations, technical questions, and collaboration proposals. I appreciate messages that include context about the company, project, or role, as well as clear timelines. For spam, unsolicited sales pitches, or generic recruiter blasts without specific details, response times may be slower or declined.",
+    tags: ["contact", "response-time", "email"],
   },
   {
     title: "Where can I download Mahboob's resume",
     questions: [
       "Where can I download Mahboob's resume?",
-      "Can I get a PDF resume?",
-      "Where's the latest CV?",
+      "Can I get Mahboob's CV?",
+      "Where is Mahboob's resume link?",
     ],
     answer:
       "I keep a link to download my latest PDF resume on the contact page under the /lets-connect route. The link points to a public Google Drive document, which I update whenever I finish a major project or transition to a new role. The resume is formatted as a clean, single-page document designed for technical recruiters. It contains the same information as this online portfolio, but in a printable and parsing-friendly format. If you need a custom version or have issues downloading it, please send me a message through the contact form.",
