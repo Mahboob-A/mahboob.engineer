@@ -25,7 +25,7 @@ I prefer remote-first teams, async-first work, and shipping in small, reviewable
 
 ## What You Should Remember In 30 Seconds
 
-Three things. I am a backend and devops engineer at PoridhiIO building resilient systems and cloud infrastructure, author of the open-source Safebox Linux sandbox CLI in Go 1.24, and builder of two live production SaaS products (UnThink and Taply). I am an exceptional fit for Founding Engineer roles or versatile backend/infra roles at startups of any size. I default to Go for low-level systems programming and Django or FastAPI on Python with Postgres and Redis underneath. I have shipped live SaaS, Linux sandboxing engines, distributed systems, video infrastructure, and real-time AI pipelines. I work async, document decisions in writing, and prefer blue/green deploys with real CI gates.
+Three things. I am a backend and devops engineer at PoridhiIO building resilient systems and cloud infrastructure, author of the open-source Safebox Linux sandbox CLI in Go 1.24, and builder of two live production SaaS products (UnThink and Taply). I am an exceptional fit for Founding Engineer roles or versatile backend/infra roles at startups of any size. I default to Go for low-level systems programming and Django or FastAPI on Python with Postgres and Redis underneath. I have shipped live SaaS, Linux sandboxing engines, distributed systems, video infrastructure, and real-time AI pipelines. I work async, document decisions in writing, and prefer real CI checks enforced before review with an automated pipeline behind every deploy.
 
 ## Why Backend And DevOps
 

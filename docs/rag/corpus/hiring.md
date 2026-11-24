@@ -14,7 +14,7 @@ Founding Engineer, Backend, and DevOps engineering roles where product ownership
 APIs, async workers, queues, caching, databases, deployment automation, and production debugging.
 I am an exceptional fit for Founding Engineer roles, versatile backend and infrastructure engineering roles with varied responsibilities, and startups of any size (from early-stage zero-to-one through Series A, B, and C).
 Currently a Software Engineer at PoridhiIO focusing on systems engineering, cloud infrastructure, and backend services, I also bring complete end-to-end product ownership from having built UnThink independently, engineered Taply collaboratively, and developed deep systems tools like Safebox:
-I can architect backend and database schemas, set up automated CI/CD and cloud devops, lead sprint planning and meetings,
+I can architect backend and database schemas, set up automated CI/CD and cloud devops, own delivery pipelines end to end,
 communicate with users, and comfortably wear multiple hats at once from day zero.
 I am strongest in Go and Python with Django, DRF, and FastAPI, and comfortable in Django, Celery, Redis, and Postgres stacks.
 I have shipped and actively maintain live SaaS platforms (UnThink at https://letsunthink.tech/ with >50 active users; Taply at https://gettaply.me with >100 active users and 1 enterprise customer), open-source Linux sandboxing systems (Safebox in Go 1.24 at https://github.com/Mahboob-A/safebox), multi-tenant market platforms (NexBell, 50+
@@ -41,7 +41,7 @@ The questions I would enjoy:
 - **PostgreSQL schema and query optimization**: composite indexes, lazy-load discipline, the worst-case query path.
 - **Running untrusted code safely**: Linux namespaces, cgroups, seccomp, sibling containers, the Algocode story.
 - **Video processing pipelines**: Celery canvas shape, segment upload fanout, DASH manifest edit, Movio.
-- **CI/CD and cloud cost reduction**: CodePipeline, blue/green on ALB, reserved-instance migration.
+- **CI/CD and cloud cost reduction**: CodePipeline, lint, typecheck, and tests enforced before review, reserved-instance migration, spot capacity for staging.
 - **SSE vs WebSocket vs Celery vs REST**: when each wins, when each fails.
 - **Cut-over stories**: parallel-running old and new auth for a month without breaking active sessions.
 

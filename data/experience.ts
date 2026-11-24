@@ -116,10 +116,10 @@ Working on core backend architecture, distributed systems, and cloud infrastruct
     period: "Nov 2024 – Jun 2026",
     status: "completed",
     bullets: [
-      "Led sprint planning and PR review for a 9-person engineering team. Introduced mandatory CI gates (lint, typecheck, tests) so every PR had to clear them before review.",
-      "Rebuilt the login system on OAuth2, JWT, and RBAC, closing authentication vulnerabilities in the legacy session-based flow. Ran old and new auth in parallel for a month to migrate without breaking active sessions.",
+      "Rebuilt the login system on OAuth2, JWT, and RBAC. Closed authentication vulnerabilities in the legacy session-based flow. Ran old and new auth in parallel for a month to migrate without breaking active sessions.",
       "Redesigned composite indexes and rewrote ORM queries across a multi-vendor MySQL system. Cut query execution time by 17% across 50+ store deployments, with tail latency dropping more.",
-      "Migrated idle AWS resources to reserved instances and auto-scaling capacity. Rebuilt CI/CD on CodePipeline and Docker. Cut cloud spend by 35% and deployment lead time from hours to minutes.",
+      "Migrated idle AWS resources to reserved instances and auto-scaling capacity, collapsing an always-on staging fleet into spot capacity. Cut cloud spend by 35%.",
+      "Rebuilt the CI/CD pipeline on CodePipeline and Docker. Made lint, typecheck, and tests non-negotiable before any PR could be reviewed. Cut deployment lead time from hours to minutes.",
     ],
     tags: [
       "Django",
@@ -127,20 +127,18 @@ Working on core backend architecture, distributed systems, and cloud infrastruct
       "AWS/CodePipeline",
       "OAuth2/JWT",
       "CI/CD",
-      "Team Leadership",
+      "Docker",
     ],
     relatedProjects: ["datalineage-doctor", "algocode"],
     notes: `NexBell was the first role where I owned a real production system under live traffic. It was a multi-vendor marketplace platform serving 50+ independent stores, all running on a shared Django and MySQL backend. The system had grown organically for years. Features were stacked on features. Indexes were inherited from migrations that no one remembered writing. The session-based login was showing its age.
 
-My first job was to take ownership of the auth layer. The legacy session cookies were vulnerable to fixation, and the role checks lived in scattered decorators across the codebase. I rebuilt login on OAuth2 and JWT, attached a clean RBAC layer, and gated every protected endpoint behind a single decorator. The hard part was the migration path. Existing sessions had to keep working while we rolled out the new flow, so we ran the two in parallel for a month before sunset. PR review for a 9-person team was the meta-work. Introducing mandatory CI gates made "did CI pass?" the first thing every PR read.
+My first job was to take ownership of the auth layer. The legacy session cookies were vulnerable to fixation, and the role checks lived in scattered decorators across the codebase. I rebuilt login on OAuth2 and JWT, attached a clean RBAC layer, and gated every protected endpoint behind a single decorator. The hard part was the migration path. Existing sessions had to keep working while we rolled out the new flow, so we ran the two in parallel for a month before sunset. That month of running both flows side by side is the template I still reach for whenever a cut-over has to be invisible to the people using the product.
 
 The second big push was a query rewrite. The original ORM code had lazy-loading everywhere. N+1 queries were common, and the indexes were inherited from migrations no one remembered writing. I redesigned composite indexes on the high-traffic tables (vendor-product mapping, order-history rollups) and rewrote the 12 hot-path queries to do eager-fetch and bulk reads. Query execution time dropped 17% across the deployment, measured at the median. Tail latency dropped more, because the worst offenders benefited most from composite indexes.
 
-Cloud spend was the third lever. A previous engineer had provisioned staging as a pair of always-on m5.larges that nobody touched. I migrated the always-on fleets to reserved instances (1-year, no-upfront), collapsed the idle staging environment into spot capacity, and rebuilt CI/CD on CodePipeline and Docker. Deploys went from "submit a PR and someone sshes into the bastion" to a 12-minute automated pipeline. Lead time fell from hours to minutes, and cloud spend fell 35%.
+Cloud spend was the third lever. A previous engineer had provisioned staging as a pair of always-on m5.larges that nobody touched. I migrated the always-on fleets to reserved instances (1-year, no-upfront) and collapsed the idle staging environment into spot capacity. Cloud spend fell 35%. The pipeline rebuild ran alongside it, so deploys went from "submit a PR and someone sshes into the bastion" to a 12-minute automated loop.
 
-The deploys themselves were the unsung hero. Blue/green on the ALB with session draining. Postgres migrations gated behind a no-DDL-during-traffic runbook. Celery worker pools split by task class, so a slow batch job couldn't starve the realtime queue. By the end of my time there, shipping a feature was a 12-minute loop: PR, CI gates, CodePipeline, ALB swap, dashboards show new error rate, latency, and conversion within five minutes. That's the muscle memory I now expect on every team I join.
-
-What's next, if I returned. A per-tenant database split (one MySQL per store) is the obvious improvement. The shared schema is the only thing still holding the platform back from true multi-region deployment. I'd also extract the auth layer into a separate service so the next product team can reuse OAuth2 and JWT without forking it. The patterns from NexBell (CI-as-a-gate, lazy-load discipline, blue/green by default) are the ones I keep applying, and they're also the patterns Taply and UnThink now inherit.`,
+The CI work was the unglamorous half, and it was the last lever I pulled. Rebuilding the pipeline on CodePipeline and Docker, and making lint, typecheck, and tests non-negotiable before any PR could be reviewed, meant a broken build never reached a human's attention. Postgres migrations were gated behind a no-DDL-during-traffic runbook, and Celery worker pools were split by task class, so a slow batch job could not starve the realtime queue. Shipping went from a manual ssh-into-the-bastion ritual to a 12-minute loop, with dashboards showing new error rate, latency, and conversion within five minutes. That's the muscle memory I now expect on every team I join. What's next, if I returned. A per-tenant database split (one MySQL per store) is the obvious improvement. The shared schema is the only thing still holding the platform back from true multi-region deployment. I'd also extract the auth layer into a separate service so the next product team can reuse OAuth2 and JWT without forking it. The patterns from NexBell (checks before review, lazy-load discipline) are the ones I keep applying, and they're also the patterns Taply and UnThink now inherit.`,
   },
   {
     id: "innovative-it",
@@ -163,7 +161,7 @@ The first big project was a customer-portal API for a logistics client. I owned 
 
 Performance work kept showing up. I'd inherited a couple of hot endpoints running at 800ms+ median latency. The fix was always the same shape: find lazy-loading patterns, replace them with select_related and prefetch_related, add the missing composite indexes. One endpoint dropped from 1.2s to 80ms after a single migration. The discipline stuck. Every endpoint I wrote from then on started with "what's the slowest query path here, and is the index supporting it?"
 
-Deployment turned out to be where I learned the most. The first v1 shipped on a bare EC2 with no automation. By month six I had Fabric scripts for app, migrations, collectstatic, and restart, then Ansible roles for the broker and the DB. The blue/green pattern (ALB swaps target groups with no downtime) came directly from this, and it's the same pattern I codified at NexBell. The lesson is that deployment is a forcing function for the rest of the architecture.
+Deployment turned out to be where I learned the most. The first v1 shipped on a bare EC2 with no automation. By month six I had Fabric scripts for app, migrations, collectstatic, and restart, then Ansible roles for the broker and the DB. The blue/green pattern (ALB swaps target groups with no downtime) came directly from this, and it set the standard I aimed for at NexBell. The lesson is that deployment is a forcing function for the rest of the architecture.
 
 What I learned at Innovative IT. Write tests before the second PR. Keep serializers thin (one shape, one place to change). Choose the right indexes up front rather than tuning late. The DrishtiAI pipeline and Algocode both trace patterns I honed here, even though neither uses Django. What's next, if the consulting path ever opens again. I'd add observability (Prometheus and Grafana on day one) and a real per-tenant data model so each client could ship independently without shared-schema risk.`,
   },

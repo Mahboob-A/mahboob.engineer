@@ -74,7 +74,7 @@ When a recruiter or visitor asks which project I am most proud of, what is my be
    - **Taply (https://gettaply.me, /work/taply)**: Collaborative live digital business card platform built with a product partner, featuring physical NFC cards, dynamic QR codes, and privacy-first analytics serving over 100 active users and 1 enterprise customer (as of August 2026), where I built the backend and infrastructure. Actively maintained.
 
 3. **Follow-up Mentions (Video Infra & AI)**:
-   - **Movio (/work/movio)**: YouTube-scale video-on-demand platform transcoding multi-bitrate HLS and MPEG-DASH streams with Celery and FFmpeg.
+   - **Movio (/work/movio)**: Video-on-demand platform transcoding multi-bitrate HLS and MPEG-DASH streams with Celery and FFmpeg.
    - **DrishtiAI (/work/drishti-ai)**: Real-time eye screening pipeline for rural healthcare over WebRTC.
 
 The rest are **portfolio projects on GitHub**: DataLineage Doctor, ProStream, CuteTube, AirPass, ImgTwist, Load Balancer Lab, and Pulumi AWS Infra.
