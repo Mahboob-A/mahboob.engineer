@@ -401,7 +401,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What is Mahboob's collaboration style?",
     ],
     answer:
-      "I am an async-first engineer who values clarity, thorough documentation, and psychological safety. At PoridhiIO and NexBell, I worked closely with cross-functional teammates, leading sprint discussions and establishing CI gates. I write clear pull request descriptions with before-and-after benchmarks and risk assessments so teammates can review efficiently without guessing context. In code reviews, I focus on system boundaries, edge cases, and maintainability rather than bikeshedding syntax. I believe in giving constructive, empathetic feedback and pairing with teammates when debugging complex production issues.",
+      "I am an async-first engineer who values clarity, thorough documentation, and psychological safety. At PoridhiIO and NexBell, I worked closely with cross-functional teammates, building CI gates and deployment automation. I write clear pull request descriptions with before-and-after benchmarks and risk assessments so teammates can review efficiently without guessing context. In code reviews, I focus on system boundaries, edge cases, and maintainability rather than bikeshedding syntax. I believe in giving constructive, empathetic feedback and pairing with teammates when debugging complex production issues.",
     tags: ["team", "culture", "collaboration", "async"],
   },
   {
@@ -412,7 +412,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Does Mahboob give good feedback?",
     ],
     answer:
-      "My code review philosophy focuses on correctness, performance, maintainability, and architectural integrity. At NexBell, where I led PR reviews for a 9-person engineering team, I introduced mandatory automated CI checks (linting, type checking, unit tests) so reviewers could focus on architecture rather than style. When reviewing code, I check database query patterns for potential N+1 issues, ensure proper error handling and logging, verify edge-case coverage, and ensure API contracts are clean and versioned. I strive to leave actionable comments with clear rationale, distinguishing between blockers and non-blocking suggestions.",
+      "My code review philosophy focuses on correctness, performance, maintainability, and architectural integrity. At NexBell I rebuilt CI/CD on CodePipeline and Docker, with linting, type checking, and unit tests as hard gates before review, so the pipeline caught what a reviewer would otherwise have to. When reviewing code, I check database query patterns for potential N+1 issues, ensure proper error handling and logging, verify edge-case coverage, and ensure API contracts are clean and versioned. I strive to leave actionable comments with clear rationale, distinguishing between blockers and non-blocking suggestions.",
     tags: ["code-review", "pr", "quality", "team"],
   },
 

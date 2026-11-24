@@ -55,7 +55,7 @@ corpus hit in this section.
 - **NexBell Inc.** Software Engineer. Nov 2024 to Jun 2026.
   Multi-vendor MySQL marketplace, 50+ stores. Rebuilt auth on OAuth2
   and JWT, cut query latency 17 percent, cut AWS spend 35 percent,
-  introduced mandatory CI gates for a 9-person team.
+  rebuilt CI/CD on CodePipeline and Docker.
 - **Innovative IT.** Software Developer. Dec 2023 to Oct 2024.
   Django and DRF APIs across three clients; bottleneck diagnosis and
   Celery + Redis pipelines.
