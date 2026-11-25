@@ -37,9 +37,34 @@
   stroke: var(--amber);
 }
 
-/* Data = slate stroke */
+/* Data = slate stroke, dashed.
+   The palette is deliberately narrow (sage / slate / amber / mauve), so
+   domains that would otherwise share a hue are separated by PATTERN
+   instead of by another color-mix. Dashed = storage/state, solid =
+   everything else. */
 .skill-node.data circle {
   stroke: color-mix(in srgb, var(--t2) 80%, var(--border-strong));
+  stroke-dasharray: 5 3;
+}
+
+/* AI = violet stroke */
+.skill-node.ai circle {
+  stroke: color-mix(in srgb, var(--acc) 55%, #7c5cff);
+}
+
+/* Async / messaging = warm bronze stroke */
+.skill-node.async circle {
+  stroke: color-mix(in srgb, var(--amber) 70%, #c9743a);
+}
+
+/* Auth = pink stroke */
+.skill-node.auth circle {
+  stroke: color-mix(in srgb, var(--acc) 40%, #d163a4);
+}
+
+/* Payment = teal stroke */
+.skill-node.payment circle {
+  stroke: color-mix(in srgb, var(--acc) 70%, #2fa8a0);
 }
 
 /* Learning = muted dashed stroke */

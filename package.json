@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "extract:game-assets": "python3 scripts/extract-game-assets.py",
+    "validate:graph": "node scripts/_validate-graph.mjs",
     "rag:reindex": "tsx scripts/rag-reindex.ts",
     "rag:reindex:reset": "tsx scripts/rag-reindex.ts --reset",
     "test:security": "tsx tests/api/run-all.ts",
