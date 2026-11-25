@@ -51,11 +51,11 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mahboob.engineer"),
   title: {
-    default: "Mahboob Alam | Systems & Backend Infra Engineer (Go · Python · Linux · AWS)",
+    default: "Mahboob Alam | Systems & Backend Engineer (Go · Python · Linux · AWS)",
     template: "%s — Mahboob Alam",
   },
   description:
-    "Systems & Backend Infra Engineer (Go · Python · Linux · AWS) building distributed systems, async pipelines, kernel isolation sandboxes, and cloud infrastructure. Writes The Backend Diaries.",
+    "Systems & Backend Engineer (Go · Python · Linux · AWS) building distributed systems, async pipelines, kernel isolation sandboxes, and cloud infrastructure. Writes The Backend Diaries.",
   keywords: [
     "Mahboob Alam",
     "Backend Engineer",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://mahboob.engineer",
     siteName: "mahboob.engineer",
-    title: "Mahboob Alam — Systems & Backend Infra Engineer (Go · Python · Linux · AWS)",
+    title: "Mahboob Alam — Systems & Backend Engineer (Go · Python · Linux · AWS)",
     description:
       "Distributed systems, async pipelines, and kernel isolation sandboxes.",
     images: [
@@ -92,7 +92,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mahboob Alam — Systems & Backend Infra Engineer (Go · Python · Linux · AWS)",
+    title: "Mahboob Alam — Systems & Backend Engineer (Go · Python · Linux · AWS)",
     description:
       "Distributed systems, async pipelines, and kernel isolation sandboxes.",
     images: [
