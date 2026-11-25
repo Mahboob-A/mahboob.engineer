@@ -23,7 +23,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://mahboob.engineer";
 
 const DEFAULT_DESCRIPTION =
-  "Systems & Backend Infra Engineer (Go · Linux · AWS) building distributed systems, async pipelines, and infrastructure.";
+  "Systems & Backend Infra Engineer (Go · Python · Linux · AWS) building distributed systems, async pipelines, and infrastructure.";
 
 export type OgSurface = "default" | "writing" | "project";
 

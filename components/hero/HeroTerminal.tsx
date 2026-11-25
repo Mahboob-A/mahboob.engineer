@@ -183,7 +183,7 @@ function buildPayload(
     case "whoami": {
       const last = COMPLETED_EXPERIENCE[0];
       return [
-        "Mahboob Alam — Systems & Backend Infra Engineer (Go · Linux · AWS).",
+        "Mahboob Alam — Systems & Backend Infra Engineer (Go · Python · Linux · AWS).",
         `Software Engineer of UnThink (AI knowledge capture) and`,
         `Backend Engineer at Taply (NFC + QR business cards).`,
         last
