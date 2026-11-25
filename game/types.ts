@@ -15,9 +15,10 @@
    PROJECTS_BY_SLUG[slug]?.name and falls back to the raw slug. */
 export type ProjectSlug = string;
 
-/* Three villains — names match STACK learning-domain techs in
-   data/stack.ts. Consonant with master §5.4 villain system. */
-export type VillainId = "gopher-king" | "terraform-titan" | "ebpf-phantom";
+/* Two villains — the areas of ongoing growth: Go (the language behind
+   Safebox) and Linux networking. Consonant with master §5.4 villain
+   system. */
+export type VillainId = "gopher-king" | "linux-networker";
 
 /* The 3 special buildings from master §5.4 (Backend Diaries HQ,
    Skills Academy, Contact Bureau) use the "special" type. They

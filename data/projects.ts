@@ -586,7 +586,7 @@ The split into two repos, backend infra and client infra, was deliberate. Separa
 
 What's missing and obvious in retrospect. There's no RDS (Postgres is on EC2), no ACM for HTTPS termination even though the security group allows 443, no centralized logging, no CI/CD on the infra itself, and no Secrets Manager. The next iteration would fix each of those in order. RDS first (data persistence deserves it), then HTTPS (no excuse in 2024), then CloudWatch and alarms, then a true pipeline so the infra is testable.
 
-The pattern I want to reuse is defense-in-depth subnet isolation and the Bastion pattern for any private resource. Pulumi over Terraform or CloudFormation because I prefer real programming languages over DSLs. Python lets me write loops, helpers, and unit tests for the infra code itself.`,
+The pattern I want to reuse is defense-in-depth subnet isolation and the Bastion pattern for any private resource. Pulumi over CloudFormation because I prefer real programming languages over DSLs. Python lets me write loops, helpers, and unit tests for the infra code itself.`,
     game_building: "Pulumi Cloud Towers",
     game_district: "cloud_ridge",
   },

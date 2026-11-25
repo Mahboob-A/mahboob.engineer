@@ -43,13 +43,11 @@ export interface StackItem {
   projects: string[];
   /** Blog post slugs that reference this tech (cross-referenced with BLOG_POSTS). */
   blogs?: string[];
-  /** Self-rated proficiency (0–100). Only set on `learning` domain items. */
-  depth?: number;
   /**
-   * Short first-person depth note that the dynamic RAG terminal surfaces
-   * alongside the `depth` marker. Used for techs where a one-line qualifier
+   * Short first-person note that the dynamic RAG terminal surfaces
+   * alongside the entry. Used for techs where a one-line qualifier
    * matters more than a `projects` cross-reference list — typically
-   * learning-area items or production techs that benefit from naming *where*
+   * growth-area items or production techs that benefit from naming *where*
    * they were used. Phase 34.
    */
   depthNotes?: string;
@@ -142,16 +140,12 @@ export const STACK: StackItem[] = [
       "DrishtiAI's eye-screening pipeline runs over Stream SDK WebRTC; AirPass is P2P file transfer over a WebRTC data channel. Both projects share the same Django Channels signaling shape.",
   },
   /* Phase 12 (T12.5): added so resolveStackSlug() picks up
-     "Python" → python from the SRM MCA curriculum chips. Not
-     actively deployed in production projects today; learning
-     depth marker makes it visible on the force graph as a
-     self-rated tech. */
+     "Python" → python from the SRM MCA curriculum chips. */
   {
     id: "python",
     name: "Python",
     domain: "backend",
     projects: [],
-    depth: 90,
     depthNotes:
       "Production-grade. Primary language for every backend project on this portfolio.",
   },
@@ -160,7 +154,6 @@ export const STACK: StackItem[] = [
     name: "Go",
     domain: "backend",
     projects: ["safebox"],
-    depth: 55,
     depthNotes:
       "Core language for systems programming and Linux isolation tooling. Safebox is written in Go 1.24 with direct syscall orchestration, user namespaces, OverlayFS management, and Landlock LSM integration.",
   },
@@ -198,7 +191,6 @@ export const STACK: StackItem[] = [
     name: "Linux",
     domain: "infra",
     projects: ["algocode", "safebox"],
-    depth: 85,
     depthNotes:
       "Comfortable on the command line. Namespaces, cgroups, seccomp show up in Algocode and Safebox; the Linux Networking series on Medium is the public version of that muscle.",
   },

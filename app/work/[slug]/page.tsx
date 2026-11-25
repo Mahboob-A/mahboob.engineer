@@ -396,11 +396,6 @@ function StackBreakdown({
               {b.items.map((t) => (
                 <li key={t.id} className="flex items-center gap-2">
                   <span className="text-t2 text-[14px]">{t.name}</span>
-                  {t.depth != null ? (
-                    <span className="text-t3 font-mono text-[10.5px]">
-                      ({t.depth}% learning)
-                    </span>
-                  ) : null}
                 </li>
               ))}
             </ul>

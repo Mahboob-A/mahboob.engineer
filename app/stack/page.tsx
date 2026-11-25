@@ -23,7 +23,7 @@ import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata(
   "Stack",
-  "Every tech I've shipped with, plus what I'm currently leveling up. Hover or click a node to inspect.",
+  "Every tech I've shipped with. Hover or click a node to inspect.",
 );
 
 /* Project count per tech id — pre-computed once at module load. Used
@@ -73,7 +73,7 @@ export default function StackPage() {
         section: "every tool, every system",
         title: "How the stack connects",
         description:
-          "Every tech I've shipped with, plus what I'm currently leveling up. Hover or click a node to inspect.",
+          "Every tech I've shipped with. Hover or click a node to inspect.",
       }}
     >
       <StackShell

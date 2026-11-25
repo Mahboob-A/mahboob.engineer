@@ -104,7 +104,7 @@ function SelectorCard({
         <p className="text-t2 text-[14px] leading-[1.55]">
           A top-down pixel-art city where every building is a project
           and every villain is a learning area. Walk, explore, press
-          E to inspect, and avoid the three bosses until you&apos;re
+          E to inspect, and avoid the two bosses until you&apos;re
           ready.
         </p>
 

@@ -98,7 +98,7 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "Is Mahboob fit for a backend role?",
     ],
     answer:
-      "Yes! I am a backend and devops engineer and I take pride in architecting resilient production systems, reliable APIs, and scalable infrastructure. In my current role at PoridhiIO, I work on systems engineering and cloud infrastructure. I have authored deep systems tools like Safebox in Go with Linux kernel syscalls and namespaces, shipped distributed platforms like Algocode, and built live SaaS products like UnThink and Taply. To keep growing, I am also actively deepening my skills in Kubernetes, Terraform, and eBPF. I value clear async communication, strong automated test suites, and high-ownership engineering teams.",
+      "Yes! I am a backend and devops engineer and I take pride in architecting resilient production systems, reliable APIs, and scalable infrastructure. In my current role at PoridhiIO, I work on systems engineering and cloud infrastructure. I have authored deep systems tools like Safebox in Go with Linux kernel syscalls and namespaces, shipped distributed platforms like Algocode, and built live SaaS products like UnThink and Taply. To keep growing, I am also deepening my Go and Linux systems work. I value clear async communication, strong automated test suites, and high-ownership engineering teams.",
     tags: ["identity", "capability", "employability", "teamwork"],
   },
 
@@ -364,8 +364,8 @@ export const COMMON_QUESTIONS: ReadonlyArray<CommonQuestion> = [
       "What's Mahboob's weakest production tech?",
     ],
     answer:
-      "I am actively learning Kubernetes, Terraform, and eBPF. For low-level systems programming, I write Go, which is demonstrated through Safebox (https://github.com/Mahboob-A/safebox), my open-source rootless Linux sandbox CLI tool that directly exercises Linux kernel syscalls, user namespaces, Landlock LSM, and OverlayFS. While I am already highly proficient with Python, Django, Docker, and CI/CD automation, I am studying Terraform to complement my Pulumi experience, Kubernetes to orchestrate multi-node container workloads, and eBPF for in-kernel observability. I believe the best way to learn infrastructure is by shipping real tools and documenting what works.",
-    tags: ["learning", "growth", "boundaries", "go", "safebox", "kubernetes", "terraform", "ebpf"],
+      "The two areas I am actively deepening are Go systems programming and Linux internals. For low-level systems programming, I write Go, which is demonstrated through Safebox (https://github.com/Mahboob-A/safebox), my open-source rootless Linux sandbox CLI tool that directly exercises Linux kernel syscalls, user namespaces, Landlock LSM, and OverlayFS. While I am already highly proficient with Python, Django, Docker, and CI/CD automation, I keep pushing on the Linux side: kernel packet filtering and traffic control, container networking internals, and low-level tracing and observability. I write about that territory in my Linux Networking series on Medium. I believe the best way to learn infrastructure is by shipping real tools and documenting what works.",
+    tags: ["learning", "growth", "boundaries", "go", "safebox", "linux"],
   },
 
   /* ─── Group 6 — DSA & practice ─────────────────────────────────── */

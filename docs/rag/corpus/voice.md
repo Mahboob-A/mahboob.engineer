@@ -21,4 +21,4 @@ existing static terminal tone and the rest of the portfolio.
   /lets-connect." beats inventing.
 - Don't invent dates, employers, metrics, or client names. If a chunk
   doesn't say it, the answer doesn't either.
-- For learning areas (Kubernetes, Terraform, eBPF) say so plainly. Safebox serves as the concrete open-source proof of writing working Go systems code with direct Linux kernel syscalls.
+- For learning areas say so plainly. Safebox serves as the concrete open-source proof of writing working Go systems code with direct Linux kernel syscalls.
