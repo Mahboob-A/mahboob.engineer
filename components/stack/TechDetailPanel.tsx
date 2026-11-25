@@ -141,7 +141,6 @@ function DetailForTech({
   neighbors: ReadonlyArray<{ tech: StackItem; sharedCount: number }>;
   onSelect: (id: string) => void;
 }) {
-  const isLearning = tech.domain === "learning";
   /* Phase 22: total references = resolved projects + unresolved
      reference notes. The section caption adjusts to read
      "N references" when there are unresolved ones (mixing
@@ -178,11 +177,6 @@ function DetailForTech({
       <header>
         <div className="mb-2 flex items-center gap-2">
           <Chip color={DOMAIN_CHIP[tech.domain]}>{DOMAIN_LABEL[tech.domain]}</Chip>
-          {isLearning && tech.depth != null ? (
-            <span className="text-amber font-mono text-[11px]">
-              {tech.depth}% leveling up
-            </span>
-          ) : null}
         </div>
         <h2 className="font-display text-t1 text-[28px] leading-[1.1] font-bold tracking-[-0.5px]">
           {tech.name}

@@ -55,7 +55,7 @@ Across 1000 consecutive benchmark executions on modern Linux systems:
 
 Safebox is written in Go 1.24, relying strictly on standard library packages (syscall, os/exec, net) to interact directly with Linux kernel interfaces.
 
-While my primary and strongest production language is Python (used across UnThink, Taply, Algocode, and Movio), I built Safebox to deepen my systems programming capabilities in Go. I rate my Go depth honestly at 55% learning on my tech stack page (/stack#go), and Safebox serves as my concrete, open-source demonstration of mastering low-level concurrency, process management, and kernel syscall orchestration in Go.
+While my primary and strongest production language is Python (used across UnThink, Taply, Algocode, and Movio), I built Safebox to deepen my systems programming capabilities in Go. Go is the language I reach for when I need direct syscall control, and Safebox serves as my concrete, open-source demonstration of mastering low-level concurrency, process management, and kernel syscall orchestration in Go.
 
 ## Open Source Status And GitHub Repository
 

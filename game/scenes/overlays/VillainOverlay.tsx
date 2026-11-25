@@ -107,9 +107,6 @@ export function VillainOverlay({ villainId, onClose }: VillainOverlayProps) {
                 style={{ width: `${villain.hp}%` }}
               />
             </div>
-            <span className="text-acc font-mono text-[13px] font-semibold tabular-nums">
-              {villain.hp}/100
-            </span>
           </div>
           <p className="text-t3 mt-2 font-mono text-[11px]">
             {villain.hp < 50 ? "still learning" : "growing confidence"}

@@ -343,9 +343,6 @@ function buildStackChunks(): RagChunk[] {
           ? `Used in: ${tech.projects.join(", ")}.`
           : "Not wired into a shipped project yet — treat as learning or future-facing unless another source says otherwise.",
         tech.blogs?.length ? `Written about in: ${tech.blogs.join(", ")}.` : "",
-        typeof tech.depth === "number"
-          ? `Self-rated depth: ${tech.depth}/100.`
-          : "",
         tech.depthNotes ? `In my words: ${tech.depthNotes}` : "",
       ],
     }),
