@@ -280,7 +280,7 @@ Expand the city to include:
 
 - All project buildings.
 - Three special buildings.
-- Three villains.
+- Two villains.
 - Multiple districts.
 - Roads and sidewalks connecting all important locations.
 - Props for visual life.

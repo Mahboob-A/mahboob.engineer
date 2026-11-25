@@ -1,7 +1,7 @@
 /**
  * game/entities/Villain.ts
  *
- * Villain encounter entity — 3 placed on the map at fixed positions
+ * Villain encounter entity — 2 placed on the map at fixed positions
  * (set by WorldScene.createVillains in T4.4). T4.7 fleshes this out:
  *
  *   - Procedural 32×32 sprite generated at runtime via
@@ -53,8 +53,8 @@ export class Villain extends Phaser.Physics.Arcade.Sprite {
 
   /**
    * Sprite key used by this villain class. Each villainId registers
-   * its own key (`villain-gopher-king`, etc.) so 3 villains on the
-   * map = 3 distinct keys. Idempotent: if the same key is requested
+   * its own key (`villain-gopher-king`, etc.) so 2 villains on the
+   * map = 2 distinct keys. Idempotent: if the same key is requested
    * twice, we skip re-registration.
    */
   static readonly TEXTURE_PREFIX = "villain-";
