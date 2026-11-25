@@ -3478,36 +3478,13 @@
         },
         {
           "height": 32,
-          "id": 201,
-          "name": "Terraform Titan",
-          "properties": [
-            {
-              "name": "villainId",
-              "type": "string",
-              "value": "terraform-titan"
-            },
-            {
-              "name": "type",
-              "type": "string",
-              "value": "villain"
-            }
-          ],
-          "rotation": 0,
-          "type": "",
-          "visible": true,
-          "width": 32,
-          "x": 920,
-          "y": 1500
-        },
-        {
-          "height": 32,
           "id": 202,
-          "name": "eBPF Phantom",
+          "name": "The Network Hydra",
           "properties": [
             {
               "name": "villainId",
               "type": "string",
-              "value": "ebpf-phantom"
+              "value": "linux-networker"
             },
             {
               "name": "type",

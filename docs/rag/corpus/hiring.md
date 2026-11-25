@@ -23,14 +23,14 @@ and real-time AI (DrishtiAI).
 
 ## What I Would Push Back On In An Interview
 
-I am honest about learning areas. Kubernetes, Terraform, and eBPF are
-listed on the portfolio under `data/stack.ts` as learning and growth areas.
+I am honest about learning areas. Go and Linux systems internals are the
+areas I am actively deepening.
 For Go systems programming, I write real systems code, as proven by Safebox (https://github.com/Mahboob-A/safebox),
 an unprivileged Linux sandbox CLI tool for AI coding agents that directly exercises Linux kernel syscalls
 (namespaces, Landlock LSM, OverlayFS, and process supervision).
-If a role drops me into an advanced distributed Kubernetes operator codebase on day one and expects deep architecture
+If a role drops me into a codebase I have no shipped experience with on day one and expects deep architecture
 ownership from week one, that is a mismatch: I am honest about it. I will learn fast, and Safebox proves
-I can write working, tested systems code, but I will not pretend to be a Kubernetes veteran yet.
+I can write working, tested systems code, but I will not pretend to be a veteran of something I have not shipped.
 
 ## Good Interview Topics
 

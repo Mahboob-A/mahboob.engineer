@@ -32,17 +32,6 @@ registry entry. Specific incident postmortems from NexBell customers.
 Taply internal-only metrics. Real names of users, vendors, or partners
 referenced in private contracts.
 
-## Learning Areas
-
-Go, Terraform, Kubernetes, and eBPF should be described as learning or
-growth areas unless another corpus source explicitly says they shipped in
-production. Algocode uses Linux namespaces, cgroups, and seccomp in
-production-shaped code — that's the closest any project comes to
-"infrastructure-as-code work in Go-style environments." If a question
-implies I run Kubernetes in production for a real workload today, the
-honest answer is no. I'd rather over-state the learning area than under-
-state it.
-
 ## Compiled From These Sources
 
 The terminal's knowledge is bounded by what's in the repo. `data/

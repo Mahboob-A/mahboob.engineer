@@ -6,9 +6,9 @@
  *
  *   - Procedural 32×32 sprite generated at runtime via
  *     `Phaser.Textures.CanvasTexture`. Each villain has a distinct
- *     color (gopher-king=#0E1C2C, terraform-titan=#1E1608,
- *     ebpf-phantom=#1E1030) with a centered letter/symbol + a red
- *     "!" badge at the top-right corner.
+ *     color (gopher-king=#0E1C2C, linux-networker=#1E1030) with a
+ *     centered letter/symbol + a red "!" badge at the top-right
+ *     corner.
  *   - The sprite is registered as `villain-${id}` in the scene's
  *     texture manager. Idempotent — `textures.exists()` guard so
  *     duplicate spawns (defensive) don't double-register.
@@ -32,9 +32,8 @@ import type { VillainId } from "@/game/types";
    hexes the user can read directly in `tokens.ts → colors`). The
    dark backgrounds here match the kwDark palette's tile colors so
    the villain visually echoes the chip color it would resolve to:
-     - gopher-king  → sage   → bg `#0E1C2C` (kwDark[1] slate — used for general dark UI)
-     - terraform-titan → amber  → bg `#1E1608` (kwDark[2] amber dark)
-     - ebpf-phantom → mauve  → bg `#1E1030` (kwDark[3] mauve dark)
+     - gopher-king → sage  → bg `#0E1C2C` (kwDark[1] slate — used for general dark UI)
+     - linux-networker → mauve → bg `#1E1030` (kwDark[3] mauve dark)
    White text is `#FFFFFF` and the alert badge is `#E13F3F` — these
    are the only "off-token" colors, used intentionally because
    sprite visuals need a non-palette contrast layer. */
@@ -43,8 +42,7 @@ const VILLAIN_STYLE: Record<
   { bg: string; fg: string; glyph: string }
 > = {
   "gopher-king":     { bg: "#0E1C2C", fg: "#FFFFFF", glyph: "G" },
-  "terraform-titan": { bg: "#1E1608", fg: "#FFFFFF", glyph: "T" },
-  "ebpf-phantom":    { bg: "#1E1030", fg: "#FFFFFF", glyph: "∅" },
+  "linux-networker": { bg: "#1E1030", fg: "#FFFFFF", glyph: "∅" },
 };
 
 const ALERT_RED = "#E13F3F";

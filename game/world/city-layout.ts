@@ -232,16 +232,8 @@ export const CITY_LAYOUT: CityLayout = {
       interaction: { x: 680, y: 1410, width: 80, height: 80 },
     },
     {
-      id: "terraform-titan",
-      name: "Terraform Titan",
-      x: 960,
-      y: 1450,
-      district: "learning-grounds",
-      interaction: { x: 920, y: 1410, width: 80, height: 80 },
-    },
-    {
-      id: "ebpf-phantom",
-      name: "eBPF Phantom",
+      id: "linux-networker",
+      name: "The Network Hydra",
       x: 1200,
       y: 1450,
       district: "learning-grounds",

@@ -122,7 +122,7 @@ const NODES: SkillNode[] = [
     cy: 180,
     r: 26,
     domain: "infra",
-    rel: ["rabbitmq", "aws", "kubernetes", "ffmpeg", "sysdesign"],
+    rel: ["rabbitmq", "aws", "ffmpeg", "sysdesign"],
   },
   {
     id: "aws",
@@ -131,7 +131,7 @@ const NODES: SkillNode[] = [
     cy: 260,
     r: 26,
     domain: "infra",
-    rel: ["docker", "nginx", "cicd", "terraform", "sysdesign", "ffmpeg"],
+    rel: ["docker", "nginx", "cicd", "sysdesign", "ffmpeg"],
   },
   { id: "nginx", label: "Nginx", cx: 700, cy: 360, r: 20, domain: "infra", rel: ["aws"] },
   {
@@ -183,44 +183,15 @@ const NODES: SkillNode[] = [
     rel: ["celery", "mongodb", "docker"],
   },
 
-  // learning
-  {
-    id: "kubernetes",
-    label: "Kubernetes",
-    sub: "~70%",
-    cx: 650,
-    cy: 60,
-    r: 22,
-    domain: "learning",
-    rel: ["docker", "ebpf"],
-  },
-  {
-    id: "terraform",
-    label: "Terraform",
-    sub: "~50%",
-    cx: 820,
-    cy: 400,
-    r: 20,
-    domain: "learning",
-    rel: ["aws"],
-  },
+  // languages & systems
   {
     id: "go",
     label: "Go",
     cx: 560,
     cy: 400,
     r: 20,
-    domain: "learning",
+    domain: "backend",
     rel: ["sysdesign"],
-  },
-  {
-    id: "ebpf",
-    label: "eBPF",
-    cx: 760,
-    cy: 80,
-    r: 20,
-    domain: "learning",
-    rel: ["kubernetes"],
   },
 ];
 
@@ -236,15 +207,12 @@ const EDGES: ReadonlyArray<readonly [string, string]> = [
   ["rabbitmq", "mongodb"],
   ["rabbitmq", "docker"],
   ["docker", "aws"],
-  ["docker", "kubernetes"],
   ["docker", "ffmpeg"],
   ["aws", "nginx"],
   ["aws", "cicd"],
-  ["aws", "terraform"],
   ["sysdesign", "docker"],
   ["sysdesign", "aws"],
   ["sysdesign", "go"],
-  ["kubernetes", "ebpf"],
   ["ffmpeg", "aws"],
 ];
 
@@ -266,8 +234,7 @@ export function SkillGraph() {
             How the stack connects
           </h2>
           <p className="text-t2 mt-3 max-w-[520px] text-[15px]">
-            Not a list of logos. Hover a node to trace what it actually works with,
-            including what I&apos;m actively leveling up.
+            Not a list of logos. Hover a node to trace what it actually works with.
           </p>
         </div>
 
@@ -329,10 +296,6 @@ function SkillGraphPanel() {
             }}
           />
           data layer
-        </span>
-        <span>
-          <span className="border-t3 mr-1.5 inline-block h-2.5 w-2.5 rounded-full border-[1.5px] border-dashed align-middle" />
-          currently leveling up
         </span>
       </div>
 

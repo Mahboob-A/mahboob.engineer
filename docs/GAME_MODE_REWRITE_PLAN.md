@@ -177,8 +177,7 @@ Special buildings should also live here:
 Villains should live in the same world model:
 
 - Gopher King.
-- Terraform Titan.
-- eBPF Phantom.
+- Network Hydra.
 
 ## Phase 4: New World Renderer
 

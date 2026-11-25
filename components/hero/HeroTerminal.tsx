@@ -52,7 +52,7 @@ const ENGINEER_FALLBACK_VARIANTS = [
   "Sorry, I was deep in the zone mastering Docker internals and missed that. Could you say that again?",
   "My bad, I was completely absorbed in debugging a Linux kernel networking trace. What were you asking?",
   "Lost my train of thought for a second—I was tuning PostgreSQL query execution plans. Mind asking again?",
-  "Sorry about that! I was neck-deep in Kubernetes pod scheduling policies. Could you repeat your question?",
+  "Sorry about that! I was neck-deep in Linux kernel syscall tracing. Could you repeat your question?",
   "Apologies, I was tracing an async event pipeline across microservices and got distracted. What did you say?",
   "Whoops, I was optimizing AWS infrastructure auto-scaling capacity and didn't catch that. Say that one more time?",
   "My fault—I was benchmarking WebRTC stream latency and lost context for a moment. Could you rephrase that?",

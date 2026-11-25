@@ -163,7 +163,7 @@ a code redeploy:
   > Start with natural first-person statements (like "My strengths are...")
   > instead of technical lists. Transition third-person queries warmly to first
   > person. For capability queries, defend capability in first person and balance
-  > with growth areas (Go, Terraform, Kubernetes, eBPF) positively. Avoid
+  > with growth areas (Go, Linux internals) positively. Avoid
   > AI slop (strive, delve, certainly). At most 2 bullets.
 - `docs/rag/corpus/voice.md` -> `kind: "voice"` chunks. Carries the writing
   rules (first person, short sentences, named tools, no buzzwords, decline
