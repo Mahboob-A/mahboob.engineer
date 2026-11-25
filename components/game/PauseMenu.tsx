@@ -17,6 +17,8 @@
  *     `next=flatHref`. The existing API route sets the cookie +
  *     303-redirects. The form pattern is copied from the Navbar's
  *     mode pill (`Navbar.tsx:154–172`). No JS — works without hydration.
+ *     The button itself now lives in `ExitGameModeButton.tsx`, which
+ *     is shared with the HUD overlay and the /game page header.
  *
  * Closing: the parent (game/index.tsx) calls `setPaused(false)`
  * on Esc or the "Resume" button.
@@ -27,6 +29,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { ExitGameModeButton } from "@/components/game/ExitGameModeButton";
 
 export interface PauseMenuProps {
   onResume: () => void;
@@ -103,17 +106,7 @@ export function PauseMenu({
           {/* "Exit game mode" — uses the existing /api/mode route via
              form submission. The form is `display: contents` so the
              button keeps its normal flex layout. */}
-          <form action="/api/mode" method="post" className="contents">
-            <input type="hidden" name="mode" value="flat" />
-            <input type="hidden" name="next" value={flatHref} />
-            <PauseButton
-              type="submit"
-              variant="secondary"
-              role="menuitem"
-            >
-              ✕ Exit game mode
-            </PauseButton>
-          </form>
+          <ExitGameModeButton flatHref={flatHref} variant="menu" />
         </div>
 
         {/* Footer hint — Escape-to-close copy. */}
@@ -126,17 +119,14 @@ export function PauseMenu({
 }
 
 /* Internal: a button styled for the pause menu's vertical list.
-   Supports `type="button"` (default) and `type="submit"` (when nested
-   inside a form). `rightLabel` renders a small right-aligned mono
-   indicator — used for the "Sound: ON/OFF" tag. `ref` is forwarded
-   so the parent can auto-focus the Resume button on mount
-   (Phase 6 T6.4). */
+   `rightLabel` renders a small right-aligned mono indicator — used
+   for the "Sound: ON/OFF" tag. `ref` is forwarded so the parent can
+   auto-focus the Resume button on mount (Phase 6 T6.4). */
 const PauseButton = ({
   children,
   onClick,
   variant = "secondary",
   rightLabel,
-  type = "button",
   role,
   ref,
 }: {
@@ -144,14 +134,13 @@ const PauseButton = ({
   onClick?: () => void;
   variant?: "primary" | "secondary";
   rightLabel?: string;
-  type?: "button" | "submit";
   role?: "menuitem";
   ref?: React.Ref<HTMLButtonElement>;
 }) => {
   return (
     <button
       ref={ref}
-      type={type}
+      type="button"
       onClick={onClick}
       role={role}
       className={cn(

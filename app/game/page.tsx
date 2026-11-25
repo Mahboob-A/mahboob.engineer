@@ -26,6 +26,7 @@ import dynamic from "next/dynamic";
 import { GameLoader } from "@/components/game/GameLoader";
 import { GameGate } from "@/components/game/ModeSelector";
 import { DesktopOnlyGate } from "@/components/game/DesktopOnlyGate";
+import { ExitGameModeButton } from "@/components/game/ExitGameModeButton";
 
 const GameRoot = dynamic(
   () => import("@/game").then((m) => m.default),
@@ -39,12 +40,21 @@ export default function GamePage() {
   return (
     <div className="mx-auto max-w-[1180px] px-6 py-12 md:px-8">
       <header className="mb-8">
-        <p className="text-acc mb-2.5 font-mono text-[13px] tracking-[1px]">
-          Game mode
-        </p>
-        <h1 className="font-display text-t1 text-[clamp(28px,4vw,40px)] font-bold tracking-[-0.5px]">
-          Backend City
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-acc mb-2.5 font-mono text-[13px] tracking-[1px]">
+              Game mode
+            </p>
+            <h1 className="font-display text-t1 text-[clamp(28px,4vw,40px)] font-bold tracking-[-0.5px]">
+              Backend City
+            </h1>
+          </div>
+          {/* Escape hatch from game mode. Posts to /api/mode so the
+              `mahboob_mode=game` cookie is actually dropped — a
+              client-side navigation would leave the game pill in the
+              Navbar. Mirrors the HUD button in game/index.tsx. */}
+          <ExitGameModeButton variant="header" className="mt-1" />
+        </div>
         <p className="text-t2 mt-3 max-w-[520px] text-[15px]">
           Top-down pixel-art city. Every building is a project,
           every villain is a learning area. Walk into buildings,

@@ -30,6 +30,7 @@ import { UIScene } from "@/game/scenes/UIScene";
 import { ProjectOverlay } from "@/game/scenes/overlays/ProjectOverlay";
 import { VillainOverlay } from "@/game/scenes/overlays/VillainOverlay";
 import { PauseMenu } from "@/components/game/PauseMenu";
+import { ExitGameModeButton } from "@/components/game/ExitGameModeButton";
 import { SpecialOverlay } from "@/components/game/SpecialOverlay";
 import type { OverlayPayload, VillainId } from "@/game/types";
 
@@ -130,6 +131,18 @@ export default function GameRoot() {
         role="img"
         aria-label="Backend City game canvas. Use WASD or arrow keys to move, E to enter buildings, Escape to pause."
       />
+
+      {/* Persistent exit control, overlaid on the canvas. The
+          UIScene HUD leaves the top-left corner free (minimap is
+          bottom-left, district label top-right), so the button sits
+          there without covering anything. It POSTs to /api/mode to
+          drop the `mahboob_mode=game` cookie — a client-side
+          navigation would leave the game pill in the Navbar. */}
+      <div className="pointer-events-none absolute top-3 left-3 z-20">
+        <div className="pointer-events-auto">
+          <ExitGameModeButton variant="hud" />
+        </div>
+      </div>
 
       {overlay ? (
         <OverlaySlot overlay={overlay} onClose={() => bridge.closeOverlay()} />
