@@ -65,21 +65,31 @@ export function Hero() {
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
-            {/* Eyebrow: role, then the stack, then the location —
-                three deliberate lines. The full one-liner is ~620px and
-                the hero's left column is ~530px, so a single line
-                either overflows or orphans a word. Splitting by role →
-                stack → place keeps the hierarchy readable and stops
-                the browser from breaking mid-phrase. */}
-            <p className="text-amber mb-[18px] font-mono text-[12px] leading-[1.7] tracking-[0.5px]">
+            {/* Eyebrow: role on the first line, the stack on the second,
+                the location on the third. The original one-liner was
+                ~620px against a ~530px hero column, so the browser broke
+                it mid-phrase and orphaned words. Splitting it keeps the
+                original style — one amber rule, one monospace block,
+                all golden — while giving the wrap an intentional home.
+
+                The <wbr> marks the one legal break point in the stack
+                line. At 390px the line cannot fit on one row, and
+                without it the browser breaks mid-word and strands
+                "Systems)" on its own line. The text is split into two
+                string literals because JSX trims whitespace at a
+                newline, which would otherwise swallow the space that
+                follows the separator. */}
+            <p className="text-amber mb-[18px] font-mono text-[13px] tracking-[1px]">
               <span className="flex items-center gap-[10px]">
                 <span aria-hidden className="bg-amber inline-block h-px w-7" />
                 <span>SYSTEMS &amp; BACKEND INFRA</span>
               </span>
               <span className="block pl-[38px]">
-                Go · Linux · AWS · DISTRIBUTED SYSTEMS
+                {"(Go · Linux · AWS · "}
+                <wbr />
+                {"Distributed Systems)"}
               </span>
-              <span className="text-t3 block pl-[38px]">BANGALORE</span>
+              <span className="block pl-[38px]">BANGALORE</span>
             </p>
 
             <h1 className="font-display text-t1 text-[clamp(36px,5.5vw,64px)] leading-[1.08] font-bold tracking-[-1px]">
