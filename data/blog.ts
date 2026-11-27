@@ -94,6 +94,20 @@ export interface BlogPostItem {
   publishedAt?: string;
   /** Canonical Medium URL for summarized native posts. */
   mediumUrl?: string;
+  /**
+   * Whether this post leads the homepage's blog section.
+   *
+   * The homepage shows the first 6 posts by default and collapses the
+   * rest behind "Show N more". Which 6 land there used to be decided
+   * purely by array order — fragile, and it meant the beginner-tier
+   * posts (PostgreSQL CRUD, SQL JOINs, AWS Networking "For Dummies")
+   * took two of the six prime homepage slots.
+   *
+   * Posts marked `featured: false` are excluded from the homepage list
+   * entirely but stay on /writing and in the RAG corpus. Default when
+   * the field is absent: `true`.
+   */
+  featured?: boolean;
 }
 
 /** Mapping of native post slugs to their canonical full-length Medium stories. */

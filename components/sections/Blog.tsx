@@ -11,6 +11,11 @@
  * flag survives refresh + supports direct-link sharing. The toggle
  * uses `router.replace` so the back button skips the toggle state.
  *
+ * The `posts` prop is FEATURED_POSTS (see data/blog-registry.ts) —
+ * beginner-tier posts opt out of the homepage with `featured: false`
+ * so they don't take a prime slot from the deep-dives. They remain on
+ * /writing and in the RAG corpus.
+ *
  * Card rendering lifted to components/writing/BlogCard (T5.4).
  */
 
@@ -23,7 +28,7 @@ import { FadeUp } from "@/components/motion";
 const COLLAPSE_AT = 6;
 
 interface BlogProps {
-  posts: BlogPostItem[];
+  posts: readonly BlogPostItem[];
 }
 
 export function Blog({ posts }: BlogProps) {

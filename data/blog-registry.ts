@@ -139,6 +139,9 @@ export const BLOG_POSTS: BlogPostItem[] = [
       "Getting PostgreSQL running, the right way to think about tables, and CRUD that holds up when the schema is no longer a toy.",
     notes:
       "I wrote this because most Postgres tutorials skip the part where schemas stop being a toy. This covers getting Postgres running, tables that scale, and CRUD that holds up at 10M rows.",
+    /* Beginner-tier — install / setup / CRUD. Stays on /writing and in
+       the RAG corpus, but off the homepage's prime slots. */
+    featured: false,
   },
   {
     slug: "postgresql-part-2",
@@ -157,6 +160,9 @@ export const BLOG_POSTS: BlogPostItem[] = [
       "INNER, LEFT, RIGHT, FULL, and what each one actually means before the planner rewrites your query into something different.",
     notes:
       "Joins. INNER, LEFT, RIGHT, FULL, what each one means before the planner rewrites your query into something different. The mental model I wish I'd had on day one.",
+    /* Beginner-tier — SQL JOINs tutorial. Off the homepage, still on
+       /writing and in the RAG corpus. */
+    featured: false,
   },
   {
     slug: "postgresql-part-3",
@@ -231,6 +237,9 @@ export const BLOG_POSTS: BlogPostItem[] = [
       "A practical first step into AWS networking. VPCs, subnets, security groups, and the bastion pattern explained hands-on.",
     notes:
       "A practical first step into AWS networking. VPCs, subnets, security groups, and the bastion pattern. The post the Pulumi AWS Infra project on this portfolio cites as the pre-read.",
+    /* Beginner-tier — subtitled "For Dummies". Off the homepage, still
+       on /writing and in the RAG corpus. */
+    featured: false,
   },
   {
     slug: "building-leetcode-online-judge",
@@ -381,6 +390,19 @@ export function postsByStack(stackId: string): BlogPostItem[] {
 export function postsByCategory(category: BlogCategory): BlogPostItem[] {
   return BLOG_POSTS.filter((p) => p.category === category);
 }
+
+/**
+ * The posts that lead the homepage's blog section.
+ *
+ * Only `featured: false` posts are excluded — the field defaults to
+ * `true` when absent, so adding a new post to the registry puts it on
+ * the homepage without touching this list. Beginner-tier posts
+ * (PostgreSQL CRUD, SQL JOINs, AWS Networking "For Dummies") opt out
+ * explicitly so they don't take a prime slot from the deep-dives.
+ */
+export const FEATURED_POSTS: readonly BlogPostItem[] = Object.freeze(
+  BLOG_POSTS.filter((p) => p.featured !== false),
+);
 
 /** All unique series names declared across all posts. */
 export const ALL_SERIES: readonly string[] = Object.freeze(
