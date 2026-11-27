@@ -18,7 +18,10 @@ import { track } from "@vercel/analytics";
 import { TerminalBlock } from "@/components/ui/TerminalBlock";
 import { PROJECTS } from "@/data/projects";
 import { STACK } from "@/data/stack";
-import { COMPLETED_EXPERIENCE } from "@/data/experience";
+import {
+  ACTIVE_EXPERIENCE,
+  COMPLETED_EXPERIENCE,
+} from "@/data/experience";
 // NOTE: the blog registry is deliberately NOT imported here. This is a
 // "use client" component — importing `BLOG_POSTS` by value would bundle a
 // second copy of the registry into the client chunk, where it could drift
@@ -181,14 +184,18 @@ function buildPayload(
 ): string[] {
   switch (key) {
     case "whoami": {
+      const current = ACTIVE_EXPERIENCE[0];
       const last = COMPLETED_EXPERIENCE[0];
       return [
         "Mahboob Alam — Systems & Backend Infra (Go · Linux · AWS · Distributed Systems).",
-        `Software Engineer of UnThink (AI knowledge capture) and`,
-        `Backend Engineer at Taply (NFC + QR business cards).`,
+        current
+          ? `Current role: ${current.company} (${current.period}), ${current.role}.`
+          : "—",
         last
           ? `Last role: ${last.company} (${last.period}), ${last.role}.`
           : "—",
+        `Software Engineer of UnThink (AI knowledge capture) and`,
+        `Backend Engineer at Taply (NFC + QR business cards).`,
         "Based in Bangalore, originally from Kolkata. Open to remote or relocating to Chennai / NCR.",
       ];
     }
