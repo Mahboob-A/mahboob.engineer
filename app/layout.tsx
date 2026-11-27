@@ -51,11 +51,12 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mahboob.engineer"),
   title: {
-    default: "Mahboob Alam | Systems & Backend Engineer (Go · Python · Linux · AWS)",
+    default:
+      "Mahboob Alam | Systems & Backend Infra (Go · Linux · AWS · Distributed Systems)",
     template: "%s — Mahboob Alam",
   },
   description:
-    "Systems & Backend Engineer (Go · Python · Linux · AWS) building distributed systems, async pipelines, kernel isolation sandboxes, and cloud infrastructure. Writes The Backend Diaries.",
+    "Systems & Backend Infra (Go · Linux · AWS · Distributed Systems) building distributed systems, async pipelines, kernel isolation sandboxes, and cloud infrastructure. Writes The Backend Diaries.",
   /* Keywords — the headline stack plus the terms a hiring manager or
      recruiter actually types into a search box.
 
@@ -104,7 +105,8 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://mahboob.engineer",
     siteName: "mahboob.engineer",
-    title: "Mahboob Alam — Systems & Backend Engineer (Go · Python · Linux · AWS)",
+    title:
+      "Mahboob Alam — Systems & Backend Infra (Go · Linux · AWS · Distributed Systems)",
     description:
       "Distributed systems, async pipelines, and kernel isolation sandboxes.",
     images: [
@@ -116,13 +118,14 @@ export const metadata: Metadata = {
         }),
         width: ogConstants.width,
         height: ogConstants.height,
-        alt: "Mahboob Alam — Systems & Backend Engineer (Go · Python · Linux · AWS)",
+        alt: "Mahboob Alam — Systems & Backend Infra (Go · Linux · AWS · Distributed Systems)",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mahboob Alam — Systems & Backend Engineer (Go · Python · Linux · AWS)",
+    title:
+      "Mahboob Alam — Systems & Backend Infra (Go · Linux · AWS · Distributed Systems)",
     description:
       "Distributed systems, async pipelines, and kernel isolation sandboxes.",
     images: [
