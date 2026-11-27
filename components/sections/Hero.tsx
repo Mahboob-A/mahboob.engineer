@@ -65,8 +65,8 @@ export function Hero() {
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
-            {/* Eyebrow: the headline on the first line, the location on
-                the second with the amber rule beside it.
+            {/* Eyebrow: three rows — the headline, the rule on its own
+                line, then the location.
 
                 The original one-liner was ~620px against a ~530px hero
                 column, so the browser broke it mid-phrase and orphaned
@@ -74,25 +74,23 @@ export function Hero() {
                 style — one monospace block, all golden — while giving
                 the wrap an intentional home.
 
-                The rule is a flex sibling of BANGALORE rather than of
-                the headline, so it always lands on the location's row.
-                As a sibling of the headline it would sit at the top of
-                the block, and a fixed offset could not track the
-                boundary either — the headline wraps to two rows at
-                390px, which moves the boundary by 19px.
+                The rule is its own row rather than a flex sibling of
+                the headline or the location. Beside the headline it
+                would lead the first line; beside the location it
+                would read as a bullet for that line; and a fixed top
+                offset could not track the boundary, since the headline
+                wraps to two rows at 390px and moves it down 19px.
 
                 The headline is ~370px at 13px monospace and the column
                 gives the text ~492px, so it fits on one line at
                 desktop and needs no break opportunities. */}
             <p className="text-amber mb-[18px] font-mono text-[13px] tracking-[1px]">
               <span className="block">{"SYSTEMS & BACKEND INFRA (Go · Linux · AWS)"}</span>
-              <span className="mt-[6px] flex items-center gap-[10px]">
-                <span
-                  aria-hidden
-                  className="bg-amber inline-block h-px w-7 shrink-0"
-                />
-                <span>BANGALORE</span>
-              </span>
+              <span
+                aria-hidden
+                className="bg-amber mt-[10px] mb-[10px] block h-px w-7"
+              />
+              <span className="block">BANGALORE</span>
             </p>
 
             <h1 className="font-display text-t1 text-[clamp(36px,5.5vw,64px)] leading-[1.08] font-bold tracking-[-1px]">
