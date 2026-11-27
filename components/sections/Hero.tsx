@@ -65,40 +65,27 @@ export function Hero() {
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
-            {/* Eyebrow: the rule and the full headline on the first
-                line, the location on the second. The original one-liner
-                was ~620px against a ~530px hero column, so the browser
+            {/* Eyebrow: the rule and the headline on the first line,
+                the location on the second. The original one-liner was
+                ~620px against a ~530px hero column, so the browser
                 broke it mid-phrase and orphaned words. Splitting before
                 the location keeps the original style — one amber rule,
                 one monospace block, all golden — while giving the wrap
                 an intentional home.
 
-                The headline is ~563px at 13px monospace and the column
-                gives the text ~492px, so it must wrap on narrow screens.
-                Each separator carries a <wbr> so the break always lands
-                on a "·" instead of mid-word — without one the browser
-                strands "Systems)" alone. The text is written as string
-                literals because JSX trims whitespace at a newline,
-                which would otherwise swallow the space after a
-                separator. */}
+                The headline is ~370px at 13px monospace and the column
+                gives the text ~492px, so it fits on one line at every
+                viewport and needs no break opportunities. */}
             <p className="text-amber mb-[18px] font-mono text-[13px] tracking-[1px]">
               <span className="flex items-start gap-[10px]">
                 <span
                   aria-hidden
                   className="bg-amber mt-[9px] inline-block h-px w-7 shrink-0"
                 />
-                {/* When the headline wraps, the continuation line
-                    aligns under the text column rather than back under
-                    the rule — the flex row handles that, so the text
-                    span only needs to fill the remaining width. */}
+                {/* The text span fills the flex row so the headline
+                    sits in one column beside the rule. */}
                 <span className="min-w-0 flex-1">
-                  {"SYSTEMS & BACKEND INFRA (Go ·"}
-                  <wbr />
-                  {" Linux ·"}
-                  <wbr />
-                  {" AWS ·"}
-                  <wbr />
-                  {" Distributed Systems)"}
+                  {"SYSTEMS & BACKEND INFRA (Go · Linux · AWS)"}
                 </span>
               </span>
               <span className="block pl-[38px]">BANGALORE</span>
