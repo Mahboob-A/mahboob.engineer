@@ -56,18 +56,46 @@ export const metadata: Metadata = {
   },
   description:
     "Systems & Backend Engineer (Go · Python · Linux · AWS) building distributed systems, async pipelines, kernel isolation sandboxes, and cloud infrastructure. Writes The Backend Diaries.",
+  /* Keywords — the headline stack plus the terms a hiring manager or
+     recruiter actually types into a search box.
+
+     Note: `DevOps` and `Django` were dropped here. Django is real
+     shipped work (NexBell, Innovative IT, Taply) but the site now
+     leads with a systems/backend headline, and `DevOps` was never
+     the role. Everything listed below is either the headline stack or
+     a system this portfolio can be interviewed on. */
   keywords: [
     "Mahboob Alam",
     "Systems Engineer",
     "Backend Engineer",
     "Go",
+    "Golang",
     "Python",
     "Linux",
     "AWS",
     "Distributed Systems",
+    "System Design",
+    "Async Architecture",
+    "Message Queue",
+    "RabbitMQ",
+    "Redis",
+    "PostgreSQL",
+    "Docker",
+    "Nginx",
+    "Pulumi",
+    "Infrastructure as Code",
+    "Kernel Isolation",
+    "Container Networking",
+    "Network Namespaces",
+    "OpenTelemetry",
+    "Microservices",
+    "Backend Developer",
     "UnThink",
     "Taply",
+    "Algocode",
     "The Backend Diaries",
+    "Bangalore",
+    "Chennai",
   ],
   authors: [{ name: "Mahboob Alam", url: "https://mahboob.engineer" }],
   creator: "Mahboob Alam",
@@ -88,7 +116,7 @@ export const metadata: Metadata = {
         }),
         width: ogConstants.width,
         height: ogConstants.height,
-        alt: "Mahboob Alam — Backend Engineer",
+        alt: "Mahboob Alam — Systems & Backend Engineer (Go · Python · Linux · AWS)",
       },
     ],
   },
