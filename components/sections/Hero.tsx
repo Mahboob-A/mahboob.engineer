@@ -5,7 +5,7 @@
  * lines 482–621:
  *
  *   ┌───────────────────────────────────────────────────────────────┐
- *   │ SYSTEMS & BACKEND INFRA (Go · Linux · AWS)       (eyebrow)  │
+ *   │ SYSTEMS & BACKEND INFRA (Go · Linux · AWS · DS) (eyebrow)  │
  *   │                                                              │
  *   │ I build the infrastructure layer                            │
  *   │ nobody sees and I write about it.        (h1 + accent span) │
@@ -69,11 +69,20 @@ export function Hero() {
 
                 The original one-liner was ~620px against a ~530px hero
                 column, so the browser broke it mid-phrase and orphaned
-                words. Dropping the rule and the location line leaves
-                ~370px of text, which fits the column at desktop and
-                needs no break opportunities. */}
+                words. The headline is ~563px and the column gives the
+                text ~492px, so it wraps — each separator carries a
+                <wbr> so the break lands on a "·" instead of mid-word,
+                and the space inside "Distributed Systems" is a
+                non-breaking one so the phrase stays whole and the
+                break falls after "AWS ·" instead. */}
             <p className="text-amber mb-[18px] font-mono text-[13px] tracking-[1px]">
-              {"SYSTEMS & BACKEND INFRA (Go · Linux · AWS)"}
+              {"SYSTEMS & BACKEND INFRA (Go ·"}
+              <wbr />
+              {" Linux ·"}
+              <wbr />
+              {" AWS ·"}
+              <wbr />
+              {" Distributed Systems)"}
             </p>
 
             <h1 className="font-display text-t1 text-[clamp(36px,5.5vw,64px)] leading-[1.08] font-bold tracking-[-1px]">
