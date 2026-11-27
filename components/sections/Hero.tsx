@@ -65,29 +65,41 @@ export function Hero() {
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
-            {/* Eyebrow: role on the first line, the stack on the second,
-                the location on the third. The original one-liner was
-                ~620px against a ~530px hero column, so the browser broke
-                it mid-phrase and orphaned words. Splitting it keeps the
-                original style — one amber rule, one monospace block,
-                all golden — while giving the wrap an intentional home.
+            {/* Eyebrow: the rule and the full headline on the first
+                line, the location on the second. The original one-liner
+                was ~620px against a ~530px hero column, so the browser
+                broke it mid-phrase and orphaned words. Splitting before
+                the location keeps the original style — one amber rule,
+                one monospace block, all golden — while giving the wrap
+                an intentional home.
 
-                The <wbr> marks the one legal break point in the stack
-                line. At 390px the line cannot fit on one row, and
-                without it the browser breaks mid-word and strands
-                "Systems)" on its own line. The text is split into two
-                string literals because JSX trims whitespace at a
-                newline, which would otherwise swallow the space that
-                follows the separator. */}
+                The headline is ~563px at 13px monospace and the column
+                gives the text ~492px, so it must wrap on narrow screens.
+                Each separator carries a <wbr> so the break always lands
+                on a "·" instead of mid-word — without one the browser
+                strands "Systems)" alone. The text is written as string
+                literals because JSX trims whitespace at a newline,
+                which would otherwise swallow the space after a
+                separator. */}
             <p className="text-amber mb-[18px] font-mono text-[13px] tracking-[1px]">
-              <span className="flex items-center gap-[10px]">
-                <span aria-hidden className="bg-amber inline-block h-px w-7" />
-                <span>SYSTEMS &amp; BACKEND INFRA</span>
-              </span>
-              <span className="block pl-[38px]">
-                {"(Go · Linux · AWS · "}
-                <wbr />
-                {"Distributed Systems)"}
+              <span className="flex items-start gap-[10px]">
+                <span
+                  aria-hidden
+                  className="bg-amber mt-[9px] inline-block h-px w-7 shrink-0"
+                />
+                {/* When the headline wraps, the continuation line
+                    aligns under the text column rather than back under
+                    the rule — the flex row handles that, so the text
+                    span only needs to fill the remaining width. */}
+                <span className="min-w-0 flex-1">
+                  {"SYSTEMS & BACKEND INFRA (Go ·"}
+                  <wbr />
+                  {" Linux ·"}
+                  <wbr />
+                  {" AWS ·"}
+                  <wbr />
+                  {" Distributed Systems)"}
+                </span>
               </span>
               <span className="block pl-[38px]">BANGALORE</span>
             </p>
