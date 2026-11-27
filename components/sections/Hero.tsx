@@ -65,9 +65,21 @@ export function Hero() {
         {/* Eyebrow + headline + description + CTAs (left col on lg+) */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
-            <p className="text-amber mb-[18px] flex items-center gap-[10px] font-mono text-[13px] tracking-[1px]">
-              <span aria-hidden className="bg-amber inline-block h-px w-7" />
-              SYSTEMS &amp; BACKEND ENGINEER (Go · Python · Linux · AWS) · BANGALORE
+            {/* Eyebrow: role, then the stack, then the location —
+                three deliberate lines. The full one-liner is ~620px and
+                the hero's left column is ~530px, so a single line
+                either overflows or orphans a word. Splitting by role →
+                stack → place keeps the hierarchy readable and stops
+                the browser from breaking mid-phrase. */}
+            <p className="text-amber mb-[18px] font-mono text-[12px] leading-[1.7] tracking-[0.5px]">
+              <span className="flex items-center gap-[10px]">
+                <span aria-hidden className="bg-amber inline-block h-px w-7" />
+                <span>SYSTEMS &amp; BACKEND INFRA</span>
+              </span>
+              <span className="block pl-[38px]">
+                Go · Linux · AWS · DISTRIBUTED SYSTEMS
+              </span>
+              <span className="text-t3 block pl-[38px]">BANGALORE</span>
             </p>
 
             <h1 className="font-display text-t1 text-[clamp(36px,5.5vw,64px)] leading-[1.08] font-bold tracking-[-1px]">
